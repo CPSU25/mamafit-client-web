@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
   css: {
     devSourcemap: true
@@ -12,9 +12,12 @@ export default defineConfig({
   server: {
     port: 3000
   },
+  define: {
+    'import.meta.env.APP_MODE': JSON.stringify(mode)
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
     }
   }
-})
+}))
