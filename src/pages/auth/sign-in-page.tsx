@@ -4,11 +4,13 @@ import { useSignIn } from '@/features/auth/sign-in/use-sign-in'
 import { SignInSchemaType } from '@/features/auth/sign-in/validators'
 import { SubmitHandler } from 'react-hook-form'
 import BackgroundLogin from '/images/soft-violet-lavender-abstract.png'
+import { useNavigate } from 'react-router'
 export default function SignInPage() {
   const { methods, isPending } = useSignIn()
-
+  const navigate = useNavigate()
   const onSubmit: SubmitHandler<SignInSchemaType> = async (data) => {
     console.log('data', data)
+    navigate('/admin')
   }
 
   return (

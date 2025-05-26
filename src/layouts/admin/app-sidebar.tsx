@@ -11,7 +11,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible='icon' variant='floating' {...props}>
       <SidebarHeader>
-        <div>xin chao</div>
+        {/* <div>xin chao</div> */}
       </SidebarHeader>
       <SidebarContent>
         {/* {sidebarData.navGroups.map((props) => (
