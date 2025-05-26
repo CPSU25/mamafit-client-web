@@ -1,6 +1,10 @@
-import { AppLayout, DefaultLayout, GuardLayout, GuestLayout } from '@/layouts'
-import { HomePage, NotFoundPage, SignInPage } from '@/pages'
-import { createBrowserRouter } from 'react-router'
+import { AppLayout, DefaultLayout, GuestLayout } from '@/layouts'
+import { RoleLayout } from '@/layouts/role-layout'
+import { AuthMiddleware } from '@/middleware/auth.middleware'
+import { NotFoundPage, SignInPage } from '@/pages'
+// import { AdminHome } from '@/pages/admin'
+import AdminDashboard from '@/pages/admin/dashboard.page'
+import { createBrowserRouter } from 'react-router-dom'
 
 export const router = createBrowserRouter([
   {
@@ -22,16 +26,22 @@ export const router = createBrowserRouter([
         ]
       },
       // Authenticated routes
+
       {
         element: <DefaultLayout />,
         children: [
           {
-            path: '/',
+            path: 'admin',
             element: (
-              <GuardLayout allowPermissions={['view:dasboard']}>
-                <HomePage />
-              </GuardLayout>
-            )
+              <AuthMiddleware allowedRoles={['admin']}>
+                <RoleLayout role='admin' />
+              </AuthMiddleware>
+            ),
+            children: [
+              { path: 'dashboard', element: <AdminDashboard /> },
+              // { path: 'users', element: <AdminUsers /> },
+              // { path: 'settings', element: <AdminSettings /> }
+            ]
           }
         ]
       }
