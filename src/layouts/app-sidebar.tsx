@@ -23,6 +23,8 @@ import {
 import { UserRole } from '@/types/user'
 import Logo from '/images/mamafit-splash-screen.png'
 import { cn } from '@/lib/utils/utils'
+import { Link } from 'react-router'
+import { useLocation } from 'react-router-dom'
 // import { sidebarData } from './data/sidebar-data'
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
@@ -124,16 +126,31 @@ function MamaFitLogo({ role }: { role: UserRole }) {
   const { state } = useSidebar()
   const isCollapsed = state === 'collapsed'
   return (
-    <div className='flex items-center gap-3 px-4 py-6'>
-      <div className='flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-md '>
-        <img src={Logo} alt='Mamafit logo' className='w-full h-full' />
+    <div className={cn(
+      'flex items-center transition-all duration-300 ease-in-out',
+      isCollapsed ? 'justify-center px-2 py-5' : 'gap-4 px-6 py-8'
+    )}>
+      <div className={cn(
+        'flex items-center justify-center rounded-2xl bg-gradient-to-br from-violet-100/80 to-violet-200/60 dark:from-violet-900/40 dark:to-violet-800/30 shadow-xl ring-1 ring-violet-200/40 dark:ring-violet-700/30 backdrop-blur-sm border border-white/20 dark:border-violet-700/20 transition-all duration-300',
+        isCollapsed ? 'h-9 w-9' : 'h-12 w-12'
+      )}>
+        <img 
+          src={Logo} 
+          alt='Mamafit logo' 
+          className={cn(
+            'rounded-xl transition-all duration-300 object-cover',
+            isCollapsed ? 'w-5 h-5' : 'w-10 h-10'
+          )} 
+        />
       </div>
       {!isCollapsed && (
-        <div className='flex flex-col'>
-          <span className='text-lg font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent'>
+        <div className='flex flex-col transition-all duration-300 ease-in-out'>
+          <span className='text-lg font-bold bg-gradient-to-r from-violet-600 to-violet-800 dark:from-violet-400 dark:to-violet-300 bg-clip-text text-transparent drop-shadow-sm'>
             MamaFit
           </span>
-          <span className='text-xs text-gray-500 dark:text-gray-400'>{role}</span>
+          <span className='text-xs text-violet-600/80 dark:text-violet-400/80 font-medium capitalize drop-shadow-sm'>
+            {role.replace('_', ' ')}
+          </span>
         </div>
       )}
     </div>
@@ -143,31 +160,60 @@ function SidebarItem({ role }: { role: UserRole }) {
   const sidebarItems = getSidebarItems(role)
   const { state } = useSidebar()
   const isCollapsed = state === 'collapsed'
+  const location = useLocation()
+  
   return (
-    <div className='px-3 py-2'>
-      <SidebarMenu className='space-y-2'>
+    <div className={cn(
+      'transition-all duration-300 ease-in-out',
+      isCollapsed ? 'px-2 py-2' : 'px-4 py-2'
+    )}>
+      <SidebarMenu className='space-y-1'>
         {sidebarItems.map((item) => {
-          const isActive = window.location.pathname === item.href
+          const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/')
           return (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 tooltip={isCollapsed ? item.title : undefined}
                 className={cn(
-                  'group relative h-12 rounded-xl transition-all duration-200',
-                  'hover:bg-gradient-to-r hover:from-pink-50 hover:to-sky-50 dark:hover:from-pink-950/20 dark:hover:to-sky-950/20',
-                  'hover:shadow-md hover:scale-[1.02]',
+                  'group relative rounded-2xl transition-all duration-300 ease-in-out',
+                  'hover:bg-gradient-to-r hover:from-violet-50 hover:to-violet-100/50 dark:hover:from-violet-950/30 dark:hover:to-violet-900/20',
+                  'hover:shadow-lg hover:shadow-violet-200/20 dark:hover:shadow-violet-900/10',
+                  'hover:scale-[1.02] hover:backdrop-blur-sm',
+                  'border border-transparent hover:border-violet-200/30 dark:hover:border-violet-700/30',
+                  isCollapsed ? 'h-10 w-10 mx-auto justify-center' : 'h-14 w-full',
                   isActive && [
-                    'bg-gradient-to-r from-pink-100 to-sky-100 dark:from-pink-900/30 dark:to-sky-900/30',
-                    'shadow-lg border border-pink-200/50 dark:border-pink-700/50',
-                    'text-pink-700 dark:text-pink-300 font-medium'
-                  ]
+                    'bg-gradient-to-r from-violet-100 to-violet-50 dark:from-violet-900/40 dark:to-violet-800/30',
+                    'shadow-lg shadow-violet-200/30 dark:shadow-violet-900/20',
+                    'border-violet-200/50 dark:border-violet-700/40',
+                    'text-violet-700 dark:text-violet-300 font-semibold',
+                    'ring-1 ring-violet-200/20 dark:ring-violet-700/20'
+                  ],
+                  !isActive && 'text-gray-700 dark:text-gray-300'
                 )}
               >
-                <a href={item.href} className='flex items-center gap-3 w-full'>
-                  <div className='flex-shrink-0'>{item.icon}</div>
-                  {!isCollapsed && <span className='font-medium'>{item.title}</span>}
-                </a>
+                <Link 
+                  to={item.href} 
+                  className={cn(
+                    'flex items-center w-full transition-all duration-300',
+                    isCollapsed ? 'justify-center' : 'gap-4 px-4'
+                  )}
+                >
+                  <div className={cn(
+                    'flex-shrink-0 transition-all duration-200',
+                    isActive && 'text-violet-600 dark:text-violet-400 scale-110'
+                  )}>
+                    {item.icon}
+                  </div>
+                  {!isCollapsed && (
+                    <span className='font-medium text-sm tracking-wide transition-all duration-300'>
+                      {item.title}
+                    </span>
+                  )}
+                  {isActive && !isCollapsed && (
+                    <div className='ml-auto w-2 h-2 rounded-full bg-violet-500 dark:bg-violet-400 animate-pulse' />
+                  )}
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )
@@ -177,35 +223,72 @@ function SidebarItem({ role }: { role: UserRole }) {
   )
 }
 function AppSidebar({ className, role }: SidebarProps) {
+  const { state } = useSidebar()
+  const isCollapsed = state === 'collapsed'
+  
   return (
-    <Sidebar
-      variant='sidebar'
-      className={cn(
-      'border-r border-pink-200 dark:border-pink-800/30',
-      'bg-gradient-to-b from-white via-pink-50/30 to-sky-50/30',
-      'dark:from-gray-950 dark:via-pink-950/10 dark:to-sky-950/10',
-      'rounded-2xl', // Added rounded corners
-      className
-      )}
-    >
-      <SidebarHeader className='border-b border-pink-100/50 dark:border-pink-800/30 bg-white/50 dark:bg-gray-950/50'>
-        <MamaFitLogo role={role} />
-      </SidebarHeader>
+    <div className=''>
+      <Sidebar
+        variant='sidebar'
+        collapsible='icon'
+        style={{
+          '--sidebar-width-icon': '5rem', //tùy chỉnh chiều rộng khi thu gọn
+        } as React.CSSProperties}
+        className={cn(
+          // Frosted glass effect with backdrop blur
+          'border-r border-violet-200/40 dark:border-violet-700/30',
+          'bg-white/30 dark:bg-violet-950/20',
+          'backdrop-blur-xl backdrop-saturate-150',
+          'supports-[backdrop-filter]:bg-white/20 supports-[backdrop-filter]:dark:bg-violet-950/10',
+          
+          // Glassmorphism enhancements
+          'shadow-2xl shadow-violet-200/30 dark:shadow-violet-900/40',
+          'ring-1 ring-violet-200/30 dark:ring-violet-700/25',
+          'ring-inset',
+          
+          // Modern rounded corners and overflow
+          'rounded-2xl overflow-hidden',
+          
+          // Subtle gradient overlay for depth
+          'before:absolute before:inset-0 before:bg-gradient-to-b',
+          'before:from-violet-50/20 before:via-transparent before:to-violet-100/10',
+          'dark:before:from-violet-900/10 dark:before:via-transparent dark:before:to-violet-800/5',
+          'before:pointer-events-none before:rounded-2xl',
+          
+          // Ensure relative positioning for pseudo-elements
+          'relative',
+          
+          // Smooth transitions for width changes
+          'transition-all duration-300 ease-in-out',
+          
+          className
+        )}
+      >
+        <SidebarHeader className='border-b border-violet-200/30 dark:border-violet-800/30 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md rounded-t-2xl'>
+          <MamaFitLogo role={role} />
+        </SidebarHeader>
 
-      <SidebarContent className='py-4'>
-        <SidebarItem role={role} />
-      </SidebarContent>
+        <SidebarContent className={cn(
+          'transition-all duration-300 ease-in-out',
+          isCollapsed ? 'py-4' : 'py-6'
+        )}>
+          <SidebarItem role={role} />
+        </SidebarContent>
 
-      {/* Decorative elements */}
-      <div className='absolute bottom-4 left-4 right-4 h-px bg-gradient-to-r from-transparent via-pink-200 dark:via-pink-700 to-transparent opacity-50' />
-      <div className='absolute bottom-2 left-1/2 transform -translate-x-1/2'>
-        <div className='flex space-x-1'>
-          <div className='w-1 h-1 bg-pink-300 dark:bg-pink-600 rounded-full opacity-60'></div>
-          <div className='w-1 h-1 bg-sky-300 dark:bg-sky-600 rounded-full opacity-60'></div>
-          <div className='w-1 h-1 bg-purple-300 dark:bg-purple-600 rounded-full opacity-60'></div>
+        {/* Decorative elements - adjust for collapsed state */}
+        <div className={cn(
+          'absolute bottom-8 h-px bg-gradient-to-r from-transparent via-violet-300/40 dark:via-violet-600/40 to-transparent transition-all duration-300',
+          isCollapsed ? 'left-3 right-3' : 'left-6 right-6'
+        )} />
+        <div className='absolute bottom-4 left-1/2 transform -translate-x-1/2'>
+          <div className='flex space-x-2'>
+            <div className='w-2 h-2 bg-violet-400/60 dark:bg-violet-500/60 rounded-full animate-pulse' />
+            <div className='w-2 h-2 bg-violet-500/60 dark:bg-violet-400/60 rounded-full animate-pulse delay-75' />
+            <div className='w-2 h-2 bg-violet-600/60 dark:bg-violet-300/60 rounded-full animate-pulse delay-150' />
+          </div>
         </div>
-      </div>
-    </Sidebar>
+      </Sidebar>
+    </div>
   )
 }
 export default AppSidebar
