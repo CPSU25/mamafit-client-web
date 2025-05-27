@@ -42,7 +42,7 @@ export default function SignInForm({ isPending }: SignInFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input   type='password' placeholder='Password' StartIcon={LockKeyhole} {...field} />
+                  <Input type='password' placeholder='Password' StartIcon={LockKeyhole} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
