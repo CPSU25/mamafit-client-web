@@ -68,8 +68,8 @@ const getSidebarItems = (role: UserRole): SidebarItem[] => {
       return [
         ...commonItems,
         {
-          title: 'POS',
-          href: '/branch/pos',
+          title: 'Cashier',
+          href: '/branch/cashier',
           icon: <ShoppingCart className='h-5 w-5' />
         },
         {
@@ -181,10 +181,11 @@ function AppSidebar({ className, role }: SidebarProps) {
     <Sidebar
       variant='sidebar'
       className={cn(
-        'border-r border-pink-100/50 dark:border-pink-800/30',
-        'bg-gradient-to-b from-white via-pink-50/30 to-sky-50/30',
-        'dark:from-gray-950 dark:via-pink-950/10 dark:to-sky-950/10',
-        className
+      'border-r border-pink-200 dark:border-pink-800/30',
+      'bg-gradient-to-b from-white via-pink-50/30 to-sky-50/30',
+      'dark:from-gray-950 dark:via-pink-950/10 dark:to-sky-950/10',
+      'rounded-2xl', // Added rounded corners
+      className
       )}
     >
       <SidebarHeader className='border-b border-pink-100/50 dark:border-pink-800/30 bg-white/50 dark:bg-gray-950/50'>

@@ -1,7 +1,7 @@
 import { AppLayout, DefaultLayout, GuestLayout } from '@/layouts'
 import { RoleLayout } from '@/layouts'
 import { AuthMiddleware } from '@/middleware/auth.middleware'
-import { NotFoundPage, SignInPage, AdminDashboard, BranchDashboard } from '@/pages'
+import { NotFoundPage, SignInPage, AdminDashboard, BranchDashboard, CashierPage } from '@/pages'
 // import { AdminHome } from '@/pages/admin'
 import { createBrowserRouter } from 'react-router-dom'
 
@@ -53,6 +53,10 @@ export const router = createBrowserRouter([
               {
                 path: 'dashboard',
                 element: <BranchDashboard />
+              },
+              {
+                path: 'cashier',
+                element: <CashierPage />
               }
             ]
           }
