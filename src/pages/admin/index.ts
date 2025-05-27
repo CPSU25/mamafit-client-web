@@ -1,1 +1,0 @@
-export { default as AdminHome } from './home-page-admin'

@@ -1,15 +1,18 @@
 import { AppLayout, DefaultLayout, GuestLayout } from '@/layouts'
-import { RoleLayout } from '@/layouts/role-layout'
+import { RoleLayout } from '@/layouts'
 import { AuthMiddleware } from '@/middleware/auth.middleware'
-import { NotFoundPage, SignInPage } from '@/pages'
+import { NotFoundPage, SignInPage, AdminDashboard, BranchDashboard } from '@/pages'
 // import { AdminHome } from '@/pages/admin'
-import AdminDashboard from '@/pages/admin/dashboard.page'
 import { createBrowserRouter } from 'react-router-dom'
 
 export const router = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
+      {
+        path: '/',
+        element: <SignInPage />
+      },
       // Catch all routes that are not defined in the app
       {
         path: '/*',
@@ -37,10 +40,20 @@ export const router = createBrowserRouter([
                 <RoleLayout role='admin' />
               </AuthMiddleware>
             ),
+            children: [{ path: 'dashboard', element: <AdminDashboard /> }]
+          },
+          {
+            path: 'branch',
+            element: (
+              <AuthMiddleware allowedRoles={['branch_manager']}>
+                <RoleLayout role='branch_manager' />
+              </AuthMiddleware>
+            ),
             children: [
-              { path: 'dashboard', element: <AdminDashboard /> },
-              // { path: 'users', element: <AdminUsers /> },
-              // { path: 'settings', element: <AdminSettings /> }
+              {
+                path: 'dashboard',
+                element: <BranchDashboard />
+              }
             ]
           }
         ]
