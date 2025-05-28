@@ -1,5 +1,4 @@
-import { AppLayout, DefaultLayout, GuestLayout } from '@/layouts'
-import { RoleLayout } from '@/layouts'
+import { AppLayout, AuthenticatedLayout, DefaultLayout, GuestLayout } from '@/layouts'
 import { AuthMiddleware } from '@/middleware/auth.middleware'
 import { NotFoundPage, SignInPage, AdminDashboard, BranchDashboard, CashierPage } from '@/pages'
 // import { AdminHome } from '@/pages/admin'
@@ -37,7 +36,7 @@ export const router = createBrowserRouter([
             path: 'admin',
             element: (
               <AuthMiddleware allowedRoles={['admin']}>
-                <RoleLayout role='admin' />
+                <AuthenticatedLayout role='admin' />
               </AuthMiddleware>
             ),
             children: [
@@ -53,7 +52,7 @@ export const router = createBrowserRouter([
             path: 'branch',
             element: (
               <AuthMiddleware allowedRoles={['branch_manager']}>
-                <RoleLayout role='branch_manager' />
+                <AuthenticatedLayout role='branch_manager' />
               </AuthMiddleware>
             ),
             children: [
