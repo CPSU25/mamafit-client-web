@@ -1,9 +1,9 @@
 import { AppLayout, DefaultLayout, GuestLayout } from '@/layouts'
 import { RoleLayout } from '@/layouts'
 import { AuthMiddleware } from '@/middleware/auth.middleware'
-import { NotFoundPage, SignInPage, AdminDashboard, BranchDashboard } from '@/pages'
+import { NotFoundPage, SignInPage, AdminDashboard, BranchDashboard, CashierPage } from '@/pages'
 // import { AdminHome } from '@/pages/admin'
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 export const router = createBrowserRouter([
   {
@@ -40,7 +40,14 @@ export const router = createBrowserRouter([
                 <RoleLayout role='admin' />
               </AuthMiddleware>
             ),
-            children: [{ path: 'dashboard', element: <AdminDashboard /> }]
+            children: [
+              {
+                index: true, // Default route for /admin
+                element: <Navigate to='/admin/dashboard' replace />
+              },
+              { path: 'dashboard', element: <AdminDashboard /> },
+              { path: 'users', element: <div>Users Page</div> }
+            ]
           },
           {
             path: 'branch',
@@ -51,8 +58,16 @@ export const router = createBrowserRouter([
             ),
             children: [
               {
+                index: true, // Default route for /branch
+                element: <Navigate to='/branch/dashboard' replace />
+              },
+              {
                 path: 'dashboard',
                 element: <BranchDashboard />
+              },
+              {
+                path: 'cashier',
+                element: <CashierPage />
               }
             ]
           }
