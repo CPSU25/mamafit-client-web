@@ -1,22 +1,23 @@
 import { Outlet } from 'react-router-dom'
 import { UserRole } from '@/types/user'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import AppSidebar from './app-sidebar'
+// import AppSidebar from './app-sidebar'
 import { ModeToggle } from '@/components/mode-toggle'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { User } from 'lucide-react'
 import { cn } from '@/lib/utils/utils'
+import AppSidebar2 from '@/components/layouts/app-sidebar2'
 
 interface RoleLayoutProps {
   role: UserRole
 }
 
 function Topbar({ role }: { role: UserRole }) {
-  const roleName = role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+  const roleName = role.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())
   const currentPath = window.location.pathname.split('/').pop() || 'dashboard'
-  const pageTitle = currentPath.replace(/\b\w/g, l => l.toUpperCase())
-  
+  const pageTitle = currentPath.replace(/\b\w/g, (l) => l.toUpperCase())
+
   return (
     <header className='sticky top-0 z-40 w-full border-b border-pink-100/50 dark:border-pink-800/30 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm transition-all duration-300'>
       <div className='flex h-16 items-center justify-between px-4 lg:px-6'>
@@ -42,7 +43,11 @@ function Topbar({ role }: { role: UserRole }) {
               <p className='text-xs text-gray-500 dark:text-gray-400'>{role}@mamafit.com</p>
             </div>
 
-            <Button variant='ghost' size='sm' className='relative h-10 w-10 rounded-full hover:scale-105 transition-transform duration-200'>
+            <Button
+              variant='ghost'
+              size='sm'
+              className='relative h-10 w-10 rounded-full hover:scale-105 transition-transform duration-200'
+            >
               <Avatar className='h-9 w-9 border-2 border-pink-200 dark:border-pink-700'>
                 <AvatarImage src={`/avatars/${role}.png`} alt={roleName} />
                 <AvatarFallback className='bg-gradient-to-br from-pink-400 to-sky-400 text-white'>
@@ -61,7 +66,7 @@ function RoleLayout({ role }: RoleLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className='min-h-screen flex w-full bg-gradient-to-br from-pink-50/30 via-white to-sky-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950'>
-        <AppSidebar role={role} />
+        <AppSidebar2 role={role} />
 
         <SidebarInset className='flex flex-1 flex-col transition-all duration-300 ease-in-out'>
           <Topbar role={role} />

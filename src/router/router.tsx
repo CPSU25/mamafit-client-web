@@ -59,7 +59,7 @@ export const router = createBrowserRouter([
             children: [
               {
                 index: true, // Default route for /branch
-                element: <Navigate to="/branch/dashboard" replace />
+                element: <Navigate to='/branch/dashboard' replace />
               },
               {
                 path: 'dashboard',
