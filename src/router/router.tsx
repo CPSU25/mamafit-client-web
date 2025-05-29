@@ -1,7 +1,14 @@
-import { AppLayout, AuthenticatedLayout, DefaultLayout, GuestLayout } from '@/layouts'
+import { AppLayout, AuthenticatedLayout, DefaultLayout, GuardLayout, GuestLayout } from '@/layouts'
 import { AuthMiddleware } from '@/middleware/auth.middleware'
-import { NotFoundPage, SignInPage, AdminDashboard, BranchDashboard, CashierPage } from '@/pages'
-// import { AdminHome } from '@/pages/admin'
+import {
+  NotFoundPage,
+  SignInPage,
+  AdminDashboard,
+  BranchDashboard,
+  CashierPage,
+  DesignerDashboard,
+  FactoryManagerDashboard
+} from '@/pages'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 export const router = createBrowserRouter([
@@ -9,15 +16,13 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       {
-        path: '/',
-        element: <SignInPage />
-      },
-      // Catch all routes that are not defined in the app
-      {
         path: '/*',
         element: <NotFoundPage />
       },
-      // Non-authenticated routes
+      {
+        path: '/',
+        element: <GuardLayout />
+      },
       {
         element: <GuestLayout />,
         children: [
@@ -27,16 +32,16 @@ export const router = createBrowserRouter([
           }
         ]
       },
-      // Authenticated routes
 
+      //Authenticated routes
       {
         element: <DefaultLayout />,
         children: [
           {
             path: 'admin',
             element: (
-              <AuthMiddleware allowedRoles={['admin']}>
-                <AuthenticatedLayout role='admin' />
+              <AuthMiddleware allowedRoles={['Admin']}>
+                <AuthenticatedLayout role='Admin' />
               </AuthMiddleware>
             ),
             children: [
@@ -45,14 +50,18 @@ export const router = createBrowserRouter([
                 element: <Navigate to='/admin/dashboard' replace />
               },
               { path: 'dashboard', element: <AdminDashboard /> },
-              { path: 'users', element: <div>Users Page</div> }
+              { path: 'users', element: <div>Users Page</div> },
+              { path: 'branches', element: <div>Manage Branches Page</div> },
+              { path: 'inventory', element: <div>Inventory Page</div> },
+              { path: 'transactions', element: <div>Transactions Page</div> },
+              { path: 'settings', element: <div>System Settings Page</div> }
             ]
           },
           {
             path: 'branch',
             element: (
-              <AuthMiddleware allowedRoles={['branch_manager']}>
-                <AuthenticatedLayout role='branch_manager' />
+              <AuthMiddleware allowedRoles={['Branch']}>
+                <AuthenticatedLayout role='Branch' />
               </AuthMiddleware>
             ),
             children: [
@@ -67,6 +76,42 @@ export const router = createBrowserRouter([
               {
                 path: 'cashier',
                 element: <CashierPage />
+              }
+            ]
+          },
+          {
+            path: 'designer',
+            element: (
+              <AuthMiddleware allowedRoles={['Designer']}>
+                <AuthenticatedLayout role='Designer' />
+              </AuthMiddleware>
+            ),
+            children: [
+              {
+                index: true, // Default route for /designer
+                element: <Navigate to='/designer/dashboard' replace />
+              },
+              {
+                path: 'dashboard',
+                element: <DesignerDashboard />
+              }
+            ]
+          },
+          {
+            path: 'factory-manager',
+            element: (
+              <AuthMiddleware allowedRoles={['Factory']}>
+                <AuthenticatedLayout role='Factory' />
+              </AuthMiddleware>
+            ),
+            children: [
+              {
+                index: true, // Default route for /factory-manager
+                element: <Navigate to='/factory-manager/dashboard' replace />
+              },
+              {
+                path: 'dashboard',
+                element: <FactoryManagerDashboard />
               }
             ]
           }

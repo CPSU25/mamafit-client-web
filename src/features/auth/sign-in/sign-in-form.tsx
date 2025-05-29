@@ -1,17 +1,19 @@
 import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useFormContext } from 'react-hook-form'
-import { SignInSchemaType } from './validators'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { LayoutDashboard, LockKeyhole, ShoppingBag, UserRound } from 'lucide-react'
+import { LayoutDashboard, LockKeyhole, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Logo from '/images/mamafit-splash-screen.png'
+import { SignInSchemaType } from './validators'
+
 interface SignInFormProps {
-  isPending: boolean
+  isPending?: boolean
 }
+
 export default function SignInForm({ isPending }: SignInFormProps) {
   const { control } = useFormContext<SignInSchemaType>()
-  // const [showPassword, setShowPassword] = useState(false)
+
   return (
     <Card className='w-full max-w-md shadow-lg'>
       <CardHeader className='flex flex-col items-center space-y-2 pb-2 pt-6'>
@@ -26,6 +28,7 @@ export default function SignInForm({ isPending }: SignInFormProps) {
         <div className='flex flex-col gap-4 w-full'>
           <FormField
             control={control}
+            // name='identifier'
             name='identifier'
             render={({ field }) => (
               <FormItem>
@@ -50,19 +53,10 @@ export default function SignInForm({ isPending }: SignInFormProps) {
           />
         </div>
       </CardContent>
-      <CardFooter className='grid grid-cols-2 gap-3 px-6 pb-6'>
-        <Button className='bg-violet-600 hover:bg-violet-700' type='submit' isLoading={isPending}>
+      <CardFooter className=' px-6 pb-6'>
+        <Button className='w-full bg-violet-600 hover:bg-violet-700' type='submit' isLoading={isPending}>
           <LayoutDashboard className='mr-2 h-4 w-4' />
-          Quản lý
-        </Button>
-        <Button
-          variant='outline'
-          className='border-violet-200 text-violet-700 hover:bg-violet-50 hover:text-violet-800'
-          type='submit'
-          isLoading={isPending}
-        >
-          <ShoppingBag className='mr-2 h-4 w-4' />
-          Bán hàng
+          Sign In
         </Button>
       </CardFooter>
     </Card>

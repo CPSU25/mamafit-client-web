@@ -1,7 +1,4 @@
 import {
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
   LayoutDashboard,
   User,
   Users,
@@ -23,29 +20,12 @@ export const sidebarData: SidebarData = {
     email: 'satnaingdev@gmail.com',
     avatar: '/avatars/shadcn.jpg'
   },
-  teams: [
-    {
-      name: 'Shadcn Admin',
-      logo: Command,
-      plan: 'Vite + ShadcnUI'
-    },
-    {
-      name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
-      plan: 'Enterprise'
-    },
-    {
-      name: 'Acme Corp.',
-      logo: AudioWaveform,
-      plan: 'Startup'
-    }
-  ],
   role: [
     {
-      name: 'admin',
+      name: 'Admin',
       navGroups: [
         {
-          title: 'General',
+          title: 'Admin',
           items: [
             {
               title: 'Dashboard',
@@ -58,9 +38,19 @@ export const sidebarData: SidebarData = {
               icon: Users
             },
             {
-              title: 'Profile',
-              url: '/admin/profile',
-              icon: User
+              title: 'Manage Branches',
+              url: '/admin/branches',
+              icon: Users
+            },
+            {
+              title: 'Inventory',
+              url: '/admin/inventory',
+              icon: Package2
+            },
+            {
+              title: 'Transactions',
+              url: '/admin/transactions',
+              icon: ShoppingCart
             }
           ]
         },
@@ -152,14 +142,14 @@ export const sidebarData: SidebarData = {
       ]
     },
     {
-      name: 'factory_manager',
+      name: 'Factory',
       navGroups: [
         {
           title: 'Factory Management',
           items: [
             {
               title: 'Dashboard',
-              url: '/factory/dashboard',
+              url: '/factory-manager/dashboard',
               icon: LayoutDashboard
             },
             {
