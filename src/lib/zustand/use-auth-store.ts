@@ -1,16 +1,22 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { decodeJwt, JWTPayload } from 'jose'
+import { UserRole } from '@/@types/user'
 
 interface AuthStoreState {
   isAuthenticated: boolean
-  user: JWTPayload | null
+  user: User | null
   accessToken: string
   refreshToken: string
   save: ({ accessToken, refreshToken }: { accessToken: string; refreshToken: string }) => void
   clear: () => void
 }
-
+interface User extends JWTPayload {
+  id: string
+  name: string
+  email: string
+  role: UserRole
+}
 /**
  * Zustand store for managing authentication state.
  *
@@ -40,7 +46,7 @@ export const useAuthStore = create<AuthStoreState>()(
       user: null,
       save: ({ accessToken, refreshToken }) => {
         try {
-          const user = decodeJwt(accessToken)
+          const user = decodeJwt(accessToken) as User
           set({ isAuthenticated: true, accessToken, refreshToken, user })
         } catch (error) {
           console.error('Failed to decode JWT in save:', error)
@@ -62,7 +68,7 @@ export const useAuthStore = create<AuthStoreState>()(
         }
         if (state && state.accessToken && state.refreshToken) {
           try {
-            const user = decodeJwt(state.accessToken)
+            const user = decodeJwt(state.accessToken) as User
             state.isAuthenticated = true
             state.user = user
           } catch (error) {

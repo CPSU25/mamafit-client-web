@@ -2,7 +2,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { LogoHeader } from './logo-header-sidebar'
-import { UserRole } from '@/types/user'
+import { UserRole } from '@/@types/user'
 import { NavUser } from './nav-user'
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
@@ -10,7 +10,6 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 function AppSidebar({ role, ...props }: AppSidebarProps) {
-  // Tìm role tương ứng trong sidebarData
   const currentRole = sidebarData.role.find((r) => r.name === role)
 
   return (

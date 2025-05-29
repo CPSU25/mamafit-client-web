@@ -1,6 +1,7 @@
 export { default as SignInPage } from './auth/sign-in-page'
-export { default as HomePage } from './home-page'
 export { default as NotFoundPage } from './not-found-page'
 export { default as AdminDashboard } from './admin/dashboard-page'
 export { default as BranchDashboard } from './branch/dashboard-page'
 export { default as CashierPage } from './branch/cashier-page'
+export { default as DesignerDashboard } from './designer/dashboard-page'
+export { default as FactoryManagerDashboard } from './factory-manager/dashboard-page'

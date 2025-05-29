@@ -7,11 +7,6 @@ interface Role {
   name: string
   navGroups: NavGroup[]
 }
-interface Team {
-  name: string
-  logo: React.ElementType
-  plan: string
-}
 
 interface BaseNavItem {
   title: string
@@ -39,7 +34,6 @@ interface NavGroup {
 interface SidebarData {
   user: User
   role: Role[]
-  teams: Team[]
 }
 
 export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink }

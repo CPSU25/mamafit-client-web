@@ -24,7 +24,7 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const { accessToken } = useAuthStore.getState()
-    if (accessToken && config.url !== '/auth/refresh' && config.headers) {
+    if (accessToken && config.url !== '/auth/refresh-token' && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`
     }
     return config
@@ -45,7 +45,7 @@ api.interceptors.response.use(
       !originalRequest?._retry &&
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (error.response?.data as any)?.message === 'jwt expired' &&
-      originalRequest.url !== '/auth/refresh'
+      originalRequest.url !== '/auth/refresh-token'
     ) {
       if (!originalRequest?._retry) originalRequest._retry = true
 
