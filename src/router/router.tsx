@@ -1,17 +1,28 @@
-import { AppLayout, DefaultLayout, GuardLayout, GuestLayout } from '@/layouts'
-import { HomePage, NotFoundPage, SignInPage } from '@/pages'
-import { createBrowserRouter } from 'react-router'
+import { AppLayout, AuthenticatedLayout, DefaultLayout, GuardLayout, GuestLayout } from '@/layouts'
+import { AuthMiddleware } from '@/middleware/auth.middleware'
+import {
+  NotFoundPage,
+  SignInPage,
+  AdminDashboard,
+  BranchDashboard,
+  CashierPage,
+  DesignerDashboard,
+  FactoryManagerDashboard
+} from '@/pages'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 export const router = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
-      // Catch all routes that are not defined in the app
       {
         path: '/*',
         element: <NotFoundPage />
       },
-      // Non-authenticated routes
+      {
+        path: '/',
+        element: <GuardLayout />
+      },
       {
         element: <GuestLayout />,
         children: [
@@ -21,17 +32,88 @@ export const router = createBrowserRouter([
           }
         ]
       },
-      // Authenticated routes
+
+      //Authenticated routes
       {
         element: <DefaultLayout />,
         children: [
           {
-            path: '/',
+            path: 'admin',
             element: (
-              <GuardLayout allowPermissions={['view:dasboard']}>
-                <HomePage />
-              </GuardLayout>
-            )
+              <AuthMiddleware allowedRoles={['Admin']}>
+                <AuthenticatedLayout role='Admin' />
+              </AuthMiddleware>
+            ),
+            children: [
+              {
+                index: true, // Default route for /admin
+                element: <Navigate to='/admin/dashboard' replace />
+              },
+              { path: 'dashboard', element: <AdminDashboard /> },
+              { path: 'users', element: <div>Users Page</div> },
+              { path: 'branches', element: <div>Manage Branches Page</div> },
+              { path: 'inventory', element: <div>Inventory Page</div> },
+              { path: 'transactions', element: <div>Transactions Page</div> },
+              { path: 'settings', element: <div>System Settings Page</div> }
+            ]
+          },
+          {
+            path: 'branch',
+            element: (
+              <AuthMiddleware allowedRoles={['Branch']}>
+                <AuthenticatedLayout role='Branch' />
+              </AuthMiddleware>
+            ),
+            children: [
+              {
+                index: true, // Default route for /branch
+                element: <Navigate to='/branch/dashboard' replace />
+              },
+              {
+                path: 'dashboard',
+                element: <BranchDashboard />
+              },
+              {
+                path: 'cashier',
+                element: <CashierPage />
+              }
+            ]
+          },
+          {
+            path: 'designer',
+            element: (
+              <AuthMiddleware allowedRoles={['Designer']}>
+                <AuthenticatedLayout role='Designer' />
+              </AuthMiddleware>
+            ),
+            children: [
+              {
+                index: true, // Default route for /designer
+                element: <Navigate to='/designer/dashboard' replace />
+              },
+              {
+                path: 'dashboard',
+                element: <DesignerDashboard />
+              }
+            ]
+          },
+          {
+            path: 'factory-manager',
+            element: (
+              <AuthMiddleware allowedRoles={['Factory']}>
+                <AuthenticatedLayout role='Factory' />
+              </AuthMiddleware>
+            ),
+            children: [
+              {
+                index: true, // Default route for /factory-manager
+                element: <Navigate to='/factory-manager/dashboard' replace />
+              },
+              {
+                path: 'dashboard',
+                element: <FactoryManagerDashboard />
+              }
+            ]
           }
         ]
       }
