@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
 import Logo from '/images/mamafit-splash-screen.png'
 
