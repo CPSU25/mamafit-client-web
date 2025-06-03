@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { signInSchema, SignInSchemaType } from './validators'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { useNavigate } from 'react-router'
+import { ErrorType } from '@/@types/response'
 // import { useAuthStore } from '@/lib/zustand/use-auth-store'
 
 const defaultValues: SignInSchemaType = {
@@ -24,10 +25,25 @@ export const useSignIn = () => {
   const signInMutation = useMutation({
     mutationFn: authAPI.login,
     onSuccess: (data) => {
-      toast.success('Sign in successful!')
       methods.reset()
+      toast.success(
+        "Sign in successfully!!!",
+        {
+          id: 'sign-in-success',
+          description: 'Welcome back!'
+        }
+      )
       save({ accessToken: data.data.data.accessToken, refreshToken: data.data.data.refreshToken })
       navigate('/')
+    },
+    onError: (error: ErrorType) => {
+      toast.error(
+        "Sign in failed, please try again!!!",
+        {
+          id: 'sign-in-error',
+          description: error.response?.data?.errorMessage 
+        }
+      )
     }
   })
 

@@ -110,7 +110,10 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.488 0.243 264.376);
 }
-
+[data-sonner-toast] [data-description] {
+  color: #333333 !important;
+  opacity: 50%;
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;
