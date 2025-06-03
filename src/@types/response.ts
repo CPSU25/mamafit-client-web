@@ -5,14 +5,30 @@ export interface ItemBaseResponse<T> {
   message: string
   data: T
   additionalData?: string
+  code: string
 }
 
+
 export interface ListBaseResponse<T> {
-  status: HttpStatusCode
-  message: string
-  size: number
-  page: number
-  totalSize: number
-  totalPage: number
-  data: T[]
+  data: {
+    items: T[]
+    pageNumber: number
+    totalPages: number
+    totalCount: number
+    pageSize: number
+    hasPreviousPage: boolean
+    hasNextPage: boolean
+  }
+  additionalData?: string | null
+  message?: string | null
+  statusCode: HttpStatusCode
+  code: string
+}
+
+export interface ErrorType {
+  response?: {
+    data?: {
+      errorMessage?: string
+    }
+  }
 }

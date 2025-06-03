@@ -11,8 +11,26 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { useLogout } from '@/features/auth/logout/useLogout'
 
 export function ProfileDropdown() {
+  const { logoutMutation, isPending } = useLogout()
+
+  const handleLogout = () => {
+    try {
+      const authStorage = localStorage.getItem('auth-storage')
+      if (authStorage) {
+        const parsedStorage = JSON.parse(authStorage)
+        const refreshToken = parsedStorage.state.refreshToken
+
+        if (refreshToken) {
+          logoutMutation.mutate({ refreshToken })
+        }
+      }
+    } catch (error) {
+      console.error('Failed to get refreshToken from localStorage:', error)
+    }
+  }
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -53,8 +71,9 @@ export function ProfileDropdown() {
           <DropdownMenuItem>New Team</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          Log out
+        <DropdownMenuItem onClick={handleLogout} disabled={isPending}>
+          {isPending ? 'Logging out...' : 'Log out'}
+
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
