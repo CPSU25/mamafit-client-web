@@ -1,5 +1,5 @@
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
-import Logo from '/images/mamafit-splash-screen.png'
+import Logo from '/images/mamafit-logo.svg'
 
 export function LogoHeader() {
   return (
