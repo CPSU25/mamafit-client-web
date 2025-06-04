@@ -4,7 +4,7 @@ import { useFormContext } from 'react-hook-form'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { LayoutDashboard, LockKeyhole, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import Logo from '/images/mamafit-splash-screen.png'
+import Logo from '/images/mamafit-logo.svg'
 import { SignInSchemaType } from './validators'
 
 interface SignInFormProps {
