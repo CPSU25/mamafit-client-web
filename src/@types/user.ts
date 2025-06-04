@@ -23,6 +23,6 @@ export interface LoginResponse {
   refreshToken: string
 }
 
-export interface LogoutBody{
+export interface LogoutBody {
   refreshToken: string
 }
