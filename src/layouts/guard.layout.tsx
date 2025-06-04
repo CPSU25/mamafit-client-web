@@ -14,11 +14,11 @@ export default function GuardLayout() {
     switch (user.role) {
       case 'Admin':
         return <Navigate to='/admin/dashboard' replace />
-      case 'Branch':
+      case 'BranchManager':
         return <Navigate to='/branch/dashboard' replace />
       case 'Designer':
         return <Navigate to='/designer/dashboard' replace />
-      case 'Factory':
+      case 'Manager':
         return <Navigate to='/factory-manager/dashboard' replace />
       default:
         return <Navigate to='/404' replace />

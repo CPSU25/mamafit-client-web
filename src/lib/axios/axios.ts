@@ -37,6 +37,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    console.log('🚨 API Error:', {
+      status: error.response?.status,
+      message: (error.response?.data as { message: string }).message,
+      url: error.config?.url
+    })
+
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
     const authStore = useAuthStore.getState()
 
@@ -98,7 +104,7 @@ const refresh = async () => {
     const { data } = await api.post<{
       accessToken: string
       refreshToken: string
-    }>('/auth/refresh', { refreshToken: currentRefreshToken })
+    }>('/auth/refresh-token', { refreshToken: currentRefreshToken })
 
     if (data.accessToken && data.refreshToken) {
       save({

@@ -60,8 +60,8 @@ export const router = createBrowserRouter([
           {
             path: 'branch',
             element: (
-              <AuthMiddleware allowedRoles={['Branch']}>
-                <AuthenticatedLayout role='Branch' />
+              <AuthMiddleware allowedRoles={['BranchManager']}>
+                <AuthenticatedLayout role='BranchManager' />
               </AuthMiddleware>
             ),
             children: [
@@ -100,8 +100,8 @@ export const router = createBrowserRouter([
           {
             path: 'factory-manager',
             element: (
-              <AuthMiddleware allowedRoles={['Factory']}>
-                <AuthenticatedLayout role='Factory' />
+              <AuthMiddleware allowedRoles={['Manager']}>
+                <AuthenticatedLayout role='Manager' />
               </AuthMiddleware>
             ),
             children: [
