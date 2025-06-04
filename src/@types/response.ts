@@ -8,7 +8,6 @@ export interface ItemBaseResponse<T> {
   code: string
 }
 
-
 export interface ListBaseResponse<T> {
   data: {
     items: T[]

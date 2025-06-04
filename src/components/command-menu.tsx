@@ -34,7 +34,7 @@ export function CommandMenu() {
         <ScrollArea type='hover' className='h-72 pr-1'>
           <CommandEmpty>No results found.</CommandEmpty>
           {sidebarData.role
-            .find((role) => role.name === 'admin')
+            .find((role) => role.name === 'Admin')
             ?.navGroups.map((group) => (
               <CommandGroup key={group.title} heading={group.title}>
                 {group.items.map((navItem, i) => {

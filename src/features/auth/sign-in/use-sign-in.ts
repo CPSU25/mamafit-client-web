@@ -26,24 +26,18 @@ export const useSignIn = () => {
     mutationFn: authAPI.login,
     onSuccess: (data) => {
       methods.reset()
-      toast.success(
-        "Sign in successfully!!!",
-        {
-          id: 'sign-in-success',
-          description: 'Welcome back!'
-        }
-      )
+      toast.success('Sign in successfully!!!', {
+        id: 'sign-in-success',
+        description: 'Welcome back!'
+      })
       save({ accessToken: data.data.data.accessToken, refreshToken: data.data.data.refreshToken })
       navigate('/')
     },
     onError: (error: ErrorType) => {
-      toast.error(
-        "Sign in failed, please try again!!!",
-        {
-          id: 'sign-in-error',
-          description: error.response?.data?.errorMessage 
-        }
-      )
+      toast.error('Sign in failed, please try again!!!', {
+        id: 'sign-in-error',
+        description: error.response?.data?.errorMessage
+      })
     }
   })
 
