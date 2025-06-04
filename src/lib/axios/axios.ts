@@ -56,7 +56,7 @@ api.interceptors.response.use(
           const { accessToken } = await refresh()
           isRefreshing = false
 
-          failedRequestsQueue.forEach(({ resolve }) => resolve(accessToken))   
+          failedRequestsQueue.forEach(({ resolve }) => resolve(accessToken))
           failedRequestsQueue = []
 
           return api(originalRequest)

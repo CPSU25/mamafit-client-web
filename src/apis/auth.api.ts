@@ -5,7 +5,7 @@ import { api } from '@/lib/axios/axios'
 
 const authAPI = {
   login: (body: SignInSchemaType) => api.post<ItemBaseResponse<LoginResponse>>('/auth/signin', body),
-  logout: (body: LogoutBody) => api.post<ItemBaseResponse<null>>('/auth/logout', body),
+  logout: (body: LogoutBody) => api.post<ItemBaseResponse<null>>('/auth/logout', body)
 }
 
 export default authAPI
