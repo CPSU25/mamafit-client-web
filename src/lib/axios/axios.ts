@@ -50,7 +50,7 @@ api.interceptors.response.use(
       error.response?.status === 403 &&
       !originalRequest?._retry &&
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (error.response?.data as any)?.message === 'jwt expired' &&
+      (error.response?.data as any)?.message === 'Token is expired' &&
       originalRequest.url !== '/auth/refresh-token'
     ) {
       if (!originalRequest?._retry) originalRequest._retry = true

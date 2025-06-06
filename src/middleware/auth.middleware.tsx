@@ -1,22 +1,32 @@
 import { UserRole } from '@/@types/user'
-import { useAuthStore } from '@/lib/zustand/use-auth-store'
-import { Navigate, useLocation } from 'react-router-dom'
+import { useRoutePermission } from '@/hooks/useRoutePermission'
+import { ReactNode } from 'react'
 
 interface AuthMiddlewareProps {
-  children: React.ReactNode
+  children: ReactNode
   allowedRoles?: UserRole[]
 }
 
 export function AuthMiddleware({ children, allowedRoles }: AuthMiddlewareProps) {
-  const { isAuthenticated, user } = useAuthStore()
-  const location = useLocation()
+  const requiredRole = allowedRoles?.[0] // Lấy role đầu tiên nếu có nhiều roles
 
-  if (!isAuthenticated) {
-    return <Navigate to='/sign-in' state={{ from: location }} replace />
+  const { isLoading, isAuthorized } = useRoutePermission({
+    requiredRole,
+    redirectTo: '/sign-in'
+  })
+
+  // Hiển thị loading khi đang check permission
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600'></div>
+      </div>
+    )
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to='/404' replace />
+  // Chỉ render children khi đã có quyền truy cập
+  if (!isAuthorized) {
+    return null // Component sẽ redirect tự động
   }
 
   return <>{children}</>

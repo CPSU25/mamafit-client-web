@@ -1,4 +1,4 @@
-export type UserRole = 'Admin' | 'BranchManager' | 'Designer' | 'Manager' | 'Staff' | 'BranchStaff'
+export type UserRole = 'Admin' | 'BranchManager' | 'Designer' | 'Manager' | 'Staff' | 'BranchStaff' | 'User'
 
 export interface User {
   id: string
@@ -25,4 +25,11 @@ export interface LoginResponse {
 
 export interface LogoutBody {
   refreshToken: string
+}
+
+export interface PermissionResponse {
+  username: string
+  userEmail: string
+  roleName: string
+  profilePicture: string
 }
