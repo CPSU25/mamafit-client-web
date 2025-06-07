@@ -14,7 +14,7 @@ export const useLogout = () => {
     onSuccess: (data) => {
       clear()
       toast.success(data.data.message)
-      navigate('/auth/sign-in')
+      navigate('/sign-in')
     },
     onError: (error: ErrorType) => {
       toast.error('Logout failed, please try again!', {

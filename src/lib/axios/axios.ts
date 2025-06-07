@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '../zustand/use-auth-store'
+import { ItemBaseResponse } from '@/@types/response'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
 
@@ -18,7 +19,8 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json'
-  }
+  },
+  timeout: 30000 // 30s timeouta
 })
 
 api.interceptors.request.use(
@@ -37,56 +39,97 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    console.log('🚨 API Error:', {
-      status: error.response?.status,
-      message: (error.response?.data as { message: string }).message,
-      url: error.config?.url
-    })
-
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean
+      _retryCount?: number
+    }
     const authStore = useAuthStore.getState()
 
-    if (
-      error.response?.status === 403 &&
-      !originalRequest?._retry &&
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (error.response?.data as any)?.message === 'Token is expired' &&
-      originalRequest.url !== '/auth/refresh-token'
-    ) {
-      if (!originalRequest?._retry) originalRequest._retry = true
+    if (!error.response) {
+      // Retry cho network errors (không phải auth issues)
+      if (originalRequest && !originalRequest._retry) {
+        const retryCount = originalRequest._retryCount || 0
 
-      if (!isRefreshing) {
-        isRefreshing = true
+        if (retryCount < 2) {
+          // Retry tối đa 2 lần
+          originalRequest._retryCount = retryCount + 1
+          console.log(`Retrying request... attempt ${retryCount + 1}`)
 
-        try {
-          const { accessToken } = await refresh()
-          isRefreshing = false
-
-          failedRequestsQueue.forEach(({ resolve }) => resolve(accessToken))
-          failedRequestsQueue = []
+          // Delay trước khi retry
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (retryCount + 1)))
 
           return api(originalRequest)
-        } catch (refreshError) {
-          failedRequestsQueue.forEach(({ reject }) => reject(refreshError as AxiosError))
-          failedRequestsQueue = []
-          authStore.clear()
-          return Promise.reject(refreshError)
-        } finally {
-          isRefreshing = false
         }
       }
 
-      return new Promise((resolve, reject) => {
-        failedRequestsQueue.push({
-          resolve: (newAccessToken: string) => {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
-            resolve(api(originalRequest))
-          },
-          reject: (error: AxiosError) => {
-            reject(error)
+      return Promise.reject(error)
+    }
+
+    // ✅ Xử lý HTTP errors và refresh token
+    if (
+      (error.response?.status === 401 || error.response?.status === 403) &&
+      !originalRequest?._retry &&
+      originalRequest?.url !== '/auth/refresh-token'
+    ) {
+      // Kiểm tra xem có phải lỗi token expired không
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorMessage = (error.response?.data as any)?.message || ''
+      const isTokenExpired =
+        errorMessage.includes('Token is expired') || errorMessage.includes('invalid') || error.response?.status === 401
+
+      if (isTokenExpired) {
+        originalRequest._retry = true
+
+        if (!isRefreshing) {
+          isRefreshing = true
+
+          try {
+            const { accessToken } = await refresh()
+            isRefreshing = false
+
+            // Resolve tất cả requests đang chờ
+            failedRequestsQueue.forEach(({ resolve }) => resolve(accessToken))
+            failedRequestsQueue = []
+
+            // Retry original request với token mới
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`
+            }
+            return api(originalRequest)
+          } catch (refreshError) {
+            isRefreshing = false
+
+            // Reject tất cả requests đang chờ
+            failedRequestsQueue.forEach(({ reject }) => reject(refreshError as AxiosError))
+            failedRequestsQueue = []
+
+            // Clear auth state và redirect
+            authStore.clear()
+
+            // Redirect to login nếu refresh fail
+            if (typeof window !== 'undefined') {
+              window.location.href = '/sign-in'
+            }
+
+            return Promise.reject(refreshError)
           }
+        }
+
+        // Thêm request vào queue nếu đang refresh
+        return new Promise((resolve, reject) => {
+          failedRequestsQueue.push({
+            resolve: (newAccessToken: string) => {
+              if (originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+              }
+              resolve(api(originalRequest))
+            },
+            reject: (error: AxiosError) => {
+              reject(error)
+            }
+          })
         })
-      })
+      }
     }
 
     return Promise.reject(error)
@@ -101,20 +144,32 @@ const refresh = async () => {
   }
 
   try {
-    const { data } = await api.post<{
-      accessToken: string
-      refreshToken: string
-    }>('/auth/refresh-token', { refreshToken: currentRefreshToken })
+    const refreshApi = axios.create({
+      baseURL,
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      }
+    })
 
-    if (data.accessToken && data.refreshToken) {
+    const response = await refreshApi.post<
+      ItemBaseResponse<{
+        accessToken: string
+        refreshToken: string
+      }>
+    >('/auth/refresh-token', { refreshToken: currentRefreshToken })
+
+    const { data: responseData } = response
+    if (responseData.data.accessToken && responseData.data.refreshToken) {
       save({
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken
+        accessToken: responseData.data.accessToken,
+        refreshToken: responseData.data.refreshToken
       })
-      return data
+      return responseData.data
     }
 
-    return { accessToken: '', refreshToken: '' }
+    throw new Error('Invalid refresh token response')
   } catch (error) {
     console.error('Refresh token error:', error)
     throw error
