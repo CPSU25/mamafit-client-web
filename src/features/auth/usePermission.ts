@@ -43,7 +43,7 @@ export const usePermission = () => {
   const userInfo = useMemo(() => {
     return permission
       ? {
-          username: permission.username,
+          username: permission.userName,
           email: permission.userEmail,
           role: permission.roleName,
           avatar: permission.profilePicture || '/default-avatar.png'

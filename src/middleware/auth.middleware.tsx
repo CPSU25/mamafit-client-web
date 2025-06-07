@@ -1,6 +1,7 @@
 import { UserRole } from '@/@types/user'
 import { useRoutePermission } from '@/hooks/useRoutePermission'
 import { ReactNode } from 'react'
+import { Navigate } from 'react-router-dom'
 
 interface AuthMiddlewareProps {
   children: ReactNode
@@ -26,7 +27,7 @@ export function AuthMiddleware({ children, allowedRoles }: AuthMiddlewareProps) 
 
   // Chỉ render children khi đã có quyền truy cập
   if (!isAuthorized) {
-    return null // Component sẽ redirect tự động
+    return <Navigate to='/404' replace />
   }
 
   return <>{children}</>

@@ -35,9 +35,9 @@ function AuthenticatedLayout({ role, children }: Props) {
           </div>
           <footer className='border-t border-pink-100/50 dark:border-pink-800/30 bg-white/50 dark:bg-gray-950/50 p-4'>
             <div className='flex items-center justify-center'>
-              <p className='text-xs text-gray-500 dark:text-gray-400'>
+              {/* <p className='text-xs text-gray-500 dark:text-gray-400'>
                 © 2025 MamaFit. Made with ❤️ for expecting mothers.
-              </p>
+              </p> */}
             </div>
           </footer>
         </SidebarInset>

@@ -7,7 +7,9 @@ import {
   BranchDashboard,
   CashierPage,
   DesignerDashboard,
-  FactoryManagerDashboard
+  FactoryManagerDashboard,
+  CategoryPage,
+  StylePage
 } from '@/pages'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
@@ -50,6 +52,8 @@ export const router = createBrowserRouter([
                 element: <Navigate to='/admin/dashboard' replace />
               },
               { path: 'dashboard', element: <AdminDashboard /> },
+              { path: 'category', element: <CategoryPage /> },
+              { path: 'style', element: <StylePage /> },
               { path: 'users', element: <div>Users Page</div> },
               { path: 'branches', element: <div>Manage Branches Page</div> },
               { path: 'inventory', element: <div>Inventory Page</div> },

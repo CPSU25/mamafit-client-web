@@ -9,7 +9,9 @@ import {
   FolderOpen,
   Factory,
   Package2,
-  Award
+  Award,
+  Tags,
+  Shirt
 } from 'lucide-react'
 
 import { type SidebarData } from '../types'
@@ -31,6 +33,16 @@ export const sidebarData: SidebarData = {
               title: 'Dashboard',
               url: '/admin/dashboard',
               icon: LayoutDashboard
+            },
+            {
+              title: 'Categories',
+              url: '/admin/category',
+              icon: Tags
+            },
+            {
+              title: 'Styles',
+              url: '/admin/style',
+              icon: Shirt
             },
             {
               title: 'Users',
