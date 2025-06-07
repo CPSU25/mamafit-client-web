@@ -28,7 +28,7 @@ export interface LogoutBody {
 }
 
 export interface PermissionResponse {
-  username: string
+  userName: string
   userEmail: string
   roleName: string
   profilePicture: string

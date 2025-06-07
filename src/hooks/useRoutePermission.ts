@@ -32,10 +32,10 @@ export const useRoutePermission = (options: UseRoutePermissionOptions = {}) => {
     // Chỉ check khi không loading
     if (isLoading) return
 
-    // if (!isAuthenticated) {
-    //   navigate('/sign-in', { state: { from: location }, replace: true })
-    //   return
-    // }
+    if (!isAuthenticated) {
+      navigate('/sign-in', { state: { from: location }, replace: true })
+      return
+    }
 
     // Chỉ check permission khi có requiredRole và permission data
     if (requiredRole && permission && !hasPermission(requiredRole)) {
