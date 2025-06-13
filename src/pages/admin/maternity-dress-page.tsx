@@ -21,10 +21,10 @@ import { Card, CardContent } from '@/components/ui/card'
 
 import MaternityDressCreationDialog from '@/components/admin/maternitydress-creation-dialog'
 import ExpandedProductDetails from '@/components/admin/expanded-product-details'
-import { useMaternityDressStore } from '@/stores/maternity-dress-store'
+import { useMaternityDressStore } from '@/stores/admin/maternity-dress-store'
 
 // React Query Hooks
-import { useGetMaternityDresses, useDeleteMaternityDress } from '@/services/maternity-dress/useMaternityDress'
+import { useGetMaternityDresses, useDeleteMaternityDress } from '@/services/admin/maternity-dress/useMaternityDress'
 
 // Component riêng để xử lý hình ảnh tránh vòng lặp
 function ProductImage({ src, alt }: { src: string; alt: string }) {
