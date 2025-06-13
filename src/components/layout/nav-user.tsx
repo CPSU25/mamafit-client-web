@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
-import { useLogout } from '@/features/auth/logout/useLogout'
+import { useLogout } from '@/services/auth/logout/useLogout'
 
 export function NavUser({
   user

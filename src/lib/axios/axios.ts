@@ -106,10 +106,7 @@ api.interceptors.response.use(
             // Clear auth state và redirect
             authStore.clear()
 
-            // Redirect to login nếu refresh fail
-            if (typeof window !== 'undefined') {
-              window.location.href = '/sign-in'
-            }
+            
 
             return Promise.reject(refreshError)
           }
