@@ -9,8 +9,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { MaternityDressFormData } from '@/@types/inventory.type'
-import { useCreateMaternityDress } from '@/services/maternity-dress/useMaternityDress'
-import { useGetStyles } from '@/services/catogories/useStyles'
+import { useCreateMaternityDress } from '@/services/admin/maternity-dress/useMaternityDress'
+import { useGetStyles } from '@/services/admin/catogories/useStyles'
 import { toast } from 'sonner'
 
 interface SingleStepProductCreationDialogProps {

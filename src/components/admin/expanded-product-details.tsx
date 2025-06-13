@@ -10,13 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ImageUpload } from '@/components/ui/image-upload'
-import { useMaternityDressStore } from '@/stores/maternity-dress-store'
+import { useMaternityDressStore } from '@/stores/admin/maternity-dress-store'
 import { MaternityDressDetailFormData, MaternityDressDetailType } from '@/@types/inventory.type'
 import {
   useGetMaternityDressDetail,
   useCreateMaternityDressDetail,
   useDeleteMaternityDressDetail
-} from '@/services/maternity-dress/useMaternityDress'
+} from '@/services/admin/maternity-dress/useMaternityDress'
 import { toast } from 'sonner'
 
 // Component riêng để xử lý hình ảnh tránh vòng lặp

@@ -13,7 +13,7 @@ export function AuthMiddleware({ children, allowedRoles }: AuthMiddlewareProps) 
 
   const { isLoading, isAuthorized } = useRoutePermission({
     requiredRole,
-    redirectTo: '/sign-in'
+    redirectTo: '/system'
   })
 
   // Hiển thị loading khi đang check permission
@@ -27,7 +27,7 @@ export function AuthMiddleware({ children, allowedRoles }: AuthMiddlewareProps) 
 
   // Chỉ render children khi đã có quyền truy cập
   if (!isAuthorized) {
-    return <Navigate to='/404' replace />
+    return <Navigate to='/system' replace />
   }
 
   return <>{children}</>
