@@ -33,8 +33,6 @@ export interface MaternityDress {
   updatedAt?: Date
 }
 
-
-
 export interface MaternityDressVariant {
   id: string
   maternityDressId: string

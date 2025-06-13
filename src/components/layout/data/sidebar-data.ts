@@ -31,37 +31,37 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Dashboard',
-              url: '/admin/dashboard',
+              url: '',
               icon: LayoutDashboard
             },
             {
               title: 'Categories',
-              url: '/admin/category',
+              url: 'category',
               icon: Tags
             },
             {
               title: 'Styles',
-              url: '/admin/style',
+              url: 'style',
               icon: Shirt
             },
             {
               title: 'Users',
-              url: '/admin/users',
+              url: 'users',
               icon: Users
             },
             {
               title: 'Manage Branches',
-              url: '/admin/branches',
+              url: 'branches',
               icon: Users
             },
             {
               title: 'Inventory',
-              url: '/admin/inventory',
+              url: 'inventory',
               icon: Package2
             },
             {
               title: 'Transactions',
-              url: '/admin/transactions',
+              url: 'transactions',
               icon: ShoppingCart
             }
           ]
@@ -71,7 +71,7 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'System Settings',
-              url: '/admin/settings',
+              url: 'settings',
               icon: Settings
             }
           ]
@@ -86,22 +86,22 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Dashboard',
-              url: '/branch/dashboard',
+              url: 'dashboard',
               icon: LayoutDashboard
             },
             {
               title: 'Cashier',
-              url: '/branch/cashier',
+              url: 'cashier',
               icon: ShoppingCart
             },
             {
               title: 'Orders',
-              url: '/branch/orders',
+              url: 'orders',
               icon: Package
             },
             {
               title: 'Inventory',
-              url: '/branch/inventory',
+              url: 'inventory',
               icon: Package2
             }
           ]
@@ -111,7 +111,7 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Profile',
-              url: '/branch/profile',
+              url: 'profile',
               icon: User
             }
           ]
@@ -126,17 +126,17 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Dashboard',
-              url: '/designer/dashboard',
+              url: 'dashboard',
               icon: LayoutDashboard
             },
             {
               title: 'Designs',
-              url: '/designer/designs',
+              url: 'designs',
               icon: Palette
             },
             {
               title: 'Projects',
-              url: '/designer/projects',
+              url: 'projects',
               icon: FolderOpen
             }
           ]
@@ -146,7 +146,7 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Profile',
-              url: '/designer/profile',
+              url: 'profile',
               icon: User
             }
           ]
@@ -161,22 +161,22 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Dashboard',
-              url: '/factory-manager/dashboard',
+              url: 'dashboard',
               icon: LayoutDashboard
             },
             {
               title: 'Production',
-              url: '/factory/production',
+              url: 'production',
               icon: Factory
             },
             {
               title: 'Materials',
-              url: '/factory/materials',
+              url: 'materials',
               icon: Package
             },
             {
               title: 'Quality',
-              url: '/factory/quality',
+              url: 'quality',
               icon: Award
             }
           ]
@@ -186,7 +186,7 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Profile',
-              url: '/factory/profile',
+              url: 'profile',
               icon: User
             }
           ]
@@ -201,12 +201,12 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Dashboard',
-              url: '/cashier/dashboard',
+              url: 'dashboard',
               icon: LayoutDashboard
             },
             {
               title: 'Orders',
-              url: '/cashier/orders',
+              url: 'orders',
               icon: Package
             }
           ]
@@ -216,7 +216,7 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Profile',
-              url: '/factory/profile',
+              url: 'profile',
               icon: User
             }
           ]
@@ -231,12 +231,12 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Dashboard',
-              url: '/branch-staff/dashboard',
+              url: 'dashboard',
               icon: LayoutDashboard
             },
             {
               title: 'Orders',
-              url: '/branch-staff/orders',
+              url: 'orders',
               icon: Package
             }
           ]
@@ -246,7 +246,7 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Profile',
-              url: '/branch-staff/profile',
+              url: 'profile',
               icon: User
             }
           ]

@@ -1,11 +1,28 @@
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { Navigate, Outlet } from 'react-router-dom'
 
-export default function GuestLayout() {
-  const { isAuthenticated } = useAuthStore()
+// Helper function to get dashboard route based on role
+const getDashboardRoute = (role: string) => {
+  switch (role) {
+    case 'Admin':
+      return '/system/admin/dashboard'
+    case 'BranchManager':
+      return '/system/branch/dashboard'
+    case 'Designer':
+      return '/system/designer/dashboard'
+    case 'Manager':
+      return '/system/factory-manager/dashboard'
+    default:
+      return '/system'
+  }
+}
 
-  if (isAuthenticated) {
-    return <Navigate to='/' replace />
+export default function GuestLayout() {
+  const { isAuthenticated, user } = useAuthStore()
+
+  if (isAuthenticated && user) {
+    const dashboardRoute = getDashboardRoute(user.role)
+    return <Navigate to={dashboardRoute} replace />
   }
 
   return (

@@ -106,8 +106,6 @@ api.interceptors.response.use(
             // Clear auth state và redirect
             authStore.clear()
 
-            
-
             return Promise.reject(refreshError)
           }
         }

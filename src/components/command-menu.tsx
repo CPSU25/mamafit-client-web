@@ -36,12 +36,12 @@ export function CommandMenu() {
           {sidebarData.role
             .find((role) => role.name === 'Admin')
             ?.navGroups.map((group) => (
-              <CommandGroup key={group.title} heading={group.title}>
-                {group.items.map((navItem, i) => {
+              <CommandGroup key={`group-${group.title}`} heading={group.title}>
+                {group.items.map((navItem, navItemIndex) => {
                   if (navItem.url)
                     return (
                       <CommandItem
-                        key={`${navItem.url}-${i}`}
+                        key={`nav-${navItem.url}-${navItemIndex}`}
                         value={navItem.title}
                         onSelect={() => {
                           runCommand(() => navigate(navItem.url))
@@ -54,9 +54,9 @@ export function CommandMenu() {
                       </CommandItem>
                     )
 
-                  return navItem.items?.map((subItem, i) => (
+                  return navItem.items?.map((subItem, subItemIndex) => (
                     <CommandItem
-                      key={`${navItem.title}-${subItem.url}-${i}`}
+                      key={`sub-${navItem.title}-${subItem.url}-${navItemIndex}-${subItemIndex}`}
                       value={`${navItem.title}-${subItem.url}`}
                       onSelect={() => {
                         runCommand(() => navigate(subItem.url))
@@ -73,14 +73,14 @@ export function CommandMenu() {
             ))}
           <CommandSeparator />
           <CommandGroup heading='Theme'>
-            <CommandItem onSelect={() => runCommand(() => setTheme('light'))}>
+            <CommandItem key='theme-light' onSelect={() => runCommand(() => setTheme('light'))}>
               <Sun /> <span>Light</span>
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme('dark'))}>
+            <CommandItem key='theme-dark' onSelect={() => runCommand(() => setTheme('dark'))}>
               <Moon className='scale-90' />
               <span>Dark</span>
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme('system'))}>
+            <CommandItem key='theme-system' onSelect={() => runCommand(() => setTheme('system'))}>
               <Laptop />
               <span>System</span>
             </CommandItem>
