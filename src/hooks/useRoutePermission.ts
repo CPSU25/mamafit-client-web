@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react'
-import { usePermission } from '@/features/auth/usePermission'
+import { usePermission } from '@/services/auth/usePermission'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'

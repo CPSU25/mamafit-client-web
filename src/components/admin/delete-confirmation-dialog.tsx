@@ -27,7 +27,7 @@ export default function DeleteConfirmationDialog({
 }: DeleteConfirmationDialogProps) {
   const handleConfirm = () => {
     onConfirm()
-    onOpenChange(false)
+    // Don't close dialog automatically - let the parent handle it
   }
 
   return (
@@ -40,10 +40,10 @@ export default function DeleteConfirmationDialog({
 
         <DialogFooter>
           <Button type='button' variant='outline' onClick={() => onOpenChange(false)} disabled={isLoading}>
-            Cancel
+            Hủy
           </Button>
           <Button type='button' variant='destructive' onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Đang xóa...' : 'Xóa'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -4,7 +4,7 @@ import { NavGroup } from './nav-group'
 import { LogoHeader } from './logo-header-sidebar'
 import { UserRole } from '@/@types/user'
 import { NavUser } from './nav-user'
-import { usePermission } from '@/features/auth/usePermission'
+import { usePermission } from '@/services/auth/usePermission'
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   role: UserRole

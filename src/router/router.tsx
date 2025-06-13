@@ -9,10 +9,12 @@ import {
   DesignerDashboard,
   FactoryManagerDashboard,
   CategoryPage,
-  StylePage
+  StylePage,
+  MaternityDressPage,
+  // InventoryPage
 } from '@/pages'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-
+ 
 export const router = createBrowserRouter([
   {
     element: <AppLayout />,
@@ -56,7 +58,7 @@ export const router = createBrowserRouter([
               { path: 'style', element: <StylePage /> },
               { path: 'users', element: <div>Users Page</div> },
               { path: 'branches', element: <div>Manage Branches Page</div> },
-              { path: 'inventory', element: <div>Inventory Page</div> },
+              { path: 'inventory', element: <MaternityDressPage/> },
               { path: 'transactions', element: <div>Transactions Page</div> },
               { path: 'settings', element: <div>System Settings Page</div> }
             ]
