@@ -22,14 +22,14 @@ interface SingleStepProductCreationDialogProps {
 export default function MaternityDressCreationDialog({
   open,
   onOpenChange,
-  onComplete,
+  onComplete
 }: SingleStepProductCreationDialogProps) {
   // React Query hooks
   const createMaternityDressMutation = useCreateMaternityDress()
-  const { 
-    data: stylesData, 
+  const {
+    data: stylesData,
     isLoading: stylesLoading,
-    error: stylesError 
+    error: stylesError
   } = useGetStyles({
     index: 1,
     pageSize: 50,
@@ -42,8 +42,8 @@ export default function MaternityDressCreationDialog({
       name: '',
       description: '',
       images: [],
-      slug: '',
-    },
+      slug: ''
+    }
   })
 
   const watchedName = form.watch('name')
@@ -85,38 +85,35 @@ export default function MaternityDressCreationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle>
-            Tạo Đầm Bầu Mới
-          </DialogTitle>
-          <p className="text-sm text-muted-foreground">
-            Tạo đầm bầu cơ bản. Sau đó bạn có thể thêm các chi tiết như màu sắc, size, giá cả thông qua phần quản lý chi tiết.
+          <DialogTitle>Tạo Đầm Bầu Mới</DialogTitle>
+          <p className='text-sm text-muted-foreground'>
+            Tạo đầm bầu cơ bản. Sau đó bạn có thể thêm các chi tiết như màu sắc, size, giá cả thông qua phần quản lý chi
+            tiết.
           </p>
           {stylesError && (
-            <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center gap-2 text-red-700">
-                <Package className="h-4 w-4" />
-                <span className="text-sm">
-                  Không thể tải danh sách kiểu dáng. Vui lòng thử lại sau.
-                </span>
+            <div className='mt-2 p-3 bg-red-50 border border-red-200 rounded-lg'>
+              <div className='flex items-center gap-2 text-red-700'>
+                <Package className='h-4 w-4' />
+                <span className='text-sm'>Không thể tải danh sách kiểu dáng. Vui lòng thử lại sau.</span>
               </div>
             </div>
           )}
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-6'>
             {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
-                name="name"
+                name='name'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tên Đầm Bầu *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Đầm bầu dạ tiệc sang trọng" {...field} />
+                      <Input placeholder='Đầm bầu dạ tiệc sang trọng' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -125,26 +122,26 @@ export default function MaternityDressCreationDialog({
 
               <FormField
                 control={form.control}
-                name="styleId"
+                name='styleId'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Kiểu Dáng *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Chọn kiểu dáng" />
+                          <SelectValue placeholder='Chọn kiểu dáng' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {stylesLoading ? (
-                          <div className="flex items-center justify-center py-4">
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            <span className="text-sm text-gray-500">Đang tải...</span>
+                          <div className='flex items-center justify-center py-4'>
+                            <Loader2 className='h-4 w-4 animate-spin mr-2' />
+                            <span className='text-sm text-gray-500'>Đang tải...</span>
                           </div>
                         ) : stylesError ? (
-                          <div className="flex items-center justify-center py-4">
-                            <Package className="h-4 w-4 mr-2 text-red-500" />
-                            <span className="text-sm text-red-500">Lỗi tải dữ liệu</span>
+                          <div className='flex items-center justify-center py-4'>
+                            <Package className='h-4 w-4 mr-2 text-red-500' />
+                            <span className='text-sm text-red-500'>Lỗi tải dữ liệu</span>
                           </div>
                         ) : stylesData?.data.items && stylesData.data.items.length > 0 ? (
                           stylesData.data.items.map((style) => (
@@ -153,9 +150,9 @@ export default function MaternityDressCreationDialog({
                             </SelectItem>
                           ))
                         ) : (
-                          <div className="flex items-center justify-center py-4">
-                            <Package className="h-4 w-4 mr-2 text-gray-400" />
-                            <span className="text-sm text-gray-500">Không có style nào</span>
+                          <div className='flex items-center justify-center py-4'>
+                            <Package className='h-4 w-4 mr-2 text-gray-400' />
+                            <span className='text-sm text-gray-500'>Không có style nào</span>
                           </div>
                         )}
                       </SelectContent>
@@ -168,15 +165,15 @@ export default function MaternityDressCreationDialog({
 
             <FormField
               control={form.control}
-              name="description"
+              name='description'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Mô Tả *</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Mô tả chi tiết về đầm bầu, chất liệu, thiết kế, phù hợp cho dịp nào..."
+                    <Textarea
+                      placeholder='Mô tả chi tiết về đầm bầu, chất liệu, thiết kế, phù hợp cho dịp nào...'
                       rows={4}
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -186,14 +183,14 @@ export default function MaternityDressCreationDialog({
 
             <FormField
               control={form.control}
-              name="slug"
+              name='slug'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>URL Slug *</FormLabel>
                   <FormControl>
-                    <Input placeholder="dam-bau-da-tiec-sang-trong" {...field} />
+                    <Input placeholder='dam-bau-da-tiec-sang-trong' {...field} />
                   </FormControl>
-                  <p className="text-xs text-muted-foreground">
+                  <p className='text-xs text-muted-foreground'>
                     URL thân thiện để hiển thị trên website. Sẽ tự động tạo từ tên sản phẩm.
                   </p>
                   <FormMessage />
@@ -203,7 +200,7 @@ export default function MaternityDressCreationDialog({
 
             <FormField
               control={form.control}
-              name="images"
+              name='images'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Hình Ảnh Đầm Bầu *</FormLabel>
@@ -212,10 +209,10 @@ export default function MaternityDressCreationDialog({
                       value={field.value}
                       onChange={field.onChange}
                       maxFiles={10}
-                      placeholder="Upload hình ảnh đầm bầu hoặc nhập URL"
+                      placeholder='Upload hình ảnh đầm bầu hoặc nhập URL'
                     />
                   </FormControl>
-                  <p className="text-xs text-muted-foreground">
+                  <p className='text-xs text-muted-foreground'>
                     Thêm tối đa 10 hình ảnh để khách hàng có thể xem đầm bầu từ nhiều góc độ.
                   </p>
                   <FormMessage />
@@ -224,9 +221,9 @@ export default function MaternityDressCreationDialog({
             />
 
             {/* Info Message */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-800 mb-2">💡 Bước tiếp theo:</h4>
-              <ul className="text-sm text-blue-700 space-y-1">
+            <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
+              <h4 className='font-medium text-blue-800 mb-2'>💡 Bước tiếp theo:</h4>
+              <ul className='text-sm text-blue-700 space-y-1'>
                 <li>• Sau khi tạo đầm bầu cơ bản, bạn có thể click vào đầm bầu trong bảng để xem chi tiết</li>
                 <li>• Thêm các phiên bản với màu sắc, kích thước và giá cả khác nhau</li>
                 <li>• Quản lý số lượng tồn kho cho từng phiên bản</li>
@@ -234,19 +231,14 @@ export default function MaternityDressCreationDialog({
             </div>
 
             {/* Form Actions */}
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
+            <div className='flex justify-end gap-2 pt-4'>
+              <Button type='button' variant='outline' onClick={() => onOpenChange(false)} disabled={isLoading}>
                 Hủy
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type='submit' disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className='h-4 w-4 mr-2 animate-spin' />
                     Đang tạo...
                   </>
                 ) : (
@@ -259,4 +251,4 @@ export default function MaternityDressCreationDialog({
       </DialogContent>
     </Dialog>
   )
-} 
+}

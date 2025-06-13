@@ -1,27 +1,13 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
-import { ModeToggle } from '@/components/mode-toggle'
 import { Overview } from './components/overview'
 import { RecentSales } from './components/recent-sales'
 
 export default function Dashboard() {
   return (
     <>
-      {/* ===== Top Heading ===== */}
-      <Header>
-        <div className='ml-auto flex items-center space-x-4'>
-          <Search />
-          <ModeToggle />
-          <ProfileDropdown />
-        </div>
-      </Header>
-
-      {/* ===== Main ===== */}
       <Main>
         <div className='mb-2 flex items-center justify-between space-y-2'>
           <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>

@@ -26,16 +26,24 @@ export const Header = ({ className, fixed, children, ...props }: HeaderProps) =>
   return (
     <header
       className={cn(
-        'bg-background flex h-16 items-center gap-3 p-4 sm:gap-4',
+        'flex h-14 items-center justify-between px-4 py-2',
         fixed && 'header-fixed peer/header fixed z-50 w-[inherit] rounded-md',
         offset > 10 && fixed ? 'shadow-sm' : 'shadow-none',
         className
       )}
       {...props}
     >
-      <SidebarTrigger variant='outline' className='scale-125 sm:scale-100' />
-      <Separator orientation='vertical' className='h-6' />
-      {children}
+      {/* Left section - Logo/Brand */}
+      <div className='flex items-center gap-3'>
+        <SidebarTrigger variant='outline' className='h-8 w-8' />
+        <Separator orientation='vertical' className='h-5' />
+        <div className='flex items-center'>
+          <h1 className='text-base font-medium text-gray-800'>Product</h1>
+        </div>
+      </div>
+
+      {/* Right section - Search, ModeToggle, Profile */}
+      <div className='flex items-center'>{children}</div>
     </header>
   )
 }

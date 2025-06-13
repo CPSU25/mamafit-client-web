@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CategoryFormData, StyleFormData } from '@/@types/inventory.type'
 import categoryAPI from '@/apis/category.api'
 
-
 interface CategoryQueryParams {
   index?: number
   pageSize?: number
@@ -24,8 +23,8 @@ export const categoryKeys = {
   details: () => [...categoryKeys.all, 'detail'] as const,
   detail: (id: string) => [...categoryKeys.details(), id] as const,
   styles: (categoryId: string) => [...categoryKeys.all, 'styles', categoryId] as const,
-  stylesList: (categoryId: string, params: StyleQueryParams) => 
-    [...categoryKeys.styles(categoryId), 'list', params] as const,
+  stylesList: (categoryId: string, params: StyleQueryParams) =>
+    [...categoryKeys.styles(categoryId), 'list', params] as const
 }
 
 // Fetch Categories
@@ -38,7 +37,7 @@ export const useCategories = (params?: CategoryQueryParams) => {
         return response.data
       }
       throw new Error(response.data.message || 'Failed to fetch categories')
-    },
+    }
   })
 }
 
@@ -53,14 +52,14 @@ export const useStylesByCategory = (categoryId: string, params?: StyleQueryParam
       }
       throw new Error(response.data.message || 'Failed to fetch styles')
     },
-    enabled: !!categoryId, // Only run query if categoryId exists
+    enabled: !!categoryId // Only run query if categoryId exists
   })
 }
 
 // Create Category
 export const useCreateCategory = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (data: CategoryFormData) => {
       const response = await categoryAPI.createCategory(data)
@@ -72,14 +71,14 @@ export const useCreateCategory = () => {
     onSuccess: () => {
       // Invalidate and refetch categories
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
-    },
+    }
   })
 }
 
 // Update Category
 export const useUpdateCategory = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: CategoryFormData }) => {
       const response = await categoryAPI.updateCategory(id, data)
@@ -91,14 +90,14 @@ export const useUpdateCategory = () => {
     onSuccess: () => {
       // Invalidate and refetch categories
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
-    },
+    }
   })
 }
 
 // Delete Category
 export const useDeleteCategory = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await categoryAPI.deleteCategory(id)
@@ -110,14 +109,14 @@ export const useDeleteCategory = () => {
     onSuccess: () => {
       // Invalidate and refetch categories
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
-    },
+    }
   })
 }
 
 // Create Style
 export const useCreateStyle = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (data: StyleFormData) => {
       const response = await categoryAPI.createStyle(data)
@@ -128,9 +127,9 @@ export const useCreateStyle = () => {
     },
     onSuccess: (_, variables) => {
       // Invalidate styles for the specific category
-      queryClient.invalidateQueries({ 
-        queryKey: categoryKeys.styles(variables.categoryId) 
+      queryClient.invalidateQueries({
+        queryKey: categoryKeys.styles(variables.categoryId)
       })
-    },
+    }
   })
-} 
+}

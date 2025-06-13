@@ -32,7 +32,7 @@ export default function InventoryProductFormDialog({
   open,
   onOpenChange,
   product,
-  onSubmit,
+  onSubmit
 }: InventoryProductFormDialogProps) {
   const [tagInput, setTagInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -54,8 +54,8 @@ export default function InventoryProductFormDialog({
       pregnancyStage: undefined,
       material: '',
       occasion: '',
-      linkedTemplate: '',
-    },
+      linkedTemplate: ''
+    }
   })
 
   const watchedTags = form.watch('tags')
@@ -79,7 +79,7 @@ export default function InventoryProductFormDialog({
           pregnancyStage: product.pregnancyStage,
           material: product.material || '',
           occasion: product.occasion || '',
-          linkedTemplate: product.linkedTemplate || '',
+          linkedTemplate: product.linkedTemplate || ''
         })
       } else {
         form.reset({
@@ -97,7 +97,7 @@ export default function InventoryProductFormDialog({
           pregnancyStage: undefined,
           material: '',
           occasion: '',
-          linkedTemplate: '',
+          linkedTemplate: ''
         })
       }
     }
@@ -113,7 +113,10 @@ export default function InventoryProductFormDialog({
 
   const removeTag = (tagToRemove: string) => {
     const currentTags = form.getValues('tags')
-    form.setValue('tags', currentTags.filter(tag => tag !== tagToRemove))
+    form.setValue(
+      'tags',
+      currentTags.filter((tag) => tag !== tagToRemove)
+    )
   }
 
   const handleSubmit = async (data: InventoryProductFormData) => {
@@ -130,23 +133,23 @@ export default function InventoryProductFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>{product ? 'Edit Product' : 'Add New Product'}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-6'>
             {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
-                name="sku"
+                name='sku'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>SKU *</FormLabel>
                     <FormControl>
-                      <Input placeholder="MAT-001" {...field} />
+                      <Input placeholder='MAT-001' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -155,12 +158,12 @@ export default function InventoryProductFormDialog({
 
               <FormField
                 control={form.control}
-                name="name"
+                name='name'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Product Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Elegant Maternity Evening Dress" {...field} />
+                      <Input placeholder='Elegant Maternity Evening Dress' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -169,17 +172,17 @@ export default function InventoryProductFormDialog({
             </div>
 
             {/* Product Details */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               <FormField
                 control={form.control}
-                name="category"
+                name='category'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
+                          <SelectValue placeholder='Select category' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -197,14 +200,14 @@ export default function InventoryProductFormDialog({
 
               <FormField
                 control={form.control}
-                name="style"
+                name='style'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Style *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select style" />
+                          <SelectValue placeholder='Select style' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -222,14 +225,14 @@ export default function InventoryProductFormDialog({
 
               <FormField
                 control={form.control}
-                name="size"
+                name='size'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Size *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select size" />
+                          <SelectValue placeholder='Select size' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -247,17 +250,17 @@ export default function InventoryProductFormDialog({
             </div>
 
             {/* Pricing and Stock */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               <FormField
                 control={form.control}
-                name="stockQuantity"
+                name='stockQuantity'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Stock Quantity *</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        placeholder="0"
+                        type='number'
+                        placeholder='0'
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
@@ -269,15 +272,15 @@ export default function InventoryProductFormDialog({
 
               <FormField
                 control={form.control}
-                name="costPrice"
+                name='costPrice'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cost Price *</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
+                        type='number'
+                        step='0.01'
+                        placeholder='0.00'
                         {...field}
                         onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
@@ -289,15 +292,15 @@ export default function InventoryProductFormDialog({
 
               <FormField
                 control={form.control}
-                name="sellingPrice"
+                name='sellingPrice'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Selling Price *</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
+                        type='number'
+                        step='0.01'
+                        placeholder='0.00'
                         {...field}
                         onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
@@ -309,17 +312,17 @@ export default function InventoryProductFormDialog({
             </div>
 
             {/* Status and Pregnancy Stage */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
-                name="status"
+                name='status'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
+                          <SelectValue placeholder='Select status' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -337,14 +340,14 @@ export default function InventoryProductFormDialog({
 
               <FormField
                 control={form.control}
-                name="pregnancyStage"
+                name='pregnancyStage'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Pregnancy Stage</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select pregnancy stage" />
+                          <SelectValue placeholder='Select pregnancy stage' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -362,17 +365,17 @@ export default function InventoryProductFormDialog({
             </div>
 
             {/* Material and Occasion */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
-                name="material"
+                name='material'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Material</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select material" />
+                          <SelectValue placeholder='Select material' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -390,14 +393,14 @@ export default function InventoryProductFormDialog({
 
               <FormField
                 control={form.control}
-                name="occasion"
+                name='occasion'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Occasion</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select occasion" />
+                          <SelectValue placeholder='Select occasion' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -417,14 +420,14 @@ export default function InventoryProductFormDialog({
             {/* Tags */}
             <FormField
               control={form.control}
-              name="tags"
+              name='tags'
               render={() => (
                 <FormItem>
                   <FormLabel>Tags *</FormLabel>
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
+                  <div className='space-y-2'>
+                    <div className='flex gap-2'>
                       <Input
-                        placeholder="Add a tag"
+                        placeholder='Add a tag'
                         value={tagInput}
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyPress={(e) => {
@@ -434,18 +437,15 @@ export default function InventoryProductFormDialog({
                           }
                         }}
                       />
-                      <Button type="button" variant="outline" size="sm" onClick={addTag}>
-                        <Plus className="h-4 w-4" />
+                      <Button type='button' variant='outline' size='sm' onClick={addTag}>
+                        <Plus className='h-4 w-4' />
                       </Button>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className='flex flex-wrap gap-2'>
                       {watchedTags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                        <Badge key={tag} variant='secondary' className='flex items-center gap-1'>
                           {tag}
-                          <X
-                            className="h-3 w-3 cursor-pointer"
-                            onClick={() => removeTag(tag)}
-                          />
+                          <X className='h-3 w-3 cursor-pointer' onClick={() => removeTag(tag)} />
                         </Badge>
                       ))}
                     </div>
@@ -458,15 +458,15 @@ export default function InventoryProductFormDialog({
             {/* Image Upload */}
             <FormField
               control={form.control}
-              name="image"
+              name='image'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Image</FormLabel>
                   <FormControl>
-                    <div className="flex items-center gap-2">
-                      <Input placeholder="Image URL or file path" {...field} />
-                      <Button type="button" variant="outline" size="sm">
-                        <Upload className="h-4 w-4" />
+                    <div className='flex items-center gap-2'>
+                      <Input placeholder='Image URL or file path' {...field} />
+                      <Button type='button' variant='outline' size='sm'>
+                        <Upload className='h-4 w-4' />
                         Upload
                       </Button>
                     </div>
@@ -479,12 +479,12 @@ export default function InventoryProductFormDialog({
             {/* Linked Template */}
             <FormField
               control={form.control}
-              name="linkedTemplate"
+              name='linkedTemplate'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Linked Template (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Template ID or name" {...field} />
+                    <Input placeholder='Template ID or name' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -492,16 +492,11 @@ export default function InventoryProductFormDialog({
             />
 
             {/* Form Actions */}
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
+            <div className='flex justify-end gap-2 pt-4'>
+              <Button type='button' variant='outline' onClick={() => onOpenChange(false)} disabled={isLoading}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type='submit' disabled={isLoading}>
                 {isLoading ? 'Saving...' : product ? 'Update Product' : 'Add Product'}
               </Button>
             </div>
@@ -510,4 +505,4 @@ export default function InventoryProductFormDialog({
       </DialogContent>
     </Dialog>
   )
-} 
+}

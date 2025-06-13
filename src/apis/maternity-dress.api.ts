@@ -65,8 +65,7 @@ const maternityDressAPI = {
   updateMaternityDressDetail: (id: string, data: MaternityDressDetailFormData) =>
     api.put<ItemBaseResponse<[]>>(`/maternity-dress-detail/${id}`, data),
 
-  deleteMaternityDressDetail: (id: string) =>
-    api.delete<ItemBaseResponse<[]>>(`/maternity-dress-detail/${id}`)
+  deleteMaternityDressDetail: (id: string) => api.delete<ItemBaseResponse<[]>>(`/maternity-dress-detail/${id}`)
 }
 
 export default maternityDressAPI

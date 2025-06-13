@@ -5,38 +5,38 @@ import { MaternityDressFilters } from '@/@types/admin.types'
 interface MaternityDressUIState {
   // Selection State
   selectedMaternityDresses: string[]
-  
+
   // Filters & Search
   filters: MaternityDressFilters
   searchTerm: string
-  
+
   // Expandable Product State
   expandedMaternityDressId: string | null
   activeTab: 'info' | 'details'
-  
+
   // Dialog States
   isCreateMaternityDressDialogOpen: boolean
   isCreateMaternityDressDetailDialogOpen: boolean
   isAddMaternityDressDetailDialogOpen: boolean
   isEditMaternityDressDialogOpen: boolean
   isDeleteMaternityDressDialogOpen: boolean
-  
+
   // Actions - UI State Only
   // Selection
   selectMaternityDress: (id: string) => void
   selectAllMaternityDresses: (maternityDressIds: string[], select: boolean) => void
   clearSelection: () => void
-  
+
   // Filters & Search
   setFilters: (filters: Partial<MaternityDressFilters>) => void
   setSearchTerm: (term: string) => void
   clearFilters: () => void
-  
+
   // Expandable Product
   toggleMaternityDressExpansion: (maternityDressId: string) => void
   closeMaternityDressExpansion: () => void
   setActiveTab: (tab: 'info' | 'details') => void
-  
+
   // Dialog Management
   setCreateMaternityDressDialogOpen: (open: boolean) => void
   setCreateMaternityDressDetailDialogOpen: (open: boolean) => void
@@ -52,11 +52,11 @@ export const useMaternityDressStore = create<MaternityDressUIState>()(
       selectedMaternityDresses: [],
       filters: {},
       searchTerm: '',
-      
+
       // Expandable Product State
       expandedMaternityDressId: null,
       activeTab: 'info',
-      
+
       // Dialog States
       isCreateMaternityDressDialogOpen: false,
       isCreateMaternityDressDetailDialogOpen: false,
@@ -95,18 +95,18 @@ export const useMaternityDressStore = create<MaternityDressUIState>()(
       // Expandable Product
       toggleMaternityDressExpansion: (maternityDressId) => {
         const { expandedMaternityDressId } = get()
-        
+
         if (expandedMaternityDressId === maternityDressId) {
           // Collapse if already expanded
           set({
             expandedMaternityDressId: null,
-            activeTab: 'info',
+            activeTab: 'info'
           })
         } else {
           // Expand new product
           set({
             expandedMaternityDressId: maternityDressId,
-            activeTab: 'info',
+            activeTab: 'info'
           })
         }
       },
@@ -114,30 +114,30 @@ export const useMaternityDressStore = create<MaternityDressUIState>()(
       closeMaternityDressExpansion: () =>
         set({
           expandedMaternityDressId: null,
-          activeTab: 'info',
+          activeTab: 'info'
         }),
 
       setActiveTab: (tab) => set({ activeTab: tab }),
 
       // Dialog Management
       setCreateMaternityDressDialogOpen: (open) => set({ isCreateMaternityDressDialogOpen: open }),
-      
+
       setCreateMaternityDressDetailDialogOpen: (open) => set({ isCreateMaternityDressDetailDialogOpen: open }),
-      
+
       setAddMaternityDressDetailDialogOpen: (open) => set({ isAddMaternityDressDetailDialogOpen: open }),
-      
+
       setEditMaternityDressDialogOpen: (open) => set({ isEditMaternityDressDialogOpen: open }),
-      
+
       setDeleteMaternityDressDialogOpen: (open) => {
         set({ isDeleteMaternityDressDialogOpen: open })
         if (!open) {
           // Clear selection when closing delete dialog
           set({ selectedMaternityDresses: [] })
         }
-      },
+      }
     }),
     {
-      name: 'maternity-dress-ui-store',
+      name: 'maternity-dress-ui-store'
     }
   )
-) 
+)

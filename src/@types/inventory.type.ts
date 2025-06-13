@@ -7,9 +7,9 @@ export interface CategoryType {
   updatedAt?: Date | string
 }
 export interface CategoryFormData {
-    name: string
-    description: string
-    image?: Array<string>
+  name: string
+  description: string
+  image?: Array<string>
 }
 export interface StyleType {
   id: string
@@ -54,10 +54,14 @@ export interface MaternityDressType {
   updatedBy: string | null
   details: MaternityDressDetailType[]
 }
-export type MaternityDressList = Pick<MaternityDressType, 'id' | 'styleName' | 'name' | 'description' | 'images' | 'slug' | 'price'>
-export type MaternityDressDetail = Pick<MaternityDressType, 'id' | 'styleName' | 'name' | 'description' | 'images' | 'slug' | 'price' | 'details'> 
-
-
+export type MaternityDressList = Pick<
+  MaternityDressType,
+  'id' | 'styleName' | 'name' | 'description' | 'images' | 'slug' | 'price'
+>
+export type MaternityDressDetail = Pick<
+  MaternityDressType,
+  'id' | 'styleName' | 'name' | 'description' | 'images' | 'slug' | 'price' | 'details'
+>
 
 export interface MaternityDressFormData {
   styleId: string
