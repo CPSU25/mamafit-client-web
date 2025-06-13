@@ -1,4 +1,4 @@
-import Dashboard from '@/features/admin/dashbroad'
+import Dashboard from '@/services/admin/dashbroad'
 
 export default function AdminDashboard() {
   return <Dashboard />
