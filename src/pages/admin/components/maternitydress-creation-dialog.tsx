@@ -85,7 +85,7 @@ export default function MaternityDressCreationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='max-w-4xl min-w-[700px] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>Tạo Đầm Bầu Mới</DialogTitle>
           <p className='text-sm text-muted-foreground'>

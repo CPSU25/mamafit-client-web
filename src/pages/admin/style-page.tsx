@@ -3,8 +3,8 @@ import { Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import StyleFormDialog from '@/components/admin/style-form-dialog'
-import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog'
+import StyleFormDialog from '@/pages/admin/components/style-form-dialog'
+import DeleteConfirmationDialog from '@/pages/admin/components/delete-confirmation-dialog'
 import { Style, StyleFormData } from '@/@types/admin.types'
 
 // Mock data

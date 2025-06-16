@@ -19,8 +19,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 
-import CategoryFormDialog from '@/components/admin/category-form-dialog'
-import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog'
+import CategoryFormDialog from '@/pages/admin/components/category-form-dialog'
+import DeleteConfirmationDialog from '@/pages/admin/components/delete-confirmation-dialog'
 import { CategoryType, CategoryFormData, StyleFormData, StyleType } from '@/@types/inventory.type'
 import { useCategoryStore } from '@/stores/admin/category.store'
 import { Input } from '@/components/ui/input'
@@ -36,6 +36,7 @@ import {
   useDeleteCategory,
   useCreateStyle
 } from '@/services/admin/catogories/useCategories'
+import dayjs from 'dayjs'
 
 // Component để hiển thị styles của category
 function CategoryStylesSection({ categoryId }: { categoryId: string }) {
@@ -450,14 +451,6 @@ export default function CategoryPage() {
     resetFilters()
   }
 
-  const formatDate = (date: Date | string | undefined) => {
-    if (!date) return '-'
-    return new Date(date).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
 
   const sortOptions = [
     { value: 'createdat_desc', label: 'Mới nhất' },
@@ -474,7 +467,7 @@ export default function CategoryPage() {
   ]
 
   return (
-    <div className='space-y-6 p-6 bg-gray-50 min-h-screen'>
+    <div className='space-y-6 py-4 min-h-screen'>
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div>
@@ -490,7 +483,7 @@ export default function CategoryPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-6'>
+      {/* <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-6'>
         <Card className='border-0 shadow-sm'>
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
@@ -544,7 +537,7 @@ export default function CategoryPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Error Alert */}
       {error && (
@@ -621,7 +614,7 @@ export default function CategoryPage() {
       </Card>
 
       {/* Categories Table */}
-      <Card className='border-0 shadow-sm'>
+      <Card className='border-1 shadow-md bg-white'>
         <CardHeader>
           <CardTitle className='text-lg font-semibold text-gray-900'>Danh Sách Danh Mục</CardTitle>
         </CardHeader>
@@ -697,7 +690,7 @@ export default function CategoryPage() {
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className='text-gray-600'>{formatDate(category.createdAt)}</TableCell>
+                        <TableCell className='text-gray-600'>{dayjs(category.createdAt).format('DD/MM/YYYY')}</TableCell>
                         <TableCell className='text-right'>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
