@@ -1,7 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react'
-import  {useForm}  from 'react-hook-form'
-import { Loader2, Plus, Trash2, Save, Package, Info, BarChart3, X, Settings, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  Save,
+  Package,
+  Info,
+  BarChart3,
+  X,
+  Settings,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -66,12 +78,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
           <p className='text-sm text-gray-600'>Hiển thị tất cả {images.length} hình ảnh</p>
-          <Button
-            size='sm'
-            variant='outline'
-            onClick={() => setShowAllImages(false)}
-            className='text-xs'
-          >
+          <Button size='sm' variant='outline' onClick={() => setShowAllImages(false)} className='text-xs'>
             Thu gọn
           </Button>
         </div>
@@ -111,7 +118,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
             {currentImageIndex + 1} / {images.length}
           </Badge>
         </div>
-        
+
         {/* Navigation buttons */}
         {images.length > 1 && (
           <>
@@ -328,9 +335,7 @@ export default function ExpendMaternityDressDetails() {
                       </div>
                       <div className='space-y-3'>
                         <div className='p-3 bg-blue-50 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-blue-600 uppercase tracking-wide'>
-                            Thành Phần
-                          </span>
+                          <span className='text-xs font-medium text-blue-600 uppercase tracking-wide'>Thành Phần</span>
                           <p className='text-sm font-bold text-blue-700 mt-1'>{maternityDressDetails.length}</p>
                         </div>
                         <div className='p-3 bg-purple-50 rounded-lg shadow-md'>
@@ -360,10 +365,7 @@ export default function ExpendMaternityDressDetails() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className='p-4'>
-                  <ImageGallery 
-                    images={maternityDress.images || []} 
-                    productName={maternityDress.name} 
-                  />
+                  <ImageGallery images={maternityDress.images || []} productName={maternityDress.name} />
                 </CardContent>
               </Card>
             </div>
@@ -393,10 +395,10 @@ export default function ExpendMaternityDressDetails() {
 
           {/* Tab 2: Maternity Dress Details */}
           <TabsContent value='details' className='space-y-6'>
-            <Card className='border-0 shadow-md bg-white'>
-              <CardHeader className='bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-t-lg'>
+            <Card className='border-0 shadow-xl py-0 bg-white gap-1'>
+              <CardHeader className='bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-t-lg my-auto py-1'>
                 <CardTitle className='flex items-center justify-between'>
-                  <div className='flex items-center gap-2'>
+                  <div className='flex items-center justify-center'>
                     <Settings className='h-5 w-5' />
                     Chi Tiết Đầm Bầu ({maternityDressDetails.length})
                   </div>

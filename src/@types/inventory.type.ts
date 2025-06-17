@@ -56,7 +56,17 @@ export interface MaternityDressType {
 }
 export type MaternityDressList = Pick<
   MaternityDressType,
-  'id' | 'styleName' | 'name' | 'description' | 'images' | 'slug' | 'price' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'
+  | 'id'
+  | 'styleName'
+  | 'name'
+  | 'description'
+  | 'images'
+  | 'slug'
+  | 'price'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'createdBy'
+  | 'updatedBy'
 >
 export type MaternityDressDetail = Pick<
   MaternityDressType,

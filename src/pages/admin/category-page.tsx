@@ -451,7 +451,6 @@ export default function CategoryPage() {
     resetFilters()
   }
 
-
   const sortOptions = [
     { value: 'createdat_desc', label: 'Mới nhất' },
     { value: 'createdat_asc', label: 'Cũ nhất' },
@@ -656,7 +655,10 @@ export default function CategoryPage() {
                 <TableBody>
                   {categories.map((category) => (
                     <React.Fragment key={`category-fragment-${category.id}`}>
-                      <TableRow key={`category-row-${category.id}`} className='border-gray-100 hover:bg-gray-50/50 transition-colors'>
+                      <TableRow
+                        key={`category-row-${category.id}`}
+                        className='border-gray-100 hover:bg-gray-50/50 transition-colors'
+                      >
                         <TableCell>
                           <Button
                             variant='ghost'
@@ -690,7 +692,9 @@ export default function CategoryPage() {
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className='text-gray-600'>{dayjs(category.createdAt).format('DD/MM/YYYY')}</TableCell>
+                        <TableCell className='text-gray-600'>
+                          {dayjs(category.createdAt).format('DD/MM/YYYY')}
+                        </TableCell>
                         <TableCell className='text-right'>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -730,59 +734,63 @@ export default function CategoryPage() {
 
               {/* Pagination */}
               {pagination && pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className='flex items-center justify-between px-6 py-4 border-t border-gray-200'>
+                  <div className='flex items-center gap-2 text-sm text-gray-600'>
                     <span>
-                      Hiển thị {((pagination.pageNumber - 1) * pagination.pageSize) + 1} - {Math.min(pagination.pageNumber * pagination.pageSize, pagination.totalCount)} 
+                      Hiển thị {(pagination.pageNumber - 1) * pagination.pageSize + 1} -{' '}
+                      {Math.min(pagination.pageNumber * pagination.pageSize, pagination.totalCount)}
                       trong tổng số {pagination.totalCount} danh mục
                     </span>
                   </div>
-                  
-                  <div className="flex items-center gap-2">
+
+                  <div className='flex items-center gap-2'>
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant='outline'
+                      size='sm'
                       onClick={() => handlePageChange(pagination.pageNumber - 1)}
                       disabled={!pagination.hasPreviousPage}
-                      className="border-gray-300"
+                      className='border-gray-300'
                     >
-                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      <ChevronLeft className='h-4 w-4 mr-1' />
                       Trước
                     </Button>
-                    
-                    <div className="flex items-center gap-1">
+
+                    <div className='flex items-center gap-1'>
                       {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                        const pageNum = pagination.pageNumber <= 3 
-                          ? i + 1 
-                          : pagination.pageNumber >= pagination.totalPages - 2
-                          ? pagination.totalPages - 4 + i
-                          : pagination.pageNumber - 2 + i
-                        
+                        const pageNum =
+                          pagination.pageNumber <= 3
+                            ? i + 1
+                            : pagination.pageNumber >= pagination.totalPages - 2
+                              ? pagination.totalPages - 4 + i
+                              : pagination.pageNumber - 2 + i
+
                         if (pageNum < 1 || pageNum > pagination.totalPages) return null
-                        
+
                         return (
                           <Button
                             key={`page-${pageNum}`}
-                            variant={pageNum === pagination.pageNumber ? "default" : "outline"}
-                            size="sm"
+                            variant={pageNum === pagination.pageNumber ? 'default' : 'outline'}
+                            size='sm'
                             onClick={() => handlePageChange(pageNum)}
-                            className={pageNum === pagination.pageNumber ? "bg-blue-600 hover:bg-blue-700" : "border-gray-300"}
+                            className={
+                              pageNum === pagination.pageNumber ? 'bg-blue-600 hover:bg-blue-700' : 'border-gray-300'
+                            }
                           >
                             {pageNum}
                           </Button>
                         )
                       }).filter(Boolean)}
                     </div>
-                    
+
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant='outline'
+                      size='sm'
                       onClick={() => handlePageChange(pagination.pageNumber + 1)}
                       disabled={!pagination.hasNextPage}
-                      className="border-gray-300"
+                      className='border-gray-300'
                     >
                       Sau
-                      <ChevronRight className="h-4 w-4 ml-1" />
+                      <ChevronRight className='h-4 w-4 ml-1' />
                     </Button>
                   </div>
                 </div>

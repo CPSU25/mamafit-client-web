@@ -63,43 +63,36 @@ export function CommandMenu() {
                 }
 
                 // Handle sub-items
-                return navItem.items?.map((subItem, subItemIndex) => (
-                  <CommandItem
-                    key={`${currentUserRole}-sub-${navItem.title}-${subItem.url}-${navItemIndex}-${subItemIndex}`}
-                    value={`${navItem.title} ${subItem.title}`}
-                    onSelect={() => {
-                      runCommand(() => navigate(subItem.url))
-                    }}
-                  >
-                    <div className='mr-2 flex h-4 w-4 items-center justify-center'>
-                      <ArrowRight className='text-muted-foreground/80 size-2' />
-                    </div>
-                    {navItem.title} <ChevronRight className='mx-1 h-3 w-3' /> {subItem.title}
-                  </CommandItem>
-                )) || []
+                return (
+                  navItem.items?.map((subItem, subItemIndex) => (
+                    <CommandItem
+                      key={`${currentUserRole}-sub-${navItem.title}-${subItem.url}-${navItemIndex}-${subItemIndex}`}
+                      value={`${navItem.title} ${subItem.title}`}
+                      onSelect={() => {
+                        runCommand(() => navigate(subItem.url))
+                      }}
+                    >
+                      <div className='mr-2 flex h-4 w-4 items-center justify-center'>
+                        <ArrowRight className='text-muted-foreground/80 size-2' />
+                      </div>
+                      {navItem.title} <ChevronRight className='mx-1 h-3 w-3' /> {subItem.title}
+                    </CommandItem>
+                  )) || []
+                )
               })}
             </CommandGroup>
           ))}
           <CommandSeparator />
           <CommandGroup heading='Theme'>
-            <CommandItem 
-              key="theme-light"
-              onSelect={() => runCommand(() => setTheme('light'))}
-            >
+            <CommandItem key='theme-light' onSelect={() => runCommand(() => setTheme('light'))}>
               <Sun className='mr-2 h-4 w-4' />
               <span>Light</span>
             </CommandItem>
-            <CommandItem 
-              key="theme-dark"
-              onSelect={() => runCommand(() => setTheme('dark'))}
-            >
+            <CommandItem key='theme-dark' onSelect={() => runCommand(() => setTheme('dark'))}>
               <Moon className='mr-2 h-4 w-4 scale-90' />
               <span>Dark</span>
             </CommandItem>
-            <CommandItem 
-              key="theme-system"
-              onSelect={() => runCommand(() => setTheme('system'))}
-            >
+            <CommandItem key='theme-system' onSelect={() => runCommand(() => setTheme('system'))}>
               <Laptop className='mr-2 h-4 w-4' />
               <span>System</span>
             </CommandItem>
