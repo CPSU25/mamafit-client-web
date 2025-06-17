@@ -11,7 +11,7 @@ import {
   Package2,
   Award,
   Tags,
-  Shirt
+  MessagesSquare
 } from 'lucide-react'
 
 import { type SidebarData } from '../types'
@@ -38,11 +38,6 @@ export const sidebarData: SidebarData = {
               title: 'Categories',
               url: 'category',
               icon: Tags
-            },
-            {
-              title: 'Styles',
-              url: 'style',
-              icon: Shirt
             },
             {
               title: 'Users',
@@ -100,6 +95,11 @@ export const sidebarData: SidebarData = {
               icon: Package
             },
             {
+              title: 'Chats',
+              url: 'chats',
+              icon: MessagesSquare
+            },
+            {
               title: 'Inventory',
               url: 'inventory',
               icon: Package2
@@ -133,6 +133,11 @@ export const sidebarData: SidebarData = {
               title: 'Designs',
               url: 'designs',
               icon: Palette
+            },
+            {
+              title: 'Chats',
+              url: 'chats',
+              icon: MessagesSquare
             },
             {
               title: 'Projects',

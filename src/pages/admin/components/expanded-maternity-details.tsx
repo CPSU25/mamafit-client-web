@@ -1,7 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Loader2, Plus, Trash2, Save, Package, Info, BarChart3, X, Settings } from 'lucide-react'
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  Save,
+  Package,
+  Info,
+  BarChart3,
+  X,
+  Settings,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -47,10 +59,129 @@ function DetailProductImage({ src, alt, className }: { src: string; alt: string;
   return <img src={imgSrc} alt={alt} className={className} onError={handleError} />
 }
 
+// Component để hiển thị gallery hình ảnh
+function ImageGallery({ images, productName }: { images: string[]; productName: string }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showAllImages, setShowAllImages] = useState(false)
+
+  if (!images || images.length === 0) {
+    return (
+      <div className='h-60 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400'>
+        <Package className='h-12 w-12 mb-2 opacity-50' />
+        <p className='text-sm'>Chưa có hình ảnh</p>
+      </div>
+    )
+  }
+
+  if (showAllImages) {
+    return (
+      <div className='space-y-4'>
+        <div className='flex items-center justify-between'>
+          <p className='text-sm text-gray-600'>Hiển thị tất cả {images.length} hình ảnh</p>
+          <Button size='sm' variant='outline' onClick={() => setShowAllImages(false)} className='text-xs'>
+            Thu gọn
+          </Button>
+        </div>
+        <div className='max-h-96 overflow-y-auto space-y-3 pr-2'>
+          <div className='grid grid-cols-2 gap-3'>
+            {images.map((image: string, index: number) => (
+              <div key={`all-${index}`} className='relative group'>
+                <DetailProductImage
+                  src={image}
+                  alt={`${productName} ${index + 1}`}
+                  className='w-full h-32 object-cover rounded-lg border-2 border-gray-100 group-hover:border-purple-300 transition-colors'
+                />
+                <div className='absolute top-2 left-2'>
+                  <Badge variant='secondary' className='text-xs'>
+                    {index + 1}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className='space-y-4'>
+      {/* Main image display */}
+      <div className='relative'>
+        <DetailProductImage
+          src={images[currentImageIndex]}
+          alt={`${productName} ${currentImageIndex + 1}`}
+          className='w-full h-64 object-cover rounded-lg border-2 border-gray-100'
+        />
+        <div className='absolute top-2 left-2'>
+          <Badge variant='secondary' className='text-xs'>
+            {currentImageIndex + 1} / {images.length}
+          </Badge>
+        </div>
+
+        {/* Navigation buttons */}
+        {images.length > 1 && (
+          <>
+            <Button
+              size='sm'
+              variant='secondary'
+              className='absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-white/80 hover:bg-white'
+              onClick={() => setCurrentImageIndex(currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1)}
+            >
+              <ChevronLeft className='h-4 w-4' />
+            </Button>
+            <Button
+              size='sm'
+              variant='secondary'
+              className='absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-white/80 hover:bg-white'
+              onClick={() => setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1)}
+            >
+              <ChevronRight className='h-4 w-4' />
+            </Button>
+          </>
+        )}
+      </div>
+
+      {/* Thumbnail navigation */}
+      {images.length > 1 && (
+        <div className='flex items-center gap-2'>
+          <div className='flex gap-2 overflow-x-auto pb-2 flex-1'>
+            {images.map((image: string, index: number) => (
+              <button
+                key={`thumb-${index}`}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`flex-shrink-0 relative ${
+                  currentImageIndex === index ? 'ring-2 ring-purple-500' : ''
+                } rounded-lg overflow-hidden`}
+              >
+                <DetailProductImage
+                  src={image}
+                  alt={`${productName} thumbnail ${index + 1}`}
+                  className='w-16 h-16 object-cover'
+                />
+              </button>
+            ))}
+          </div>
+          {images.length > 4 && (
+            <Button
+              size='sm'
+              variant='outline'
+              onClick={() => setShowAllImages(true)}
+              className='text-xs whitespace-nowrap'
+            >
+              Xem tất cả
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 const colors = ['Đỏ', 'Xanh Navy', 'Đen', 'Trắng', 'Hồng', 'Xanh Dương', 'Xám', 'Be', 'Nâu', 'Vàng', 'Tím', 'Xanh Lá']
 
-export default function ExpandedProductDetails() {
+export default function ExpendMaternityDressDetails() {
   const { expandedMaternityDressId, activeTab, setActiveTab } = useMaternityDressStore()
 
   const [showAddForm, setShowAddForm] = useState(false)
@@ -147,42 +278,8 @@ export default function ExpandedProductDetails() {
   )
 
   return (
-    <div className='bg-gradient-to-br from-blue-50/30 to-indigo-50/30 border-t border-blue-100'>
+    <div className=''>
       <div className='p-8'>
-        {/* Header với thông tin nhanh */}
-        <div className='mb-6 bg-white rounded-xl shadow-sm border border-blue-100 p-6'>
-          <div className='flex items-start justify-between'>
-            <div className='flex items-center gap-4'>
-              {maternityDress.images && maternityDress.images.length > 0 ? (
-                <DetailProductImage
-                  src={maternityDress.images[0]}
-                  alt={maternityDress.name}
-                  className='w-16 h-16 rounded-xl object-cover border-2 border-blue-100'
-                />
-              ) : (
-                <div className='w-16 h-16 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center'>
-                  <Package className='h-8 w-8 text-blue-600' />
-                </div>
-              )}
-              <div>
-                <h3 className='text-xl font-bold text-gray-900 mb-1'>{maternityDress.name}</h3>
-                <div className='flex items-center gap-3 text-sm text-gray-600'>
-                  <span>
-                    ID: <code className='bg-gray-100 px-2 py-1 rounded text-xs'>{maternityDress.id}</code>
-                  </span>
-                  <span>•</span>
-                  <span>{maternityDressDetails.length} chi tiết</span>
-                </div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <Badge variant='outline' className='bg-blue-50 text-blue-700 border-blue-200'>
-                Chi tiết đầm bầu
-              </Badge>
-            </div>
-          </div>
-        </div>
-
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className='space-y-6'>
           <TabsList className='grid w-full grid-cols-3 bg-white shadow-sm border border-gray-200 rounded-xl p-1'>
             <TabsTrigger
@@ -210,50 +307,48 @@ export default function ExpandedProductDetails() {
 
           {/* Tab 1: Product Information */}
           <TabsContent value='info' className='space-y-6'>
-            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 '>
               {/* Basic Info */}
-              <Card className='border-0 shadow-md bg-white'>
-                <CardHeader className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg'>
+              <Card className='border-0 shadow-xl bg-white py-0 gap-1'>
+                <CardHeader className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg py-2'>
                   <CardTitle className='flex items-center gap-2'>
                     <Info className='h-5 w-5' />
                     Thông Tin Cơ Bản
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='p-6'>
+                <CardContent className='p-4'>
                   <div className='grid grid-cols-1 gap-4'>
                     <div className='grid grid-cols-2 gap-6'>
                       <div className='space-y-3'>
-                        <div className='p-3 bg-gray-50 rounded-lg'>
+                        <div className='p-3 bg-gray-50 rounded-lg shadow-md'>
                           <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>Mã đầm bầu</span>
                           <p className='text-sm font-mono text-gray-900 mt-1'>{maternityDress.id}</p>
                         </div>
-                        <div className='p-3 bg-gray-50 rounded-lg'>
-                          <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>Style Name</span>
+                        <div className='p-3 bg-gray-50 rounded-lg shadow-md'>
+                          <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>Style</span>
                           <p className='text-sm text-gray-900 mt-1'>{maternityDress.styleName}</p>
                         </div>
-                        <div className='p-3 bg-gray-50 rounded-lg'>
+                        <div className='p-3 bg-gray-50 rounded-lg shadow-md'>
                           <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>Slug URL</span>
                           <p className='text-sm font-mono text-gray-900 mt-1'>{maternityDress.slug}</p>
                         </div>
                       </div>
                       <div className='space-y-3'>
-                        <div className='p-3 bg-blue-50 rounded-lg'>
-                          <span className='text-xs font-medium text-blue-600 uppercase tracking-wide'>
-                            Tổng chi tiết
-                          </span>
-                          <p className='text-lg font-bold text-blue-700 mt-1'>{maternityDressDetails.length}</p>
+                        <div className='p-3 bg-blue-50 rounded-lg shadow-md'>
+                          <span className='text-xs font-medium text-blue-600 uppercase tracking-wide'>Thành Phần</span>
+                          <p className='text-sm font-bold text-blue-700 mt-1'>{maternityDressDetails.length}</p>
                         </div>
-                        <div className='p-3 bg-purple-50 rounded-lg'>
+                        <div className='p-3 bg-purple-50 rounded-lg shadow-md'>
                           <span className='text-xs font-medium text-purple-600 uppercase tracking-wide'>
-                            Tổng tồn kho
+                            Tổng số lượng sản phẩm
                           </span>
-                          <p className='text-lg font-bold text-purple-700 mt-1'>{totalStock}</p>
+                          <p className='text-sm font-bold text-purple-700 mt-1'>{totalStock}</p>
                         </div>
-                        <div className='p-3 bg-green-50 rounded-lg'>
+                        <div className='p-3 bg-green-50 rounded-lg shadow-md'>
                           <span className='text-xs font-medium text-green-600 uppercase tracking-wide'>
-                            Tổng giá trị
+                            Tổng giá trị sản phẩm
                           </span>
-                          <p className='text-lg font-bold text-green-700 mt-1'>${totalValue.toLocaleString()}</p>
+                          <p className='text-sm font-bold text-green-700 mt-1'>{totalValue.toLocaleString()} VNĐ</p>
                         </div>
                       </div>
                     </div>
@@ -261,54 +356,38 @@ export default function ExpandedProductDetails() {
                 </CardContent>
               </Card>
 
-              {/* Product Images */}
-              <Card className='border-0 shadow-md bg-white'>
-                <CardHeader className='bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg'>
+              {/* Product Images - Updated */}
+              <Card className='border-0 shadow-xl bg-white py-0 gap-1'>
+                <CardHeader className='bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg py-2'>
                   <CardTitle className='flex items-center gap-2'>
                     <Package className='h-5 w-5' />
                     Hình Ảnh Đầm Bầu ({maternityDress.images?.length || 0})
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='p-6'>
-                  {maternityDress.images && maternityDress.images.length > 0 ? (
-                    <div className='grid grid-cols-2 gap-4'>
-                      {maternityDress.images.map((image: string, index: number) => (
-                        <div key={index} className='relative group'>
-                          <DetailProductImage
-                            src={image}
-                            alt={`${maternityDress.name} ${index + 1}`}
-                            className='w-full h-40 object-cover rounded-lg border-2 border-gray-100 group-hover:border-blue-300 transition-colors'
-                          />
-                          <div className='absolute top-2 left-2'>
-                            <Badge variant='secondary' className='text-xs'>
-                              {index + 1}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className='h-40 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400'>
-                      <Package className='h-12 w-12 mb-2 opacity-50' />
-                      <p className='text-sm'>Chưa có hình ảnh</p>
-                    </div>
-                  )}
+                <CardContent className='p-4'>
+                  <ImageGallery images={maternityDress.images || []} productName={maternityDress.name} />
                 </CardContent>
               </Card>
             </div>
 
-            {/* Description */}
-            <Card className='border-0 shadow-md bg-white'>
-              <CardHeader className='bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg'>
+            {/* Description - Updated with scrollable textarea */}
+            <Card className='border-0 shadow-xl bg-white py-0 gap-1'>
+              <CardHeader className='bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg py-2'>
                 <CardTitle>Mô Tả Đầm Bầu</CardTitle>
               </CardHeader>
-              <CardContent className='p-6'>
-                <div className='prose prose-sm max-w-none'>
-                  <p className='text-gray-700 leading-relaxed'>
-                    {maternityDress.description || (
-                      <span className='text-gray-400 italic'>Chưa có mô tả chi tiết cho đầm bầu này.</span>
-                    )}
-                  </p>
+              <CardContent className='p-4'>
+                <div className='relative'>
+                  <Textarea
+                    value={maternityDress.description || 'Chưa có mô tả chi tiết cho đầm bầu này.'}
+                    readOnly
+                    className='min-h-[120px] max-h-[300px] resize-none border-gray-200 bg-gray-50 text-gray-700 leading-relaxed focus:ring-0 focus:border-gray-200'
+                    placeholder='Chưa có mô tả chi tiết cho đầm bầu này.'
+                  />
+                  {!maternityDress.description && (
+                    <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+                      <span className='text-gray-400 italic text-sm'>Chưa có mô tả chi tiết cho đầm bầu này.</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -316,10 +395,10 @@ export default function ExpandedProductDetails() {
 
           {/* Tab 2: Maternity Dress Details */}
           <TabsContent value='details' className='space-y-6'>
-            <Card className='border-0 shadow-md bg-white'>
-              <CardHeader className='bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-t-lg'>
+            <Card className='border-0 shadow-xl py-0 bg-white gap-1'>
+              <CardHeader className='bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-t-lg my-auto py-1'>
                 <CardTitle className='flex items-center justify-between'>
-                  <div className='flex items-center gap-2'>
+                  <div className='flex items-center justify-center'>
                     <Settings className='h-5 w-5' />
                     Chi Tiết Đầm Bầu ({maternityDressDetails.length})
                   </div>

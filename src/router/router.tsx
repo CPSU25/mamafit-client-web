@@ -13,6 +13,8 @@ import {
   MaternityDressPage
   // InventoryPage
 } from '@/pages'
+import Users from '@/pages/admin/users'
+import Chats from '@/pages/designer/chats'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 export const router = createBrowserRouter([
@@ -53,7 +55,7 @@ export const router = createBrowserRouter([
           { path: 'dashboard', element: <AdminDashboard /> },
           { path: 'category', element: <CategoryPage /> },
           { path: 'style', element: <StylePage /> },
-          { path: 'users', element: <div>Users Page</div> },
+          { path: 'users', element: <Users /> },
           { path: 'branches', element: <div>Manage Branches Page</div> },
           { path: 'inventory', element: <MaternityDressPage /> },
           { path: 'transactions', element: <div>Transactions Page</div> },
@@ -79,6 +81,10 @@ export const router = createBrowserRouter([
             element: <BranchDashboard />
           },
           {
+            path: 'chats',
+            element: <Chats />
+          },
+          {
             path: 'cashier',
             element: <CashierPage />
           }
@@ -97,6 +103,10 @@ export const router = createBrowserRouter([
           {
             index: true, // Default route for /system/designer
             element: <Navigate to='/system/designer/dashboard' replace />
+          },
+          {
+            path: 'chats',
+            element: <Chats />
           },
           {
             path: 'dashboard',
