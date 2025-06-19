@@ -21,7 +21,7 @@ export default function GuestLayout() {
   const { isAuthenticated, user } = useAuthStore()
 
   if (isAuthenticated && user) {
-    const dashboardRoute = getDashboardRoute(user.role)
+    const dashboardRoute = getDashboardRoute(user.role ?? '')
     return <Navigate to={dashboardRoute} replace />
   }
 

@@ -1,168 +1,144 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { format } from 'date-fns'
-import {
-  ArrowLeft,
-  DotSquare,
-  Edit,
-  MessagesSquare,
-  Paperclip,
-  Phone,
-  PhoneOutgoing,
-  Plus,
-  Send,
-  Video
-} from 'lucide-react'
 import { cn } from '@/lib/utils/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
 import { NewChat } from './components/new-chat'
-import { useChat } from '@/hooks/use-chat'
-import { ChatRoom, ChatMessage } from '@/@types/chat.types'
+import { type Convo } from './data/chat-types'
+import { useChat } from './hooks/use-chat'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
+import { ChatRoom, Member } from '@/@types/chat.types'
+import {
+  ArrowLeftIcon,
+  EditIcon,
+  ImagePlusIcon,
+  MessageCircle,
+  MoreVerticalIcon,
+  PaperclipIcon,
+  PhoneIcon,
+  PlusIcon,
+  SearchIcon,
+  SendIcon,
+  VideoIcon
+} from 'lucide-react'
 
 export default function Chats() {
   const [search, setSearch] = useState('')
-  const [mobileSelectedUser, setMobileSelectedUser] = useState<ChatRoom | null>(null)
+  const [selectedRoomId, setSelectedRoomId] = useState<string>('')
+  const [mobileSelectedUser, setMobileSelectedUser] = useState<boolean>(false)
   const [createConversationDialogOpened, setCreateConversationDialog] = useState(false)
-  const [messageInput, setMessageInput] = useState('')
+  const [newMessage, setNewMessage] = useState('')
 
-  // Use real chat data instead of fake data
-  const {
-    rooms,
-    messages,
-    activeRoom,
-    onlineUsers,
-    typingUsers,
-    isConnected,
-    isLoading,
-    connectionError,
-    isRetrying,
-    selectRoom,
-    sendMessage,
-    startTyping,
-    stopTyping,
-    retryConnection
-    // createRoom
-  } = useChat()
-
-  // Get current user from auth store
   const { user } = useAuthStore()
 
-  // Helper function to get current user ID
-  const getCurrentUserId = () => {
-    return user?.id || ''
-  }
-  // Get other participant info for display
-  const getOtherParticipant = (room: ChatRoom) => {
-    // Safe check for members array
-    if (!room?.members || !Array.isArray(room.members)) {
-      return undefined
-    }
-    // Giả sử current user là userId, còn lại là đối phương
-    return room.members.find((m) => m.memberId !== getCurrentUserId())
-  }
-  console.log(getOtherParticipant(rooms[0]))
-  // Get last message for room list
-  const getLastMessage = (roomId: string) => {
-    const roomMessages = messages[roomId] || []
-    return roomMessages[0] // Messages are ordered by timestamp desc
-  }
+  // Use the chat hook for SignalR functionality
+  const {
+    isConnected,
+    connect,
+    disconnect,
+    sendMessage,
+    loadMessages,
+    joinRoom,
+    rooms,
+    messages: realMessages,
+    isLoading,
+    isLoadingRooms,
+    error
+  } = useChat()
 
-  // Filtered data based on the search query
-  const filteredChatList = rooms.filter((room) => {
-    const otherParticipant = getOtherParticipant(room)
-    return otherParticipant?.memberName?.toLowerCase().includes(search.trim().toLowerCase())
+  // Auto-connect on component mount
+  useEffect(() => {
+    if (!isConnected) {
+      connect()
+    }
+  }, [connect, isConnected])
+
+  // Filter rooms based on search
+  const filteredRooms = rooms.filter((room) => {
+    const roomName = room.name || `Room ${room.id}`
+    return roomName.toLowerCase().includes(search.trim().toLowerCase())
   })
 
-  // Get current messages for active room
-  const currentMessages = activeRoom ? messages[activeRoom.id] || [] : []
+  // Get selected room details
+  const selectedRoom = rooms.find((room) => room.id === selectedRoomId)
+  const selectedRoomMessages = selectedRoom ? realMessages[selectedRoom.id] || [] : []
 
-  // Group messages by date
-  const groupedMessages = currentMessages.reduce((acc: Record<string, ChatMessage[]>, msg) => {
-    const key = format(new Date(msg.timestamp), 'd MMM, yyyy')
+  // Group messages by date for display
+  const currentMessage = selectedRoomMessages.reduce((acc: Record<string, Convo[]>, obj) => {
+    const key = format(obj.timestamp, 'd MMM, yyyy')
+
     if (!acc[key]) {
       acc[key] = []
     }
-    acc[key].push(msg)
+
+    acc[key].push(obj)
     return acc
   }, {})
 
-  // Handle message sending
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!messageInput.trim()) return
+    if (!newMessage.trim() || !selectedRoomId) return
 
     try {
-      await sendMessage(messageInput)
-      setMessageInput('')
-      await stopTyping()
-    } catch (error) {
-      console.error('Failed to send message:', error)
-      // You might want to show an error toast here
+      await sendMessage(selectedRoomId, newMessage.trim())
+      setNewMessage('')
+    } catch (err) {
+      console.error('Failed to send message:', err)
     }
   }
 
-  // Handle typing
-  const handleTyping = async (value: string) => {
-    setMessageInput(value)
+  const handleSelectRoom = async (roomId: string) => {
+    try {
+      setSelectedRoomId(roomId)
+      setMobileSelectedUser(true)
 
-    if (value.trim()) {
-      await startTyping()
-    } else {
-      await stopTyping()
+      // First join the room (if not already joined)
+      await joinRoom(roomId)
+
+      // Then load messages
+      await loadMessages(roomId)
+    } catch (err) {
+      console.error('Failed to select room:', err)
     }
   }
 
-  // Get users for NewChat component
-  const users = rooms.map((room) => getOtherParticipant(room)).filter(Boolean)
+  // Get room display name and info
+  const getRoomDisplayInfo = (room: ChatRoom) => {
+    // If room has member info, show the other member's name
+    if (room.members && room.members.length > 0) {
+      const otherMember = room.members.find((member: Member) => member.memberId !== user?.userId)
+      if (otherMember) {
+        return {
+          name: otherMember.memberName || otherMember.userName || 'Unknown User',
+          avatar: otherMember.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${otherMember.memberName}`,
+          initials: otherMember.memberName?.slice(0, 2).toUpperCase() || 'UN'
+        }
+      }
+    }
 
-  if (isLoading) {
-    return (
-      <Main fixed>
-        <div className='flex items-center justify-center h-full'>
-          <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto'></div>
-            <p className='mt-2 text-muted-foreground'>Loading chats...</p>
-          </div>
-        </div>
-      </Main>
-    )
+    // Fallback to room name or ID
+    return {
+      name: room.name || `Room ${room.id}`,
+      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${room.id}`,
+      initials: room.name?.slice(0, 2).toUpperCase() || room.id.slice(-2).toUpperCase()
+    }
   }
 
   return (
     <>
-      {/* ===== Top Heading ===== */}
-      {/* <Header>
-        <Search />
-        <div className='ml-auto flex items-center space-x-4'>
-          <ThemeSwitch />
-          <ProfileDropdown />
-        </div>
-      </Header> */}
-
       <Main fixed>
         <section className='flex h-full gap-6'>
           {/* Left Side */}
           <div className='flex w-full flex-col gap-2 sm:w-56 lg:w-72 2xl:w-80'>
             <div className='bg-background sticky top-0 z-10 -mx-4 px-4 pb-3 shadow-md sm:static sm:z-auto sm:mx-0 sm:p-0 sm:shadow-none'>
               <div className='flex items-center justify-between py-2'>
-                <div className='flex gap-2 items-center'>
+                <div className='flex gap-2'>
                   <h1 className='text-2xl font-bold'>Inbox</h1>
-                  <MessagesSquare className='w-5 h-5' />
-                  {!isConnected && (
-                    <div
-                      className='w-2 h-2 bg-red-500 rounded-full animate-pulse'
-                      title={connectionError || 'Disconnected'}
-                    />
-                  )}
-                  {isRetrying && (
-                    <div className='w-2 h-2 bg-yellow-500 rounded-full animate-pulse' title='Reconnecting...' />
-                  )}
+                  <MessageCircle size={20} />
                 </div>
 
                 <Button
@@ -171,12 +147,12 @@ export default function Chats() {
                   onClick={() => setCreateConversationDialog(true)}
                   className='rounded-lg'
                 >
-                  <Edit size={24} className='stroke-muted-foreground' />
+                  <EditIcon size={24} className='stroke-muted-foreground' />
                 </Button>
               </div>
 
               <label className='border-input focus-within:ring-ring flex h-12 w-full items-center space-x-0 rounded-md border pl-2 focus-within:ring-1 focus-within:outline-hidden'>
-                <Search className='mr-2 stroke-slate-500 w-4 h-4' />
+                <SearchIcon size={15} className='mr-2 stroke-slate-500' />
                 <span className='sr-only'>Search</span>
                 <input
                   type='text'
@@ -186,218 +162,190 @@ export default function Chats() {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </label>
+
+              {/* Connection Status & Controls */}
+              <div className='mt-3 space-y-2'>
+                <div className='flex items-center justify-between'>
+                  <span className={`text-sm ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
+                    {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
+                  </span>
+                  <div className='flex gap-2'>
+                    <Button onClick={connect} disabled={isConnected || isLoading} size='sm' variant='outline'>
+                      Connect
+                    </Button>
+                    <Button onClick={disconnect} disabled={!isConnected} size='sm' variant='outline'>
+                      Disconnect
+                    </Button>
+                  </div>
+                </div>
+                {error && <p className='text-sm text-red-500'>{error}</p>}
+              </div>
             </div>
 
-            {/* Connection Error Banner */}
-            {connectionError && !isRetrying && (
-              <div className='mx-3 mb-2 p-3 bg-red-50 border border-red-200 rounded-md'>
-                <div className='flex items-center justify-between'>
-                  <div>
-                    <p className='text-sm text-red-800 font-medium'>Connection Error</p>
-                    <p className='text-xs text-red-600 mt-1'>{connectionError}</p>
-                  </div>
-                  <Button
-                    size='sm'
-                    variant='outline'
-                    onClick={retryConnection}
-                    className='text-red-700 border-red-300 hover:bg-red-100'
-                  >
-                    Retry
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Reconnecting Banner */}
-            {isRetrying && (
-              <div className='mx-3 mb-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md'>
-                <div className='flex items-center gap-2'>
-                  <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-600'></div>
-                  <p className='text-sm text-yellow-800'>Reconnecting to chat server...</p>
-                </div>
-              </div>
-            )}
-
             <ScrollArea className='-mx-3 h-full p-3'>
-              {filteredChatList.map((room) => {
-                const otherParticipant = getOtherParticipant(room)
-                const lastMessage = getLastMessage(room.id)
-                const isOnline = otherParticipant ? onlineUsers.has(otherParticipant.memberId) : false
+              {isLoadingRooms ? (
+                <div className='flex items-center justify-center py-8'>
+                  <div className='text-sm text-muted-foreground'>Loading rooms...</div>
+                </div>
+              ) : filteredRooms.length === 0 ? (
+                <div className='flex items-center justify-center py-8'>
+                  <div className='text-sm text-muted-foreground'>
+                    {isConnected ? 'No chat rooms found' : 'Connect to load chat rooms'}
+                  </div>
+                </div>
+              ) : (
+                filteredRooms.map((room) => {
+                  const roomInfo = getRoomDisplayInfo(room)
+                  const lastMessage = realMessages[room.id]?.[0]
+                  const lastMsg = lastMessage
+                    ? lastMessage.sender === 'You'
+                      ? `You: ${lastMessage.message}`
+                      : lastMessage.message
+                    : 'No messages yet'
 
-                if (!otherParticipant) return null
-
-                return (
-                  <Fragment key={room.id}>
-                    <button
-                      type='button'
-                      className={cn(
-                        `hover:bg-secondary/75 -mx-1 flex w-full rounded-md px-2 py-2 text-left text-sm`,
-                        activeRoom?.id === room.id && 'sm:bg-muted'
-                      )}
-                      onClick={() => {
-                        selectRoom(room)
-                        setMobileSelectedUser(room)
-                      }}
-                    >
-                      <div className='flex gap-2 w-full'>
-                        <div className='relative'>
+                  return (
+                    <Fragment key={room.id}>
+                      <button
+                        type='button'
+                        className={cn(
+                          'hover:bg-secondary/75 -mx-1 flex w-full rounded-md px-2 py-2 text-left text-sm',
+                          selectedRoomId === room.id && 'sm:bg-muted'
+                        )}
+                        onClick={() => handleSelectRoom(room.id)}
+                      >
+                        <div className='flex gap-2'>
                           <Avatar>
-                            <AvatarImage src={otherParticipant.avatar} alt={otherParticipant.memberName} />
-                            <AvatarFallback>{otherParticipant.memberName}</AvatarFallback>
+                            <AvatarImage src={roomInfo.avatar} alt={roomInfo.initials} />
+                            <AvatarFallback>{roomInfo.initials}</AvatarFallback>
                           </Avatar>
-                          {isOnline && (
-                            <div className='absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full'></div>
-                          )}
-                        </div>
-                        <div className='flex-1 min-w-0'>
-                          <div className='flex items-center justify-between'>
-                            <span className='font-medium truncate'>{otherParticipant.memberName}</span>
-                            {lastMessage && (
-                              <span className='text-xs text-muted-foreground'>
-                                {format(new Date(lastMessage.timestamp), 'h:mm a')}
-                              </span>
-                            )}
-                          </div>
-                          <div className='flex items-center gap-1'>
-                            <span className='text-muted-foreground text-sm line-clamp-1'>
-                              {typingUsers[room.id]?.length > 0
-                                ? `${otherParticipant.memberName} is typing...`
-                                : lastMessage
-                                  ? lastMessage.senderId === getCurrentUserId()
-                                    ? `You: ${lastMessage.message}`
-                                    : lastMessage.message
-                                  : 'No messages yet'}
+                          <div>
+                            <span className='col-start-2 row-span-2 font-medium'>{roomInfo.name}</span>
+                            <span className='text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-2 text-ellipsis'>
+                              {lastMsg}
                             </span>
                           </div>
                         </div>
-                      </div>
-                    </button>
-                    <Separator className='my-1' />
-                  </Fragment>
-                )
-              })}
+                      </button>
+                      <Separator className='my-1' />
+                    </Fragment>
+                  )
+                })
+              )}
             </ScrollArea>
           </div>
 
-          {/* Right Side - Chat Window */}
-          {activeRoom ? (
+          {/* Right Side */}
+          {selectedRoom ? (
             <div
               className={cn(
                 'bg-primary-foreground absolute inset-0 left-full z-50 hidden w-full flex-1 flex-col rounded-md border shadow-xs transition-all duration-200 sm:static sm:z-auto sm:flex',
                 mobileSelectedUser && 'left-0 flex'
               )}
             >
-              {/* Chat Header */}
+              {/* Top Part */}
               <div className='bg-secondary mb-1 flex flex-none justify-between rounded-t-md p-4 shadow-lg'>
+                {/* Left */}
                 <div className='flex gap-3'>
                   <Button
                     size='icon'
                     variant='ghost'
                     className='-ml-2 h-full sm:hidden'
-                    onClick={() => setMobileSelectedUser(null)}
+                    onClick={() => setMobileSelectedUser(false)}
                   >
-                    <ArrowLeft />
+                    <ArrowLeftIcon />
                   </Button>
-                  {(() => {
-                    const otherParticipant = getOtherParticipant(activeRoom)
-                    const isOnline = otherParticipant ? onlineUsers.has(otherParticipant.memberId) : false
-
-                    return otherParticipant ? (
-                      <div className='flex items-center gap-2 lg:gap-4'>
-                        <div className='relative'>
+                  <div className='flex items-center gap-2 lg:gap-4'>
+                    {(() => {
+                      const roomInfo = getRoomDisplayInfo(selectedRoom)
+                      return (
+                        <>
                           <Avatar className='size-9 lg:size-11'>
-                            <AvatarImage src={otherParticipant.avatar} alt={otherParticipant.memberName} />
-                            <AvatarFallback>{otherParticipant.memberName}</AvatarFallback>
+                            <AvatarImage src={roomInfo.avatar} alt={roomInfo.initials} />
+                            <AvatarFallback>{roomInfo.initials}</AvatarFallback>
                           </Avatar>
-                          {isOnline && (
-                            <div className='absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full'></div>
-                          )}
-                        </div>
-                        <div>
-                          <span className='text-sm font-medium lg:text-base block'>{otherParticipant.memberName}</span>
-                          <span className='text-muted-foreground text-xs lg:text-sm block'>
-                            {isOnline ? 'Online' : 'Offline'} • {otherParticipant.title}
-                          </span>
-                        </div>
-                      </div>
-                    ) : null
-                  })()}
+                          <div>
+                            <span className='col-start-2 row-span-2 text-sm font-medium lg:text-base'>
+                              {roomInfo.name}
+                            </span>
+                            <span className='text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-1 block max-w-32 text-xs text-nowrap text-ellipsis lg:max-w-none lg:text-sm'>
+                              {isConnected ? 'Online' : 'Offline'}
+                            </span>
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </div>
                 </div>
 
                 {/* Right */}
                 <div className='-mr-1 flex items-center gap-1 lg:gap-2'>
-                  <Button size='icon' variant='ghost' className='hidden size-8 rounded-full sm:inline-flex lg:size-10'>
-                    <Video size={22} className='stroke-muted-foreground' />
+                  <Button
+                    onClick={() => loadMessages(selectedRoomId)}
+                    disabled={!isConnected || isLoading}
+                    size='sm'
+                    variant='ghost'
+                  >
+                    {isLoading ? '⏳' : '🔄'} Reload
                   </Button>
                   <Button size='icon' variant='ghost' className='hidden size-8 rounded-full sm:inline-flex lg:size-10'>
-                    <Phone size={22} className='stroke-muted-foreground' />
+                    <VideoIcon size={22} className='stroke-muted-foreground' />
+                  </Button>
+                  <Button size='icon' variant='ghost' className='hidden size-8 rounded-full sm:inline-flex lg:size-10'>
+                    <PhoneIcon size={22} className='stroke-muted-foreground' />
                   </Button>
                   <Button size='icon' variant='ghost' className='h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6'>
-                    <DotSquare className='stroke-muted-foreground sm:size-5' />
+                    <MoreVerticalIcon className='stroke-muted-foreground sm:size-5' />
                   </Button>
                 </div>
               </div>
 
-              {/* Messages Area */}
+              {/* Conversation */}
               <div className='flex flex-1 flex-col gap-2 rounded-md px-4 pt-0 pb-4'>
                 <div className='flex size-full flex-1'>
                   <div className='chat-text-container relative -mr-4 flex flex-1 flex-col overflow-y-hidden'>
                     <div className='chat-flex flex h-40 w-full grow flex-col-reverse justify-start gap-4 overflow-y-auto py-2 pr-4 pb-4'>
-                      {/* Typing Indicator */}
-                      {typingUsers[activeRoom.id]?.length > 0 && (
-                        <div className='flex gap-2 items-center'>
-                          <div className='bg-secondary self-start rounded-[16px_16px_16px_0] px-3 py-2'>
-                            <div className='flex gap-1'>
-                              <div className='w-2 h-2 bg-muted-foreground rounded-full animate-bounce'></div>
-                              <div
-                                className='w-2 h-2 bg-muted-foreground rounded-full animate-bounce'
-                                style={{ animationDelay: '0.1s' }}
-                              ></div>
-                              <div
-                                className='w-2 h-2 bg-muted-foreground rounded-full animate-bounce'
-                                style={{ animationDelay: '0.2s' }}
-                              ></div>
-                            </div>
+                      {Object.keys(currentMessage).length === 0 ? (
+                        <div className='flex items-center justify-center py-8'>
+                          <div className='text-sm text-muted-foreground'>
+                            {isLoading ? 'Loading messages...' : 'No messages yet. Start the conversation!'}
                           </div>
                         </div>
-                      )}
-
-                      {/* Messages */}
-                      {Object.keys(groupedMessages).map((dateKey) => (
-                        <Fragment key={dateKey}>
-                          {groupedMessages[dateKey].map((msg, index) => (
-                            <div
-                              key={`${msg.id}-${index}`}
-                              className={cn(
-                                'chat-box max-w-72 px-3 py-2 break-words shadow-lg',
-                                msg.senderId === getCurrentUserId()
-                                  ? 'bg-primary/85 text-primary-foreground/75 self-end rounded-[16px_16px_0_16px]'
-                                  : 'bg-secondary self-start rounded-[16px_16px_16px_0]'
-                              )}
-                            >
-                              {msg.message}{' '}
-                              <span
+                      ) : (
+                        Object.keys(currentMessage).map((key) => (
+                          <Fragment key={key}>
+                            {currentMessage[key].map((msg, index) => (
+                              <div
+                                key={`${msg.sender}-${msg.timestamp}-${index}`}
                                 className={cn(
-                                  'text-muted-foreground mt-1 block text-xs font-light italic',
-                                  msg.senderId === getCurrentUserId() && 'text-right'
+                                  'chat-box max-w-72 px-3 py-2 break-words shadow-lg',
+                                  msg.sender === 'You'
+                                    ? 'bg-primary/85 text-primary-foreground/75 self-end rounded-[16px_16px_0_16px]'
+                                    : 'bg-secondary self-start rounded-[16px_16px_16px_0]'
                                 )}
                               >
-                                {format(new Date(msg.timestamp), 'h:mm a')}
-                              </span>
-                            </div>
-                          ))}
-                          <div className='text-center text-xs'>{dateKey}</div>
-                        </Fragment>
-                      ))}
+                                {msg.message}{' '}
+                                <span
+                                  className={cn(
+                                    'text-muted-foreground mt-1 block text-xs font-light italic',
+                                    msg.sender === 'You' && 'text-right'
+                                  )}
+                                >
+                                  {format(msg.timestamp, 'h:mm a')}
+                                </span>
+                              </div>
+                            ))}
+                            <div className='text-center text-xs'>{key}</div>
+                          </Fragment>
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
-                {/* Message Input */}
                 <form className='flex w-full flex-none gap-2' onSubmit={handleSendMessage}>
                   <div className='border-input focus-within:ring-ring flex flex-1 items-center gap-2 rounded-md border px-2 py-1 focus-within:ring-1 focus-within:outline-hidden lg:gap-4'>
                     <div className='space-x-1'>
                       <Button size='icon' type='button' variant='ghost' className='h-8 rounded-md'>
-                        <Plus size={20} className='stroke-muted-foreground' />
+                        <PlusIcon size={20} className='stroke-muted-foreground' />
                       </Button>
                       <Button
                         size='icon'
@@ -405,7 +353,7 @@ export default function Chats() {
                         variant='ghost'
                         className='hidden h-8 rounded-md lg:inline-flex'
                       >
-                        <PhoneOutgoing size={20} className='stroke-muted-foreground' />
+                        <ImagePlusIcon size={20} className='stroke-muted-foreground' />
                       </Button>
                       <Button
                         size='icon'
@@ -413,7 +361,7 @@ export default function Chats() {
                         variant='ghost'
                         className='hidden h-8 rounded-md lg:inline-flex'
                       >
-                        <Paperclip size={20} className='stroke-muted-foreground' />
+                        <PaperclipIcon size={20} className='stroke-muted-foreground' />
                       </Button>
                     </div>
                     <label className='flex-1'>
@@ -422,8 +370,8 @@ export default function Chats() {
                         type='text'
                         placeholder='Type your messages...'
                         className='h-8 w-full bg-inherit focus-visible:outline-hidden'
-                        value={messageInput}
-                        onChange={(e) => handleTyping(e.target.value)}
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
                         disabled={!isConnected}
                       />
                     </label>
@@ -432,13 +380,13 @@ export default function Chats() {
                       size='icon'
                       className='hidden sm:inline-flex'
                       type='submit'
-                      disabled={!messageInput.trim() || !isConnected}
+                      disabled={!isConnected || !newMessage.trim()}
                     >
-                      <Send size={20} />
+                      <SendIcon size={20} />
                     </Button>
                   </div>
-                  <Button className='h-full sm:hidden' type='submit' disabled={!messageInput.trim() || !isConnected}>
-                    <Send size={18} /> Send
+                  <Button className='h-full sm:hidden' type='submit' disabled={!isConnected || !newMessage.trim()}>
+                    <SendIcon size={18} /> Send
                   </Button>
                 </form>
               </div>
@@ -451,28 +399,26 @@ export default function Chats() {
             >
               <div className='flex flex-col items-center space-y-6'>
                 <div className='border-border flex size-16 items-center justify-center rounded-full border-2'>
-                  <MessagesSquare className='size-8' />
+                  <MessageCircle className='size-8' />
                 </div>
                 <div className='space-y-2 text-center'>
                   <h1 className='text-xl font-semibold'>Your messages</h1>
-                  <p className='text-muted-foreground text-sm'>Send a message to start a chat.</p>
+                  <p className='text-muted-foreground text-sm'>
+                    {isConnected ? 'Select a room to start chatting.' : 'Connect to SignalR to start chatting.'}
+                  </p>
                 </div>
                 <Button
                   className='bg-blue-500 px-6 text-white hover:bg-blue-600'
                   onClick={() => setCreateConversationDialog(true)}
+                  disabled={!isConnected}
                 >
-                  Send message
+                  {isConnected ? 'Create Chat' : 'Connect First'}
                 </Button>
               </div>
             </div>
           )}
         </section>
-        <NewChat
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          users={users as any}
-          onOpenChange={setCreateConversationDialog}
-          open={createConversationDialogOpened}
-        />
+        <NewChat users={[]} onOpenChange={setCreateConversationDialog} open={createConversationDialogOpened} />
       </Main>
     </>
   )

@@ -1,11 +1,13 @@
 export type UserRole = 'Admin' | 'BranchManager' | 'Designer' | 'Manager' | 'Staff' | 'BranchStaff' | 'User'
 
 export interface User {
-  id: string
+  id?: string // Optional for backward compatibility
+  userId?: string // Primary user ID from JWT
   name: string
   email: string
   role: UserRole
   avatar?: string
+  username?: string // Add username field
 }
 
 export interface AuthState {

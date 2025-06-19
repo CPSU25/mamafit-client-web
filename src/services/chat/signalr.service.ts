@@ -1,236 +1,229 @@
 import * as signalR from '@microsoft/signalr'
-import { SignalRMessage, TypingIndicator, UserStatus, ChatMessage, MessageType } from '@/@types/chat.types'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
+import chatAPI from '@/apis/chat.api'
+
+// Types
+interface ChatMessage {
+  id: string
+  message: string
+  senderId: string
+  senderName: string
+  chatRoomId: string
+  timestamp: string
+  type: number
+}
 
 export class SignalRService {
   private connection: signalR.HubConnection | null = null
-  private reconnectAttempts = 0
-  private maxReconnectAttempts = 5
+  private isConnecting = false
   private listeners: Map<string, ((...args: unknown[]) => void)[]> = new Map()
 
   constructor() {
-    this.initializeConnection()
+    console.log('🔧 SignalR Service được khởi tạo')
   }
 
-  private initializeConnection() {
+  // Bước 1: Tạo connection
+  private createConnection(): signalR.HubConnection {
     const baseURL = import.meta.env.VITE_API_CHAT_HUB
 
     if (!baseURL) {
-      console.error('VITE_API_CHAT_HUB or VITE_API_BASE_URL is not defined')
-      return
+      throw new Error('VITE_API_CHAT_HUB không được định nghĩa trong environment')
     }
 
-    this.connection = new signalR.HubConnectionBuilder()
+    const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${baseURL}/chatHub`, {
         accessTokenFactory: () => {
-          return useAuthStore.getState().accessToken || ''
+          const authStore = useAuthStore.getState()
+          const token = authStore.accessToken || ''
+          return token
         },
-        transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling,
+        transport: signalR.HttpTransportType.WebSockets,
         skipNegotiation: false,
         withCredentials: false
       })
-      .withAutomaticReconnect({
-        nextRetryDelayInMilliseconds: (retryContext: signalR.RetryContext) => {
-          if (retryContext.previousRetryCount < this.maxReconnectAttempts) {
-            return Math.min(1000 * Math.pow(2, retryContext.previousRetryCount), 30000)
-          }
-          return null
-        }
-      })
-      .configureLogging(signalR.LogLevel.Warning) // Reduce logging in production
+      .withAutomaticReconnect()
+      .configureLogging(signalR.LogLevel.Information)
       .build()
 
-    this.setupEventListeners()
+    return connection
   }
 
-  private setupEventListeners() {
-    if (!this.connection) return
-
-    // Message Events
-    this.connection.on('ReceiveMessage', (message: SignalRMessage) => {
-      this.emit('ReceiveMessage', this.transformMessage(message))
-    })
-
-    // Typing Events
-    this.connection.on('UserStartedTyping', (data: TypingIndicator) => {
-      this.emit('UserStartedTyping', data)
-    })
-
-    this.connection.on('UserStoppedTyping', (data: TypingIndicator) => {
-      this.emit('UserStoppedTyping', data)
-    })
-
-    // User Status Events
-    this.connection.on('UserOnline', (data: UserStatus) => {
-      this.emit('UserOnline', data)
-    })
-
-    this.connection.on('UserOffline', (data: UserStatus) => {
-      this.emit('UserOffline', data)
-    })
-
-    // Connection Events
-    this.connection.onreconnecting(() => {
-      this.emit('Reconnecting')
-    })
-
-    this.connection.onreconnected(() => {
-      this.reconnectAttempts = 0
-      this.emit('Reconnected')
-      this.joinUserRooms()
-    })
-
-    this.connection.onclose(() => {
-      this.emit('Disconnected')
-    })
-  }
-
-  private transformMessage(signalRMessage: SignalRMessage): ChatMessage {
-    return {
-      id: signalRMessage.id,
-      message: signalRMessage.message,
-      senderId: signalRMessage.senderId,
-      senderName: signalRMessage.senderName,
-      chatRoomId: signalRMessage.chatRoomId,
-      type: signalRMessage.type,
-      timestamp: new Date(signalRMessage.timestamp),
-      isRead: false
-    }
-  }
-
-  async start(): Promise<void> {
-    if (!this.connection) {
-      this.initializeConnection()
+  // Bước 2: Connect tới SignalR Hub
+  async connect(): Promise<void> {
+    if (this.isConnecting) {
+      console.log('⏳ Đang trong quá trình kết nối, bỏ qua yêu cầu mới')
+      return
     }
 
-    if (!this.connection) {
-      console.error('Failed to initialize SignalR connection')
-      this.emit('ConnectionError', new Error('Failed to initialize connection'))
+    if (this.connection?.state === signalR.HubConnectionState.Connected) {
+      console.log('✅ Đã kết nối rồi, không cần kết nối lại')
       return
     }
 
     try {
-      if (this.connection.state === signalR.HubConnectionState.Disconnected) {
-        console.log('Starting SignalR connection...')
-        await this.connection.start()
-        console.log('Connected to ChatHub')
-        this.reconnectAttempts = 0 // Reset on successful connection
-        this.emit('Connected')
+      this.isConnecting = true
+      console.log('🚀 Bắt đầu kết nối SignalR...')
 
-        // Only join rooms after successful connection
-        try {
-          await this.joinUserRooms()
-        } catch (roomError) {
-          console.warn('Failed to join user rooms:', roomError)
-        }
-      }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      console.error('SignalR Connection Error:', errorMessage)
-
-      // Emit specific error types
-      if (errorMessage.includes('CORS') || errorMessage.includes('Access-Control')) {
-        this.emit('CorsError', error)
-      } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
-        this.emit('NetworkError', error)
-      } else {
-        this.emit('ConnectionError', error)
+      // Tạo connection mới nếu chưa có
+      if (!this.connection) {
+        this.connection = this.createConnection()
+        this.setupEventListeners()
       }
 
-      // Retry connection with exponential backoff
-      if (this.reconnectAttempts < this.maxReconnectAttempts) {
-        this.reconnectAttempts++
-        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000)
-        console.log(
-          `Retrying connection in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`
-        )
-        setTimeout(() => this.start(), delay)
-      } else {
-        console.error('Max reconnect attempts reached. Connection failed.')
-        this.emit('MaxRetriesReached')
-      }
+      // Kết nối
+      await this.connection.start()
+      console.log('🎉 Kết nối SignalR thành công!')
+      console.log('📊 Connection State:', this.connection.state)
+      console.log('🆔 Connection ID:', this.connection.connectionId)
+    } catch (error) {
+      console.error('❌ Lỗi khi kết nối SignalR:', error)
+      throw error
+    } finally {
+      this.isConnecting = false
     }
   }
 
-  async stop(): Promise<void> {
-    if (this.connection && this.connection.state !== signalR.HubConnectionState.Disconnected) {
-      await this.connection.stop()
-      this.emit('Disconnected')
-    }
+  // Bước 3: Setup event listeners cơ bản
+  private setupEventListeners(): void {
+    if (!this.connection) return
+
+    // Message Events
+    this.connection.on('ReceiveMessage', (message: ChatMessage) => {
+      this.emit('ReceiveMessage', message)
+    })
+
+    this.connection.on('MessageHistory', (messages: ChatMessage[]) => {
+      this.emit('MessageHistory', messages)
+    })
+
+    // Connection events
+    this.connection.onreconnecting((error) => {
+      console.log('🔄 SignalR đang reconnecting...', error)
+    })
+
+    this.connection.onreconnected((connectionId) => {
+      console.log('🔗 SignalR đã reconnected với ID:', connectionId)
+    })
+
+    this.connection.onclose((error) => {
+      console.log('🔌 SignalR connection đã đóng', error)
+    })
+
+    console.log('✅ Event listeners đã được setup')
   }
 
+  // Bước 4: Join room
   async joinRoom(roomId: string): Promise<void> {
-    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
-      try {
-        await this.connection.invoke('JoinRoom', roomId)
-      } catch (error) {
-        console.error('Error joining room:', error)
-      }
+    if (!this.connection) {
+      throw new Error('Chưa có connection. Hãy gọi connect() trước')
+    }
+
+    if (this.connection.state !== signalR.HubConnectionState.Connected) {
+      throw new Error(`Connection chưa sẵn sàng. State hiện tại: ${this.connection.state}`)
+    }
+
+    if (!roomId || roomId.trim() === '') {
+      throw new Error('Room ID không được để trống')
+    }
+
+    try {
+      console.log('🏠 Đang join room:', roomId)
+      await this.connection.invoke('JoinRoom', roomId.trim())
+      console.log('✅ Đã join room thành công:', roomId)
+    } catch (error) {
+      console.error('❌ Lỗi khi join room:', error)
+      throw error
     }
   }
 
-  async leaveRoom(roomId: string): Promise<void> {
-    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
-      try {
-        await this.connection.invoke('LeaveRoom', roomId)
-      } catch (error) {
-        console.error('Error leaving room:', error)
-      }
-    }
-  }
-
+  // Bước 5: Gửi tin nhắn
   async sendMessage(roomId: string, message: string): Promise<void> {
-    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
-      try {
-        const { accessToken } = useAuthStore.getState()
-        if (!accessToken) throw new Error('No auth token available')
+    if (!this.connection) {
+      throw new Error('Chưa có connection. Hãy gọi connect() trước')
+    }
 
-        await this.connection.invoke('SendMessage', roomId, message, MessageType.Text)
-      } catch (error) {
-        console.error('Error sending message:', error)
-        throw error
+    if (this.connection.state !== signalR.HubConnectionState.Connected) {
+      throw new Error(`Connection chưa sẵn sàng. State hiện tại: ${this.connection.state}`)
+    }
+
+    if (!roomId || roomId.trim() === '') {
+      throw new Error('Room ID không được để trống')
+    }
+
+    if (!message || message.trim() === '') {
+      throw new Error('Tin nhắn không được để trống')
+    }
+
+    try {
+      console.log('💬 Đang gửi tin nhắn:', { roomId, message })
+
+      const messageDto = {
+        Message: message.trim(),
+        ChatRoomId: roomId.trim(),
+        Type: 0 // 0 = Text message
       }
-    } else {
-      throw new Error('SignalR connection not established')
+
+      await this.connection.invoke('SendMessage', messageDto)
+      console.log('✅ Gửi tin nhắn thành công')
+    } catch (error) {
+      console.error('❌ Lỗi khi gửi tin nhắn:', error)
+      throw error
     }
   }
 
-  async startTyping(roomId: string): Promise<void> {
-    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
-      try {
-        await this.connection.invoke('StartTyping', roomId)
-      } catch (error) {
-        console.error('Error starting typing:', error)
+  // Bước 6: Load tin nhắn lịch sử (nếu server hỗ trợ)
+  async loadMessages(roomId: string, pageSize: number = 20, page: number = 1): Promise<void> {
+    if (!roomId || roomId.trim() === '') {
+      throw new Error('Room ID không được để trống')
+    }
+
+    try {
+      console.log('📜 Đang load tin nhắn (REST API):', { roomId, pageSize, page })
+      const response = await chatAPI.getRoomMessages({ roomId: roomId.trim(), pageSize, index: page })
+
+      // Handle both possible response structures: data.data.items and data.items
+      let rawMessages: unknown[] = []
+      if (response.data && response.data.data && response.data.data) {
+        rawMessages = response.data.data
+      } else if (response.data && Array.isArray(response.data)) {
+        rawMessages = response.data
       }
+
+      // Map the messages to include timestamp field for compatibility
+      const messages = Array.isArray(rawMessages)
+        ? rawMessages.map((msg: unknown) => {
+            const msgObj = msg as Record<string, unknown>
+            const msgWithTimestamp = msgObj as { messageTimestamp?: string; timestamp?: string }
+            return {
+              ...msgObj,
+              timestamp: msgWithTimestamp.messageTimestamp || msgWithTimestamp.timestamp
+            }
+          })
+        : []
+
+      console.log('📜 Nhận lịch sử tin nhắn:', messages)
+      this.emit('MessageHistory', messages)
+      console.log('✅ Load tin nhắn thành công (REST API)')
+    } catch (error) {
+      console.error('❌ Lỗi khi load tin nhắn (REST API):', error)
+      throw error
     }
   }
 
-  async stopTyping(roomId: string): Promise<void> {
-    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
-      try {
-        await this.connection.invoke('StopTyping', roomId)
-      } catch (error) {
-        console.error('Error stopping typing:', error)
-      }
-    }
+  // Utility methods
+  get isConnected(): boolean {
+    return this.connection?.state === signalR.HubConnectionState.Connected
   }
 
-  private async joinUserRooms(): Promise<void> {
-    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
-      try {
-        await this.connection.invoke('JoinUserRooms')
-        console.log('Successfully joined user rooms')
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+  get connectionState(): string {
+    return this.connection?.state?.toString() || 'No Connection'
+  }
 
-        // Check if method doesn't exist on server
-        if (errorMessage.includes('Method does not exist') || errorMessage.includes('JoinUserRooms')) {
-          console.warn('JoinUserRooms method not implemented on server - skipping')
-          // This is not a critical error, continue normal operation
-        } else {
-          console.error('Error joining user rooms:', errorMessage)
-        }
-      }
+  async disconnect(): Promise<void> {
+    if (this.connection) {
+      console.log('🔌 Đang ngắt kết nối SignalR...')
+      await this.connection.stop()
+      console.log('✅ Đã ngắt kết nối')
     }
   }
 
@@ -257,14 +250,6 @@ export class SignalRService {
     if (eventListeners) {
       eventListeners.forEach((callback) => callback(...args))
     }
-  }
-
-  get isConnected(): boolean {
-    return this.connection?.state === signalR.HubConnectionState.Connected
-  }
-
-  get connectionState(): signalR.HubConnectionState | null {
-    return this.connection?.state || null
   }
 }
 
