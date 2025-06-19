@@ -12,10 +12,16 @@ interface AuthStoreState {
   clear: () => void
 }
 interface User extends JWTPayload {
-  id: string
-  name: string
-  email: string
-  role: UserRole
+  userId?: string // Changed from 'id' to 'userId' to match JWT payload
+  id?: string // Keep 'id' as optional for backward compatibility
+  name?: string
+  email?: string
+  role?: UserRole
+  username?: string // Add username field from JWT
+  unique_name?: string // Alternative name field in JWT
+  given_name?: string // Another name field in JWT
+  nameid?: string // Alternative ID field in JWT
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string // Full claim name
 }
 /**
  * Zustand store for managing authentication state.
@@ -47,7 +53,54 @@ export const useAuthStore = create<AuthStoreState>()(
       save: ({ accessToken, refreshToken }) => {
         try {
           const user = decodeJwt(accessToken) as User
-          set({ isAuthenticated: true, accessToken, refreshToken, user })
+
+          // Debug JWT payload structure
+          console.group('🔍 JWT Debug Information')
+          console.log('Raw JWT payload:', user)
+          console.log('Available claims:', Object.keys(user))
+
+          // Check different possible user ID fields
+          const possibleUserIds = {
+            userId: user.userId,
+            id: user.id,
+            sub: user.sub,
+            nameid: user.nameid,
+            nameIdentifier: user['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
+          }
+
+          console.log('Possible user ID fields:', possibleUserIds)
+
+          // Find the actual user ID
+          const actualUserId =
+            user.userId ||
+            user.id ||
+            user.sub ||
+            user.nameid ||
+            user['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
+
+          console.log('Selected user ID:', actualUserId)
+          console.log('User name:', user.name || user.unique_name || user.given_name)
+          console.log('User email:', user.email)
+          console.log('User role:', user.role)
+          console.groupEnd()
+
+          // Ensure we have a user ID
+          if (!actualUserId) {
+            console.error('No user ID found in JWT token! Available claims:', Object.keys(user))
+            throw new Error('JWT token missing user ID claim')
+          }
+
+          // Normalize user object
+          const normalizedUser: User = {
+            ...user,
+            userId: actualUserId,
+            id: actualUserId, // Ensure both fields exist
+            name: user.name || user.unique_name || user.given_name || 'Unknown User'
+          }
+
+          console.log('Normalized user object:', normalizedUser)
+
+          set({ isAuthenticated: true, accessToken, refreshToken, user: normalizedUser })
         } catch (error) {
           console.error('Failed to decode JWT in save:', error)
           set({ isAuthenticated: false, accessToken, refreshToken, user: null })
@@ -69,8 +122,28 @@ export const useAuthStore = create<AuthStoreState>()(
         if (state && state.accessToken && state.refreshToken) {
           try {
             const user = decodeJwt(state.accessToken) as User
+
+            // Use same normalization logic as save()
+            const actualUserId =
+              user.userId ||
+              user.id ||
+              user.sub ||
+              user.nameid ||
+              user['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
+
+            if (!actualUserId) {
+              throw new Error('No user ID found in rehydrated JWT')
+            }
+
+            const normalizedUser: User = {
+              ...user,
+              userId: actualUserId,
+              id: actualUserId,
+              name: user.name || user.unique_name || user.given_name || 'Unknown User'
+            }
+
             state.isAuthenticated = true
-            state.user = user
+            state.user = normalizedUser
           } catch (error) {
             console.error('Failed to decode JWT during rehydration:', error)
             state.isAuthenticated = false

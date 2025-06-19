@@ -1,4 +1,4 @@
-import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
+import { ItemBaseResponse } from '@/@types/response'
 import { ChatRoom, ChatMessage, CreateRoomRequest, SendMessageRequest, GetMessagesRequest } from '@/@types/chat.types'
 import { api } from '@/lib/axios/axios'
 
@@ -15,7 +15,7 @@ const chatAPI = {
   // Message Management
   getRoomMessages: (params: GetMessagesRequest) => {
     const { roomId, index = 1, pageSize = 20 } = params
-    return api.get<ListBaseResponse<ChatMessage>>(`/Chat/rooms/${roomId}/messages`, { params: { index, pageSize } })
+    return api.get<ItemBaseResponse<ChatMessage[]>>(`/Chat/rooms/${roomId}/messages`, { params: { index, pageSize } })
   },
 
   sendMessage: (body: SendMessageRequest) => api.post<ItemBaseResponse<ChatMessage>>('/Chat/messages', body)

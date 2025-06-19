@@ -27,8 +27,9 @@ export interface ChatMessage {
   senderId: string
   senderName: string
   chatRoomId: string
+  senderAvatar?: string
   type: MessageType
-  timestamp: Date
+  messageTimestamp: Date
   isRead?: boolean
 }
 
@@ -45,16 +46,28 @@ export interface CreateRoomRequest {
 }
 
 export interface SendMessageRequest {
-  message: string
-  senderId: string
-  chatRoomId: string
-  type: MessageType
+  Message: string
+  SenderId: string
+  ChatRoomId: string
+  Type: MessageType
 }
 
 export interface GetMessagesRequest {
   roomId: string
   index?: number
   pageSize?: number
+}
+
+// API Response Types for Messages
+export interface ApiChatMessage {
+  id: string
+  message: string
+  senderId: string
+  senderName: string
+  senderAvatar?: string | null
+  messageTimestamp: string // ISO string from API
+  chatRoomId: string
+  type: string
 }
 
 // SignalR Event Types
