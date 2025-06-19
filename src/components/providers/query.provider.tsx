@@ -19,13 +19,13 @@ const queryClient = new QueryClient({
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
       staleTime: 5 * 60 * 1000, // 5 minutes - longer cache for better performance
       refetchOnWindowFocus: false, // Disable auto refetch on window focus
-      refetchOnReconnect: true, // Refetch when internet connection is restored
+      refetchOnReconnect: true // Refetch when internet connection is restored
     },
     mutations: {
       retry: 1, // Retry mutations once on failure
-      retryDelay: 1000, // 1 second delay for mutation retries
-    },
-  },
+      retryDelay: 1000 // 1 second delay for mutation retries
+    }
+  }
 })
 
 export default function QueryProvider({ children }: { children: React.ReactNode }) {

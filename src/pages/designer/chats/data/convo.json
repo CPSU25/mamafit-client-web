@@ -1,0 +1,42 @@
+{
+  "conversations": [
+    {
+      "id": "1",
+      "username": "JD",
+      "fullName": "John Doe",
+      "profile": "https://api.dicebear.com/7.x/initials/svg?seed=JD",
+      "title": "Software Engineer",
+      "messages": [
+        {
+          "message": "Hey there! How are you doing?",
+          "timestamp": "2024-01-15T10:30:00Z",
+          "sender": "John Doe"
+        },
+        {
+          "message": "I'm doing well, thanks for asking!",
+          "timestamp": "2024-01-15T10:35:00Z",
+          "sender": "You"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "username": "JS",
+      "fullName": "Jane Smith",
+      "profile": "https://api.dicebear.com/7.x/initials/svg?seed=JS",
+      "title": "Product Manager",
+      "messages": [
+        {
+          "message": "Can we schedule a meeting for tomorrow?",
+          "timestamp": "2024-01-14T14:20:00Z",
+          "sender": "Jane Smith"
+        },
+        {
+          "message": "Sure, what time works for you?",
+          "timestamp": "2024-01-14T14:25:00Z",
+          "sender": "You"
+        }
+      ]
+    }
+  ]
+} 

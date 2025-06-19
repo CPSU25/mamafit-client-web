@@ -15,9 +15,9 @@ interface SingleImageUploadProps {
 export function SingleImageUpload({
   value = '',
   onChange,
-  placeholder = "Upload image or enter URL",
+  placeholder = 'Upload image or enter URL',
   className,
-  disabled = false,
+  disabled = false
 }: SingleImageUploadProps) {
   const [dragActive, setDragActive] = useState(false)
   const [urlInput, setUrlInput] = useState('')
@@ -26,43 +26,49 @@ export function SingleImageUpload({
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (e.type === "dragenter" || e.type === "dragover") {
+    if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true)
-    } else if (e.type === "dragleave") {
+    } else if (e.type === 'dragleave') {
       setDragActive(false)
     }
   }, [])
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setDragActive(false)
 
-    if (disabled) return
+      if (disabled) return
 
-    const files = Array.from(e.dataTransfer.files)
-    const imageFile = files.find(file => file.type.startsWith('image/'))
-    
-    if (imageFile) {
-      const url = URL.createObjectURL(imageFile)
-      onChange(url)
-    }
-  }, [onChange, disabled])
+      const files = Array.from(e.dataTransfer.files)
+      const imageFile = files.find((file) => file.type.startsWith('image/'))
 
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault()
-    
-    if (disabled) return
+      if (imageFile) {
+        const url = URL.createObjectURL(imageFile)
+        onChange(url)
+      }
+    },
+    [onChange, disabled]
+  )
 
-    const file = e.target.files?.[0]
-    if (file && file.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file)
-      onChange(url)
-    }
-    
-    // Reset the input value so the same file can be selected again
-    e.target.value = ''
-  }, [onChange, disabled])
+  const handleFileUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      e.preventDefault()
+
+      if (disabled) return
+
+      const file = e.target.files?.[0]
+      if (file && file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file)
+        onChange(url)
+      }
+
+      // Reset the input value so the same file can be selected again
+      e.target.value = ''
+    },
+    [onChange, disabled]
+  )
 
   const handleUrlAdd = () => {
     if (urlInput.trim()) {
@@ -77,27 +83,27 @@ export function SingleImageUpload({
   }
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {/* Current Image Display */}
       {value && (
-        <div className="relative inline-block">
+        <div className='relative inline-block'>
           <img
             src={value}
-            alt="Preview"
-            className="w-32 h-32 object-cover rounded-lg border"
+            alt='Preview'
+            className='w-32 h-32 object-cover rounded-lg border'
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder-image.jpg'
+              ;(e.target as HTMLImageElement).src = '/placeholder-image.jpg'
             }}
           />
           <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+            type='button'
+            variant='destructive'
+            size='sm'
+            className='absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full'
             onClick={handleRemove}
             disabled={disabled}
           >
-            <X className="h-3 w-3" />
+            <X className='h-3 w-3' />
           </Button>
         </div>
       )}
@@ -106,10 +112,10 @@ export function SingleImageUpload({
       {!value && (
         <div
           className={cn(
-            "relative border-2 border-dashed rounded-lg p-6 text-center transition-colors",
-            dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25",
-            disabled && "opacity-50 cursor-not-allowed",
-            !disabled && "hover:border-primary/50 cursor-pointer"
+            'relative border-2 border-dashed rounded-lg p-6 text-center transition-colors',
+            dragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25',
+            disabled && 'opacity-50 cursor-not-allowed',
+            !disabled && 'hover:border-primary/50 cursor-pointer'
           )}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -117,19 +123,19 @@ export function SingleImageUpload({
           onDrop={handleDrop}
         >
           <input
-            type="file"
-            accept="image/*"
+            type='file'
+            accept='image/*'
             onChange={handleFileUpload}
             disabled={disabled}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+            className='absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed'
           />
-          
-          <div className="space-y-2">
-            <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
-            <div className="text-sm text-muted-foreground">
-              <p className="font-medium">{placeholder}</p>
+
+          <div className='space-y-2'>
+            <ImageIcon className='mx-auto h-8 w-8 text-muted-foreground' />
+            <div className='text-sm text-muted-foreground'>
+              <p className='font-medium'>{placeholder}</p>
               <p>Drag & drop or click to browse</p>
-              <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
+              <p className='text-xs'>PNG, JPG, GIF up to 10MB</p>
             </div>
           </div>
         </div>
@@ -137,24 +143,24 @@ export function SingleImageUpload({
 
       {/* URL Input Section */}
       {!value && (
-        <div className="space-y-2">
+        <div className='space-y-2'>
           {!showUrlInput ? (
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
+              type='button'
+              variant='outline'
+              size='sm'
               onClick={() => setShowUrlInput(true)}
               disabled={disabled}
-              className="w-full"
+              className='w-full'
             >
-              <Link className="h-4 w-4 mr-2" />
+              <Link className='h-4 w-4 mr-2' />
               Or enter image URL
             </Button>
           ) : (
-            <div className="flex gap-2">
+            <div className='flex gap-2'>
               <Input
-                type="url"
-                placeholder="https://example.com/image.jpg"
+                type='url'
+                placeholder='https://example.com/image.jpg'
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 disabled={disabled}
@@ -165,18 +171,13 @@ export function SingleImageUpload({
                   }
                 }}
               />
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleUrlAdd}
-                disabled={disabled || !urlInput.trim()}
-              >
+              <Button type='button' size='sm' onClick={handleUrlAdd} disabled={disabled || !urlInput.trim()}>
                 Add
               </Button>
               <Button
-                type="button"
-                variant="outline"
-                size="sm"
+                type='button'
+                variant='outline'
+                size='sm'
                 onClick={() => {
                   setShowUrlInput(false)
                   setUrlInput('')
@@ -191,4 +192,4 @@ export function SingleImageUpload({
       )}
     </div>
   )
-} 
+}

@@ -12,17 +12,17 @@ interface CategoryFilters {
 interface CategoryUIState {
   // Selected/Editing State
   selectedCategory: CategoryType | null
-  
+
   // Expansion State
   expandedCategoryId: string | null
-  
+
   // Filters
   filters: CategoryFilters
-  
+
   // Form/Dialog State
   isFormDialogOpen: boolean
   isDeleteDialogOpen: boolean
-  
+
   // Actions - UI State Only
   setSelectedCategory: (category: CategoryType | null) => void
   setExpandedCategoryId: (categoryId: string | null) => void
@@ -30,7 +30,7 @@ interface CategoryUIState {
   resetFilters: () => void
   setFormDialogOpen: (open: boolean) => void
   setDeleteDialogOpen: (open: boolean) => void
-  
+
   // Toggle category expansion
   toggleCategoryExpansion: (categoryId: string) => void
 }
@@ -64,7 +64,7 @@ export const useCategoryStore = create<CategoryUIState>()(
 
       // Update filters
       updateFilters: (newFilters: Partial<CategoryFilters>) => {
-        set(state => ({
+        set((state) => ({
           filters: { ...state.filters, ...newFilters }
         }))
       },
@@ -91,7 +91,7 @@ export const useCategoryStore = create<CategoryUIState>()(
       // Toggle category expansion
       toggleCategoryExpansion: (categoryId: string) => {
         const { expandedCategoryId } = get()
-        
+
         if (expandedCategoryId === categoryId) {
           // Collapse if already expanded
           set({ expandedCategoryId: null })
@@ -99,10 +99,10 @@ export const useCategoryStore = create<CategoryUIState>()(
           // Expand
           set({ expandedCategoryId: categoryId })
         }
-      },
+      }
     }),
     {
-      name: 'category-ui-store',
+      name: 'category-ui-store'
     }
   )
-) 
+)

@@ -15,7 +15,7 @@ export const styleKeys = {
   lists: () => [...styleKeys.all, 'list'] as const,
   list: (params: StyleQueryParams) => [...styleKeys.lists(), params] as const,
   details: () => [...styleKeys.all, 'detail'] as const,
-  detail: (id: string) => [...styleKeys.details(), id] as const,
+  detail: (id: string) => [...styleKeys.details(), id] as const
 }
 
 // ===============================
@@ -33,7 +33,7 @@ export const useGetStyles = (params?: StyleQueryParams) => {
       }
       throw new Error(response.data.message || 'Failed to fetch styles')
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000 // 5 minutes
   })
 }
 
@@ -49,14 +49,14 @@ export const useGetStyleById = (id: string) => {
       throw new Error(response.data.message || 'Failed to fetch style')
     },
     enabled: !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000 // 5 minutes
   })
 }
 
 // Create Style
 export const useCreateStyle = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (data: StyleFormData) => {
       const response = await styleAPI.createStyle(data)
@@ -68,20 +68,21 @@ export const useCreateStyle = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: styleKeys.all })
     },
-    retry: (failureCount, error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    retry: (failureCount, error: any) => {
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       // Don't retry on client errors (4xx)
       if (error?.response?.status >= 400 && error?.response?.status < 500) {
         return false
       }
       return failureCount < 3
-    },
+    }
   })
 }
 
 // Update Style
 export const useUpdateStyle = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: StyleFormData }) => {
       const response = await styleAPI.updateStyle(id, data)
@@ -93,19 +94,20 @@ export const useUpdateStyle = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: styleKeys.all })
     },
-    retry: (failureCount, error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    retry: (failureCount, error: any) => {
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       if (error?.response?.status >= 400 && error?.response?.status < 500) {
         return false
       }
       return failureCount < 3
-    },
+    }
   })
 }
 
 // Delete Style
 export const useDeleteStyle = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await styleAPI.deleteStyle(id)
@@ -117,11 +119,12 @@ export const useDeleteStyle = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: styleKeys.all })
     },
-    retry: (failureCount, error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    retry: (failureCount, error: any) => {
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       if (error?.response?.status >= 400 && error?.response?.status < 500) {
         return false
       }
       return failureCount < 3
-    },
+    }
   })
-} 
+}

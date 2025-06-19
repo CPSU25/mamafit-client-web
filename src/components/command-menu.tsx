@@ -14,11 +14,16 @@ import {
 } from '@/components/ui/command'
 import { sidebarData } from '@/components/layout/data/sidebar-data'
 import { ScrollArea } from './ui/scroll-area'
+import { usePermission } from '@/services/auth/usePermission'
 
 export function CommandMenu() {
   const navigate = useNavigate()
   const { setTheme } = useTheme()
   const { open, setOpen } = useSearch()
+  const { userInfo } = usePermission()
+
+  // Get current user role, fallback to 'Admin' if not available
+  const currentUserRole = userInfo?.role || 'Admin'
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {
@@ -27,37 +32,42 @@ export function CommandMenu() {
     },
     [setOpen]
   )
+
+  // Find the current role's nav groups
+  const currentRoleData = sidebarData.role.find((role) => role.name === currentUserRole)
+
   return (
     <CommandDialog modal open={open} onOpenChange={setOpen}>
       <CommandInput placeholder='Type a command or search...' />
       <CommandList>
         <ScrollArea type='hover' className='h-72 pr-1'>
           <CommandEmpty>No results found.</CommandEmpty>
-          {sidebarData.role
-            .find((role) => role.name === 'Admin')
-            ?.navGroups.map((group) => (
-              <CommandGroup key={group.title} heading={group.title}>
-                {group.items.map((navItem, i) => {
-                  if (navItem.url)
-                    return (
-                      <CommandItem
-                        key={`${navItem.url}-${i}`}
-                        value={navItem.title}
-                        onSelect={() => {
-                          runCommand(() => navigate(navItem.url))
-                        }}
-                      >
-                        <div className='mr-2 flex h-4 w-4 items-center justify-center'>
-                          <ArrowRight className='text-muted-foreground/80 size-2' />
-                        </div>
-                        {navItem.title}
-                      </CommandItem>
-                    )
-
-                  return navItem.items?.map((subItem, i) => (
+          {currentRoleData?.navGroups.map((group, groupIndex) => (
+            <CommandGroup key={`${currentUserRole}-group-${group.title}-${groupIndex}`} heading={group.title}>
+              {group.items.map((navItem, navItemIndex) => {
+                if (navItem.url) {
+                  return (
                     <CommandItem
-                      key={`${navItem.title}-${subItem.url}-${i}`}
-                      value={`${navItem.title}-${subItem.url}`}
+                      key={`${currentUserRole}-nav-${navItem.url}-${navItemIndex}`}
+                      value={navItem.title}
+                      onSelect={() => {
+                        runCommand(() => navigate(navItem.url))
+                      }}
+                    >
+                      <div className='mr-2 flex h-4 w-4 items-center justify-center'>
+                        <ArrowRight className='text-muted-foreground/80 size-2' />
+                      </div>
+                      {navItem.title}
+                    </CommandItem>
+                  )
+                }
+
+                // Handle sub-items
+                return (
+                  navItem.items?.map((subItem, subItemIndex) => (
+                    <CommandItem
+                      key={`${currentUserRole}-sub-${navItem.title}-${subItem.url}-${navItemIndex}-${subItemIndex}`}
+                      value={`${navItem.title} ${subItem.title}`}
                       onSelect={() => {
                         runCommand(() => navigate(subItem.url))
                       }}
@@ -65,23 +75,25 @@ export function CommandMenu() {
                       <div className='mr-2 flex h-4 w-4 items-center justify-center'>
                         <ArrowRight className='text-muted-foreground/80 size-2' />
                       </div>
-                      {navItem.title} <ChevronRight /> {subItem.title}
+                      {navItem.title} <ChevronRight className='mx-1 h-3 w-3' /> {subItem.title}
                     </CommandItem>
-                  ))
-                })}
-              </CommandGroup>
-            ))}
+                  )) || []
+                )
+              })}
+            </CommandGroup>
+          ))}
           <CommandSeparator />
           <CommandGroup heading='Theme'>
-            <CommandItem onSelect={() => runCommand(() => setTheme('light'))}>
-              <Sun /> <span>Light</span>
+            <CommandItem key='theme-light' onSelect={() => runCommand(() => setTheme('light'))}>
+              <Sun className='mr-2 h-4 w-4' />
+              <span>Light</span>
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme('dark'))}>
-              <Moon className='scale-90' />
+            <CommandItem key='theme-dark' onSelect={() => runCommand(() => setTheme('dark'))}>
+              <Moon className='mr-2 h-4 w-4 scale-90' />
               <span>Dark</span>
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme('system'))}>
-              <Laptop />
+            <CommandItem key='theme-system' onSelect={() => runCommand(() => setTheme('system'))}>
+              <Laptop className='mr-2 h-4 w-4' />
               <span>System</span>
             </CommandItem>
           </CommandGroup>
