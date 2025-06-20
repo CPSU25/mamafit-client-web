@@ -73,8 +73,6 @@ export class SignalRService {
       // Kết nối
       await this.connection.start()
       console.log('🎉 Kết nối SignalR thành công!')
-      console.log('📊 Connection State:', this.connection.state)
-      console.log('🆔 Connection ID:', this.connection.connectionId)
     } catch (error) {
       console.error('❌ Lỗi khi kết nối SignalR:', error)
       throw error
@@ -96,20 +94,8 @@ export class SignalRService {
       this.emit('MessageHistory', messages)
     })
 
-    // Connection events
-    this.connection.onreconnecting((error) => {
-      console.log('🔄 SignalR đang reconnecting...', error)
-    })
-
-    this.connection.onreconnected((connectionId) => {
-      console.log('🔗 SignalR đã reconnected với ID:', connectionId)
-    })
-
-    this.connection.onclose((error) => {
-      console.log('🔌 SignalR connection đã đóng', error)
-    })
-
-    console.log('✅ Event listeners đã được setup')
+    
+    console.log('Event listeners đã được setup')
   }
 
   // Bước 4: Join room
@@ -201,9 +187,7 @@ export class SignalRService {
           })
         : []
 
-      console.log('📜 Nhận lịch sử tin nhắn:', messages)
       this.emit('MessageHistory', messages)
-      console.log('✅ Load tin nhắn thành công (REST API)')
     } catch (error) {
       console.error('❌ Lỗi khi load tin nhắn (REST API):', error)
       throw error
