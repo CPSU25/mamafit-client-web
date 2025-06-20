@@ -8,8 +8,7 @@ import { type Convo } from '../data/chat-types'
 export interface UseChatReturn {
   isConnected: boolean
   connectionStatus: string
-  connect: () => Promise<void>
-  disconnect: () => Promise<void>
+  
   joinRoom: (roomId: string) => Promise<void>
   sendMessage: (roomId: string, message: string) => Promise<void>
   loadMessages: (roomId: string) => Promise<void>
@@ -19,7 +18,7 @@ export interface UseChatReturn {
   isLoading: boolean
   isLoadingRooms: boolean
   error: string | null
-  loadedRooms: Set<string> // Track which rooms have loaded messages
+  loadedRooms: Set<string> 
 }
 
 export function useChat(): UseChatReturn {
@@ -32,6 +31,7 @@ export function useChat(): UseChatReturn {
   const [error, setError] = useState<string | null>(null)
   const [loadedRooms, setLoadedRooms] = useState<Set<string>>(new Set())
   const [joinedRooms, setJoinedRooms] = useState<Set<string>>(new Set()) // Track joined rooms
+  const [hasLoadedRooms, setHasLoadedRooms] = useState(false) // Track if rooms have been loaded
 
   const { user } = useAuthStore()
 
@@ -46,19 +46,25 @@ export function useChat(): UseChatReturn {
     },
     [user?.userId]
   )
-
   // Load user's chat rooms from API
   const loadRooms = useCallback(async () => {
+    // Prevent multiple simultaneous loads
+    if (isLoadingRooms || hasLoadedRooms) {
+      console.log('⏭️ Rooms already loaded or currently loading')
+      return
+    }
+
     try {
       setIsLoadingRooms(true)
       setError(null)
-
+      
       const response = await chatAPI.getMyRooms()
       const roomsData = response.data.data || []
-
+      
       setRooms(roomsData)
+      setHasLoadedRooms(true) // Mark as loaded
       console.log('✅ Loaded', roomsData.length, 'chat rooms')
-
+      
       // Auto-join all rooms for SignalR
       if (isConnected && roomsData.length > 0) {
         for (const room of roomsData) {
@@ -80,7 +86,7 @@ export function useChat(): UseChatReturn {
     } finally {
       setIsLoadingRooms(false)
     }
-  }, [isConnected, joinedRooms])
+  }, [isConnected, joinedRooms, isLoadingRooms, hasLoadedRooms]) // Add hasLoadedRooms dependency
 
   // Load messages for a specific room (only once per room)
   const loadMessages = useCallback(
@@ -160,44 +166,6 @@ export function useChat(): UseChatReturn {
     return () => clearInterval(interval)
   }, [])
 
-  const connect = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      setConnectionStatus('Connecting...')
-
-      await signalRService.connect()
-
-      setIsConnected(true)
-      setConnectionStatus('Connected')
-      console.log('✅ SignalR connected successfully')
-
-      // Auto-load rooms after connection
-      await loadRooms()
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Connection failed'
-      setError(errorMessage)
-      setConnectionStatus('Failed')
-      console.error('❌ SignalR connection failed:', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [loadRooms])
-
-  const disconnect = useCallback(async () => {
-    try {
-      await signalRService.disconnect()
-      setIsConnected(false)
-      setConnectionStatus('Disconnected')
-      setRooms([])
-      setMessages({})
-      setLoadedRooms(new Set())
-      setJoinedRooms(new Set()) // Clear joined rooms on disconnect
-    } catch (err) {
-      console.error('❌ Disconnect failed:', err)
-    }
-  }, [])
-
   const joinRoom = useCallback(
     async (roomId: string) => {
       // Skip if already joined
@@ -238,8 +206,6 @@ export function useChat(): UseChatReturn {
   return {
     isConnected,
     connectionStatus,
-    connect,
-    disconnect,
     joinRoom,
     sendMessage,
     loadMessages,

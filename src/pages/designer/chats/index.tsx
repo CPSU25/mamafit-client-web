@@ -38,24 +38,24 @@ export default function Chats() {
   // Use the chat hook for SignalR functionality
   const {
     isConnected,
-    connect,
-    disconnect,
     sendMessage,
     loadMessages,
+    loadRooms,
     joinRoom,
     rooms,
     messages: realMessages,
     isLoading,
     isLoadingRooms,
-    error
+    
   } = useChat()
 
-  // Auto-connect on component mount
+  // Auto-load rooms when SignalR is connected (only once)
   useEffect(() => {
-    if (!isConnected) {
-      connect()
+    if (isConnected && rooms.length === 0 && !isLoadingRooms) {
+      console.log('🔄 Auto-loading rooms since SignalR is connected...')
+      loadRooms()
     }
-  }, [connect, isConnected])
+  }, [isConnected]) // Only depend on isConnected to avoid multiple loads
 
   // Filter rooms based on search
   const filteredRooms = rooms.filter((room) => {
@@ -162,24 +162,6 @@ export default function Chats() {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </label>
-
-              {/* Connection Status & Controls */}
-              <div className='mt-3 space-y-2'>
-                <div className='flex items-center justify-between'>
-                  <span className={`text-sm ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
-                    {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
-                  </span>
-                  <div className='flex gap-2'>
-                    <Button onClick={connect} disabled={isConnected || isLoading} size='sm' variant='outline'>
-                      Connect
-                    </Button>
-                    <Button onClick={disconnect} disabled={!isConnected} size='sm' variant='outline'>
-                      Disconnect
-                    </Button>
-                  </div>
-                </div>
-                {error && <p className='text-sm text-red-500'>{error}</p>}
-              </div>
             </div>
 
             <ScrollArea className='-mx-3 h-full p-3'>
@@ -188,9 +170,20 @@ export default function Chats() {
                   <div className='text-sm text-muted-foreground'>Loading rooms...</div>
                 </div>
               ) : filteredRooms.length === 0 ? (
-                <div className='flex items-center justify-center py-8'>
-                  <div className='text-sm text-muted-foreground'>
-                    {isConnected ? 'No chat rooms found' : 'Connect to load chat rooms'}
+                <div className='flex flex-col items-center justify-center py-8 space-y-2'>
+                  <div className='text-sm text-muted-foreground text-center'>
+                    {isConnected ? (
+                      rooms.length === 0 ? (
+                        <>
+                          <p>Chưa có phòng chat nào</p>
+                          <p className='text-xs mt-1'>Bạn chưa tham gia cuộc trò chuyện nào</p>
+                        </>
+                      ) : (
+                        'Không tìm thấy phòng chat phù hợp'
+                      )
+                    ) : (
+                      'Đang kết nối để tải danh sách chat...'
+                    )}
                   </div>
                 </div>
               ) : (
