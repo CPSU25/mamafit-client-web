@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useLocation } from 'react-router-dom'
 import { sidebarData } from './data/sidebar-data'
-import { usePermission } from '@/services/auth/usePermission'
+import { usePermission } from '@/services/auth/permission.service'
 
 interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
   fixed?: boolean

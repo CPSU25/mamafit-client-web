@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom'
-import { UserRole } from '@/@types/user'
+import { UserRole } from '@/@types/auth.type'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils/utils'
 import AppSidebar from '@/components/layout/app-sidebar'

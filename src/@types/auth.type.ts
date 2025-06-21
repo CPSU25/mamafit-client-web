@@ -1,4 +1,6 @@
-export type UserRole = 'Admin' | 'BranchManager' | 'Designer' | 'Manager' | 'Staff' | 'BranchStaff' | 'User'
+export type SystemRole = 'Admin' | 'BranchManager' | 'Designer' | 'Manager' | 'Staff'
+export type ClientRole = 'User'
+export type UserRole = SystemRole | ClientRole
 
 export interface User {
   id?: string // Optional for backward compatibility

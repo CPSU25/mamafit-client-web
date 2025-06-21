@@ -21,7 +21,7 @@ import { Card, CardContent } from '@/components/ui/card'
 
 import MaternityDressCreationDialog from './component/maternitydress-creation-dialog'
 import ExpandedProductDetails from './component/expanded-maternity-details'
-import { useMaternityDressStore } from '@/stores/admin/maternity-dress-store'
+import { useMaternityDressStore } from '@/stores/admin/maternity-dress.store'
 import dayjs from 'dayjs'
 // React Query Hooks
 import { useGetMaternityDresses, useDeleteMaternityDress } from '@/services/admin/maternity-dress.service'
