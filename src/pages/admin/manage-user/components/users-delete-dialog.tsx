@@ -54,7 +54,8 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
             Are you sure you want to delete <span className='font-bold'>{currentRow.userName}</span>?
             <br />
             This action will permanently remove the user with the role of{' '}
-            <span className='font-bold'>{currentRow.roleName?.toUpperCase()}</span> from the system. This cannot be undone.
+            <span className='font-bold'>{currentRow.roleName?.toUpperCase()}</span> from the system. This cannot be
+            undone.
           </p>
 
           <Label className='my-2'>

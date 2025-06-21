@@ -1,4 +1,4 @@
-import { Shield, ShoppingCart, Users } from 'lucide-react'
+import { PenTool, Shield, ShoppingCart, User, Users } from 'lucide-react'
 import { UserStatus } from './schema'
 
 export const callTypes = new Map<UserStatus, string>([
@@ -10,8 +10,8 @@ export const callTypes = new Map<UserStatus, string>([
 
 export const userTypes = [
   {
-    label: 'Superadmin',
-    value: 'superadmin',
+    label: 'BranchManager',
+    value: 'branchmanager',
     icon: Shield
   },
   {
@@ -25,8 +25,19 @@ export const userTypes = [
     icon: Users
   },
   {
-    label: 'Cashier',
-    value: 'cashier',
+    label: 'User',
+    value: 'user',
+    icon: User
+  },
+  {
+    label: 'Staff',
+    value: 'staff',
     icon: ShoppingCart
+  },
+  {
+    label: 'Designer',
+    value: 'designer',
+    icon: PenTool
   }
+
 ] as const

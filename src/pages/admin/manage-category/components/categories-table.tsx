@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -15,11 +15,9 @@ import {
   useReactTable
 } from '@tanstack/react-table'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ChevronDown, ChevronRight } from 'lucide-react'
-import { CategoryType } from '@/@types/inventory.type'
-import { DataTablePagination } from '../../components/data-table-pagination'
-import { CategoriesTableToolbar } from './categories-table-toolbar'
-import { ExpandedCategoryStyles } from './expanded-category-styles'
+import { Category } from '../data/schema'
+import { DataTablePagination } from '@/pages/admin/components/data-table-pagination'
+import { CategoryTableToolbar } from './category-table-toolbar'
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -29,22 +27,15 @@ declare module '@tanstack/react-table' {
 }
 
 interface CategoriesTableProps {
-  columns: ColumnDef<CategoryType>[]
-  data: CategoryType[]
-  expandedCategoryId?: string | null
-  onCategoryClick?: (categoryId: string) => void
+  columns: ColumnDef<Category>[]
+  data: Category[]
 }
 
-export const CategoriesTable = React.memo(function CategoriesTable({ 
-  columns, 
-  data, 
-  expandedCategoryId, 
-  onCategoryClick 
-}: CategoriesTableProps) {
+export function CategoriesTable({ columns, data }: CategoriesTableProps) {
   const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
     data,
@@ -61,31 +52,23 @@ export const CategoriesTable = React.memo(function CategoriesTable({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues()
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFilteredRowModel: getFilteredRowModel()
   })
-
-  const handleCategoryClick = React.useCallback((categoryId: string, event: React.MouseEvent) => {
-    // Prevent expansion when clicking on action buttons
-    const target = event.target as HTMLElement
-    if (target.closest('[data-action-button]') || target.closest('[role="button"]')) {
-      return
-    }
-    
-    onCategoryClick?.(categoryId)
-  }, [onCategoryClick])
 
   return (
     <div className='space-y-4'>
-      <CategoriesTableToolbar table={table} />
+      {/* Search Filter */}
+      <CategoryTableToolbar table={table} />
+      {/* Table */}
       <div className='rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className='group/row'>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
@@ -102,67 +85,27 @@ export const CategoriesTable = React.memo(function CategoriesTable({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => {
-                const isExpanded = expandedCategoryId === row.original.id
-                const categoryId = row.original.id
-                
-                return (
-                  <React.Fragment key={`category-fragment-${categoryId}`}>
-                    {/* Main Category Row */}
-                    <TableRow 
-                      key={`category-row-${categoryId}`}
-                      data-state={row.getIsSelected() && 'selected'} 
-                      className='cursor-pointer hover:bg-muted/50 transition-colors'
-                      onClick={(e) => handleCategoryClick(categoryId, e)}
-                    >
-                      {row.getVisibleCells().map((cell, cellIndex) => (
-                        <TableCell 
-                          key={`cell-${categoryId}-${cellIndex}`} 
-                          className={cell.column.columnDef.meta?.className ?? ''}
-                        >
-                          <div className='flex items-center gap-2'>
-                            {/* Add expand indicator to first data cell (after checkbox) */}
-                            {cellIndex === 1 && (
-                              <div className='flex-shrink-0' aria-hidden="true">
-                                {isExpanded ? (
-                                  <ChevronDown className='h-4 w-4 text-blue-600' />
-                                ) : (
-                                  <ChevronRight className='h-4 w-4 text-gray-400' />
-                                )}
-                              </div>
-                            )}
-                            <div className='flex-1'>
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </div>
-                          </div>
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                    
-                    {/* Expanded Content Row */}
-                    {isExpanded && (
-                      <TableRow key={`expanded-row-${categoryId}`} className='border-0 bg-muted/20'>
-                        <TableCell colSpan={columns.length} className='p-0 border-0'>
-                          <div className='w-full'>
-                            <ExpandedCategoryStyles categoryId={categoryId} />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </React.Fragment>
-                )
-              })
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className='group/row'>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className={cell.column.columnDef.meta?.className ?? ''}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className='h-24 text-center'>
-                  Không có dữ liệu
+                  No results.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
+
       <DataTablePagination table={table} />
     </div>
   )
-}) 
+}

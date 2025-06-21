@@ -1,116 +1,85 @@
-import { useEffect } from 'react'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
-import { Loader2, AlertTriangle } from 'lucide-react'
+'use client'
+import { useState } from 'react'
+
 import { useDeleteCategory } from '@/services/admin/category.service'
 import { toast } from 'sonner'
-import { CategoryType } from '@/@types/inventory.type'
+import { Category } from '../data/schema'
+import { ConfirmDialog } from '@/components/confirm-dialog'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AlertTriangle } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 
-interface CategoryDeleteDialogProps {
+interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentCategory: CategoryType
+  currentRow: Category
 }
 
-export function CategoryDeleteDialog({ 
-  open, 
-  onOpenChange, 
-  currentCategory 
-}: CategoryDeleteDialogProps) {
+export function CategoryDeleteDialog({ open, onOpenChange, currentRow }: Props) {
+  const [value, setValue] = useState('')
   const deleteCategoryMutation = useDeleteCategory()
-  
-  // Reset mutation when dialog opens
-  useEffect(() => {
-    if (open) {
-      deleteCategoryMutation.reset()
-    }
-  }, [open, deleteCategoryMutation])
 
   const handleDelete = async () => {
-    if (!currentCategory) {
-      toast.error('Không tìm thấy danh mục để xóa')
-      onOpenChange(false)
-      return
-    }
-
+    if (value.trim() !== currentRow.name) return
     try {
-      await deleteCategoryMutation.mutateAsync(currentCategory.id)
-      
-      toast.success('Xóa danh mục thành công!')
+      await deleteCategoryMutation.mutateAsync(currentRow.id)
+      toast.success(`Category "${currentRow.name}" has been deleted successfully`)
       onOpenChange(false)
+      setValue('')
     } catch (error: unknown) {
       console.error('Error deleting category:', error)
-      
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra'
-      
-      toast.error(`Lỗi xóa danh mục: ${errorMessage}`)
-      
-      // Reset mutation state but keep dialog open for retry
-      deleteCategoryMutation.reset()
-    }
-  }
 
-  const handleClose = () => {
-    deleteCategoryMutation.reset()
-    onOpenChange(false)
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Something went wrong'
+
+      toast.error(`Failed to delete category: ${errorMessage}`)
+    }
   }
 
   const isDeleting = deleteCategoryMutation.isPending
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500" aria-hidden="true" />
-            Xác Nhận Xóa Danh Mục
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-left">
-            Bạn có chắc chắn muốn xóa danh mục{' '}
-            <span className="font-semibold text-foreground">
-              "{currentCategory?.name}"
-            </span>
-            ?
+    <ConfirmDialog
+      open={open}
+      onOpenChange={(state) => {
+        setValue('')
+        onOpenChange(state)
+      }}
+      handleConfirm={handleDelete}
+      disabled={value.trim() !== currentRow.name || deleteCategoryMutation.isPending}
+      title={
+        <span className='text-destructive'>
+          <AlertTriangle className='stroke-destructive mr-1 inline-block' size={18} /> Delete Category
+        </span>
+      }
+      desc={
+        <div className='space-y-4'>
+          <p className='mb-2'>
+            Are you sure you want to delete <span className='font-bold'>{currentRow.name}</span>?
             <br />
-            <span className="text-red-600 text-sm mt-2 block">
-              ⚠️ Hành động này không thể hoàn tác và sẽ xóa tất cả styles liên quan.
-            </span>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel 
-            onClick={handleClose}
-            disabled={isDeleting}
-          >
-            Hủy
-          </AlertDialogCancel>
-          
-          <AlertDialogAction asChild>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {isDeleting && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-              )}
-              Xóa Danh Mục
-            </Button>
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+            This action will permanently remove the category from the system. This cannot be undone.
+          </p>
+          <Label className='my-2'>
+            Category Name:
+            <Input
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder='Enter category name to confirm deletion.'
+              disabled={deleteCategoryMutation.isPending}
+            />
+          </Label>
+        </div>
+      }
+      confirmText={isDeleting ? 'Deleting...' : 'Delete'}
+      destructive
+    >
+      <Alert variant='destructive'>
+        <AlertTitle>Warning!</AlertTitle>
+        <AlertDescription>Please be careful, this operation can not be rolled back.</AlertDescription>
+      </Alert>
+    </ConfirmDialog>
   )
-} 
+}
