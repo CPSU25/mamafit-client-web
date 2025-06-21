@@ -94,7 +94,6 @@ export class SignalRService {
       this.emit('MessageHistory', messages)
     })
 
-    
     console.log('Event listeners đã được setup')
   }
 

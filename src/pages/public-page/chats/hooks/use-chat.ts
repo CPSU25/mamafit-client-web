@@ -8,7 +8,7 @@ import { type Convo } from '../data/chat-types'
 export interface UseChatReturn {
   isConnected: boolean
   connectionStatus: string
-  
+
   joinRoom: (roomId: string) => Promise<void>
   sendMessage: (roomId: string, message: string) => Promise<void>
   loadMessages: (roomId: string) => Promise<void>
@@ -18,7 +18,7 @@ export interface UseChatReturn {
   isLoading: boolean
   isLoadingRooms: boolean
   error: string | null
-  loadedRooms: Set<string> 
+  loadedRooms: Set<string>
 }
 
 export function useChat(): UseChatReturn {
@@ -57,14 +57,14 @@ export function useChat(): UseChatReturn {
     try {
       setIsLoadingRooms(true)
       setError(null)
-      
+
       const response = await chatAPI.getMyRooms()
       const roomsData = response.data.data || []
-      
+
       setRooms(roomsData)
       setHasLoadedRooms(true) // Mark as loaded
       console.log('✅ Loaded', roomsData.length, 'chat rooms')
-      
+
       // Auto-join all rooms for SignalR
       if (isConnected && roomsData.length > 0) {
         for (const room of roomsData) {

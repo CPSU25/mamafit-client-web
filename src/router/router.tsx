@@ -166,8 +166,7 @@ export const router = createBrowserRouter([
           {
             path: 'manage-task',
             element: <div>Manage Tasks Page</div>
-          },
-          
+          }
         ]
       },
 

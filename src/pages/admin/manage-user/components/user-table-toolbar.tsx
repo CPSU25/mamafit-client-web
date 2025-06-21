@@ -2,15 +2,15 @@ import { Cross } from 'lucide-react'
 import { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { userTypes } from '../manage-user/data/data'
-import { DataTableFacetedFilter } from './data-table-faceted-filter'
-import { DataTableViewOptions } from './data-table-view-options'
+import { userTypes } from '../data/data'
+import { DataTableFacetedFilter } from '../../components/data-table-faceted-filter'
+import { DataTableViewOptions } from '../../components/data-table-view-options'
 
-interface DataTableToolbarProps<TData> {
+interface UserTableToolbarProps<TData> {
   table: Table<TData>
 }
 
-export function DataTableToolbar<TData>({ table }: DataTableToolbarProps<TData>) {
+export function UserTableToolbar<TData>({ table }: UserTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
 
   return (

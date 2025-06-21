@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { callTypes, userTypes } from '../data/data'
 import { User } from '../data/schema'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
-import { DataTableRowActions } from '../../components/data-table-row-actions'
+import { UserTableRowActions } from './user-table-row-action'
 import LongText from '@/components/long-text'
 
 export const columns: ColumnDef<User>[] = [
@@ -81,7 +81,7 @@ export const columns: ColumnDef<User>[] = [
         </div>
       )
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, value) => {
       const user = row.original
       const status = user.isVerify ? 'active' : 'inactive'
       return value.includes(status)
@@ -111,7 +111,7 @@ export const columns: ColumnDef<User>[] = [
         </div>
       )
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, value) => {
       const roleName = row.getValue('roleName') as string
       return value.includes(roleName.toLowerCase())
     },
@@ -120,6 +120,6 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     id: 'actions',
-    cell: DataTableRowActions
+    cell: UserTableRowActions
   }
 ]

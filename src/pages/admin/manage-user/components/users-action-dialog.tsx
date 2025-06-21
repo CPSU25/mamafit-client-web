@@ -306,11 +306,7 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           </Form>
         </div>
         <DialogFooter>
-          <Button 
-            type='submit' 
-            form='user-form'
-            disabled={isLoading}
-          >
+          <Button type='submit' form='user-form' disabled={isLoading}>
             {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : 'Save changes'}
           </Button>
         </DialogFooter>

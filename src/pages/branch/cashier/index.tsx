@@ -5,18 +5,7 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Search, 
-  Plus, 
-  Minus, 
-  ShoppingCart, 
-  User, 
-  CreditCard, 
-  Package, 
-  Truck, 
-  CheckCircle,
-  X
-} from 'lucide-react'
+import { Search, Plus, Minus, ShoppingCart, User, CreditCard, Package, Truck, CheckCircle, X } from 'lucide-react'
 
 // Mock data
 const mockOrders = [
@@ -219,10 +208,7 @@ function CashierPage() {
           <CardContent>
             <div className='flex flex-wrap gap-3'>
               {mockOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className='flex items-center gap-3 bg-muted/50 p-4 rounded-lg border'
-                >
+                <div key={order.id} className='flex items-center gap-3 bg-muted/50 p-4 rounded-lg border'>
                   <Badge variant='outline' className={getStatusColor(order.status)}>
                     {getStatusIcon(order.status)}
                     <span className='ml-1'>{order.status}</span>
@@ -260,10 +246,10 @@ function CashierPage() {
                 <CardContent className='p-4'>
                   {/* Product Image */}
                   <div className='aspect-square bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden'>
-                    <img 
-                      src={product.image} 
-                      alt={product.name} 
-                      className='w-16 h-16 object-contain opacity-80 group-hover:scale-110 transition-transform duration-200' 
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className='w-16 h-16 object-contain opacity-80 group-hover:scale-110 transition-transform duration-200'
                     />
                   </div>
 
@@ -271,9 +257,11 @@ function CashierPage() {
                   <div className='space-y-3'>
                     <div>
                       <h3 className='font-semibold text-sm line-clamp-2 min-h-[2.5rem]'>{product.name}</h3>
-                      <Badge variant='secondary' className='text-xs mt-1'>{product.category}</Badge>
+                      <Badge variant='secondary' className='text-xs mt-1'>
+                        {product.category}
+                      </Badge>
                     </div>
-                    
+
                     <p className='text-xl font-bold text-primary'>${product.price}</p>
 
                     {/* Size Selector */}
@@ -295,11 +283,7 @@ function CashierPage() {
                     </div>
 
                     {/* Add to Cart Button */}
-                    <Button
-                      onClick={() => addToCart(product)}
-                      className='w-full'
-                      size='sm'
-                    >
+                    <Button onClick={() => addToCart(product)} className='w-full' size='sm'>
                       <Plus className='h-4 w-4 mr-2' />
                       Add to Cart
                     </Button>
@@ -348,7 +332,7 @@ function CashierPage() {
                   <h3 className='text-sm font-semibold'>Cart Items</h3>
                   <Badge variant='secondary'>{cart.length} items</Badge>
                 </div>
-                
+
                 <ScrollArea className='h-64'>
                   <div className='space-y-3 pr-4'>
                     {cart.length === 0 ? (
@@ -365,21 +349,19 @@ function CashierPage() {
                         >
                           {/* Product Image */}
                           <div className='w-12 h-12 bg-background rounded-lg flex items-center justify-center flex-shrink-0'>
-                            <img 
-                              src={item.image} 
-                              alt={item.name} 
-                              className='w-8 h-8 object-contain' 
-                            />
+                            <img src={item.image} alt={item.name} className='w-8 h-8 object-contain' />
                           </div>
-                          
+
                           {/* Product Details */}
                           <div className='flex-1 min-w-0 space-y-1'>
                             <h4 className='text-sm font-medium truncate'>{item.name}</h4>
                             <div className='flex items-center gap-2'>
-                              <Badge variant='outline' className='text-xs'>{item.size}</Badge>
+                              <Badge variant='outline' className='text-xs'>
+                                {item.size}
+                              </Badge>
                               <span className='text-sm font-semibold text-primary'>${item.price}</span>
                             </div>
-                            
+
                             {/* Quantity Controls */}
                             <div className='flex items-center gap-2 mt-2'>
                               <Button
@@ -445,11 +427,7 @@ function CashierPage() {
               </div>
 
               {/* Process Transaction Button */}
-              <Button
-                className='w-full h-12 text-base font-semibold'
-                disabled={cart.length === 0}
-                size='lg'
-              >
+              <Button className='w-full h-12 text-base font-semibold' disabled={cart.length === 0} size='lg'>
                 <CreditCard className='h-5 w-5 mr-2' />
                 Process Transaction
               </Button>

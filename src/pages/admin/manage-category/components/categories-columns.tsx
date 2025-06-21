@@ -1,26 +1,20 @@
 import { ColumnDef } from '@tanstack/react-table'
-import { cn } from '@/lib/utils/utils'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Button } from '@/components/ui/button'
-import { Package, Edit, Trash2, MoreHorizontal } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
-import { CategoryType } from '@/@types/inventory.type'
-import { DataTableColumnHeader } from '../../components/data-table-column-header'
+import { Package } from 'lucide-react'
+import { Category } from '../data/schema'
 import LongText from '@/components/long-text'
 import dayjs from 'dayjs'
+import { cn } from '@/lib/utils/utils'
+import { Checkbox } from '@/components/ui/checkbox'
+import { DataTableColumnHeader } from '../../components/data-table-column-header'
+import { CategoryTableRowActions } from './category-row-action'
 
 // Component để hiển thị hình ảnh category
 function CategoryImage({ src, alt, count }: { src: string; alt: string; count: number }) {
   if (!src) {
     return (
       <div className='w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center'>
-        <Package className='h-6 w-6 text-gray-400' aria-hidden="true" />
+        <Package className='h-6 w-6 text-gray-400' />
       </div>
     )
   }
@@ -38,7 +32,7 @@ function CategoryImage({ src, alt, count }: { src: string; alt: string; count: n
         }}
       />
       <div className='w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center hidden'>
-        <Package className='h-6 w-6 text-gray-400' aria-hidden="true" />
+        <Package className='h-6 w-6 text-gray-400' />
       </div>
       {count > 1 && (
         <Badge variant='secondary' className='text-xs'>
@@ -49,163 +43,152 @@ function CategoryImage({ src, alt, count }: { src: string; alt: string; count: n
   )
 }
 
-interface CreateColumnsProps {
-  onEditCategory?: (category: CategoryType) => void
-  onDeleteCategory?: (category: CategoryType) => void
-}
+// // Actions cell component
+// function ActionsCell({ category }: { category: Category }) {
+//   const { setOpen, setCurrentRow } = useCategories()
 
-export const createColumns = ({ onEditCategory, onDeleteCategory }: CreateColumnsProps = {}): ColumnDef<CategoryType>[] => [
+//   const handleEdit = (e: React.MouseEvent) => {
+//     e.stopPropagation()
+//     setCurrentRow(category)
+//     setOpen('edit')
+//   }
+
+//   const handleDelete = (e: React.MouseEvent) => {
+//     e.stopPropagation()
+//     setCurrentRow(category)
+//     setOpen('delete')
+//   }
+
+//   return (
+//     <DropdownMenu>
+//       <DropdownMenuTrigger asChild>
+//         <Button variant='ghost' className='h-8 w-8 p-0'>
+//           <span className='sr-only'>Mở menu</span>
+//           <MoreHorizontal className='h-4 w-4' />
+//         </Button>
+//       </DropdownMenuTrigger>
+//       <DropdownMenuContent align='end' className='w-[160px]'>
+//         <DropdownMenuItem onClick={handleEdit}>
+//           <Edit className='h-4 w-4 mr-2' />
+//           Chỉnh sửa
+//         </DropdownMenuItem>
+//         <DropdownMenuItem
+//           onClick={handleDelete}
+//           className='text-red-600 focus:text-red-600 hover:text-red-600'
+//         >
+//           <Trash2 className='h-4 w-4 mr-2' />
+//           Xóa
+//         </DropdownMenuItem>
+//       </DropdownMenuContent>
+//     </DropdownMenu>
+//   )
+// }
+
+export const columns: ColumnDef<Category>[] = [
   {
     id: 'select',
     header: ({ table }) => (
-      <div data-action-button="true">
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label='Chọn tất cả'
-          className='translate-y-[2px]'
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label='Select all'
+        className='translate-y-[2px]'
+        data-action-button='true'
+      />
     ),
     meta: {
       className: cn(
-        'sticky left-0 z-10 w-[50px]',
+        'sticky md:table-cell left-12 z-10 rounded-tl w-12',
         'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
       )
     },
     cell: ({ row }) => (
-      <div data-action-button="true">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label={`Chọn hàng ${row.getValue('name')}`}
-          className='translate-y-[2px]'
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label='Select row'
+        className='translate-y-[2px]'
+        data-action-button='true'
+      />
     ),
     enableSorting: false,
     enableHiding: false
   },
   {
     accessorKey: 'name',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Tên Danh Mục' />,
-    cell: ({ row }) => (
-      <div className='font-medium text-gray-900'>
-        <LongText className='max-w-48'>{row.getValue('name')}</LongText>
-      </div>
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Category Name' />,
+    cell: ({ row }) => <LongText className='max-w-36'>{row.getValue('name')}</LongText>,
     meta: {
       className: cn(
-        'sticky left-[50px] min-w-[200px]',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
+        'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
+        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+        'sticky left-24 md:table-cell'
       )
     },
     enableHiding: false
   },
   {
     accessorKey: 'description',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Mô Tả' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Description' />,
     cell: ({ row }) => {
       const description = row.getValue('description') as string
-      return (
-        <div className='text-gray-600 max-w-xs'>
-          <LongText className='max-w-xs'>
-            {description || '-'}
-          </LongText>
-        </div>
+      return <LongText className='max-w-xs'>{description || '-'}</LongText>
+    },
+    meta: {
+      className: cn(
+        'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
+        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+        'sticky left-6 md:table-cell'
       )
     },
-    meta: { className: 'min-w-[300px]' }
+    enableHiding: false
   },
   {
     accessorKey: 'images',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Hình Ảnh' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Images' />,
     cell: ({ row }) => {
       const images = row.getValue('images') as string[]
       const categoryName = row.getValue('name') as string
-      
+
       if (!images || images.length === 0) {
-        return (
-          <div className='w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center'>
-            <Package className='h-6 w-6 text-gray-400' aria-hidden="true" />
-          </div>
-        )
+        return <Package className='h-6 w-6 text-gray-400' />
       }
 
       return <CategoryImage src={images[0]} alt={categoryName} count={images.length} />
     },
     enableSorting: false,
-    meta: { className: 'w-[120px]' }
+    enableHiding: false
+  },
+  {
+    accessorKey: 'status',
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Status' />,
+    cell: ({ row }) => {
+      const status = row.getValue('status') as string
+      return (
+        <Badge variant={status === 'active' ? 'default' : 'secondary'}>
+          {status === 'active' ? 'Active' : 'Inactive'}
+        </Badge>
+      )
+    },
+    enableSorting: false,
+    enableHiding: false
   },
   {
     accessorKey: 'createdAt',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Ngày Tạo' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Created At' />,
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as string
-      return (
-        <div className='text-gray-600 text-sm'>
-          {dayjs(date).format('DD/MM/YYYY')}
-        </div>
-      )
+      return <div className='text-gray-600 text-sm'>{dayjs(date).format('DD/MM/YYYY')}</div>
     },
-    meta: { className: 'w-[120px]' }
+    enableSorting: false,
+    enableHiding: false
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
-      const category = row.original
-
-      const handleEdit = (e: React.MouseEvent) => {
-        e.stopPropagation()
-        onEditCategory?.(category)
-      }
-
-      const handleDelete = (e: React.MouseEvent) => {
-        e.stopPropagation()
-        onDeleteCategory?.(category)
-      }
-
-      return (
-        <div data-action-button="true">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant='ghost'
-                className='h-8 w-8 p-0'
-                onClick={(e) => e.stopPropagation()}
-                data-action-button="true"
-                aria-label={`Mở menu cho ${category.name}`}
-              >
-                <span className='sr-only'>Mở menu</span>
-                <MoreHorizontal className='h-4 w-4' aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align='end' 
-              className='w-[160px]'
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DropdownMenuItem onClick={handleEdit}>
-                <Edit className='h-4 w-4 mr-2' aria-hidden="true" />
-                Chỉnh sửa
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleDelete}
-                className='text-red-600 focus:text-red-600 hover:text-red-600'
-              >
-                <Trash2 className='h-4 w-4 mr-2' aria-hidden="true" />
-                Xóa
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )
-    },
-    meta: { className: 'w-[80px]' }
+    cell: ({ row }) => (
+      <div data-action-button='true'>
+        <CategoryTableRowActions row={row} />
+      </div>
+    )
   }
 ]
-
-// Default columns export for backward compatibility
-export const columns = createColumns() 

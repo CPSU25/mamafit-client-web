@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Loader2, Plus, Trash2, Package, Info, Settings, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -17,9 +17,7 @@ interface ExpandedCategoryStylesProps {
   categoryId: string
 }
 
-export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles({
-  categoryId
-}: ExpandedCategoryStylesProps) {
+export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesProps) => {
   const [activeTab, setActiveTab] = useState('styles')
   const [showAddForm, setShowAddForm] = useState(false)
 
@@ -28,7 +26,7 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
     () => ({
       index: 1,
       pageSize: 10,
-      sortBy: 'createdat_desc' as const
+      sortBy: 'createdAt_desc' as const
     }),
     []
   )
@@ -98,16 +96,19 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
     [deleteStyleMutation]
   )
 
-  const handleToggleAddForm = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    setShowAddForm((prev) => {
-      if (!prev) {
-        // Reset mutations when opening form
-        createStyleMutation.reset()
-      }
-      return !prev
-    })
-  }, [createStyleMutation])
+  const handleToggleAddForm = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      setShowAddForm((prev) => {
+        if (!prev) {
+          // Reset mutations when opening form
+          createStyleMutation.reset()
+        }
+        return !prev
+      })
+    },
+    [createStyleMutation]
+  )
 
   if (!categoryId) {
     return (
@@ -131,25 +132,25 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
               value='styles'
               className='flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all'
             >
-              <Settings className='h-4 w-4' aria-hidden="true" />
+              <Settings className='h-4 w-4' aria-hidden='true' />
               Styles ({styles.length})
             </TabsTrigger>
             <TabsTrigger
               value='info'
               className='flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all'
             >
-              <Info className='h-4 w-4' aria-hidden="true" />
+              <Info className='h-4 w-4' aria-hidden='true' />
               Thông tin
             </TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Styles */}
           <TabsContent value='styles' className='space-y-4'>
-            <Card className='border-0 shadow-lg bg-white'>
+            <Card className='border-0 shadow-md bg-white py-0'>
               <CardHeader className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg py-3'>
                 <CardTitle className='flex items-center justify-between text-lg'>
                   <div className='flex items-center gap-2'>
-                    <Package className='h-5 w-5' aria-hidden="true" />
+                    <Package className='h-5 w-5' aria-hidden='true' />
                     Danh Sách Styles ({styles.length})
                   </div>
                   <Button
@@ -157,16 +158,16 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
                     onClick={handleToggleAddForm}
                     disabled={createStyleMutation.isPending}
                     className='bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
-                    data-action-button="true"
+                    data-action-button='true'
                   >
                     {showAddForm ? (
                       <>
-                        <X className='h-4 w-4 mr-2' aria-hidden="true" />
+                        <X className='h-4 w-4 mr-2' aria-hidden='true' />
                         Đóng Form
                       </>
                     ) : (
                       <>
-                        <Plus className='h-4 w-4 mr-2' aria-hidden="true" />
+                        <Plus className='h-4 w-4 mr-2' aria-hidden='true' />
                         Thêm Style
                       </>
                     )}
@@ -178,7 +179,7 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
                   <Card className='mb-4 border-2 border-dashed border-blue-200 bg-blue-50/30'>
                     <CardHeader className='pb-3'>
                       <CardTitle className='text-base text-blue-800 flex items-center gap-2'>
-                        <Plus className='h-4 w-4' aria-hidden="true" />
+                        <Plus className='h-4 w-4' aria-hidden='true' />
                         Thêm Style Mới
                       </CardTitle>
                     </CardHeader>
@@ -212,8 +213,8 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
                                 render={({ field }) => (
                                   <FormItem className='flex items-center space-x-2'>
                                     <FormControl>
-                                      <Checkbox 
-                                        checked={field.value} 
+                                      <Checkbox
+                                        checked={field.value}
                                         onCheckedChange={field.onChange}
                                         disabled={createStyleMutation.isPending}
                                       />
@@ -255,12 +256,12 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
                             >
                               {createStyleMutation.isPending ? (
                                 <>
-                                  <Loader2 className='animate-spin h-4 w-4 mr-2' aria-hidden="true" />
+                                  <Loader2 className='animate-spin h-4 w-4 mr-2' aria-hidden='true' />
                                   Đang tạo...
                                 </>
                               ) : (
                                 <>
-                                  <Plus className='h-4 w-4 mr-2' aria-hidden="true" />
+                                  <Plus className='h-4 w-4 mr-2' aria-hidden='true' />
                                   Tạo Style
                                 </>
                               )}
@@ -297,13 +298,13 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
                 {stylesLoading ? (
                   <div className='text-center py-8'>
                     <div className='flex flex-col items-center gap-2'>
-                      <Loader2 className='animate-spin h-6 w-6 text-blue-600' aria-hidden="true" />
+                      <Loader2 className='animate-spin h-6 w-6 text-blue-600' aria-hidden='true' />
                       <p className='text-muted-foreground text-sm'>Đang tải styles...</p>
                     </div>
                   </div>
                 ) : styles.length === 0 ? (
                   <div className='text-center py-8'>
-                    <Package className='h-12 w-12 mx-auto mb-3 text-gray-300' aria-hidden="true" />
+                    <Package className='h-12 w-12 mx-auto mb-3 text-gray-300' aria-hidden='true' />
                     <h4 className='text-base font-medium text-gray-900 mb-1'>Chưa có style nào</h4>
                     <p className='text-gray-500 text-sm'>Danh mục này chưa có style nào được tạo</p>
                   </div>
@@ -324,9 +325,9 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
                               disabled={deleteStyleMutation.isPending}
                               className='h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50'
                               aria-label={`Xóa style ${style.name}`}
-                              data-action-button="true"
+                              data-action-button='true'
                             >
-                              <Trash2 className='h-3 w-3' aria-hidden="true" />
+                              <Trash2 className='h-3 w-3' aria-hidden='true' />
                             </Button>
                           </div>
 
@@ -362,10 +363,10 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
           </TabsContent>
 
           <TabsContent value='info' className='space-y-4'>
-            <Card className='border-0 shadow-lg bg-white'>
+            <Card className='border-0 shadow-lg bg-white py-0'>
               <CardHeader className='bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg py-3'>
                 <CardTitle className='flex items-center gap-2 text-lg'>
-                  <Info className='h-5 w-5' aria-hidden="true" />
+                  <Info className='h-5 w-5' aria-hidden='true' />
                   Thông Tin Danh Mục
                 </CardTitle>
               </CardHeader>
@@ -386,7 +387,7 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
                   <div className='p-3 bg-green-50 rounded-lg'>
                     <span className='text-xs font-medium text-green-600 uppercase tracking-wide'>Có hình ảnh</span>
                     <p className='text-lg font-bold text-green-700 mt-1'>
-                      {styles.filter((s: StyleType) => s.image && s.image.length > 0).length}
+                      {styles.filter((s: StyleType) => s.images && s.images.length > 0).length}
                     </p>
                   </div>
                 </div>
@@ -397,4 +398,4 @@ export const ExpandedCategoryStyles = React.memo(function ExpandedCategoryStyles
       </div>
     </div>
   )
-})
+}

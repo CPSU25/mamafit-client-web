@@ -38,7 +38,7 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
     if (!currentRole) return null
 
     const currentPath = location.pathname
-    
+
     // Extract the last segment of the path for matching
     const pathSegments = currentPath.split('/').filter(Boolean)
     const lastSegment = pathSegments[pathSegments.length - 1] || 'dashboard'
@@ -53,7 +53,7 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
             groupTitle: navGroup.title
           }
         }
-        
+
         // Check if it's a collapsible item with sub-items
         if ('items' in navItem && navItem.items) {
           for (const subItem of navItem.items) {
@@ -84,7 +84,7 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
     return activeNavItem?.title || 'Dashboard'
   }
 
-  // Get page subtitle based on navigation context or custom prop  
+  // Get page subtitle based on navigation context or custom prop
   const getPageSubtitle = () => {
     if (subtitle) return subtitle
 
@@ -93,11 +93,11 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
 
     // Create contextual subtitle based on navigation structure
     const { groupTitle, parentTitle } = activeNavItem
-    
+
     if (parentTitle) {
       return `${groupTitle} • ${parentTitle}`
     }
-    
+
     return groupTitle
   }
 
@@ -116,27 +116,21 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
       {/* Left section - Navigation & Page Info */}
       <div className='flex items-center gap-4'>
         <div className='flex items-center gap-3'>
-          <SidebarTrigger 
-            variant='outline' 
-            className='h-9 w-9 hover:bg-primary/10 hover:border-primary/30 transition-colors' 
+          <SidebarTrigger
+            variant='outline'
+            className='h-9 w-9 hover:bg-primary/10 hover:border-primary/30 transition-colors'
           />
           <Separator orientation='vertical' className='h-6 bg-border/60' />
         </div>
-        
+
         <div className='flex flex-col'>
-          <h1 className='text-lg font-semibold text-foreground leading-none'>
-            {getPageTitle()}
-          </h1>
-          <p className='text-xs text-muted-foreground mt-0.5 hidden sm:block'>
-            {getPageSubtitle()}
-          </p>
+          <h1 className='text-lg font-semibold text-foreground leading-none'>{getPageTitle()}</h1>
+          <p className='text-xs text-muted-foreground mt-0.5 hidden sm:block'>{getPageSubtitle()}</p>
         </div>
       </div>
 
       {/* Right section - Search, ModeToggle, Profile */}
-      <div className='flex items-center gap-3'>
-        {children}
-      </div>
+      <div className='flex items-center gap-3'>{children}</div>
     </header>
   )
 }

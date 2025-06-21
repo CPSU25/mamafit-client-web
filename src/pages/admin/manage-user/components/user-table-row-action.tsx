@@ -9,14 +9,14 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { useUsers } from '../manage-user/context/users-context'
-import { User } from '../manage-user/data/schema'
+import { useUsers } from '../context/users-context'
+import { User } from '../data/schema'
 
-interface DataTableRowActionsProps {
+interface UserTableRowActionsProps {
   row: Row<User>
 }
 
-export function DataTableRowActions({ row }: DataTableRowActionsProps) {
+export function UserTableRowActions({ row }: UserTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useUsers()
   return (
     <>
