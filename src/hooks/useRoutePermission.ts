@@ -33,7 +33,7 @@ export const useRoutePermission = (options: UseRoutePermissionOptions = {}) => {
     if (isLoading) return
 
     if (!isAuthenticated) {
-      navigate('/sign-in', { state: { from: location }, replace: true })
+      navigate('/system/sign-in', { state: { from: location }, replace: true })
       return
     }
 
