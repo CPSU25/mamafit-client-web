@@ -9,7 +9,7 @@ export interface CategoryType {
 export interface CategoryFormData {
   name: string
   description: string
-  image?: Array<string>
+  image?: string[]
 }
 export interface StyleType {
   id: string

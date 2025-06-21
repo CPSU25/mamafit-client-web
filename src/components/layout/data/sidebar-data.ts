@@ -35,28 +35,28 @@ export const sidebarData: SidebarData = {
               icon: LayoutDashboard
             },
             {
-              title: 'Categories',
-              url: 'category',
+              title: 'Manage Categories',
+              url: 'manage-category',
               icon: Tags
             },
             {
-              title: 'Users',
-              url: 'users',
+              title: 'Manage Users',
+              url: 'manage-user',
               icon: Users
             },
             {
               title: 'Manage Branches',
-              url: 'branches',
+              url: 'manage-branch',
               icon: Users
             },
             {
-              title: 'Inventory',
-              url: 'inventory',
+              title: 'Manage Maternity Dresses',
+              url: 'manage-maternity-dress',
               icon: Package2
             },
             {
-              title: 'Transactions',
-              url: 'transactions',
+              title: 'Manage Transactions',
+              url: 'manage-transaction',
               icon: ShoppingCart
             }
           ]
@@ -90,8 +90,8 @@ export const sidebarData: SidebarData = {
               icon: ShoppingCart
             },
             {
-              title: 'Orders',
-              url: 'orders',
+              title: 'Manage Orders',
+              url: 'manage-order',
               icon: Package
             },
             {
@@ -100,8 +100,8 @@ export const sidebarData: SidebarData = {
               icon: MessagesSquare
             },
             {
-              title: 'Inventory',
-              url: 'inventory',
+              title: 'Manage Inventory',
+              url: 'manage-inventory',
               icon: Package2
             }
           ]
@@ -130,18 +130,18 @@ export const sidebarData: SidebarData = {
               icon: LayoutDashboard
             },
             {
-              title: 'Designs',
-              url: 'designs',
+              title: 'Manage Templates',
+              url: 'manage-template',
               icon: Palette
             },
             {
-              title: 'Chats',
-              url: 'chats',
+              title: 'Messages',
+              url: 'messages',
               icon: MessagesSquare
             },
             {
-              title: 'Projects',
-              url: 'projects',
+              title: 'Manage Tasks',
+              url: 'manage-task',
               icon: FolderOpen
             }
           ]
@@ -170,19 +170,29 @@ export const sidebarData: SidebarData = {
               icon: LayoutDashboard
             },
             {
-              title: 'Production',
-              url: 'production',
+              title: 'Manage Production',
+              url: 'manage-production',
               icon: Factory
             },
             {
-              title: 'Materials',
-              url: 'materials',
+              title: 'Manage Templates',
+              url: 'manage-template',
               icon: Package
             },
             {
-              title: 'Quality',
-              url: 'quality',
+              title: 'Manage Design Requests',
+              url: 'manage-design-request',
               icon: Award
+            },
+            {
+              title: 'Manage Orders',
+              url: 'manage-order',
+              icon: Package
+            },
+            {
+              title: 'Manage Tasks',
+              url: 'manage-task',
+              icon: FolderOpen
             }
           ]
         },
@@ -198,11 +208,12 @@ export const sidebarData: SidebarData = {
         }
       ]
     },
+    
     {
       name: 'Staff',
       navGroups: [
         {
-          title: 'Cashier',
+          title: 'Staff',
           items: [
             {
               title: 'Dashboard',
@@ -210,39 +221,9 @@ export const sidebarData: SidebarData = {
               icon: LayoutDashboard
             },
             {
-              title: 'Orders',
-              url: 'orders',
-              icon: Package
-            }
-          ]
-        },
-        {
-          title: 'Settings',
-          items: [
-            {
-              title: 'Profile',
-              url: 'profile',
-              icon: User
-            }
-          ]
-        }
-      ]
-    },
-    {
-      name: 'BranchStaff',
-      navGroups: [
-        {
-          title: 'Branch Staff',
-          items: [
-            {
-              title: 'Dashboard',
-              url: 'dashboard',
-              icon: LayoutDashboard
-            },
-            {
-              title: 'Orders',
-              url: 'orders',
-              icon: Package
+              title: 'Manage Tasks',
+              url: 'manage-task',
+              icon: FolderOpen
             }
           ]
         },
