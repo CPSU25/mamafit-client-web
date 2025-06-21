@@ -81,7 +81,7 @@ export const columns: ColumnDef<User>[] = [
         </div>
       )
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, value) => {
       const user = row.original
       const status = user.isVerify ? 'active' : 'inactive'
       return value.includes(status)
@@ -111,7 +111,7 @@ export const columns: ColumnDef<User>[] = [
         </div>
       )
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, value) => {
       const roleName = row.getValue('roleName') as string
       return value.includes(roleName.toLowerCase())
     },

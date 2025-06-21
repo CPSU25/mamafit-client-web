@@ -45,8 +45,7 @@ export default function Chats() {
     rooms,
     messages: realMessages,
     isLoading,
-    isLoadingRooms,
-    
+    isLoadingRooms
   } = useChat()
 
   // Auto-load rooms when SignalR is connected (only once)

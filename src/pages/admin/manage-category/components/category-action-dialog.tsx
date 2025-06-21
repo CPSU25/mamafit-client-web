@@ -1,6 +1,13 @@
 'use client'
 import { useForm } from 'react-hook-form'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -105,7 +112,7 @@ export function CategoryFormDialog({ open, onOpenChange, currentRow }: Props) {
                 control={form.control}
                 name='name'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel>Category Name *</FormLabel>
                     <FormControl>
                       <Input placeholder='eg: Office Dress' {...field} disabled={isSubmitting} />
@@ -119,10 +126,23 @@ export function CategoryFormDialog({ open, onOpenChange, currentRow }: Props) {
                 control={form.control}
                 name='description'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea placeholder='Description of category...' rows={3} {...field} disabled={isSubmitting} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='images'
+                render={({ field }) => (
+                  <FormItem className='items-center space-y-0 gap-x-4 gap-y-1'>
+                    <FormLabel>Images</FormLabel>
+                    <FormControl>
+                      <Input placeholder='Images of category...' {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -132,12 +152,8 @@ export function CategoryFormDialog({ open, onOpenChange, currentRow }: Props) {
           </Form>
         </div>
         <DialogFooter>
-          <Button 
-            type='submit' 
-            form='category-form'
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (isEdit ? 'Updating...' : 'Creating...'): 'Save changes'}
+          <Button type='submit' form='category-form' disabled={isSubmitting}>
+            {isSubmitting ? (isEdit ? 'Updating...' : 'Creating...') : 'Save changes'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -13,13 +13,16 @@ export default function useDialogState<T extends string | boolean>(
 ) {
   const [open, _setOpen] = useState<T | null>(initialState)
 
-  const setOpen = useCallback((str: T | null) => {
-    if (mode === 'toggle') {
-      _setOpen((prev) => (prev === str ? null : str))
-    } else {
-      _setOpen(str)
-    }
-  }, [mode])
+  const setOpen = useCallback(
+    (str: T | null) => {
+      if (mode === 'toggle') {
+        _setOpen((prev) => (prev === str ? null : str))
+      } else {
+        _setOpen(str)
+      }
+    },
+    [mode]
+  )
 
   const reset = useCallback(() => {
     _setOpen(null)

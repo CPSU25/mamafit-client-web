@@ -17,8 +17,8 @@ export function CategoryTableToolbar<TData>({ table }: CategoryTableToolbarProps
       <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
         <Input
           placeholder='Filter categories...'
-          value={(table.getColumn('categoryName')?.getFilterValue() as string) ?? ''}
-          onChange={(event) => table.getColumn('categoryName')?.setFilterValue(event.target.value)}
+          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+          onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
           className='h-8 w-[150px] lg:w-[250px]'
         />
         <div className='flex gap-x-2'>
@@ -34,13 +34,6 @@ export function CategoryTableToolbar<TData>({ table }: CategoryTableToolbarProps
               ]}
             />
           )}
-          {/* {table.getColumn('roleName') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('roleName')}
-              title='Role'
-              options={categoryTypes.map((t) => ({ ...t }))}
-            />
-          )} */}
         </div>
         {isFiltered && (
           <Button variant='ghost' onClick={() => table.resetColumnFilters()} className='h-8 px-2 lg:px-3'>

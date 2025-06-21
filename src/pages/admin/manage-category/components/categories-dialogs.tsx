@@ -4,14 +4,10 @@ import { CategoryDeleteDialog } from './category-delete-dialog'
 
 export function CategoriesDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useCategories()
-  
+
   return (
     <>
-      <CategoryFormDialog 
-        key='category-add' 
-        open={open === 'add'} 
-        onOpenChange={() => setOpen('add')} 
-      />
+      <CategoryFormDialog key='category-add' open={open === 'add'} onOpenChange={() => setOpen('add')} />
 
       {currentRow && (
         <>
@@ -42,4 +38,4 @@ export function CategoriesDialogs() {
       )}
     </>
   )
-} 
+}

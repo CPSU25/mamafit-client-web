@@ -29,7 +29,7 @@ const categoryAPI = {
 
     return api.get<ListBaseResponse<CategoryType>>(url)
   },
-  
+
   createCategory: (body: CategoryFormData) => api.post<ItemBaseResponse<CategoryType>>('/category', body),
   updateCategory: (id: string, body: CategoryFormData) =>
     api.put<ItemBaseResponse<CategoryType>>(`/category/${id}`, body),

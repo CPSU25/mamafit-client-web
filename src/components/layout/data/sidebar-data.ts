@@ -208,7 +208,7 @@ export const sidebarData: SidebarData = {
         }
       ]
     },
-    
+
     {
       name: 'Staff',
       navGroups: [

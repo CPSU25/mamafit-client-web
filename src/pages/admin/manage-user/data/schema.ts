@@ -47,10 +47,10 @@ export const transformManageUserToUser = (apiUser: ManageUserType): User => {
   const nameParts = apiUser.fullName?.split(' ') || ['', '']
   const firstName = nameParts[0] || ''
   const lastName = nameParts.slice(1).join(' ') || ''
-  
+
   // Determine status based on isVerify and other factors
   const status: UserStatus = apiUser.isVerify ? 'active' : 'inactive'
-  
+
   return {
     id: apiUser.id,
     userName: apiUser.userName,

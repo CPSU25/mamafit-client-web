@@ -10,7 +10,6 @@ interface MaternityDressQueryParams {
   sortBy?: string
 }
 
-
 // Query Keys
 export const maternityDressKeys = {
   all: ['maternity-dress'] as const,

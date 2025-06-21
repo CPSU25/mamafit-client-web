@@ -93,11 +93,12 @@ export const columns: ColumnDef<Category>[] = [
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label='Select all'
         className='translate-y-[2px]'
+        data-action-button='true'
       />
     ),
     meta: {
       className: cn(
-        'sticky md:table-cell left-0 z-10 rounded-tl',
+        'sticky md:table-cell left-12 z-10 rounded-tl w-12',
         'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
       )
     },
@@ -107,20 +108,21 @@ export const columns: ColumnDef<Category>[] = [
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label='Select row'
         className='translate-y-[2px]'
+        data-action-button='true'
       />
     ),
     enableSorting: false,
     enableHiding: false
   },
   {
-    accessorKey: 'categoryName',
+    accessorKey: 'name',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Category Name' />,
-    cell: ({ row }) => <LongText className='max-w-36'>{row.getValue('categoryName')}</LongText>,
+    cell: ({ row }) => <LongText className='max-w-36'>{row.getValue('name')}</LongText>,
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
         'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-        'sticky left-6 md:table-cell'
+        'sticky left-24 md:table-cell'
       )
     },
     enableHiding: false
@@ -146,7 +148,7 @@ export const columns: ColumnDef<Category>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title='Images' />,
     cell: ({ row }) => {
       const images = row.getValue('images') as string[]
-      const categoryName = row.getValue('categoryName') as string
+      const categoryName = row.getValue('name') as string
 
       if (!images || images.length === 0) {
         return <Package className='h-6 w-6 text-gray-400' />
@@ -183,6 +185,10 @@ export const columns: ColumnDef<Category>[] = [
   },
   {
     id: 'actions',
-    cell: CategoryTableRowActions
+    cell: ({ row }) => (
+      <div data-action-button='true'>
+        <CategoryTableRowActions row={row} />
+      </div>
+    )
   }
 ]

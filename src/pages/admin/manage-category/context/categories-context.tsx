@@ -21,11 +21,7 @@ export default function CategoriesProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<CategoriesDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Category | null>(null)
 
-  return (
-    <CategoriesContext value={{ open, setOpen, currentRow, setCurrentRow }}>
-      {children}
-    </CategoriesContext>
-  )
+  return <CategoriesContext value={{ open, setOpen, currentRow, setCurrentRow }}>{children}</CategoriesContext>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -37,4 +33,4 @@ export const useCategories = () => {
   }
 
   return categoriesContext
-} 
+}

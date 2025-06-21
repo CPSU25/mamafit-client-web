@@ -18,4 +18,4 @@ export const pageSizeOptions = [
 export const categoryStatusOptions = [
   { value: 'active', label: 'Hoạt động' },
   { value: 'inactive', label: 'Không hoạt động' }
-] 
+]

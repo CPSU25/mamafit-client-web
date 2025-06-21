@@ -156,8 +156,8 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
         toast.success('User created successfully!')
       }
 
-    form.reset()
-    onOpenChange(false)
+      form.reset()
+      onOpenChange(false)
     } catch (error) {
       toast.error(isEdit ? 'Failed to update user' : 'Failed to create user')
       console.error('Error:', error)
@@ -306,11 +306,7 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           </Form>
         </div>
         <DialogFooter>
-          <Button 
-            type='submit' 
-            form='user-form'
-            disabled={isLoading}
-          >
+          <Button type='submit' form='user-form' disabled={isLoading}>
             {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : 'Save changes'}
           </Button>
         </DialogFooter>

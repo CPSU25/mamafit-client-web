@@ -24,10 +24,10 @@ export default function ManageCategoryPage() {
   if (isLoading) {
     return (
       <Main>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading categories...</p>
+        <div className='flex items-center justify-center h-96'>
+          <div className='text-center'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4'></div>
+            <p className='text-muted-foreground'>Loading categories...</p>
           </div>
         </div>
       </Main>
@@ -38,10 +38,10 @@ export default function ManageCategoryPage() {
     const errorMessage = error instanceof Error ? error.message : 'An error occurred'
     return (
       <Main>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <p className="text-destructive mb-2">Cannot load categories</p>
-            <p className="text-muted-foreground text-sm">{errorMessage}</p>
+        <div className='flex items-center justify-center h-96'>
+          <div className='text-center'>
+            <p className='text-destructive mb-2'>Cannot load categories</p>
+            <p className='text-muted-foreground text-sm'>{errorMessage}</p>
           </div>
         </div>
       </Main>
@@ -54,9 +54,7 @@ export default function ManageCategoryPage() {
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
             <h2 className='text-2xl font-bold tracking-tight'>Manage Categories</h2>
-            <p className='text-muted-foreground'>
-              Manage categories of products
-            </p>
+            <p className='text-muted-foreground'>Manage categories of products</p>
           </div>
           <CategoriesPrimaryButtons />
         </div>
@@ -68,4 +66,4 @@ export default function ManageCategoryPage() {
       <CategoriesDialogs />
     </CategoriesProvider>
   )
-} 
+}

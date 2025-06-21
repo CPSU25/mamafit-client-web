@@ -4,7 +4,7 @@ import { signalRService } from '@/services/chat/signalr.service'
 
 export const useSignalRAutoConnect = () => {
   const { isAuthenticated, user } = useAuthStore()
-  const hasTriedConnect = useRef(false) 
+  const hasTriedConnect = useRef(false)
 
   useEffect(() => {
     let isComponentMounted = true
@@ -12,7 +12,7 @@ export const useSignalRAutoConnect = () => {
     const handleSignalRConnection = async () => {
       if (isAuthenticated && user) {
         if (!hasTriedConnect.current || !signalRService.isConnected) {
-          try {            
+          try {
             if (!signalRService.isConnected) {
               await signalRService.connect()
               hasTriedConnect.current = true
@@ -22,7 +22,7 @@ export const useSignalRAutoConnect = () => {
             }
           } catch (error) {
             console.error('❌ Failed to auto-connect SignalR after login:', error)
-            hasTriedConnect.current = false 
+            hasTriedConnect.current = false
           }
         }
       } else {
@@ -30,7 +30,7 @@ export const useSignalRAutoConnect = () => {
           if (signalRService.isConnected) {
             console.log('🔒 User logged out, disconnecting from SignalR...')
             await signalRService.disconnect()
-            hasTriedConnect.current = false 
+            hasTriedConnect.current = false
           }
         } catch (error) {
           console.error('❌ Failed to disconnect SignalR after logout:', error)
@@ -44,10 +44,10 @@ export const useSignalRAutoConnect = () => {
     return () => {
       isComponentMounted = false
     }
-  }, [isAuthenticated, user?.userId]) 
+  }, [isAuthenticated, user?.userId])
 
   return {
     isConnected: signalRService.isConnected,
     connectionState: signalRService.connectionState
   }
-} 
+}

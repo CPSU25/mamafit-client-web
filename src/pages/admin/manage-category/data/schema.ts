@@ -2,10 +2,7 @@ import { z } from 'zod'
 import { CategoryType } from '@/@types/inventory.type'
 
 // Status schema cho category
-const categoryStatusSchema = z.union([
-  z.literal('active'),
-  z.literal('inactive')
-])
+const categoryStatusSchema = z.union([z.literal('active'), z.literal('inactive')])
 export type CategoryStatus = z.infer<typeof categoryStatusSchema>
 
 // Category schema dựa trên CategoryType từ API
@@ -38,7 +35,7 @@ export const transformCategoryTypeToCategory = (apiCategory: CategoryType): Cate
   }
 }
 
-// Style schema  
+// Style schema
 export const styleSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -58,4 +55,4 @@ export const styleListSchema = z.array(styleSchema)
 export type StyleSchema = z.infer<typeof styleSchema>
 
 // Form data types (re-export from inventory.type.ts for convenience)
-export type { CategoryFormData, StyleFormData } from '@/@types/inventory.type' 
+export type { CategoryFormData, StyleFormData } from '@/@types/inventory.type'

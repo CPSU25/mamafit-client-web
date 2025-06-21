@@ -39,5 +39,4 @@ export const userTypes = [
     value: 'designer',
     icon: PenTool
   }
-
 ] as const

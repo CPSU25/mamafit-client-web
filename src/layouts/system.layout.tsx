@@ -51,9 +51,7 @@ function SystemLayout({ role, children }: Props) {
 
           <footer className='border-t bg-muted/30 px-6 py-4 mt-auto'>
             <div className='flex items-center justify-center'>
-              <p className='text-xs text-muted-foreground'>
-                © 2025 MamaFit. Made with ❤️ for expecting mothers.
-              </p>
+              <p className='text-xs text-muted-foreground'>© 2025 MamaFit. Made with ❤️ for expecting mothers.</p>
             </div>
           </footer>
         </SidebarInset>
