@@ -13,8 +13,8 @@ import { CategoryTableRowActions } from './category-row-action'
 function CategoryImage({ src, alt, count }: { src: string; alt: string; count: number }) {
   if (!src) {
     return (
-      <div className='w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center'>
-        <Package className='h-6 w-6 text-gray-400' />
+      <div className='w-12 h-12 rounded-lg bg-muted flex items-center justify-center'>
+        <Package className='h-6 w-6 text-muted-foreground' />
       </div>
     )
   }
@@ -24,15 +24,15 @@ function CategoryImage({ src, alt, count }: { src: string; alt: string; count: n
       <img
         src={src}
         alt={alt}
-        className='w-12 h-12 rounded-lg object-cover border-2 border-gray-100'
+        className='w-12 h-12 rounded-lg object-cover border-2 border-border'
         onError={(e) => {
           const target = e.target as HTMLImageElement
           target.style.display = 'none'
           target.nextElementSibling?.classList.remove('hidden')
         }}
       />
-      <div className='w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center hidden'>
-        <Package className='h-6 w-6 text-gray-400' />
+      <div className='w-12 h-12 rounded-lg bg-muted flex items-center justify-center hidden'>
+        <Package className='h-6 w-6 text-muted-foreground' />
       </div>
       {count > 1 && (
         <Badge variant='secondary' className='text-xs'>
@@ -151,7 +151,7 @@ export const columns: ColumnDef<Category>[] = [
       const categoryName = row.getValue('name') as string
 
       if (!images || images.length === 0) {
-        return <Package className='h-6 w-6 text-gray-400' />
+        return <Package className='h-6 w-6 text-muted-foreground' />
       }
 
       return <CategoryImage src={images[0]} alt={categoryName} count={images.length} />
@@ -178,7 +178,7 @@ export const columns: ColumnDef<Category>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title='Created At' />,
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as string
-      return <div className='text-gray-600 text-sm'>{dayjs(date).format('DD/MM/YYYY')}</div>
+      return <div className='text-muted-foreground text-sm'>{dayjs(date).format('DD/MM/YYYY')}</div>
     },
     enableSorting: false,
     enableHiding: false

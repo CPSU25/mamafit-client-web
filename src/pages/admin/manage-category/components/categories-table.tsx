@@ -58,7 +58,7 @@ export function CategoriesTable({ columns, data }: CategoriesTableProps) {
               e.stopPropagation()
               row.toggleExpanded()
             }}
-            className='h-8 w-8 p-0 hover:bg-gray-100'
+            className='h-8 w-8 p-0 hover:bg-muted'
             aria-label={row.getIsExpanded() ? 'Collapse row' : 'Expand row'}
             data-action-button='true'
           >
@@ -163,7 +163,7 @@ export function CategoriesTable({ columns, data }: CategoriesTableProps) {
                   {row.getIsExpanded() && (
                     <TableRow key={`${row.id}-expanded`}>
                       <TableCell colSpan={expandableColumns.length} className='p-0'>
-                        <div className='border-l-4 border-blue-500'>
+                        <div className='border-l-4 border-primary'>
                           <ExpandedCategoryStyles categoryId={row.original.id} />
                         </div>
                       </TableCell>

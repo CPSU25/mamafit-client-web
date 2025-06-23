@@ -93,8 +93,8 @@ export default function MaternityDressCreationDialog({
             tiết.
           </p>
           {stylesError && (
-            <div className='mt-2 p-3 bg-red-50 border border-red-200 rounded-lg'>
-              <div className='flex items-center gap-2 text-red-700'>
+            <div className='mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg'>
+              <div className='flex items-center gap-2 text-destructive'>
                 <Package className='h-4 w-4' />
                 <span className='text-sm'>Không thể tải danh sách kiểu dáng. Vui lòng thử lại sau.</span>
               </div>
@@ -136,12 +136,12 @@ export default function MaternityDressCreationDialog({
                         {stylesLoading ? (
                           <div className='flex items-center justify-center py-4'>
                             <Loader2 className='h-4 w-4 animate-spin mr-2' />
-                            <span className='text-sm text-gray-500'>Đang tải...</span>
+                            <span className='text-sm text-muted-foreground'>Đang tải...</span>
                           </div>
                         ) : stylesError ? (
                           <div className='flex items-center justify-center py-4'>
-                            <Package className='h-4 w-4 mr-2 text-red-500' />
-                            <span className='text-sm text-red-500'>Lỗi tải dữ liệu</span>
+                            <Package className='h-4 w-4 mr-2 text-destructive' />
+                            <span className='text-sm text-destructive'>Lỗi tải dữ liệu</span>
                           </div>
                         ) : stylesData?.data.items && stylesData.data.items.length > 0 ? (
                           stylesData.data.items.map((style) => (
@@ -151,8 +151,8 @@ export default function MaternityDressCreationDialog({
                           ))
                         ) : (
                           <div className='flex items-center justify-center py-4'>
-                            <Package className='h-4 w-4 mr-2 text-gray-400' />
-                            <span className='text-sm text-gray-500'>Không có style nào</span>
+                            <Package className='h-4 w-4 mr-2 text-muted-foreground' />
+                            <span className='text-sm text-muted-foreground'>Không có style nào</span>
                           </div>
                         )}
                       </SelectContent>
@@ -221,9 +221,9 @@ export default function MaternityDressCreationDialog({
             />
 
             {/* Info Message */}
-            <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
-              <h4 className='font-medium text-blue-800 mb-2'>💡 Bước tiếp theo:</h4>
-              <ul className='text-sm text-blue-700 space-y-1'>
+            <div className='bg-primary/10 border border-primary/20 rounded-lg p-4'>
+              <h4 className='font-medium text-primary mb-2'>💡 Bước tiếp theo:</h4>
+              <ul className='text-sm text-primary space-y-1'>
                 <li>• Sau khi tạo đầm bầu cơ bản, bạn có thể click vào đầm bầu trong bảng để xem chi tiết</li>
                 <li>• Thêm các phiên bản với màu sắc, kích thước và giá cả khác nhau</li>
                 <li>• Quản lý số lượng tồn kho cho từng phiên bản</li>

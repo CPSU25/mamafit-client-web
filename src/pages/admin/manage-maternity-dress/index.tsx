@@ -73,8 +73,8 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
 
   if (hasError && imgSrc === '/placeholder-image.jpg') {
     return (
-      <div className='w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center'>
-        <Package2 className='h-6 w-6 text-gray-400' />
+      <div className='w-12 h-12 rounded-lg bg-muted flex items-center justify-center'>
+        <Package2 className='h-6 w-6 text-muted-foreground' />
       </div>
     )
   }
@@ -83,7 +83,7 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
     <img
       src={imgSrc}
       alt={alt}
-      className='w-12 h-12 rounded-lg object-cover border-2 border-gray-100'
+      className='w-12 h-12 rounded-lg object-cover border-2 border-border'
       onError={handleError}
     />
   )
@@ -223,13 +223,13 @@ export default function MaternityDressPage() {
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-3xl font-bold tracking-tight text-gray-900'>Quản Lý Đầm Bầu</h1>
+          <h1 className='text-3xl font-bold tracking-tight text-foreground'>Quản Lý Đầm Bầu</h1>
           <p className='text-muted-foreground mt-1'>Quản lý các mẫu đầm bầu và thông tin chi tiết</p>
         </div>
         <div className='flex items-center gap-3'>
           <Button
             onClick={() => setCreateMaternityDressDialogOpen(true)}
-            className='bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+            className='bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm'
           >
             <Plus className='h-4 w-4 mr-2' />
             Tạo Đầm Bầu Mới
@@ -243,10 +243,10 @@ export default function MaternityDressPage() {
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
               <div>
-                <p className='text-sm font-medium text-gray-600'>Tổng đầm bầu</p>
-                <p className='text-2xl font-bold text-gray-900'>{totalDresses}</p>
+                <p className='text-sm font-medium text-muted-foreground'>Tổng đầm bầu</p>
+                <p className='text-2xl font-bold text-foreground'>{totalDresses}</p>
               </div>
-              <Package2 className='h-8 w-8 text-blue-600' />
+              <Package2 className='h-8 w-8 text-primary' />
             </div>
           </CardContent>
         </Card>
@@ -255,10 +255,10 @@ export default function MaternityDressPage() {
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
               <div>
-                <p className='text-sm font-medium text-gray-600'>Chưa hoàn thành</p>
-                <p className='text-2xl font-bold text-orange-600'>{incompleteDresses}</p>
+                <p className='text-sm font-medium text-muted-foreground'>Chưa hoàn thành</p>
+                <p className='text-2xl font-bold text-destructive'>{incompleteDresses}</p>
               </div>
-              <AlertCircle className='h-8 w-8 text-orange-600' />
+              <AlertCircle className='h-8 w-8 text-destructive' />
             </div>
           </CardContent>
         </Card>
@@ -267,10 +267,10 @@ export default function MaternityDressPage() {
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
               <div>
-                <p className='text-sm font-medium text-gray-600'>Đã hoàn thành</p>
-                <p className='text-2xl font-bold text-green-600'>{completeDresses}</p>
+                <p className='text-sm font-medium text-muted-foreground'>Đã hoàn thành</p>
+                <p className='text-2xl font-bold text-accent'>{completeDresses}</p>
               </div>
-              <TrendingUp className='h-8 w-8 text-green-600' />
+              <TrendingUp className='h-8 w-8 text-accent' />
             </div>
           </CardContent>
         </Card>
@@ -279,11 +279,11 @@ export default function MaternityDressPage() {
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
               <div>
-                <p className='text-sm font-medium text-gray-600'>Tổng giá trị</p>
-                <p className='text-2xl font-bold text-purple-600'>{formatCurrency(totalValue)}</p>
+                <p className='text-sm font-medium text-muted-foreground'>Tổng giá trị</p>
+                <p className='text-2xl font-bold text-secondary'>{formatCurrency(totalValue)}</p>
               </div>
-              <div className='h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center'>
-                <span className='text-purple-600 font-bold text-sm'>₫</span>
+              <div className='h-8 w-8 bg-secondary/20 rounded-full flex items-center justify-center'>
+                <span className='text-secondary font-bold text-sm'>₫</span>
               </div>
             </div>
           </CardContent>
@@ -292,9 +292,9 @@ export default function MaternityDressPage() {
 
       {/* Error Alert */}
       {error && (
-        <Card className='border-red-200 bg-red-50'>
+        <Card className='border-destructive/20 bg-destructive/10'>
           <CardContent className='p-4'>
-            <div className='flex items-center gap-2 text-red-700'>
+            <div className='flex items-center gap-2 text-destructive'>
               <AlertCircle className='h-4 w-4' />
               <span className='text-sm'>
                 {error instanceof Error ? error.message : 'Có lỗi xảy ra khi tải dữ liệu'}
@@ -310,17 +310,17 @@ export default function MaternityDressPage() {
           <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between'>
             <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1'>
               <div className='relative flex-1 max-w-sm'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4' />
+                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4' />
                 <Input
                   placeholder='Tìm kiếm danh mục...'
                   value={localSearch}
                   onChange={(e) => setLocalSearch(e.target.value)}
-                  className='pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  className='pl-10 border-border focus:border-primary focus:ring-primary'
                 />
               </div>
 
               <Select value={filters.sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger className='w-[180px] border-gray-300'>
+                <SelectTrigger className='w-[180px] border-border'>
                   <SelectValue placeholder='Sắp xếp' />
                 </SelectTrigger>
                 <SelectContent>
@@ -333,7 +333,7 @@ export default function MaternityDressPage() {
               </Select>
 
               <Select value={filters.pageSize?.toString() || '10'} onValueChange={handlePageSizeChange}>
-                <SelectTrigger className='w-[130px] border-gray-300'>
+                <SelectTrigger className='w-[130px] border-border'>
                   <SelectValue placeholder='Số lượng' />
                 </SelectTrigger>
                 <SelectContent>
@@ -346,7 +346,7 @@ export default function MaternityDressPage() {
               </Select>
             </div>
 
-            <Button variant='outline' onClick={handleResetFilters} className='border-gray-300 hover:bg-gray-50'>
+            <Button variant='outline' onClick={handleResetFilters} className='border-border hover:bg-muted'>
               <RotateCcw className='h-4 w-4 mr-2' />
               Reset
             </Button>
@@ -356,10 +356,10 @@ export default function MaternityDressPage() {
 
       {/* Bulk Actions */}
       {selectedMaternityDresses.length > 0 && (
-        <Card className='border-l-4 border-l-blue-500 bg-blue-50 border-blue-200'>
+        <Card className='border-l-4 border-l-primary bg-primary/10 border-primary/20'>
           <CardContent className='p-4'>
             <div className='flex items-center justify-between'>
-              <span className='text-sm font-medium text-blue-800'>
+              <span className='text-sm font-medium text-primary'>
                 Đã chọn {selectedMaternityDresses.length} đầm bầu
               </span>
               <div className='flex gap-2'>
@@ -382,10 +382,10 @@ export default function MaternityDressPage() {
       )}
 
       {/* Dresses Table */}
-      <Card className='border-1 shadow-md bg-white py-0'>
+      <Card className='border-1 shadow-md bg-background py-0'>
         <Table>
           <TableHeader>
-            <TableRow className='bg-gray-50/50'>
+            <TableRow className='bg-muted/50'>
               <TableHead className='w-8'></TableHead>
               <TableHead className='w-12'>
                 <Checkbox
@@ -409,7 +409,7 @@ export default function MaternityDressPage() {
               <TableRow>
                 <TableCell colSpan={8} className='text-center py-12'>
                   <div className='flex flex-col items-center gap-2'>
-                    <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
+                    <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
                     <p className='text-muted-foreground'>Đang tải...</p>
                   </div>
                 </TableCell>
@@ -418,16 +418,16 @@ export default function MaternityDressPage() {
               <TableRow>
                 <TableCell colSpan={8} className='text-center py-12'>
                   <div className='text-center py-12'>
-                    <Package2 className='h-16 w-16 mx-auto mb-4 text-gray-300' />
-                    <h3 className='text-lg font-medium text-gray-900 mb-2'>Không có danh mục nào</h3>
-                    <p className='text-gray-500 mb-4'>
+                    <Package2 className='h-16 w-16 mx-auto mb-4 text-muted-foreground' />
+                    <h3 className='text-lg font-medium text-foreground mb-2'>Không có danh mục nào</h3>
+                    <p className='text-muted-foreground mb-4'>
                       {filters.search
                         ? 'Không tìm thấy danh mục phù hợp với từ khóa tìm kiếm'
                         : 'Chưa có danh mục nào được tạo'}
                     </p>
                     <Button
                       onClick={() => setCreateMaternityDressDialogOpen(true)}
-                      className='bg-blue-600 hover:bg-blue-700 text-white'
+                      className='bg-primary hover:bg-primary/90 text-primary-foreground'
                     >
                       <Plus className='h-4 w-4 mr-2' />
                       Tạo danh mục đầu tiên
@@ -441,15 +441,15 @@ export default function MaternityDressPage() {
                   /* Main Dress Row */
                   <TableRow
                     key={`dress-${dress.id}`}
-                    className='hover:bg-blue-50/50 cursor-pointer transition-colors border-b border-gray-100'
+                    className='hover:bg-primary/5 cursor-pointer transition-colors border-b border-border'
                     onClick={() => toggleMaternityDressExpansion(dress.id)}
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <div className='flex items-center justify-center'>
                         {expandedMaternityDressId === dress.id ? (
-                          <ChevronDown className='h-4 w-4 text-blue-600' />
+                          <ChevronDown className='h-4 w-4 text-primary' />
                         ) : (
-                          <ChevronRight className='h-4 w-4 text-gray-400' />
+                          <ChevronRight className='h-4 w-4 text-muted-foreground' />
                         )}
                       </div>
                     </TableCell>
@@ -464,13 +464,13 @@ export default function MaternityDressPage() {
                         {dress.images && dress.images.length > 0 ? (
                           <ProductImage src={dress.images[0]} alt={dress.name} />
                         ) : (
-                          <div className='w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center'>
-                            <Package2 className='h-6 w-6 text-gray-400' />
+                          <div className='w-12 h-12 rounded-lg bg-muted flex items-center justify-center'>
+                            <Package2 className='h-6 w-6 text-muted-foreground' />
                           </div>
                         )}
                         <div>
-                          <div className='font-semibold text-gray-900'>{dress.name}</div>
-                          <div className='text-sm text-gray-500'>Style: {dress.styleName}</div>
+                          <div className='font-semibold text-foreground'>{dress.name}</div>
+                          <div className='text-sm text-muted-foreground'>Style: {dress.styleName}</div>
                         </div>
                       </div>
                     </TableCell>
@@ -481,11 +481,11 @@ export default function MaternityDressPage() {
                     </TableCell>
                     <TableCell>
                       <div className='flex flex-col gap-1'>
-                        <span className='font-semibold text-green-600'>
+                        <span className='font-semibold text-accent'>
                           {formatCurrency(calculateTotalPrice(dress.price))}
                         </span>
                         {/* {Array.isArray(dress.price) && dress.price.length > 1 && (
-                          <span className='text-xs text-gray-500'>
+                          <span className='text-xs text-muted-foreground'>
                             ({dress.price.length} mức giá)
                           </span>
                         )} */}
@@ -493,7 +493,9 @@ export default function MaternityDressPage() {
                     </TableCell>
                     <TableCell>{getStatusBadge('Complete')}</TableCell>
                     <TableCell>
-                      <span className='text-sm text-gray-500'>{dayjs(dress.createdAt).format('DD/MM/YYYY')}</span>
+                      <span className='text-sm text-muted-foreground'>
+                        {dayjs(dress.createdAt).format('DD/MM/YYYY')}
+                      </span>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
@@ -505,7 +507,7 @@ export default function MaternityDressPage() {
                         <DropdownMenuContent align='end' className='w-40'>
                           <DropdownMenuItem
                             onClick={() => handleDeleteDress(dress.id)}
-                            className='text-red-600 focus:text-red-600'
+                            className='text-destructive focus:text-destructive'
                             disabled={deleteMaternityDressMutation.isPending}
                           >
                             <Trash className='h-4 w-4 mr-2' />
@@ -520,7 +522,7 @@ export default function MaternityDressPage() {
                   ...(expandedMaternityDressId === dress.id
                     ? [
                         <TableRow key={`expanded-${dress.id}`}>
-                          <TableCell colSpan={8} className='p-0 bg-white'>
+                          <TableCell colSpan={8} className='p-0 bg-background'>
                             <ExpandedProductDetails />
                           </TableCell>
                         </TableRow>
@@ -532,8 +534,8 @@ export default function MaternityDressPage() {
           </TableBody>
         </Table>
         {pagination && pagination.totalPages > 1 && (
-          <div className='flex items-center justify-between px-6 py-4 border-t border-gray-200'>
-            <div className='flex items-center gap-2 text-sm text-gray-600'>
+          <div className='flex items-center justify-between px-6 py-4 border-t border-border'>
+            <div className='flex items-center gap-2 text-sm text-muted-foreground'>
               <span>
                 Hiển thị {(pagination.pageNumber - 1) * pagination.pageSize + 1} -{' '}
                 {Math.min(pagination.pageNumber * pagination.pageSize, pagination.totalCount)}
@@ -547,7 +549,7 @@ export default function MaternityDressPage() {
                 size='sm'
                 onClick={() => handlePageChange(pagination.pageNumber - 1)}
                 disabled={!pagination.hasPreviousPage}
-                className='border-gray-300'
+                className='border-border'
               >
                 <ChevronLeft className='h-4 w-4 mr-1' />
                 Trước
@@ -570,9 +572,7 @@ export default function MaternityDressPage() {
                       variant={pageNum === pagination.pageNumber ? 'default' : 'outline'}
                       size='sm'
                       onClick={() => handlePageChange(pageNum)}
-                      className={
-                        pageNum === pagination.pageNumber ? 'bg-blue-600 hover:bg-blue-700' : 'border-gray-300'
-                      }
+                      className={pageNum === pagination.pageNumber ? 'bg-primary hover:bg-primary/90' : 'border-border'}
                     >
                       {pageNum}
                     </Button>
@@ -585,7 +585,7 @@ export default function MaternityDressPage() {
                 size='sm'
                 onClick={() => handlePageChange(pagination.pageNumber + 1)}
                 disabled={!pagination.hasNextPage}
-                className='border-gray-300'
+                className='border-border'
               >
                 Sau
                 <ChevronRight className='h-4 w-4 ml-1' />
@@ -601,9 +601,9 @@ export default function MaternityDressPage() {
           <div className='flex items-center justify-between text-sm text-muted-foreground'>
             <div className='flex items-center gap-4'>
               <span>Hiển thị {filteredDresses.length} đầm bầu</span>
-              <span>• Tổng giá trị: <strong className='text-purple-600'>{formatCurrency(totalValue)}</strong></span>
+              <span>• Tổng giá trị: <strong className='text-secondary'>{formatCurrency(totalValue)}</strong></span>
               {selectedMaternityDresses.length > 0 && (
-                <span className='text-blue-600 font-medium'>• Đã chọn {selectedMaternityDresses.length} đầm bầu</span>
+                <span className='text-primary font-medium'>• Đã chọn {selectedMaternityDresses.length} đầm bầu</span>
               )}
             </div>
             {selectedMaternityDresses.length > 0 && (

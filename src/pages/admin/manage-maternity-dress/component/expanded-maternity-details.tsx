@@ -50,8 +50,8 @@ function DetailProductImage({ src, alt, className }: { src: string; alt: string;
 
   if (hasError && imgSrc === '/placeholder-image.jpg') {
     return (
-      <div className={`bg-gray-100 flex items-center justify-center ${className || 'w-16 h-16 rounded-xl'}`}>
-        <Package className='h-6 w-6 text-gray-400' />
+      <div className={`bg-muted flex items-center justify-center ${className || 'w-16 h-16 rounded-xl'}`}>
+        <Package className='h-6 w-6 text-muted-foreground' />
       </div>
     )
   }
@@ -66,7 +66,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
 
   if (!images || images.length === 0) {
     return (
-      <div className='h-60 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400'>
+      <div className='h-60 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center text-muted-foreground'>
         <Package className='h-12 w-12 mb-2 opacity-50' />
         <p className='text-sm'>Chưa có hình ảnh</p>
       </div>
@@ -77,7 +77,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
     return (
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
-          <p className='text-sm text-gray-600'>Hiển thị tất cả {images.length} hình ảnh</p>
+          <p className='text-sm text-muted-foreground'>Hiển thị tất cả {images.length} hình ảnh</p>
           <Button size='sm' variant='outline' onClick={() => setShowAllImages(false)} className='text-xs'>
             Thu gọn
           </Button>
@@ -89,7 +89,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
                 <DetailProductImage
                   src={image}
                   alt={`${productName} ${index + 1}`}
-                  className='w-full h-32 object-cover rounded-lg border-2 border-gray-100 group-hover:border-purple-300 transition-colors'
+                  className='w-full h-32 object-cover rounded-lg border-2 border-border group-hover:border-primary transition-colors'
                 />
                 <div className='absolute top-2 left-2'>
                   <Badge variant='secondary' className='text-xs'>
@@ -111,7 +111,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
         <DetailProductImage
           src={images[currentImageIndex]}
           alt={`${productName} ${currentImageIndex + 1}`}
-          className='w-full h-64 object-cover rounded-lg border-2 border-gray-100'
+          className='w-full h-64 object-cover rounded-lg border-2 border-border'
         />
         <div className='absolute top-2 left-2'>
           <Badge variant='secondary' className='text-xs'>
@@ -125,7 +125,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
             <Button
               size='sm'
               variant='secondary'
-              className='absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-white/80 hover:bg-white'
+              className='absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-background/80 hover:bg-background'
               onClick={() => setCurrentImageIndex(currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1)}
             >
               <ChevronLeft className='h-4 w-4' />
@@ -133,7 +133,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
             <Button
               size='sm'
               variant='secondary'
-              className='absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-white/80 hover:bg-white'
+              className='absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-background/80 hover:bg-background'
               onClick={() => setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1)}
             >
               <ChevronRight className='h-4 w-4' />
@@ -151,7 +151,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
                 key={`thumb-${index}`}
                 onClick={() => setCurrentImageIndex(index)}
                 className={`flex-shrink-0 relative ${
-                  currentImageIndex === index ? 'ring-2 ring-purple-500' : ''
+                  currentImageIndex === index ? 'ring-2 ring-primary' : ''
                 } rounded-lg overflow-hidden`}
               >
                 <DetailProductImage
@@ -246,7 +246,7 @@ export default function ExpendMaternityDressDetails() {
     return (
       <div className='p-8 text-center'>
         <div className='flex flex-col items-center gap-3'>
-          <Package className='h-16 w-16 text-gray-300' />
+          <Package className='h-16 w-16 text-muted-foreground' />
           <p className='text-muted-foreground'>Chọn một đầm bầu để xem chi tiết</p>
         </div>
       </div>
@@ -261,7 +261,7 @@ export default function ExpendMaternityDressDetails() {
     return (
       <div className='p-8 text-center'>
         <div className='flex flex-col items-center gap-3'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
+          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
           <p className='text-muted-foreground'>Đang tải thông tin đầm bầu...</p>
         </div>
       </div>
@@ -281,24 +281,24 @@ export default function ExpendMaternityDressDetails() {
     <div className=''>
       <div className='p-8'>
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className='space-y-6'>
-          <TabsList className='grid w-full grid-cols-3 bg-white shadow-sm border border-gray-200 rounded-xl p-1'>
+          <TabsList className='grid w-full grid-cols-3 bg-background shadow-sm border border-border rounded-xl p-1'>
             <TabsTrigger
               value='info'
-              className='flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all'
+              className='flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all'
             >
               <Info className='h-4 w-4' />
               Thông tin
             </TabsTrigger>
             <TabsTrigger
               value='details'
-              className='flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all'
+              className='flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all'
             >
               <Settings className='h-4 w-4' />
               Chi tiết ({maternityDressDetails.length})
             </TabsTrigger>
             <TabsTrigger
               value='inventory'
-              className='flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all'
+              className='flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all'
             >
               <BarChart3 className='h-4 w-4' />
               Tồn kho
@@ -309,8 +309,8 @@ export default function ExpendMaternityDressDetails() {
           <TabsContent value='info' className='space-y-6'>
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 '>
               {/* Basic Info */}
-              <Card className='border-0 shadow-xl bg-white py-0 gap-1'>
-                <CardHeader className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg py-2'>
+              <Card className='border-0 shadow-xl bg-background py-0 gap-1'>
+                <CardHeader className='bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-t-lg py-2'>
                   <CardTitle className='flex items-center gap-2'>
                     <Info className='h-5 w-5' />
                     Thông Tin Cơ Bản
@@ -320,35 +320,43 @@ export default function ExpendMaternityDressDetails() {
                   <div className='grid grid-cols-1 gap-4'>
                     <div className='grid grid-cols-2 gap-6'>
                       <div className='space-y-3'>
-                        <div className='p-3 bg-gray-50 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>Mã đầm bầu</span>
-                          <p className='text-sm font-mono text-gray-900 mt-1'>{maternityDress.id}</p>
+                        <div className='p-3 bg-muted rounded-lg shadow-md'>
+                          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                            Mã đầm bầu
+                          </span>
+                          <p className='text-sm font-mono text-foreground mt-1'>{maternityDress.id}</p>
                         </div>
-                        <div className='p-3 bg-gray-50 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>Style</span>
-                          <p className='text-sm text-gray-900 mt-1'>{maternityDress.styleName}</p>
+                        <div className='p-3 bg-muted rounded-lg shadow-md'>
+                          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                            Style
+                          </span>
+                          <p className='text-sm text-foreground mt-1'>{maternityDress.styleName}</p>
                         </div>
-                        <div className='p-3 bg-gray-50 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-gray-500 uppercase tracking-wide'>Slug URL</span>
-                          <p className='text-sm font-mono text-gray-900 mt-1'>{maternityDress.slug}</p>
+                        <div className='p-3 bg-muted rounded-lg shadow-md'>
+                          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
+                            Slug URL
+                          </span>
+                          <p className='text-sm font-mono text-foreground mt-1'>{maternityDress.slug}</p>
                         </div>
                       </div>
                       <div className='space-y-3'>
-                        <div className='p-3 bg-blue-50 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-blue-600 uppercase tracking-wide'>Thành Phần</span>
-                          <p className='text-sm font-bold text-blue-700 mt-1'>{maternityDressDetails.length}</p>
+                        <div className='p-3 bg-primary/10 rounded-lg shadow-md'>
+                          <span className='text-xs font-medium text-primary uppercase tracking-wide'>Thành Phần</span>
+                          <p className='text-sm font-bold text-primary mt-1'>{maternityDressDetails.length}</p>
                         </div>
-                        <div className='p-3 bg-purple-50 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-purple-600 uppercase tracking-wide'>
+                        <div className='p-3 bg-accent/10 rounded-lg shadow-md'>
+                          <span className='text-xs font-medium text-accent uppercase tracking-wide'>
                             Tổng số lượng sản phẩm
                           </span>
-                          <p className='text-sm font-bold text-purple-700 mt-1'>{totalStock}</p>
+                          <p className='text-sm font-bold text-accent mt-1'>{totalStock}</p>
                         </div>
-                        <div className='p-3 bg-green-50 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-green-600 uppercase tracking-wide'>
+                        <div className='p-3 bg-secondary/10 rounded-lg shadow-md'>
+                          <span className='text-xs font-medium text-secondary-foreground uppercase tracking-wide'>
                             Tổng giá trị sản phẩm
                           </span>
-                          <p className='text-sm font-bold text-green-700 mt-1'>{totalValue.toLocaleString()} VNĐ</p>
+                          <p className='text-sm font-bold text-secondary-foreground mt-1'>
+                            {totalValue.toLocaleString()} VNĐ
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -357,8 +365,8 @@ export default function ExpendMaternityDressDetails() {
               </Card>
 
               {/* Product Images - Updated */}
-              <Card className='border-0 shadow-xl bg-white py-0 gap-1'>
-                <CardHeader className='bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg py-2'>
+              <Card className='border-0 shadow-xl bg-background py-0 gap-1'>
+                <CardHeader className='bg-gradient-to-r from-accent to-accent/90 text-accent-foreground rounded-t-lg py-2'>
                   <CardTitle className='flex items-center gap-2'>
                     <Package className='h-5 w-5' />
                     Hình Ảnh Đầm Bầu ({maternityDress.images?.length || 0})
@@ -371,8 +379,8 @@ export default function ExpendMaternityDressDetails() {
             </div>
 
             {/* Description - Updated with scrollable textarea */}
-            <Card className='border-0 shadow-xl bg-white py-0 gap-1'>
-              <CardHeader className='bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg py-2'>
+            <Card className='border-0 shadow-xl bg-background py-0 gap-1'>
+              <CardHeader className='bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground rounded-t-lg py-2'>
                 <CardTitle>Mô Tả Đầm Bầu</CardTitle>
               </CardHeader>
               <CardContent className='p-4'>
@@ -380,12 +388,14 @@ export default function ExpendMaternityDressDetails() {
                   <Textarea
                     value={maternityDress.description || 'Chưa có mô tả chi tiết cho đầm bầu này.'}
                     readOnly
-                    className='min-h-[120px] max-h-[300px] resize-none border-gray-200 bg-gray-50 text-gray-700 leading-relaxed focus:ring-0 focus:border-gray-200'
+                    className='min-h-[120px] max-h-[300px] resize-none border-border bg-muted text-foreground leading-relaxed focus:ring-0 focus:border-border'
                     placeholder='Chưa có mô tả chi tiết cho đầm bầu này.'
                   />
                   {!maternityDress.description && (
                     <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-                      <span className='text-gray-400 italic text-sm'>Chưa có mô tả chi tiết cho đầm bầu này.</span>
+                      <span className='text-muted-foreground italic text-sm'>
+                        Chưa có mô tả chi tiết cho đầm bầu này.
+                      </span>
                     </div>
                   )}
                 </div>
@@ -395,8 +405,8 @@ export default function ExpendMaternityDressDetails() {
 
           {/* Tab 2: Maternity Dress Details */}
           <TabsContent value='details' className='space-y-6'>
-            <Card className='border-0 shadow-xl py-0 bg-white gap-1'>
-              <CardHeader className='bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-t-lg my-auto py-1'>
+            <Card className='border-0 shadow-xl py-0 bg-background gap-1'>
+              <CardHeader className='bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-t-lg my-auto py-1'>
                 <CardTitle className='flex items-center justify-between'>
                   <div className='flex items-center justify-center'>
                     <Settings className='h-5 w-5' />
@@ -406,7 +416,7 @@ export default function ExpendMaternityDressDetails() {
                     size='sm'
                     onClick={() => setShowAddForm(!showAddForm)}
                     disabled={createDetailMutation.isPending}
-                    className='bg-white text-orange-600 hover:bg-orange-50 border border-orange-200'
+                    className='bg-background text-primary hover:bg-accent border border-border'
                   >
                     {showAddForm ? (
                       <>
@@ -425,9 +435,9 @@ export default function ExpendMaternityDressDetails() {
               <CardContent className='p-6'>
                 {/* Add Detail Form */}
                 {showAddForm && (
-                  <Card className='mb-6 border-2 border-dashed border-orange-200 bg-orange-50/30'>
+                  <Card className='mb-6 border-2 border-dashed border-primary/30 bg-primary/5'>
                     <CardHeader className='pb-4'>
-                      <CardTitle className='text-lg text-orange-800 flex items-center gap-2'>
+                      <CardTitle className='text-lg text-primary flex items-center gap-2'>
                         <Plus className='h-5 w-5' />
                         Thêm Chi Tiết Mới
                       </CardTitle>
@@ -441,11 +451,11 @@ export default function ExpendMaternityDressDetails() {
                               name='name'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-gray-700 font-medium'>Tên Chi Tiết *</FormLabel>
+                                  <FormLabel className='text-foreground font-medium'>Tên Chi Tiết *</FormLabel>
                                   <FormControl>
                                     <Input
                                       placeholder='VD: Đầm bầu màu đỏ size M'
-                                      className='border-gray-300 focus:border-orange-500 focus:ring-orange-500'
+                                      className='border-border focus:border-primary focus:ring-primary'
                                       {...field}
                                     />
                                   </FormControl>
@@ -459,10 +469,10 @@ export default function ExpendMaternityDressDetails() {
                               name='color'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-gray-700 font-medium'>Màu Sắc *</FormLabel>
+                                  <FormLabel className='text-foreground font-medium'>Màu Sắc *</FormLabel>
                                   <FormControl>
                                     <select
-                                      className='w-full border border-gray-300 focus:border-orange-500 focus:ring-orange-500 bg-white px-3 py-2 text-sm rounded-md'
+                                      className='w-full border border-border focus:border-primary focus:ring-primary bg-background px-3 py-2 text-sm rounded-md'
                                       {...field}
                                     >
                                       <option value=''>Chọn màu sắc</option>
@@ -485,10 +495,10 @@ export default function ExpendMaternityDressDetails() {
                               name='size'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-gray-700 font-medium'>Kích Thước *</FormLabel>
+                                  <FormLabel className='text-foreground font-medium'>Kích Thước *</FormLabel>
                                   <FormControl>
                                     <select
-                                      className='w-full border border-gray-300 focus:border-orange-500 focus:ring-orange-500 bg-white px-3 py-2 text-sm rounded-md'
+                                      className='w-full border border-border focus:border-primary focus:ring-primary bg-background px-3 py-2 text-sm rounded-md'
                                       {...field}
                                     >
                                       <option value=''>Chọn size</option>
@@ -509,12 +519,12 @@ export default function ExpendMaternityDressDetails() {
                               name='quantity'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-gray-700 font-medium'>Số Lượng *</FormLabel>
+                                  <FormLabel className='text-foreground font-medium'>Số Lượng *</FormLabel>
                                   <FormControl>
                                     <Input
                                       type='number'
                                       placeholder='10'
-                                      className='border-gray-300 focus:border-orange-500 focus:ring-orange-500'
+                                      className='border-border focus:border-primary focus:ring-primary'
                                       {...field}
                                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                                     />
@@ -529,13 +539,13 @@ export default function ExpendMaternityDressDetails() {
                               name='price'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-gray-700 font-medium'>Giá *</FormLabel>
+                                  <FormLabel className='text-foreground font-medium'>Giá *</FormLabel>
                                   <FormControl>
                                     <Input
                                       type='number'
                                       step='0.01'
                                       placeholder='29.99'
-                                      className='border-gray-300 focus:border-orange-500 focus:ring-orange-500'
+                                      className='border-border focus:border-primary focus:ring-primary'
                                       {...field}
                                       onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                                     />
@@ -551,11 +561,11 @@ export default function ExpendMaternityDressDetails() {
                             name='description'
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className='text-gray-700 font-medium'>Mô Tả</FormLabel>
+                                <FormLabel className='text-foreground font-medium'>Mô Tả</FormLabel>
                                 <FormControl>
                                   <Textarea
                                     placeholder='Mô tả chi tiết về phiên bản này...'
-                                    className='border-gray-300 focus:border-orange-500 focus:ring-orange-500'
+                                    className='border-border focus:border-primary focus:ring-primary'
                                     {...field}
                                   />
                                 </FormControl>
@@ -569,7 +579,7 @@ export default function ExpendMaternityDressDetails() {
                             name='images'
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className='text-gray-700 font-medium'>Hình Ảnh *</FormLabel>
+                                <FormLabel className='text-foreground font-medium'>Hình Ảnh *</FormLabel>
                                 <FormControl>
                                   <ImageUpload
                                     value={field.value}
@@ -583,11 +593,11 @@ export default function ExpendMaternityDressDetails() {
                             )}
                           />
 
-                          <div className='flex gap-3 pt-4 border-t border-orange-200'>
+                          <div className='flex gap-3 pt-4 border-t border-border'>
                             <Button
                               type='submit'
                               disabled={createDetailMutation.isPending}
-                              className='bg-orange-600 hover:bg-orange-700 text-white'
+                              className='bg-primary hover:bg-primary/90 text-primary-foreground'
                             >
                               {createDetailMutation.isPending ? (
                                 <>
@@ -605,7 +615,7 @@ export default function ExpendMaternityDressDetails() {
                               type='button'
                               variant='outline'
                               onClick={() => setShowAddForm(false)}
-                              className='border-gray-300 hover:bg-gray-50'
+                              className='border-border hover:bg-muted'
                             >
                               <X className='h-4 w-4 mr-2' />
                               Hủy
@@ -621,14 +631,14 @@ export default function ExpendMaternityDressDetails() {
                 {maternityDressDetails.length === 0 ? (
                   <div className='text-center py-12'>
                     <div className='max-w-sm mx-auto'>
-                      <Settings className='h-16 w-16 mx-auto mb-4 text-gray-300' />
-                      <h3 className='text-lg font-medium text-gray-900 mb-2'>Chưa có chi tiết nào</h3>
-                      <p className='text-gray-500 mb-6'>
+                      <Settings className='h-16 w-16 mx-auto mb-4 text-muted-foreground' />
+                      <h3 className='text-lg font-medium text-foreground mb-2'>Chưa có chi tiết nào</h3>
+                      <p className='text-muted-foreground mb-6'>
                         Thêm các chi tiết như màu sắc, size, giá để hoàn thiện đầm bầu và bắt đầu bán hàng
                       </p>
                       <Button
                         onClick={() => setShowAddForm(true)}
-                        className='bg-orange-600 hover:bg-orange-700 text-white'
+                        className='bg-primary hover:bg-primary/90 text-primary-foreground'
                       >
                         <Plus className='h-4 w-4 mr-2' />
                         Thêm Chi Tiết Đầu Tiên
@@ -640,7 +650,7 @@ export default function ExpendMaternityDressDetails() {
                     {maternityDressDetails.map((detail: MaternityDressDetailType) => (
                       <Card
                         key={detail.id}
-                        className='relative group hover:shadow-lg transition-shadow border border-gray-200'
+                        className='relative group hover:shadow-lg transition-shadow border border-border'
                       >
                         <Button
                           size='sm'
@@ -660,29 +670,29 @@ export default function ExpendMaternityDressDetails() {
                               className='w-full h-48 object-cover rounded-t-lg'
                             />
                           ) : (
-                            <div className='w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg flex items-center justify-center'>
-                              <Package className='h-12 w-12 text-gray-400' />
+                            <div className='w-full h-48 bg-gradient-to-br from-muted to-muted/80 rounded-t-lg flex items-center justify-center'>
+                              <Package className='h-12 w-12 text-muted-foreground' />
                             </div>
                           )}
 
                           <div className='p-4'>
-                            <h4 className='font-semibold text-gray-900 mb-3 text-lg'>{detail.name}</h4>
+                            <h4 className='font-semibold text-foreground mb-3 text-lg'>{detail.name}</h4>
 
                             <div className='space-y-2 mb-4'>
                               <div className='flex items-center justify-between'>
-                                <span className='text-sm text-gray-500'>Màu sắc:</span>
-                                <Badge variant='outline' className='bg-blue-50 text-blue-700 border-blue-200'>
+                                <span className='text-sm text-muted-foreground'>Màu sắc:</span>
+                                <Badge variant='outline' className='bg-primary/10 text-primary border-primary/20'>
                                   {detail.color}
                                 </Badge>
                               </div>
                               <div className='flex items-center justify-between'>
-                                <span className='text-sm text-gray-500'>Kích thước:</span>
-                                <Badge variant='outline' className='bg-green-50 text-green-700 border-green-200'>
+                                <span className='text-sm text-muted-foreground'>Kích thước:</span>
+                                <Badge variant='outline' className='bg-accent/10 text-accent border-accent/20'>
                                   {detail.size}
                                 </Badge>
                               </div>
                               <div className='flex items-center justify-between'>
-                                <span className='text-sm text-gray-500'>Số lượng:</span>
+                                <span className='text-sm text-muted-foreground'>Số lượng:</span>
                                 <Badge
                                   variant={detail.quantity > 10 ? 'default' : 'destructive'}
                                   className='font-semibold'
@@ -691,14 +701,14 @@ export default function ExpendMaternityDressDetails() {
                                 </Badge>
                               </div>
                               <div className='flex items-center justify-between'>
-                                <span className='text-sm text-gray-500'>Giá:</span>
-                                <span className='font-semibold text-green-600'>${detail.price}</span>
+                                <span className='text-sm text-muted-foreground'>Giá:</span>
+                                <span className='font-semibold text-secondary'>${detail.price}</span>
                               </div>
                             </div>
 
                             {detail.description && (
-                              <div className='pt-3 border-t border-gray-100'>
-                                <p className='text-xs text-gray-600 line-clamp-2'>{detail.description}</p>
+                              <div className='pt-3 border-t border-border'>
+                                <p className='text-xs text-muted-foreground line-clamp-2'>{detail.description}</p>
                               </div>
                             )}
                           </div>
@@ -713,8 +723,8 @@ export default function ExpendMaternityDressDetails() {
 
           {/* Tab 3: Inventory Management */}
           <TabsContent value='inventory' className='space-y-6'>
-            <Card className='border-0 shadow-md bg-white'>
-              <CardHeader className='bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-t-lg'>
+            <Card className='border-0 shadow-md bg-background'>
+              <CardHeader className='bg-gradient-to-r from-accent to-accent/90 text-accent-foreground rounded-t-lg'>
                 <CardTitle className='flex items-center gap-2'>
                   <BarChart3 className='h-5 w-5' />
                   Thống Kê Tồn Kho
@@ -722,34 +732,36 @@ export default function ExpendMaternityDressDetails() {
               </CardHeader>
               <CardContent className='p-6'>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8'>
-                  <div className='bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200'>
+                  <div className='bg-gradient-to-br from-primary/10 to-primary/20 p-6 rounded-xl border border-primary/20'>
                     <div className='flex items-center justify-between'>
                       <div>
-                        <span className='text-sm font-medium text-blue-700'>Tổng chi tiết</span>
-                        <p className='text-3xl font-bold text-blue-800 mt-1'>{maternityDressDetails.length}</p>
+                        <span className='text-sm font-medium text-primary'>Tổng chi tiết</span>
+                        <p className='text-3xl font-bold text-primary mt-1'>{maternityDressDetails.length}</p>
                       </div>
-                      <Package className='h-10 w-10 text-blue-600' />
+                      <Package className='h-10 w-10 text-primary' />
                     </div>
                   </div>
 
-                  <div className='bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200'>
+                  <div className='bg-gradient-to-br from-accent/10 to-accent/20 p-6 rounded-xl border border-accent/20'>
                     <div className='flex items-center justify-between'>
                       <div>
-                        <span className='text-sm font-medium text-green-700'>Tổng tồn kho</span>
-                        <p className='text-3xl font-bold text-green-800 mt-1'>{totalStock}</p>
+                        <span className='text-sm font-medium text-accent'>Tổng tồn kho</span>
+                        <p className='text-3xl font-bold text-accent mt-1'>{totalStock}</p>
                       </div>
-                      <BarChart3 className='h-10 w-10 text-green-600' />
+                      <BarChart3 className='h-10 w-10 text-accent' />
                     </div>
                   </div>
 
-                  <div className='bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border border-purple-200'>
+                  <div className='bg-gradient-to-br from-secondary/10 to-secondary/20 p-6 rounded-xl border border-secondary/20'>
                     <div className='flex items-center justify-between'>
                       <div>
-                        <span className='text-sm font-medium text-purple-700'>Giá trị tồn kho</span>
-                        <p className='text-3xl font-bold text-purple-800 mt-1'>${totalValue.toLocaleString()}</p>
+                        <span className='text-sm font-medium text-secondary-foreground'>Giá trị tồn kho</span>
+                        <p className='text-3xl font-bold text-secondary-foreground mt-1'>
+                          ${totalValue.toLocaleString()}
+                        </p>
                       </div>
-                      <div className='h-10 w-10 bg-purple-200 rounded-full flex items-center justify-center'>
-                        <span className='text-purple-700 font-bold text-lg'>$</span>
+                      <div className='h-10 w-10 bg-secondary/20 rounded-full flex items-center justify-center'>
+                        <span className='text-secondary-foreground font-bold text-lg'>$</span>
                       </div>
                     </div>
                   </div>
@@ -757,12 +769,12 @@ export default function ExpendMaternityDressDetails() {
 
                 {maternityDressDetails.length > 0 ? (
                   <div className='space-y-4'>
-                    <h4 className='text-lg font-semibold text-gray-900 mb-4'>Chi Tiết Tồn Kho Theo Phiên Bản</h4>
+                    <h4 className='text-lg font-semibold text-foreground mb-4'>Chi Tiết Tồn Kho Theo Phiên Bản</h4>
                     <div className='space-y-3'>
                       {maternityDressDetails.map((detail: MaternityDressDetailType) => (
                         <div
                           key={detail.id}
-                          className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border'
+                          className='flex items-center justify-between p-4 bg-muted rounded-lg border'
                         >
                           <div className='flex items-center gap-4'>
                             {detail.images && detail.images.length > 0 && (
@@ -773,15 +785,15 @@ export default function ExpendMaternityDressDetails() {
                               />
                             )}
                             <div>
-                              <p className='font-medium text-gray-900'>{detail.name}</p>
-                              <p className='text-sm text-gray-500'>
+                              <p className='font-medium text-foreground'>{detail.name}</p>
+                              <p className='text-sm text-muted-foreground'>
                                 {detail.color} • {detail.size} • ${detail.price}
                               </p>
                             </div>
                           </div>
                           <div className='text-right'>
-                            <p className='text-lg font-semibold text-gray-900'>{detail.quantity}</p>
-                            <p className='text-sm text-gray-500'>đơn vị</p>
+                            <p className='text-lg font-semibold text-foreground'>{detail.quantity}</p>
+                            <p className='text-sm text-muted-foreground'>đơn vị</p>
                           </div>
                         </div>
                       ))}
@@ -789,9 +801,9 @@ export default function ExpendMaternityDressDetails() {
                   </div>
                 ) : (
                   <div className='text-center py-12'>
-                    <BarChart3 className='h-16 w-16 mx-auto mb-4 text-gray-300' />
-                    <h4 className='text-lg font-medium text-gray-900 mb-2'>Chưa có dữ liệu tồn kho</h4>
-                    <p className='text-gray-500'>Thêm chi tiết đầm bầu để xem thống kê tồn kho</p>
+                    <BarChart3 className='h-16 w-16 mx-auto mb-4 text-muted-foreground' />
+                    <h4 className='text-lg font-medium text-foreground mb-2'>Chưa có dữ liệu tồn kho</h4>
+                    <p className='text-muted-foreground'>Thêm chi tiết đầm bầu để xem thống kê tồn kho</p>
                   </div>
                 )}
               </CardContent>

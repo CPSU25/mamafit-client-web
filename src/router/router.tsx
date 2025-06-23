@@ -1,6 +1,12 @@
 import { AppLayout, SystemLayout, GuestLayout } from '@/layouts'
 import { AuthMiddleware } from '@/middleware/auth.middleware'
-import { AdminDashboardPage, ManageCategoryPage, ManageMaternityDressPage, ManageUserPage } from '@/pages/admin'
+import {
+  AdminDashboardPage,
+  ManageBranchPage,
+  ManageCategoryPage,
+  ManageMaternityDressPage,
+  ManageUserPage
+} from '@/pages/admin'
 import { HomePage } from '@/pages/guest'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
@@ -46,7 +52,7 @@ export const router = createBrowserRouter([
           { path: 'dashboard', element: <AdminDashboardPage /> },
           { path: 'manage-category', element: <ManageCategoryPage /> },
           { path: 'manage-user', element: <ManageUserPage /> },
-          { path: 'manage-branch', element: <div>Manage Branches Page</div> },
+          { path: 'manage-branch', element: <ManageBranchPage /> },
           { path: 'manage-maternity-dress', element: <ManageMaternityDressPage /> },
           { path: 'manage-transaction', element: <div>Transactions Page</div> },
           { path: 'settings', element: <div>System Settings Page</div> }
