@@ -93,8 +93,8 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
-          firstName: currentRow.firstName || '',
-          lastName: currentRow.lastName || '',
+          firstName: currentRow.fullName ? currentRow.fullName.split(' ')[0] || '' : '',
+          lastName: currentRow.fullName ? currentRow.fullName.split(' ').slice(1).join(' ') || '' : '',
           username: currentRow.userName || '',
           email: currentRow.userEmail || '',
           role: currentRow.roleName?.toLowerCase() || '',

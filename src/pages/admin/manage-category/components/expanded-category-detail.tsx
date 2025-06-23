@@ -114,7 +114,7 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
     return (
       <div className='p-8 text-center'>
         <div className='flex flex-col items-center gap-3'>
-          <Package className='h-16 w-16 text-gray-300' />
+          <Package className='h-16 w-16 text-muted-foreground' />
           <p className='text-muted-foreground'>Chọn một danh mục để xem styles</p>
         </div>
       </div>
@@ -124,20 +124,20 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
   const styles = stylesData?.data.items || []
 
   return (
-    <div className='bg-gradient-to-br from-blue-50/30 to-indigo-50/30 border-t border-blue-100'>
+    <div className='bg-gradient-to-br from-primary/5 to-accent/5 border-t border-border'>
       <div className='p-6'>
         <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-4'>
-          <TabsList className='grid w-full grid-cols-2 bg-white shadow-sm border border-gray-200 rounded-xl p-1'>
+          <TabsList className='grid w-full grid-cols-2 bg-background shadow-sm border border-border rounded-xl p-1'>
             <TabsTrigger
               value='styles'
-              className='flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all'
+              className='flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all'
             >
               <Settings className='h-4 w-4' aria-hidden='true' />
               Styles ({styles.length})
             </TabsTrigger>
             <TabsTrigger
               value='info'
-              className='flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all'
+              className='flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all'
             >
               <Info className='h-4 w-4' aria-hidden='true' />
               Thông tin
@@ -146,8 +146,8 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
 
           {/* Tab 1: Styles */}
           <TabsContent value='styles' className='space-y-4'>
-            <Card className='border-0 shadow-md bg-white py-0'>
-              <CardHeader className='bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg py-3'>
+            <Card className='border-0 shadow-md bg-background py-0'>
+              <CardHeader className='bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-t-lg py-3'>
                 <CardTitle className='flex items-center justify-between text-lg'>
                   <div className='flex items-center gap-2'>
                     <Package className='h-5 w-5' aria-hidden='true' />
@@ -157,7 +157,7 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
                     size='sm'
                     onClick={handleToggleAddForm}
                     disabled={createStyleMutation.isPending}
-                    className='bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
+                    className='bg-background text-primary hover:bg-accent border border-border'
                     data-action-button='true'
                   >
                     {showAddForm ? (
@@ -176,9 +176,9 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
               </CardHeader>
               <CardContent className='p-4'>
                 {showAddForm && (
-                  <Card className='mb-4 border-2 border-dashed border-blue-200 bg-blue-50/30'>
+                  <Card className='mb-4 border-2 border-dashed border-primary/30 bg-primary/5'>
                     <CardHeader className='pb-3'>
-                      <CardTitle className='text-base text-blue-800 flex items-center gap-2'>
+                      <CardTitle className='text-base text-primary flex items-center gap-2'>
                         <Plus className='h-4 w-4' aria-hidden='true' />
                         Thêm Style Mới
                       </CardTitle>
@@ -192,11 +192,11 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
                               name='name'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-gray-700'>Tên Style *</FormLabel>
+                                  <FormLabel className='text-foreground'>Tên Style *</FormLabel>
                                   <FormControl>
                                     <Input
                                       placeholder='VD: Style vintage'
-                                      className='border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                      className='border-border focus:border-primary focus:ring-primary'
                                       disabled={createStyleMutation.isPending}
                                       {...field}
                                     />
@@ -219,7 +219,7 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
                                         disabled={createStyleMutation.isPending}
                                       />
                                     </FormControl>
-                                    <FormLabel className='text-sm text-gray-700 cursor-pointer'>
+                                    <FormLabel className='text-sm text-foreground cursor-pointer'>
                                       Style tùy chỉnh
                                     </FormLabel>
                                   </FormItem>
@@ -233,12 +233,12 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
                             name='description'
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className='text-gray-700'>Mô tả</FormLabel>
+                                <FormLabel className='text-foreground'>Mô tả</FormLabel>
                                 <FormControl>
                                   <Textarea
                                     placeholder='Mô tả về style...'
                                     rows={3}
-                                    className='border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                    className='border-border focus:border-primary focus:ring-primary'
                                     disabled={createStyleMutation.isPending}
                                     {...field}
                                   />
@@ -252,7 +252,7 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
                             <Button
                               type='submit'
                               disabled={createStyleMutation.isPending}
-                              className='bg-blue-600 hover:bg-blue-700 text-white'
+                              className='bg-primary hover:bg-primary/90 text-primary-foreground'
                             >
                               {createStyleMutation.isPending ? (
                                 <>
@@ -274,7 +274,7 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
                                 setShowAddForm(false)
                               }}
                               disabled={createStyleMutation.isPending}
-                              className='border-gray-300 hover:bg-gray-50'
+                              className='border-border hover:bg-muted'
                             >
                               Hủy
                             </Button>
@@ -286,7 +286,7 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
                 )}
 
                 {stylesError ? (
-                  <div className='mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm'>
+                  <div className='mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm'>
                     {stylesError instanceof Error
                       ? stylesError.message
                       : typeof stylesError === 'string'
@@ -298,32 +298,32 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
                 {stylesLoading ? (
                   <div className='text-center py-8'>
                     <div className='flex flex-col items-center gap-2'>
-                      <Loader2 className='animate-spin h-6 w-6 text-blue-600' aria-hidden='true' />
+                      <Loader2 className='animate-spin h-6 w-6 text-primary' aria-hidden='true' />
                       <p className='text-muted-foreground text-sm'>Đang tải styles...</p>
                     </div>
                   </div>
                 ) : styles.length === 0 ? (
                   <div className='text-center py-8'>
-                    <Package className='h-12 w-12 mx-auto mb-3 text-gray-300' aria-hidden='true' />
-                    <h4 className='text-base font-medium text-gray-900 mb-1'>Chưa có style nào</h4>
-                    <p className='text-gray-500 text-sm'>Danh mục này chưa có style nào được tạo</p>
+                    <Package className='h-12 w-12 mx-auto mb-3 text-muted-foreground' aria-hidden='true' />
+                    <h4 className='text-base font-medium text-foreground mb-1'>Chưa có style nào</h4>
+                    <p className='text-muted-foreground text-sm'>Danh mục này chưa có style nào được tạo</p>
                   </div>
                 ) : (
                   <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                     {styles.map((style: StyleType) => (
                       <Card
                         key={`style-${style.id}`}
-                        className='relative group hover:shadow-md transition-shadow border border-gray-200'
+                        className='relative group hover:shadow-md transition-shadow border border-border'
                       >
                         <CardContent className='p-3'>
                           <div className='flex items-start justify-between mb-2'>
-                            <h4 className='font-semibold text-gray-900 text-sm'>{style.name}</h4>
+                            <h4 className='font-semibold text-foreground text-sm'>{style.name}</h4>
                             <Button
                               size='sm'
                               variant='ghost'
                               onClick={(e) => handleDeleteStyle(style.id, e)}
                               disabled={deleteStyleMutation.isPending}
-                              className='h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50'
+                              className='h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10'
                               aria-label={`Xóa style ${style.name}`}
                               data-action-button='true'
                             >
@@ -333,14 +333,14 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
 
                           <div className='space-y-2'>
                             <div className='flex items-center justify-between'>
-                              <span className='text-xs text-gray-500'>ID:</span>
+                              <span className='text-xs text-muted-foreground'>ID:</span>
                               <Badge variant='outline' className='text-xs font-mono'>
                                 {style.id.slice(-6)}
                               </Badge>
                             </div>
                             {style.isCustom && (
                               <div className='flex items-center justify-between'>
-                                <span className='text-xs text-gray-500'>Loại:</span>
+                                <span className='text-xs text-muted-foreground'>Loại:</span>
                                 <Badge variant='secondary' className='text-xs'>
                                   Tùy chỉnh
                                 </Badge>
@@ -349,8 +349,8 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
                           </div>
 
                           {style.description && (
-                            <div className='pt-2 mt-2 border-t border-gray-100'>
-                              <p className='text-xs text-gray-600 line-clamp-2'>{style.description}</p>
+                            <div className='pt-2 mt-2 border-t border-border'>
+                              <p className='text-xs text-muted-foreground line-clamp-2'>{style.description}</p>
                             </div>
                           )}
                         </CardContent>
@@ -363,8 +363,8 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
           </TabsContent>
 
           <TabsContent value='info' className='space-y-4'>
-            <Card className='border-0 shadow-lg bg-white py-0'>
-              <CardHeader className='bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg py-3'>
+            <Card className='border-0 shadow-lg bg-background py-0'>
+              <CardHeader className='bg-gradient-to-r from-accent to-accent/90 text-accent-foreground rounded-t-lg py-3'>
                 <CardTitle className='flex items-center gap-2 text-lg'>
                   <Info className='h-5 w-5' aria-hidden='true' />
                   Thông Tin Danh Mục
@@ -372,21 +372,21 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
               </CardHeader>
               <CardContent className='p-4'>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                  <div className='p-3 bg-blue-50 rounded-lg'>
-                    <span className='text-xs font-medium text-blue-600 uppercase tracking-wide'>Tổng styles</span>
-                    <p className='text-lg font-bold text-blue-700 mt-1'>{styles.length}</p>
+                  <div className='p-3 bg-primary/10 rounded-lg'>
+                    <span className='text-xs font-medium text-primary uppercase tracking-wide'>Tổng styles</span>
+                    <p className='text-lg font-bold text-primary mt-1'>{styles.length}</p>
                   </div>
-                  <div className='p-3 bg-purple-50 rounded-lg'>
-                    <span className='text-xs font-medium text-purple-600 uppercase tracking-wide'>
-                      Styles tùy chỉnh
-                    </span>
-                    <p className='text-lg font-bold text-purple-700 mt-1'>
+                  <div className='p-3 bg-accent/10 rounded-lg'>
+                    <span className='text-xs font-medium text-accent uppercase tracking-wide'>Styles tùy chỉnh</span>
+                    <p className='text-lg font-bold text-accent mt-1'>
                       {styles.filter((s: StyleType) => s.isCustom).length}
                     </p>
                   </div>
-                  <div className='p-3 bg-green-50 rounded-lg'>
-                    <span className='text-xs font-medium text-green-600 uppercase tracking-wide'>Có hình ảnh</span>
-                    <p className='text-lg font-bold text-green-700 mt-1'>
+                  <div className='p-3 bg-secondary/10 rounded-lg'>
+                    <span className='text-xs font-medium text-secondary-foreground uppercase tracking-wide'>
+                      Có hình ảnh
+                    </span>
+                    <p className='text-lg font-bold text-secondary-foreground mt-1'>
                       {styles.filter((s: StyleType) => s.images && s.images.length > 0).length}
                     </p>
                   </div>

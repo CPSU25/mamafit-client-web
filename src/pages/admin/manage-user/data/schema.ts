@@ -1,19 +1,16 @@
 import { z } from 'zod'
 import { ManageUserType } from '@/@types/manage-user.type'
 
-const userStatusSchema = z.union([
-  z.literal('active'),
-  z.literal('inactive'),
-  z.literal('invited'),
-  z.literal('suspended')
-])
+const userStatusSchema = z.union([z.literal('active'), z.literal('inactive')])
 export type UserStatus = z.infer<typeof userStatusSchema>
 
 const userRoleSchema = z.union([
-  z.literal('superadmin'),
   z.literal('admin'),
-  z.literal('cashier'),
-  z.literal('manager')
+  z.literal('manager'),
+  z.literal('user'),
+  z.literal('staff'),
+  z.literal('designer'),
+  z.literal('branchmanager')
 ])
 
 // Updated schema to match ManageUserType from API
@@ -29,13 +26,8 @@ const userSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   isVerify: z.boolean(),
-  // Derived fields for compatibility
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  username: z.string().optional(),
-  email: z.string().optional(),
-  status: userStatusSchema.optional(),
-  role: userRoleSchema.optional()
+  status: userStatusSchema,
+  role: userRoleSchema
 })
 
 export type User = z.infer<typeof userSchema>
@@ -44,11 +36,6 @@ export const userListSchema = z.array(userSchema)
 
 // Helper function to transform ManageUserType to User format
 export const transformManageUserToUser = (apiUser: ManageUserType): User => {
-  const nameParts = apiUser.fullName?.split(' ') || ['', '']
-  const firstName = nameParts[0] || ''
-  const lastName = nameParts.slice(1).join(' ') || ''
-
-  // Determine status based on isVerify and other factors
   const status: UserStatus = apiUser.isVerify ? 'active' : 'inactive'
 
   return {
@@ -63,12 +50,7 @@ export const transformManageUserToUser = (apiUser: ManageUserType): User => {
     createdAt: apiUser.createdAt,
     updatedAt: apiUser.updatedAt,
     isVerify: apiUser.isVerify,
-    // Derived fields for compatibility with existing components
-    firstName,
-    lastName,
-    username: apiUser.userName,
-    email: apiUser.userEmail,
     status,
-    role: apiUser.roleName.toLowerCase() as 'superadmin' | 'admin' | 'cashier' | 'manager'
+    role: apiUser.roleName.toLowerCase() as 'admin' | 'manager' | 'user' | 'staff' | 'designer'
   }
 }

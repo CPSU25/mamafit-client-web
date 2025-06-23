@@ -1,6 +1,6 @@
 import { ItemBaseResponse } from '@/@types/response'
-import { LoginResponse, LogoutBody, PermissionResponse } from '@/@types/user'
-import { SignInSchemaType } from '@/services/auth/sign-in/validators'
+import { LoginResponse, LogoutBody, PermissionResponse } from '@/@types/auth.type'
+import { SignInSchemaType } from '@/pages/public-page/login-system/validators'
 import { api } from '@/lib/axios/axios'
 
 const authAPI = {

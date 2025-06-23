@@ -1,4 +1,4 @@
-import { UserRole } from '@/@types/user'
+import { UserRole } from '@/@types/auth.type'
 import { useRoutePermission } from '@/hooks/useRoutePermission'
 import { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
@@ -27,7 +27,7 @@ export function AuthMiddleware({ children, allowedRoles }: AuthMiddlewareProps) 
 
   // Chỉ render children khi đã có quyền truy cập
   if (!isAuthorized) {
-    return <Navigate to='/system' replace />
+    return <Navigate to='/system/sign-in' replace />
   }
 
   return <>{children}</>

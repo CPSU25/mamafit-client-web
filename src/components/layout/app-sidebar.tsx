@@ -2,9 +2,9 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { LogoHeader } from './logo-header-sidebar'
-import { UserRole } from '@/@types/user'
+import { UserRole } from '@/@types/auth.type'
 import { NavUser } from './nav-user'
-import { usePermission } from '@/services/auth/usePermission'
+import { usePermission } from '@/services/auth/permission.service'
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   role: UserRole

@@ -9,15 +9,15 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Category } from '../data/schema'
-import { useCategories } from '../context/categories-context'
+import { useBranch } from '../context/branch-context'
+import { Branch } from '../data/schema'
 
-interface CategoryTableRowActionsProps {
-  row: Row<Category>
+interface BranchTableRowActionsProps {
+  row: Row<Branch>
 }
 
-export function CategoryTableRowActions({ row }: CategoryTableRowActionsProps) {
-  const { setOpen, setCurrentRow } = useCategories()
+export function BranchTableRowActions({ row }: BranchTableRowActionsProps) {
+  const { setOpen, setCurrentRow } = useBranch()
   return (
     <>
       <DropdownMenu modal={false}>
@@ -45,7 +45,7 @@ export function CategoryTableRowActions({ row }: CategoryTableRowActionsProps) {
               setCurrentRow(row.original)
               setOpen('delete')
             }}
-            className='text-destructive focus:text-destructive'
+            className='text-red-500!'
           >
             Delete
             <DropdownMenuShortcut>
