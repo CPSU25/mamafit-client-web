@@ -49,7 +49,9 @@ export function ProductGalleryExample() {
     folder: 'products',
     quality: 'auto',
     format: 'auto',
-    transformation: [{ width: 800, height: 600, crop: 'limit' }]
+    width: 800,
+    height: 600,
+    crop: 'limit'
   }
 
   return (
