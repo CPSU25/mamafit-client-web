@@ -29,6 +29,11 @@ const categoryAPI = {
 
     return api.get<ListBaseResponse<CategoryType>>(url)
   },
+
+  createCategory: (body: CategoryFormData) => api.post<ItemBaseResponse<CategoryType>>('/category', body),
+  updateCategory: (id: string, body: CategoryFormData) =>
+    api.put<ItemBaseResponse<CategoryType>>(`/category/${id}`, body),
+  deleteCategory: (id: string) => api.delete<ItemBaseResponse<CategoryType>>(`/category/${id}`),
   getStylesByCategory: (categoryId: string, params?: StyleQueryParams) => {
     const queryParams = new URLSearchParams()
 
@@ -42,10 +47,7 @@ const categoryAPI = {
     return api.get<ListBaseResponse<StyleType>>(url)
   },
   createStyle: (body: StyleFormData) => api.post<ItemBaseResponse<StyleType>>('/style', body),
-  createCategory: (body: CategoryFormData) => api.post<ItemBaseResponse<CategoryType>>('/category', body),
-  updateCategory: (id: string, body: CategoryFormData) =>
-    api.put<ItemBaseResponse<CategoryType>>(`/category/${id}`, body),
-  deleteCategory: (id: string) => api.delete<ItemBaseResponse<CategoryType>>(`/category/${id}`)
+  deleteStyle: (id: string) => api.delete<ItemBaseResponse<[]>>(`/style/${id}`)
 }
 
 export default categoryAPI

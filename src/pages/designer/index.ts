@@ -1,1 +1,1 @@
-export const index = () => {}
+export { default as DesignerDashboard } from './dashboard'

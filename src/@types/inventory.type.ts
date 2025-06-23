@@ -9,13 +9,13 @@ export interface CategoryType {
 export interface CategoryFormData {
   name: string
   description: string
-  image?: Array<string>
+  images?: string[]
 }
 export interface StyleType {
   id: string
   name: string
-  description: string
-  image?: Array<string>
+  description?: string
+  images?: string[]
   isCustom?: boolean
   createdBy?: string
   updatedBy?: string | null
@@ -26,9 +26,9 @@ export interface StyleType {
 export interface StyleFormData {
   categoryId: string
   name: string
-  isCustom: boolean
-  description: string
-  images: Array<string>
+  isCustom?: boolean
+  description?: string
+  images?: string[]
 }
 export interface MaternityDressDetailType {
   id: string
