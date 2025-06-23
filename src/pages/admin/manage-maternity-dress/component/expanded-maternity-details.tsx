@@ -21,7 +21,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ImageUpload } from '@/components/ui/image-upload'
+import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 import { useMaternityDressStore } from '@/stores/admin/maternity-dress.store'
 import { MaternityDressDetailFormData, MaternityDressDetailType } from '@/@types/inventory.type'
 import {
@@ -579,15 +579,28 @@ export default function ExpendMaternityDressDetails() {
                             name='images'
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className='text-foreground font-medium'>Hình Ảnh *</FormLabel>
+                                <FormLabel className='text-foreground font-medium'>Hình Ảnh Chi Tiết *</FormLabel>
                                 <FormControl>
-                                  <ImageUpload
-                                    value={field.value}
+                                  <CloudinaryImageUpload
+                                    value={field.value || []}
                                     onChange={field.onChange}
                                     maxFiles={5}
-                                    placeholder='Upload hình ảnh chi tiết'
+                                    placeholder='Upload hình ảnh chi tiết của phiên bản này'
+                                    disabled={createDetailMutation.isPending}
+                                    uploadOptions={{
+                                      folder: 'maternity-dress-details', // Tổ chức ảnh theo thư mục chi tiết
+                                      tags: ['maternity-dress-detail', 'product-variant'], // Tags để phân loại
+                                      width: 600, // Resize phù hợp cho chi tiết
+                                      height: 600,
+                                      crop: 'limit', // Giữ tỷ lệ, resize trong giới hạn
+                                      quality: 'auto', // Tự động tối ưu chất lượng
+                                      format: 'auto' // Tự động chọn format tốt nhất
+                                    }}
                                   />
                                 </FormControl>
+                                <p className='text-xs text-muted-foreground'>
+                                  Thêm tối đa 5 hình ảnh để hiển thị chi tiết màu sắc, kích thước của phiên bản này.
+                                </p>
                                 <FormMessage />
                               </FormItem>
                             )}
