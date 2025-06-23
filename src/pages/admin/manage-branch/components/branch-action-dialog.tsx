@@ -16,6 +16,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { CloudinarySingleImageUpload } from '@/components/cloudinary-single-image-upload'
 import { Branch } from '../data/schema'
 import { useCreateBranch, useUpdateBranch } from '@/services/admin/branch.service'
 import { BranchRequest } from '@/@types/branch.type'
@@ -30,7 +31,7 @@ const formSchema = z.object({
   mapId: z.string().min(1, { message: 'Map ID is required.' }),
   latitude: z.string().min(1, { message: 'Latitude is required.' }),
   longitude: z.string().min(1, { message: 'Longitude is required.' }),
-  images: z.string().optional()
+  image: z.string().optional()
 })
 
 type BranchForm = z.infer<typeof formSchema>
@@ -59,7 +60,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
           mapId: currentRow.mapId || '',
           latitude: currentRow.latitude?.toString() || '',
           longitude: currentRow.longitude?.toString() || '',
-          images: currentRow.images?.join(', ') || ''
+          image: currentRow.images?.[0] || ''
         }
       : {
           name: '',
@@ -71,7 +72,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
           mapId: '',
           latitude: '',
           longitude: '',
-          images: ''
+          image: ''
         }
   })
 
@@ -88,12 +89,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
         mapId: values.mapId,
         latitude: parseFloat(values.latitude),
         longitude: parseFloat(values.longitude),
-        images: values.images
-          ? values.images
-              .split(',')
-              .map((img) => img.trim())
-              .filter((img) => img)
-          : []
+        images: values.image ? [values.image] : []
       }
 
       if (isEdit && currentRow) {
@@ -282,12 +278,18 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
               />
               <FormField
                 control={form.control}
-                name='images'
+                name='image'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Images</FormLabel>
+                  <FormItem className='grid grid-cols-6 items-start space-y-0 gap-x-4 gap-y-1'>
+                    <FormLabel className='col-span-2 text-right pt-2'>Branch Image</FormLabel>
                     <FormControl>
-                      <Input placeholder='url1, url2, url3...' className='col-span-4' disabled={isLoading} {...field} />
+                      <CloudinarySingleImageUpload
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder='Upload branch image'
+                        className='col-span-4'
+                        disabled={isLoading}
+                      />
                     </FormControl>
                     <FormMessage className='col-span-4 col-start-3' />
                   </FormItem>

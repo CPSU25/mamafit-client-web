@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ImageUpload } from '@/components/ui/image-upload'
+import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 import { MaternityDressFormData } from '@/@types/inventory.type'
 import { useCreateMaternityDress } from '@/services/admin/maternity-dress.service'
 import { useGetStyles } from '@/services/admin/category.service'
@@ -205,15 +205,26 @@ export default function MaternityDressCreationDialog({
                 <FormItem>
                   <FormLabel>Hình Ảnh Đầm Bầu *</FormLabel>
                   <FormControl>
-                    <ImageUpload
-                      value={field.value}
+                    <CloudinaryImageUpload
+                      value={field.value || []}
                       onChange={field.onChange}
                       maxFiles={10}
                       placeholder='Upload hình ảnh đầm bầu hoặc nhập URL'
+                      disabled={isLoading}
+                      uploadOptions={{
+                        folder: 'maternity-dresses', // Tổ chức ảnh theo thư mục
+                        tags: ['maternity-dress', 'product'], // Thêm tags để dễ quản lý
+                        width: 800, // Resize ảnh để tối ưu
+                        height: 800,
+                        crop: 'limit', // Giữ tỷ lệ, resize trong giới hạn
+                        quality: 'auto', // Tự động tối ưu chất lượng
+                        format: 'auto' // Tự động chọn format tốt nhất
+                      }}
                     />
                   </FormControl>
                   <p className='text-xs text-muted-foreground'>
-                    Thêm tối đa 10 hình ảnh để khách hàng có thể xem đầm bầu từ nhiều góc độ.
+                    Thêm tối đa 10 hình ảnh để khách hàng có thể xem đầm bầu từ nhiều góc độ. Ảnh sẽ được tự động tối ưu
+                    chất lượng.
                   </p>
                   <FormMessage />
                 </FormItem>
