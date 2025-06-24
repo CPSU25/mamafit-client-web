@@ -1,6 +1,5 @@
 import * as signalR from '@microsoft/signalr'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
-import chatAPI from '@/apis/chat.api'
 
 // Types
 interface ChatMessage {
@@ -90,8 +89,35 @@ export class SignalRService {
       this.emit('ReceiveMessage', message)
     })
 
-    this.connection.on('MessageHistory', (messages: ChatMessage[]) => {
-      this.emit('MessageHistory', messages)
+    this.connection.on('MessageHistory', (roomId: string, messages: ChatMessage[]) => {
+      this.emit('MessageHistory', roomId, messages)
+    })
+
+    // Room Events
+    this.connection.on('RoomCreated', (roomId: string) => {
+      console.log('🏠 Room được tạo thành công:', roomId)
+      this.emit('RoomCreated', roomId)
+    })
+
+    this.connection.on('Error', (errorMessage: string) => {
+      console.error('❌ Lỗi từ server:', errorMessage)
+      this.emit('Error', errorMessage)
+    })
+
+    // Load Room Events
+    this.connection.on('LoadRoom', (rooms: unknown[]) => {
+      console.log('📂 Rooms được load thành công:', rooms)
+      this.emit('LoadRoom', rooms)
+    })
+
+    this.connection.on('NoRooms', (message: string) => {
+      console.log('📭 Không có rooms:', message)
+      this.emit('NoRooms', message)
+    })
+
+    this.connection.on('NoMessages', (message: string) => {
+      console.log('📭 Không có tin nhắn:', message)
+      this.emit('NoMessages', message)
     })
 
     console.log('Event listeners đã được setup')
@@ -156,41 +182,94 @@ export class SignalRService {
     }
   }
 
-  // Bước 6: Load tin nhắn lịch sử (nếu server hỗ trợ)
-  async loadMessages(roomId: string, pageSize: number = 20, page: number = 1): Promise<void> {
+  // Bước 6: Tạo room chat giữa 2 users
+  async createRoom(userId1: string, userId2: string): Promise<void> {
+    if (!this.connection) {
+      throw new Error('Chưa có connection. Hãy gọi connect() trước')
+    }
+
+    if (this.connection.state !== signalR.HubConnectionState.Connected) {
+      throw new Error(`Connection chưa sẵn sàng. State hiện tại: ${this.connection.state}`)
+    }
+
+    if (!userId1 || userId1.trim() === '') {
+      throw new Error('User ID 1 không được để trống')
+    }
+
+    if (!userId2 || userId2.trim() === '') {
+      throw new Error('User ID 2 không được để trống')
+    }
+
+    if (userId1.trim() === userId2.trim()) {
+      throw new Error('Không thể tạo room chat với chính mình')
+    }
+
+    try {
+      console.log('🏗️ Đang tạo room chat:', { userId1, userId2 })
+      await this.connection.invoke('CreateRoom', userId1.trim(), userId2.trim())
+      console.log('✅ Yêu cầu tạo room đã được gửi')
+    } catch (error) {
+      console.error('❌ Lỗi khi tạo room:', error)
+      throw error
+    }
+  }
+
+  // Bước 7: Load danh sách chat rooms của user hiện tại
+  async loadRoom(): Promise<void> {
+    if (!this.connection) {
+      throw new Error('Chưa có connection. Hãy gọi connect() trước')
+    }
+
+    if (this.connection.state !== signalR.HubConnectionState.Connected) {
+      throw new Error(`Connection chưa sẵn sàng. State hiện tại: ${this.connection.state}`)
+    }
+
+    try {
+      console.log('📂 Đang load danh sách rooms...')
+      await this.connection.invoke('LoadRoom')
+      console.log('✅ Yêu cầu load rooms đã được gửi')
+    } catch (error) {
+      console.error('❌ Lỗi khi load rooms:', error)
+      throw error
+    }
+  }
+
+  // Bước 8: Load tin nhắn lịch sử qua SignalR
+  async loadMessageHistory(roomId: string, pageSize: number = 20, page: number = 1): Promise<void> {
+    if (!this.connection) {
+      throw new Error('Chưa có connection. Hãy gọi connect() trước')
+    }
+
+    if (this.connection.state !== signalR.HubConnectionState.Connected) {
+      throw new Error(`Connection chưa sẵn sàng. State hiện tại: ${this.connection.state}`)
+    }
+
     if (!roomId || roomId.trim() === '') {
       throw new Error('Room ID không được để trống')
     }
 
+    if (pageSize <= 0) {
+      throw new Error('Page size phải lớn hơn 0')
+    }
+
+    if (page <= 0) {
+      throw new Error('Page phải lớn hơn 0')
+    }
+
     try {
-      console.log('📜 Đang load tin nhắn (REST API):', { roomId, pageSize, page })
-      const response = await chatAPI.getRoomMessages({ roomId: roomId.trim(), pageSize, index: page })
-
-      // Handle both possible response structures: data.data.items and data.items
-      let rawMessages: unknown[] = []
-      if (response.data && response.data.data && response.data.data) {
-        rawMessages = response.data.data
-      } else if (response.data && Array.isArray(response.data)) {
-        rawMessages = response.data
-      }
-
-      // Map the messages to include timestamp field for compatibility
-      const messages = Array.isArray(rawMessages)
-        ? rawMessages.map((msg: unknown) => {
-            const msgObj = msg as Record<string, unknown>
-            const msgWithTimestamp = msgObj as { messageTimestamp?: string; timestamp?: string }
-            return {
-              ...msgObj,
-              timestamp: msgWithTimestamp.messageTimestamp || msgWithTimestamp.timestamp
-            }
-          })
-        : []
-
-      this.emit('MessageHistory', messages)
+      console.log('📜 Đang load tin nhắn lịch sử (SignalR):', { roomId, pageSize, page })
+      await this.connection.invoke('LoadMessageHistory', roomId.trim(), pageSize, page)
+      console.log('✅ Yêu cầu load tin nhắn lịch sử đã được gửi')
     } catch (error) {
-      console.error('❌ Lỗi khi load tin nhắn (REST API):', error)
+      console.error('❌ Lỗi khi load tin nhắn lịch sử (SignalR):', error)
       throw error
     }
+  }
+
+  // Legacy method - Keep for backward compatibility but prefer loadMessageHistory
+  async loadMessages(roomId: string, pageSize: number = 20, page: number = 1): Promise<void> {
+    console.log('⚠️ loadMessages() is deprecated, using loadMessageHistory() instead')
+    return this.loadMessageHistory(roomId, pageSize, page)
   }
 
   // Utility methods
