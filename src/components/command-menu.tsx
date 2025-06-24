@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/command'
 import { sidebarData } from '@/components/layout/data/sidebar-data'
 import { ScrollArea } from './ui/scroll-area'
-import { usePermission } from '@/services/auth/usePermission'
+import { usePermission } from '@/services/auth/permission.service'
 
 export function CommandMenu() {
   const navigate = useNavigate()

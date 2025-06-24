@@ -11,7 +11,8 @@ import {
   Package2,
   Award,
   Tags,
-  MessagesSquare
+  MessagesSquare,
+  Building
 } from 'lucide-react'
 
 import { type SidebarData } from '../types'
@@ -47,7 +48,7 @@ export const sidebarData: SidebarData = {
             {
               title: 'Manage Branches',
               url: 'manage-branch',
-              icon: Users
+              icon: Building
             },
             {
               title: 'Manage Maternity Dresses',
@@ -96,7 +97,7 @@ export const sidebarData: SidebarData = {
             },
             {
               title: 'Chats',
-              url: 'chats',
+              url: 'messages',
               icon: MessagesSquare
             },
             {

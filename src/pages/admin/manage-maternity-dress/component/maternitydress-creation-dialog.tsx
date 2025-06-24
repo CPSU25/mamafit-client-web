@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ImageUpload } from '@/components/ui/image-upload'
+import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 import { MaternityDressFormData } from '@/@types/inventory.type'
 import { useCreateMaternityDress } from '@/services/admin/maternity-dress.service'
 import { useGetStyles } from '@/services/admin/category.service'
@@ -93,8 +93,8 @@ export default function MaternityDressCreationDialog({
             tiết.
           </p>
           {stylesError && (
-            <div className='mt-2 p-3 bg-red-50 border border-red-200 rounded-lg'>
-              <div className='flex items-center gap-2 text-red-700'>
+            <div className='mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg'>
+              <div className='flex items-center gap-2 text-destructive'>
                 <Package className='h-4 w-4' />
                 <span className='text-sm'>Không thể tải danh sách kiểu dáng. Vui lòng thử lại sau.</span>
               </div>
@@ -136,12 +136,12 @@ export default function MaternityDressCreationDialog({
                         {stylesLoading ? (
                           <div className='flex items-center justify-center py-4'>
                             <Loader2 className='h-4 w-4 animate-spin mr-2' />
-                            <span className='text-sm text-gray-500'>Đang tải...</span>
+                            <span className='text-sm text-muted-foreground'>Đang tải...</span>
                           </div>
                         ) : stylesError ? (
                           <div className='flex items-center justify-center py-4'>
-                            <Package className='h-4 w-4 mr-2 text-red-500' />
-                            <span className='text-sm text-red-500'>Lỗi tải dữ liệu</span>
+                            <Package className='h-4 w-4 mr-2 text-destructive' />
+                            <span className='text-sm text-destructive'>Lỗi tải dữ liệu</span>
                           </div>
                         ) : stylesData?.data.items && stylesData.data.items.length > 0 ? (
                           stylesData.data.items.map((style) => (
@@ -151,8 +151,8 @@ export default function MaternityDressCreationDialog({
                           ))
                         ) : (
                           <div className='flex items-center justify-center py-4'>
-                            <Package className='h-4 w-4 mr-2 text-gray-400' />
-                            <span className='text-sm text-gray-500'>Không có style nào</span>
+                            <Package className='h-4 w-4 mr-2 text-muted-foreground' />
+                            <span className='text-sm text-muted-foreground'>Không có style nào</span>
                           </div>
                         )}
                       </SelectContent>
@@ -205,15 +205,26 @@ export default function MaternityDressCreationDialog({
                 <FormItem>
                   <FormLabel>Hình Ảnh Đầm Bầu *</FormLabel>
                   <FormControl>
-                    <ImageUpload
-                      value={field.value}
+                    <CloudinaryImageUpload
+                      value={field.value || []}
                       onChange={field.onChange}
                       maxFiles={10}
                       placeholder='Upload hình ảnh đầm bầu hoặc nhập URL'
+                      disabled={isLoading}
+                      uploadOptions={{
+                        folder: 'maternity-dresses', // Tổ chức ảnh theo thư mục
+                        tags: ['maternity-dress', 'product'], // Thêm tags để dễ quản lý
+                        width: 800, // Resize ảnh để tối ưu
+                        height: 800,
+                        crop: 'limit', // Giữ tỷ lệ, resize trong giới hạn
+                        quality: 'auto', // Tự động tối ưu chất lượng
+                        format: 'auto' // Tự động chọn format tốt nhất
+                      }}
                     />
                   </FormControl>
                   <p className='text-xs text-muted-foreground'>
-                    Thêm tối đa 10 hình ảnh để khách hàng có thể xem đầm bầu từ nhiều góc độ.
+                    Thêm tối đa 10 hình ảnh để khách hàng có thể xem đầm bầu từ nhiều góc độ. Ảnh sẽ được tự động tối ưu
+                    chất lượng.
                   </p>
                   <FormMessage />
                 </FormItem>
@@ -221,9 +232,9 @@ export default function MaternityDressCreationDialog({
             />
 
             {/* Info Message */}
-            <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
-              <h4 className='font-medium text-blue-800 mb-2'>💡 Bước tiếp theo:</h4>
-              <ul className='text-sm text-blue-700 space-y-1'>
+            <div className='bg-primary/10 border border-primary/20 rounded-lg p-4'>
+              <h4 className='font-medium text-primary mb-2'>💡 Bước tiếp theo:</h4>
+              <ul className='text-sm text-primary space-y-1'>
                 <li>• Sau khi tạo đầm bầu cơ bản, bạn có thể click vào đầm bầu trong bảng để xem chi tiết</li>
                 <li>• Thêm các phiên bản với màu sắc, kích thước và giá cả khác nhau</li>
                 <li>• Quản lý số lượng tồn kho cho từng phiên bản</li>

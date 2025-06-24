@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 import { useCreateCategory, useUpdateCategory } from '@/services/admin/category.service'
 import { toast } from 'sonner'
 import { Category } from '../data/schema'
@@ -96,7 +97,7 @@ export function CategoryFormDialog({ open, onOpenChange, currentRow }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-[500px]'>
+      <DialogContent className='sm:max-w-[600px]'>
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Category' : 'Create New Category'}</DialogTitle>
           <DialogDescription>
@@ -105,14 +106,14 @@ export function CategoryFormDialog({ open, onOpenChange, currentRow }: Props) {
               : 'Create new category for office dress. Fields with * are required.'}
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4'>
+        <div className='-mr-4 h-[32rem] w-full overflow-y-auto py-1 pr-4'>
           <Form {...form}>
-            <form id='category-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-4 p-0.5'>
+            <form id='category-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6 p-0.5'>
               <FormField
                 control={form.control}
                 name='name'
                 render={({ field }) => (
-                  <FormItem className='items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='items-center space-y-2 gap-x-4 gap-y-1'>
                     <FormLabel>Category Name *</FormLabel>
                     <FormControl>
                       <Input placeholder='eg: Office Dress' {...field} disabled={isSubmitting} />
@@ -126,7 +127,7 @@ export function CategoryFormDialog({ open, onOpenChange, currentRow }: Props) {
                 control={form.control}
                 name='description'
                 render={({ field }) => (
-                  <FormItem className='items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormItem className='items-center space-y-2 gap-x-4 gap-y-1'>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea placeholder='Description of category...' rows={3} {...field} disabled={isSubmitting} />
@@ -135,14 +136,25 @@ export function CategoryFormDialog({ open, onOpenChange, currentRow }: Props) {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name='images'
                 render={({ field }) => (
-                  <FormItem className='items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel>Images</FormLabel>
+                  <FormItem className='items-center space-y-2 gap-x-4 gap-y-1'>
+                    <FormLabel>Category Images</FormLabel>
                     <FormControl>
-                      <Input placeholder='Images of category...' {...field} disabled={isSubmitting} />
+                      <CloudinaryImageUpload
+                        value={field.value || []}
+                        onChange={field.onChange}
+                        maxFiles={5}
+                        placeholder='Upload category images or enter URL'
+                        disabled={isSubmitting}
+                        uploadOptions={{
+                          folder: 'categories', // Tổ chức ảnh theo thư mục
+                          tags: ['category'] // Thêm tag để dễ quản lý
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -11,7 +11,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { useLogout } from '@/services/auth/logout/useLogout'
+import { useLogout } from '@/services/auth/logout.service'
 
 export function ProfileDropdown() {
   const { logoutMutation, isPending } = useLogout()

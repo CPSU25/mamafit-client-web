@@ -45,7 +45,7 @@ export function CategoryTableRowActions({ row }: CategoryTableRowActionsProps) {
               setCurrentRow(row.original)
               setOpen('delete')
             }}
-            className='text-red-500!'
+            className='text-destructive focus:text-destructive'
           >
             Delete
             <DropdownMenuShortcut>

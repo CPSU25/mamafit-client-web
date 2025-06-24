@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom'
-import { UserRole } from '@/@types/user'
+import { UserRole } from '@/@types/auth.type'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils/utils'
 import AppSidebar from '@/components/layout/app-sidebar'
@@ -8,7 +8,6 @@ import { SearchProvider } from '@/context/search-context'
 import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
 import { ModeToggle } from '@/components/mode-toggle'
-import { ProfileDropdown } from '@/components/profile-dropdown'
 
 interface Props {
   children?: React.ReactNode
@@ -29,7 +28,6 @@ function SystemLayout({ role, children }: Props) {
               </div>
               <div className='flex items-center gap-2'>
                 <ModeToggle />
-                <ProfileDropdown />
               </div>
             </div>
           </Header>

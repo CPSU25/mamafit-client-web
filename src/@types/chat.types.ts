@@ -3,12 +3,12 @@ export interface ChatRoom {
   id: string
   name?: string
   memberCount?: number
-  lastMessage?: ChatMessage
+  lastMessage?: string // Direct string from API, not ChatMessage object
   description?: string
-  lastTimestamp?: Date
+  lastTimestamp?: string // ISO string from API, not Date object
   lastUserId?: string
   lastUserName?: string
-  createdAt?: Date
+  createdAt?: Date | string
   members?: Member[]
 }
 

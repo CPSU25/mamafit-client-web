@@ -1,9 +1,9 @@
-import SignInForm from '@/services/auth/sign-in/sign-in-form'
+import SignInForm from './sign-in-form'
 import { Form } from '@/components/ui/form'
-import { useSignIn } from '@/services/auth/sign-in/use-sign-in'
+import { useSignIn } from '@/services/auth/sign-in.service'
 import { SubmitHandler } from 'react-hook-form'
 import BackgroundLogin from '/images/soft-violet-lavender-abstract.png'
-import { SignInSchemaType } from '@/services/auth/sign-in/validators'
+import { SignInSchemaType } from '@/pages/public-page/login-system/validators'
 export default function SignInPage() {
   const { methods, signInMutation, isPending } = useSignIn()
 
