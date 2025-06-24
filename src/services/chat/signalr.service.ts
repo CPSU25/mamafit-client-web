@@ -94,6 +94,28 @@ export class SignalRService {
       this.emit('MessageHistory', messages)
     })
 
+    // Room Events
+    this.connection.on('RoomCreated', (roomId: string) => {
+      console.log('🏠 Room được tạo thành công:', roomId)
+      this.emit('RoomCreated', roomId)
+    })
+
+    this.connection.on('Error', (errorMessage: string) => {
+      console.error('❌ Lỗi từ server:', errorMessage)
+      this.emit('Error', errorMessage)
+    })
+
+    // Load Room Events
+    this.connection.on('LoadRoom', (rooms: unknown[]) => {
+      console.log('📂 Rooms được load thành công:', rooms)
+      this.emit('LoadRoom', rooms)
+    })
+
+    this.connection.on('NoRooms', (message: string) => {
+      console.log('📭 Không có rooms:', message)
+      this.emit('NoRooms', message)
+    })
+
     console.log('Event listeners đã được setup')
   }
 
@@ -156,7 +178,59 @@ export class SignalRService {
     }
   }
 
-  // Bước 6: Load tin nhắn lịch sử (nếu server hỗ trợ)
+  // Bước 6: Tạo room chat giữa 2 users
+  async createRoom(userId1: string, userId2: string): Promise<void> {
+    if (!this.connection) {
+      throw new Error('Chưa có connection. Hãy gọi connect() trước')
+    }
+
+    if (this.connection.state !== signalR.HubConnectionState.Connected) {
+      throw new Error(`Connection chưa sẵn sàng. State hiện tại: ${this.connection.state}`)
+    }
+
+    if (!userId1 || userId1.trim() === '') {
+      throw new Error('User ID 1 không được để trống')
+    }
+
+    if (!userId2 || userId2.trim() === '') {
+      throw new Error('User ID 2 không được để trống')
+    }
+
+    if (userId1.trim() === userId2.trim()) {
+      throw new Error('Không thể tạo room chat với chính mình')
+    }
+
+    try {
+      console.log('🏗️ Đang tạo room chat:', { userId1, userId2 })
+      await this.connection.invoke('CreateRoom', userId1.trim(), userId2.trim())
+      console.log('✅ Yêu cầu tạo room đã được gửi')
+    } catch (error) {
+      console.error('❌ Lỗi khi tạo room:', error)
+      throw error
+    }
+  }
+
+  // Bước 7: Load danh sách chat rooms của user hiện tại
+  async loadRoom(): Promise<void> {
+    if (!this.connection) {
+      throw new Error('Chưa có connection. Hãy gọi connect() trước')
+    }
+
+    if (this.connection.state !== signalR.HubConnectionState.Connected) {
+      throw new Error(`Connection chưa sẵn sàng. State hiện tại: ${this.connection.state}`)
+    }
+
+    try {
+      console.log('📂 Đang load danh sách rooms...')
+      await this.connection.invoke('LoadRoom')
+      console.log('✅ Yêu cầu load rooms đã được gửi')
+    } catch (error) {
+      console.error('❌ Lỗi khi load rooms:', error)
+      throw error
+    }
+  }
+
+  // Bước 8: Load tin nhắn lịch sử (nếu server hỗ trợ)
   async loadMessages(roomId: string, pageSize: number = 20, page: number = 1): Promise<void> {
     if (!roomId || roomId.trim() === '') {
       throw new Error('Room ID không được để trống')

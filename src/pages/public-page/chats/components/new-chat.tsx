@@ -21,8 +21,9 @@ type User = {
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onRoomCreated?: (roomId: string) => void
 }
-export function NewChat({ onOpenChange, open }: Props) {
+export function NewChat({ onOpenChange, open, onRoomCreated }: Props) {
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
   const [isCreatingRoom, setIsCreatingRoom] = useState(false)
 
@@ -66,14 +67,43 @@ export function NewChat({ onOpenChange, open }: Props) {
       setIsCreatingRoom(true)
       const selectedUser = selectedUsers[0]
 
-      await createRoom(currentUser.userId, selectedUser.id)
+      console.log('🏗️ Creating chat room via SignalR...', {
+        userId1: currentUser.userId,
+        userId2: selectedUser.id
+      })
 
+      const createdRoom = await createRoom(currentUser.userId, selectedUser.id)
+
+      console.log('✅ Room created successfully:', createdRoom)
       toast.success(`Chat room created with ${selectedUser.fullName}`)
+
+      // Auto-select the newly created room
+      if (onRoomCreated && createdRoom.id) {
+        onRoomCreated(createdRoom.id)
+      }
+
       onOpenChange(false) // Close dialog
       setSelectedUsers([]) // Reset selection
     } catch (error) {
-      console.error('Failed to create room:', error)
-      toast.error('Failed to create chat room. Please try again.')
+      console.error('❌ Failed to create room:', error)
+
+      // Extract specific error message from SignalR or generic fallback
+      let errorMessage = 'Failed to create chat room. Please try again.'
+
+      if (error instanceof Error) {
+        // Handle specific SignalR errors
+        if (error.message.includes('Unauthorized')) {
+          errorMessage = 'You are not authorized to create a chat with this user.'
+        } else if (error.message.includes('Invalid user')) {
+          errorMessage = 'Invalid user selected. Please try again.'
+        } else if (error.message.includes('Connection')) {
+          errorMessage = 'Connection error. Please check your internet and try again.'
+        } else {
+          errorMessage = error.message
+        }
+      }
+
+      toast.error(errorMessage)
     } finally {
       setIsCreatingRoom(false)
     }
