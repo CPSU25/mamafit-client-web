@@ -1,32 +1,82 @@
 import { useEffect, useState } from 'react'
-import { Check, X } from 'lucide-react'
-import { showSubmittedData } from '@/lib/utils/show-submitted-data'
+import { Check, X, Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ChatUser } from '../data/chat-types'
+import { useGetListUser } from '@/services/admin/manage-user.service'
+import { useAuthStore } from '@/lib/zustand/use-auth-store'
+import { useChat } from '../hooks/use-chat'
+import { ManageUserType } from '@/@types/manage-user.type'
+import { toast } from 'sonner'
 
-type User = Omit<ChatUser, 'messages'>
+type User = {
+  id: string
+  username: string
+  fullName: string
+  profile: string
+  title: string
+}
 
 type Props = {
-  users: User[]
   open: boolean
   onOpenChange: (open: boolean) => void
 }
-export function NewChat({ users, onOpenChange, open }: Props) {
+export function NewChat({ onOpenChange, open }: Props) {
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false)
+
+  const { user: currentUser } = useAuthStore()
+  const { createRoom } = useChat()
+
+  // Load users from API
+  const { data: usersResponse, isLoading: isLoadingUsers } = useGetListUser({
+    pageSize: 100 // Load all users
+  })
+
+  // Map ManageUserType to User format
+  const users: User[] =
+    usersResponse?.data?.items
+      ?.map((user: ManageUserType) => ({
+        id: user.id,
+        username: user.userName,
+        fullName: user.fullName,
+        profile: user.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${user.fullName}`,
+        title: user.roleName
+      }))
+      .filter((user: User) => user.id !== currentUser?.userId) || [] // Exclude current user
 
   const handleSelectUser = (user: User) => {
-    if (!selectedUsers.find((u) => u.id === user.id)) {
-      setSelectedUsers([...selectedUsers, user])
+    // Only allow selecting one user for 1-on-1 chat
+    if (selectedUsers.length === 0) {
+      setSelectedUsers([user])
     } else {
-      handleRemoveUser(user.id)
+      setSelectedUsers([])
     }
   }
 
   const handleRemoveUser = (userId: string) => {
     setSelectedUsers(selectedUsers.filter((user) => user.id !== userId))
+  }
+
+  const handleCreateChat = async () => {
+    if (!selectedUsers.length || !currentUser?.userId) return
+
+    try {
+      setIsCreatingRoom(true)
+      const selectedUser = selectedUsers[0]
+
+      await createRoom(currentUser.userId, selectedUser.id)
+
+      toast.success(`Chat room created with ${selectedUser.fullName}`)
+      onOpenChange(false) // Close dialog
+      setSelectedUsers([]) // Reset selection
+    } catch (error) {
+      console.error('Failed to create room:', error)
+      toast.error('Failed to create chat room. Please try again.')
+    } finally {
+      setIsCreatingRoom(false)
+    }
   }
 
   useEffect(() => {
@@ -64,38 +114,56 @@ export function NewChat({ users, onOpenChange, open }: Props) {
           <Command className='rounded-lg border'>
             <CommandInput placeholder='Search people...' className='text-foreground' />
             <CommandList>
-              <CommandEmpty>No people found.</CommandEmpty>
-              <CommandGroup>
-                {users.map((user) => (
-                  <CommandItem
-                    key={user.id}
-                    onSelect={() => handleSelectUser(user)}
-                    className='flex items-center justify-between gap-2'
-                  >
-                    <div className='flex items-center gap-2'>
-                      <img
-                        src={user.profile || '/placeholder.svg'}
-                        alt={user.fullName}
-                        className='h-8 w-8 rounded-full'
-                      />
-                      <div className='flex flex-col'>
-                        <span className='text-sm font-medium'>{user.fullName}</span>
-                        <span className='text-muted-foreground text-xs'>{user.username} aa</span>
-                      </div>
-                    </div>
+              {isLoadingUsers ? (
+                <div className='flex items-center justify-center p-4'>
+                  <Loader2 className='h-4 w-4 animate-spin' />
+                  <span className='ml-2 text-sm text-muted-foreground'>Loading users...</span>
+                </div>
+              ) : (
+                <>
+                  <CommandEmpty>No people found.</CommandEmpty>
+                  <CommandGroup>
+                    {users.map((user) => (
+                      <CommandItem
+                        key={user.id}
+                        onSelect={() => handleSelectUser(user)}
+                        className='flex items-center justify-between gap-2'
+                      >
+                        <div className='flex items-center gap-2'>
+                          <img
+                            src={user.profile || '/placeholder.svg'}
+                            alt={user.fullName}
+                            className='h-8 w-8 rounded-full'
+                          />
+                          <div className='flex flex-col'>
+                            <span className='text-sm font-medium'>{user.fullName}</span>
+                            <span className='text-muted-foreground text-xs'>
+                              @{user.username} • {user.title}
+                            </span>
+                          </div>
+                        </div>
 
-                    {selectedUsers.find((u) => u.id === user.id) && <Check className='h-4 w-4' />}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+                        {selectedUsers.find((u) => u.id === user.id) && <Check className='h-4 w-4' />}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
             </CommandList>
           </Command>
           <Button
             variant={'default'}
-            onClick={() => showSubmittedData(selectedUsers)}
-            disabled={selectedUsers.length === 0}
+            onClick={handleCreateChat}
+            disabled={selectedUsers.length === 0 || isCreatingRoom}
           >
-            Chat
+            {isCreatingRoom ? (
+              <>
+                <Loader2 className='h-4 w-4 animate-spin mr-2' />
+                Creating...
+              </>
+            ) : (
+              'Start Chat'
+            )}
           </Button>
         </div>
       </DialogContent>

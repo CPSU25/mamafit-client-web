@@ -13,6 +13,7 @@ export interface UseChatReturn {
   sendMessage: (roomId: string, message: string) => Promise<void>
   loadMessages: (roomId: string) => Promise<void>
   loadRooms: () => Promise<void>
+  createRoom: (userId1: string, userId2: string) => Promise<ChatRoom>
   rooms: ChatRoom[]
   messages: Record<string, Convo[]>
   isLoading: boolean
@@ -63,7 +64,7 @@ export function useChat(): UseChatReturn {
 
       setRooms(roomsData)
       setHasLoadedRooms(true) // Mark as loaded
-      console.log('✅ Loaded', roomsData.length, 'chat rooms')
+      console.log('✅ Loaded', roomsData, 'chat rooms')
 
       // Auto-join all rooms for SignalR
       if (isConnected && roomsData.length > 0) {
@@ -87,6 +88,26 @@ export function useChat(): UseChatReturn {
       setIsLoadingRooms(false)
     }
   }, [isConnected, joinedRooms, isLoadingRooms, hasLoadedRooms]) // Add hasLoadedRooms dependency
+  const createRoom = useCallback(
+    async (userId1: string, userId2: string) => {
+      try {
+        setError(null)
+        const response = await chatAPI.createRoom({ userId1, userId2 })
+        console.log('✅ Room created successfully:', response.data.data)
+
+        // Reload rooms to include the new room
+        await loadRooms()
+
+        return response.data.data
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to create room'
+        setError(errorMessage)
+        console.error('❌ Failed to create room:', err)
+        throw err // Re-throw để caller có thể handle error
+      }
+    },
+    [loadRooms]
+  )
 
   // Load messages for a specific room (only once per room)
   const loadMessages = useCallback(
@@ -210,6 +231,7 @@ export function useChat(): UseChatReturn {
     sendMessage,
     loadMessages,
     loadRooms,
+    createRoom,
     rooms,
     messages,
     isLoading,

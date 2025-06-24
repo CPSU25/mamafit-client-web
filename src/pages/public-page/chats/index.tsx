@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Fragment } from 'react/jsx-runtime'
-import { format } from 'date-fns'
+import { format, isToday, isYesterday, isThisWeek } from 'date-fns'
 import { cn } from '@/lib/utils/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -32,8 +32,26 @@ export default function Chats() {
   const [mobileSelectedUser, setMobileSelectedUser] = useState<boolean>(false)
   const [createConversationDialogOpened, setCreateConversationDialog] = useState(false)
   const [newMessage, setNewMessage] = useState('')
+  const [viewedRooms, setViewedRooms] = useState<Set<string>>(new Set()) // Track viewed rooms
 
   const { user } = useAuthStore()
+
+  // Helper function to format timestamp smartly
+  const formatSmartTimestamp = (timestamp: string | Date) => {
+    if (!timestamp) return ''
+
+    const date = new Date(timestamp)
+
+    if (isToday(date)) {
+      return format(date, 'HH:mm')
+    } else if (isYesterday(date)) {
+      return 'Hôm qua'
+    } else if (isThisWeek(date)) {
+      return format(date, 'EEEE') // Tên thứ
+    } else {
+      return format(date, 'dd/MM')
+    }
+  }
 
   // Use the chat hook for SignalR functionality
   const {
@@ -55,6 +73,13 @@ export default function Chats() {
       loadRooms()
     }
   }, [isConnected]) // Only depend on isConnected to avoid multiple loads
+
+  // Auto-mark currently selected room as viewed when new messages arrive
+  useEffect(() => {
+    if (selectedRoomId) {
+      setViewedRooms((prev) => new Set([...prev, selectedRoomId]))
+    }
+  }, [realMessages, selectedRoomId])
 
   // Filter rooms based on search
   const filteredRooms = rooms.filter((room) => {
@@ -95,6 +120,9 @@ export default function Chats() {
       setSelectedRoomId(roomId)
       setMobileSelectedUser(true)
 
+      // Mark room as viewed (remove unread indicator)
+      setViewedRooms((prev) => new Set([...prev, roomId]))
+
       // First join the room (if not already joined)
       await joinRoom(roomId)
 
@@ -107,6 +135,31 @@ export default function Chats() {
 
   // Get room display name and info
   const getRoomDisplayInfo = (room: ChatRoom) => {
+    // Format last message with sender info
+    const formatLastMessage = () => {
+      if (!room.lastMessage) return 'No messages yet'
+
+      const isCurrentUser = room.lastUserId === user?.userId
+      const senderName = isCurrentUser ? 'You' : room.lastUserName
+
+      return `${senderName}: ${room.lastMessage}`
+    }
+
+    // Format timestamp
+    const formatTimestamp = () => {
+      if (!room.lastTimestamp) return new Date()
+      return new Date(room.lastTimestamp)
+    }
+
+    // Check if room has unread messages
+    const hasUnreadMessage = () => {
+      // Show unread indicator if:
+      // 1. There is a last message
+      // 2. Last message is not from current user
+      // 3. Room hasn't been viewed yet
+      return room.lastMessage && room.lastUserId !== user?.userId && !viewedRooms.has(room.id)
+    }
+
     // If room has member info, show the other member's name
     if (room.members && room.members.length > 0) {
       const otherMember = room.members.find((member: Member) => member.memberId !== user?.userId)
@@ -114,7 +167,12 @@ export default function Chats() {
         return {
           name: otherMember.memberName || otherMember.userName || 'Unknown User',
           avatar: otherMember.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${otherMember.memberName}`,
-          initials: otherMember.memberName?.slice(0, 2).toUpperCase() || 'UN'
+          initials: otherMember.memberName?.slice(0, 2).toUpperCase() || 'UN',
+          lastMessage: formatLastMessage(),
+          lastMessageTimestamp: formatTimestamp(),
+          lastUserName: room.lastUserName,
+          isLastMessageFromCurrentUser: room.lastUserId === user?.userId,
+          hasUnreadMessage: hasUnreadMessage()
         }
       }
     }
@@ -123,7 +181,12 @@ export default function Chats() {
     return {
       name: room.name || `Room ${room.id}`,
       avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${room.id}`,
-      initials: room.name?.slice(0, 2).toUpperCase() || room.id.slice(-2).toUpperCase()
+      initials: room.name?.slice(0, 2).toUpperCase() || room.id.slice(-2).toUpperCase(),
+      lastMessage: formatLastMessage(),
+      lastMessageTimestamp: formatTimestamp(),
+      lastUserName: room.lastUserName,
+      isLastMessageFromCurrentUser: room.lastUserId === user?.userId,
+      hasUnreadMessage: hasUnreadMessage()
     }
   }
 
@@ -188,12 +251,7 @@ export default function Chats() {
               ) : (
                 filteredRooms.map((room) => {
                   const roomInfo = getRoomDisplayInfo(room)
-                  const lastMessage = realMessages[room.id]?.[0]
-                  const lastMsg = lastMessage
-                    ? lastMessage.sender === 'You'
-                      ? `You: ${lastMessage.message}`
-                      : lastMessage.message
-                    : 'No messages yet'
+                  const lastMsg = roomInfo.lastMessage
 
                   return (
                     <Fragment key={room.id}>
@@ -205,14 +263,31 @@ export default function Chats() {
                         )}
                         onClick={() => handleSelectRoom(room.id)}
                       >
-                        <div className='flex gap-2'>
+                        <div className='flex gap-2 w-full'>
                           <Avatar>
                             <AvatarImage src={roomInfo.avatar} alt={roomInfo.initials} />
                             <AvatarFallback>{roomInfo.initials}</AvatarFallback>
                           </Avatar>
-                          <div>
-                            <span className='col-start-2 row-span-2 font-medium'>{roomInfo.name}</span>
-                            <span className='text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-2 text-ellipsis'>
+                          <div className='flex-1 min-w-0'>
+                            <div className='flex justify-between items-start'>
+                              <span
+                                className={cn('truncate', roomInfo.hasUnreadMessage ? 'font-semibold' : 'font-medium')}
+                              >
+                                {roomInfo.name}
+                              </span>
+                              <div className='flex items-center gap-1 flex-shrink-0 ml-2'>
+                                <span className='text-xs text-muted-foreground'>
+                                  {formatSmartTimestamp(room.lastTimestamp || '')}
+                                </span>
+                                {roomInfo.hasUnreadMessage && <div className='w-2 h-2 bg-blue-500 rounded-full'></div>}
+                              </div>
+                            </div>
+                            <span
+                              className={cn(
+                                'text-sm line-clamp-1 text-ellipsis',
+                                roomInfo.hasUnreadMessage ? 'text-foreground font-medium' : 'text-muted-foreground'
+                              )}
+                            >
                               {lastMsg}
                             </span>
                           </div>
@@ -410,7 +485,7 @@ export default function Chats() {
             </div>
           )}
         </section>
-        <NewChat users={[]} onOpenChange={setCreateConversationDialog} open={createConversationDialogOpened} />
+        <NewChat onOpenChange={setCreateConversationDialog} open={createConversationDialogOpened} />
       </Main>
     </>
   )
