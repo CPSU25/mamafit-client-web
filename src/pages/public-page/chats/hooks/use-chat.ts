@@ -10,7 +10,7 @@ export interface UseChatReturn {
 
   joinRoom: (roomId: string) => Promise<void>
   sendMessage: (roomId: string, message: string) => Promise<void>
-  loadMessages: (roomId: string) => Promise<void>
+  loadMessages: (roomId: string, pageSize?: number, page?: number) => Promise<void>
   loadRooms: () => Promise<void>
   createRoom: (userId1: string, userId2: string) => Promise<ChatRoom>
   rooms: ChatRoom[]
@@ -127,9 +127,9 @@ export function useChat(): UseChatReturn {
 
   // Load messages for a specific room (only once per room)
   const loadMessages = useCallback(
-    async (roomId: string) => {
-      // Skip if already loaded
-      if (loadedRooms.has(roomId)) {
+    async (roomId: string, pageSize: number = 20, page: number = 1) => {
+      // Skip if already loaded (for first page only)
+      if (page === 1 && loadedRooms.has(roomId)) {
         console.log(`⏭️ Messages already loaded for room: ${roomId}`)
         return
       }
@@ -137,11 +137,13 @@ export function useChat(): UseChatReturn {
       try {
         setError(null)
         setIsLoading(true)
-        await signalRService.loadMessages(roomId)
+        await signalRService.loadMessageHistory(roomId, pageSize, page)
 
-        // Mark room as loaded
-        setLoadedRooms((prev) => new Set([...prev, roomId]))
-        console.log(`✅ Messages loaded for room ${roomId}`)
+        // Mark room as loaded (only for first page)
+        if (page === 1) {
+          setLoadedRooms((prev) => new Set([...prev, roomId]))
+        }
+        console.log(`✅ Messages loaded for room ${roomId} (page ${page})`)
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load messages'
         setError(errorMessage)
@@ -190,11 +192,11 @@ export function useChat(): UseChatReturn {
     }
 
     const handleMessageHistory = (...args: unknown[]) => {
-      const messageList = args[0] as ChatMessage[]
-      console.log('📜 Received message history:', messageList)
+      const roomId = args[0] as string
+      const messageList = args[1] as ChatMessage[]
+      console.log('📜 Received message history:', { roomId, messageCount: messageList?.length || 0 })
 
-      if (messageList.length > 0) {
-        const roomId = messageList[0].chatRoomId
+      if (roomId && Array.isArray(messageList) && messageList.length > 0) {
         const convos = messageList
           .map(mapChatMessageToConvo)
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
@@ -203,7 +205,21 @@ export function useChat(): UseChatReturn {
           ...prev,
           [roomId]: convos
         }))
+        console.log(`✅ Loaded ${convos.length} messages for room ${roomId}`)
+      } else if (roomId) {
+        // Handle empty message list - set empty array for the room
+        setMessages((prev) => ({
+          ...prev,
+          [roomId]: []
+        }))
+        console.log(`📭 No messages found for room ${roomId}`)
       }
+    }
+
+    const handleNoMessages = (...args: unknown[]) => {
+      const message = args[0] as string
+      console.log('📭 No messages found:', message)
+      // We can show a toast or notification here if needed
     }
 
     const handleRoomCreated = async (...args: unknown[]) => {
@@ -335,6 +351,7 @@ export function useChat(): UseChatReturn {
     signalRService.on('Error', handleError)
     signalRService.on('LoadRoom', handleLoadRoom)
     signalRService.on('NoRooms', handleNoRooms)
+    signalRService.on('NoMessages', handleNoMessages)
 
     return () => {
       signalRService.off('ReceiveMessage', handleReceiveMessage)
@@ -343,6 +360,7 @@ export function useChat(): UseChatReturn {
       signalRService.off('Error', handleError)
       signalRService.off('LoadRoom', handleLoadRoom)
       signalRService.off('NoRooms', handleNoRooms)
+      signalRService.off('NoMessages', handleNoMessages)
     }
   }, [mapChatMessageToConvo, loadRooms, createRoomPromise, loadRoomsPromise, isConnected, joinedRooms])
 
