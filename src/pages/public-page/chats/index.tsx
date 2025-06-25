@@ -4,8 +4,11 @@ import { format, isToday, isYesterday, isThisWeek } from 'date-fns'
 import { cn } from '@/lib/utils/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Main } from '@/components/layout/main'
 import { NewChat } from './components/new-chat'
 import { NotificationSettings } from './components/notification-settings'
@@ -15,8 +18,6 @@ import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { ChatRoom, Member } from '@/@types/chat.types'
 import {
   ArrowLeftIcon,
-  EditIcon,
-  ImagePlusIcon,
   MessageCircle,
   MoreVerticalIcon,
   PaperclipIcon,
@@ -25,7 +26,8 @@ import {
   RefreshCwIcon,
   SearchIcon,
   SendIcon,
-  VideoIcon
+  VideoIcon,
+  AlertTriangle
 } from 'lucide-react'
 
 export default function Chats() {
@@ -289,374 +291,424 @@ export default function Chats() {
     }
   }
 
-  return (
-    <>
-      <Main fixed>
-        <section className='flex h-full gap-6'>
-          {/* Left Side */}
-          <div className='flex w-full flex-col gap-2 sm:w-56 lg:w-72 2xl:w-80'>
-            <div className='bg-background sticky top-0 z-10 -mx-4 px-4 pb-3 shadow-md sm:static sm:z-auto sm:mx-0 sm:p-0 sm:shadow-none'>
-              <div className='flex items-center justify-between py-2'>
-                <div className='flex gap-2'>
-                  <h1 className='text-2xl font-bold'>Inbox</h1>
-                  <MessageCircle size={20} />
-                  {/* Connection Status Indicator */}
-                  <div className='flex items-center'>
-                    <div
-                      className={cn('h-2 w-2 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500')}
-                      title={isConnected ? 'Connected to chat server' : 'Disconnected from chat server'}
-                    />
-                    <span className='ml-1 text-xs text-muted-foreground'>{isConnected ? 'Online' : 'Offline'}</span>
-                  </div>
-                </div>
-
-                <div className='flex gap-1'>
-                  <NotificationSettings />
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    onClick={handleRefreshRooms}
-                    disabled={!isConnected || isLoadingRooms}
-                    className='rounded-lg'
-                    title='Refresh rooms'
-                  >
-                    <RefreshCwIcon
-                      size={20}
-                      className={cn('stroke-muted-foreground', isLoadingRooms && 'animate-spin')}
-                    />
-                  </Button>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    onClick={() => setCreateConversationDialog(true)}
-                    className='rounded-lg'
-                  >
-                    <EditIcon size={24} className='stroke-muted-foreground' />
-                  </Button>
-                </div>
+  // Loading state
+  if (isLoadingRooms && rooms.length === 0) {
+    return (
+      <Main>
+        <div className='flex flex-col gap-y-6'>
+          <div className='flex flex-col gap-y-2'>
+            <div className='flex items-center justify-between'>
+              <div>
+                <h1 className='text-2xl font-bold tracking-tight'>Chat</h1>
+                <p className='text-muted-foreground'>Communicate with your team members in real-time.</p>
               </div>
-
-              {/* Error Display */}
-              {error && (
-                <div className='mb-2 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md'>
-                  <div className='flex items-center justify-between'>
-                    <span>⚠️ {error}</span>
-                    <Button
-                      size='sm'
-                      variant='ghost'
-                      onClick={handleRefreshRooms}
-                      disabled={!isConnected}
-                      className='h-6 px-2 text-xs'
-                    >
-                      Retry
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              <label className='border-input focus-within:ring-ring flex h-12 w-full items-center space-x-0 rounded-md border pl-2 focus-within:ring-1 focus-within:outline-hidden'>
-                <SearchIcon size={15} className='mr-2 stroke-slate-500' />
-                <span className='sr-only'>Search</span>
-                <input
-                  type='text'
-                  className='w-full flex-1 bg-inherit text-sm focus-visible:outline-hidden'
-                  placeholder='Search chat...'
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </label>
             </div>
+          </div>
 
-            <ScrollArea className='-mx-3 h-full p-3'>
-              {isLoadingRooms ? (
-                <div className='flex flex-col items-center justify-center py-8 space-y-3'>
+          <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]'>
+            <Card className='lg:col-span-1'>
+              <CardHeader>
+                <div className='flex items-center justify-between'>
+                  <CardTitle className='flex items-center gap-2'>
+                    <MessageCircle className='h-5 w-5' />
+                    Conversations
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className='space-y-4'>
+                  <Skeleton className='h-10 w-full' />
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className='flex items-center space-x-3'>
+                      <Skeleton className='h-10 w-10 rounded-full' />
+                      <div className='space-y-2 flex-1'>
+                        <Skeleton className='h-4 w-full' />
+                        <Skeleton className='h-3 w-3/4' />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className='lg:col-span-2'>
+              <CardContent className='flex items-center justify-center h-full'>
+                <div className='flex flex-col items-center space-y-3'>
                   <RefreshCwIcon className='h-8 w-8 animate-spin text-muted-foreground' />
                   <div className='text-sm text-muted-foreground text-center'>
-                    <p>Loading rooms via SignalR...</p>
+                    <p>Loading conversations...</p>
                     <p className='text-xs mt-1'>Getting your chat rooms in real-time</p>
                   </div>
                 </div>
-              ) : !isConnected ? (
-                <div className='flex flex-col items-center justify-center py-8 space-y-3'>
-                  <div className='h-8 w-8 rounded-full bg-red-100 flex items-center justify-center'>
-                    <div className='h-3 w-3 rounded-full bg-red-500'></div>
-                  </div>
-                  <div className='text-sm text-muted-foreground text-center'>
-                    <p>Disconnected from chat server</p>
-                    <p className='text-xs mt-1'>Connecting to load your rooms...</p>
-                  </div>
-                </div>
-              ) : filteredRooms.length === 0 ? (
-                <div className='flex flex-col items-center justify-center py-8 space-y-2'>
-                  <div className='text-sm text-muted-foreground text-center'>
-                    {rooms.length === 0 ? (
-                      <>
-                        <MessageCircle className='h-12 w-12 mx-auto mb-3 text-muted-foreground' />
-                        <p>Chưa có phòng chat nào</p>
-                        <p className='text-xs mt-1'>Bạn chưa tham gia cuộc trò chuyện nào</p>
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          onClick={() => setCreateConversationDialog(true)}
-                          className='mt-3'
-                        >
-                          <PlusIcon className='h-4 w-4 mr-2' />
-                          Tạo chat mới
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <SearchIcon className='h-8 w-8 mx-auto mb-2 text-muted-foreground' />
-                        <p>Không tìm thấy phòng chat phù hợp</p>
-                        <p className='text-xs mt-1'>Thử tìm kiếm từ khóa khác</p>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                filteredRooms.map((room) => {
-                  const roomInfo = getRoomDisplayInfo(room)
-                  const lastMsg = roomInfo.lastMessage
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </Main>
+    )
+  }
 
-                  return (
-                    <Fragment key={room.id}>
-                      <button
-                        type='button'
-                        className={cn(
-                          'hover:bg-secondary/75 -mx-1 flex w-full rounded-md px-2 py-2 text-left text-sm',
-                          selectedRoomId === room.id && 'sm:bg-muted'
-                        )}
-                        onClick={() => handleSelectRoom(room.id)}
-                      >
-                        <div className='flex gap-2 w-full'>
-                          <Avatar>
-                            <AvatarImage src={roomInfo.avatar} alt={roomInfo.initials} />
-                            <AvatarFallback>{roomInfo.initials}</AvatarFallback>
-                          </Avatar>
-                          <div className='flex-1 min-w-0'>
-                            <div className='flex justify-between items-start'>
-                              <span
-                                className={cn('truncate', roomInfo.hasUnreadMessage ? 'font-semibold' : 'font-medium')}
-                              >
-                                {roomInfo.name}
-                              </span>
-                              <div className='flex items-center gap-1 flex-shrink-0 ml-2'>
-                                <span className='text-xs text-muted-foreground'>
-                                  {formatSmartTimestamp(room.lastTimestamp || '')}
-                                </span>
-                                {roomInfo.hasUnreadMessage && <div className='w-2 h-2 bg-blue-500 rounded-full'></div>}
-                              </div>
-                            </div>
-                            <span
-                              className={cn(
-                                'text-sm line-clamp-1 text-ellipsis',
-                                roomInfo.hasUnreadMessage ? 'text-foreground font-medium' : 'text-muted-foreground'
-                              )}
-                            >
-                              {lastMsg}
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-                      <Separator className='my-1' />
-                    </Fragment>
-                  )
-                })
-              )}
-            </ScrollArea>
+  // Error state
+  if (error) {
+    return (
+      <Main>
+        <div className='flex flex-col gap-y-6'>
+          <div className='flex flex-col gap-y-2'>
+            <div className='flex items-center justify-between'>
+              <div>
+                <h1 className='text-2xl font-bold tracking-tight'>Chat</h1>
+                <p className='text-muted-foreground'>Communicate with your team members in real-time.</p>
+              </div>
+            </div>
           </div>
 
-          {/* Right Side */}
-          {selectedRoom ? (
-            <div
-              className={cn(
-                'bg-primary-foreground absolute inset-0 left-full z-50 hidden w-full flex-1 flex-col rounded-md border shadow-xs transition-all duration-200 sm:static sm:z-auto sm:flex',
-                mobileSelectedUser && 'left-0 flex'
-              )}
-            >
-              {/* Top Part */}
-              <div className='bg-secondary mb-1 flex flex-none justify-between rounded-t-md p-4 shadow-lg'>
-                {/* Left */}
-                <div className='flex gap-3'>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='-ml-2 h-full sm:hidden'
-                    onClick={() => setMobileSelectedUser(false)}
-                  >
-                    <ArrowLeftIcon />
-                  </Button>
-                  <div className='flex items-center gap-2 lg:gap-4'>
-                    {selectedRoom &&
-                      (() => {
-                        const roomInfo = getRoomDisplayInfo(selectedRoom)
-                        return (
-                          <>
-                            <Avatar className='size-9 lg:size-11'>
-                              <AvatarImage src={roomInfo.avatar} alt={roomInfo.initials} />
-                              <AvatarFallback>{roomInfo.initials}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <span className='col-start-2 row-span-2 text-sm font-medium lg:text-base'>
-                                {roomInfo.name}
-                              </span>
-                              <span className='text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-1 block max-w-32 text-xs text-nowrap text-ellipsis lg:max-w-none lg:text-sm'>
-                                {isConnected ? 'Online' : 'Offline'}
-                              </span>
-                            </div>
-                          </>
-                        )
-                      })()}
-                  </div>
-                </div>
+          <Alert variant='destructive'>
+            <AlertTriangle className='h-4 w-4' />
+            <AlertDescription className='flex items-center justify-between'>
+              <span>⚠️ {error}</span>
+              <Button
+                size='sm'
+                variant='outline'
+                onClick={handleRefreshRooms}
+                disabled={!isConnected}
+                className='ml-4'
+              >
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      </Main>
+    )
+  }
 
-                {/* Right */}
-                <div className='-mr-1 flex items-center gap-1 lg:gap-2'>
+  return (
+    <Main>
+      <div className='flex flex-col gap-y-6'>
+        {/* Header */}
+        <div className='flex flex-col gap-y-2'>
+          <div className='flex items-center justify-between'>
+            <div>
+              <h1 className='text-2xl font-bold tracking-tight'>Chat</h1>
+              <p className='text-muted-foreground'>Communicate with your team members in real-time.</p>
+            </div>
+            <div className='flex items-center gap-2'>
+              <Badge variant={isConnected ? 'default' : 'destructive'} className='gap-1'>
+                <div className={cn('h-2 w-2 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500')} />
+                {isConnected ? 'Online' : 'Offline'}
+              </Badge>
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() => setCreateConversationDialog(true)}
+                disabled={!isConnected}
+              >
+                <PlusIcon className='h-4 w-4 mr-2' />
+                New Chat
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Chat Interface */}
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]'>
+          {/* Left Side - Conversation List */}
+          <Card className='lg:col-span-1'>
+            <CardHeader>
+              <div className='flex items-center justify-between'>
+                <CardTitle className='flex items-center gap-2'>
+                  <MessageCircle className='h-5 w-5' />
+                  Conversations
+                </CardTitle>
+                <div className='flex gap-1'>
+                  <NotificationSettings />
                   <Button
-                    onClick={() => loadMessages(selectedRoomId)}
-                    disabled={!isConnected || isLoading}
                     size='sm'
                     variant='ghost'
+                    onClick={handleRefreshRooms}
+                    disabled={!isConnected || isLoadingRooms}
                   >
-                    {isLoading ? '⏳' : '🔄'} Reload
-                  </Button>
-                  <Button size='icon' variant='ghost' className='hidden size-8 rounded-full sm:inline-flex lg:size-10'>
-                    <VideoIcon size={22} className='stroke-muted-foreground' />
-                  </Button>
-                  <Button size='icon' variant='ghost' className='hidden size-8 rounded-full sm:inline-flex lg:size-10'>
-                    <PhoneIcon size={22} className='stroke-muted-foreground' />
-                  </Button>
-                  <Button size='icon' variant='ghost' className='h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6'>
-                    <MoreVerticalIcon className='stroke-muted-foreground sm:size-5' />
+                    <RefreshCwIcon
+                      className={cn('h-4 w-4', isLoadingRooms && 'animate-spin')}
+                    />
                   </Button>
                 </div>
               </div>
+              
+              {/* Search */}
+              <div className='relative'>
+                <SearchIcon className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                <input
+                  type='text'
+                  placeholder='Search conversations...'
+                  className='w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring'
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+            </CardHeader>
 
-              {/* Conversation */}
-              <div className='flex flex-1 flex-col gap-2 rounded-md px-4 pt-0 pb-4'>
-                <div className='flex size-full flex-1'>
-                  <div className='chat-text-container relative -mr-4 flex flex-1 flex-col overflow-y-hidden'>
-                    <div className='chat-flex flex h-40 w-full grow flex-col-reverse justify-start gap-4 overflow-y-auto py-2 pr-4 pb-4'>
-                      {Object.keys(currentMessage).length === 0 ? (
-                        <div className='flex items-center justify-center py-8'>
-                          <div className='text-sm text-muted-foreground'>
-                            {isLoading ? 'Loading messages...' : 'No messages yet. Start the conversation!'}
-                          </div>
-                        </div>
+            <CardContent className='p-0'>
+              <ScrollArea className='h-[400px]'>
+                {!isConnected ? (
+                  <div className='flex flex-col items-center justify-center py-8 px-4 space-y-3'>
+                    <div className='h-8 w-8 rounded-full bg-red-100 flex items-center justify-center'>
+                      <div className='h-3 w-3 rounded-full bg-red-500'></div>
+                    </div>
+                    <div className='text-sm text-muted-foreground text-center'>
+                      <p>Disconnected from chat server</p>
+                      <p className='text-xs mt-1'>Connecting to load your rooms...</p>
+                    </div>
+                  </div>
+                ) : filteredRooms.length === 0 ? (
+                  <div className='flex flex-col items-center justify-center py-8 px-4 space-y-3'>
+                    <div className='text-sm text-muted-foreground text-center'>
+                      {rooms.length === 0 ? (
+                        <>
+                          <MessageCircle className='h-12 w-12 mx-auto mb-3 text-muted-foreground' />
+                          <p>No conversations yet</p>
+                          <p className='text-xs mt-1'>Start a new conversation to get started</p>
+                          <Button
+                            variant='outline'
+                            size='sm'
+                            onClick={() => setCreateConversationDialog(true)}
+                            className='mt-3'
+                          >
+                            <PlusIcon className='h-4 w-4 mr-2' />
+                            Create New Chat
+                          </Button>
+                        </>
                       ) : (
-                        Object.keys(currentMessage).map((key) => (
-                          <Fragment key={key}>
-                            {currentMessage[key].map((msg, index) => (
-                              <div
-                                key={`${msg.sender}-${msg.timestamp}-${index}`}
-                                className={cn(
-                                  'chat-box max-w-72 px-3 py-2 break-words shadow-lg',
-                                  msg.sender === 'You'
-                                    ? 'bg-primary/85 text-primary-foreground/75 self-end rounded-[16px_16px_0_16px]'
-                                    : 'bg-secondary self-start rounded-[16px_16px_16px_0]'
-                                )}
-                              >
-                                {msg.message}{' '}
-                                <span
-                                  className={cn(
-                                    'text-muted-foreground mt-1 block text-xs font-light italic',
-                                    msg.sender === 'You' && 'text-right'
-                                  )}
-                                >
-                                  {format(msg.timestamp, 'h:mm a')}
-                                </span>
-                              </div>
-                            ))}
-                            <div className='text-center text-xs'>{key}</div>
-                          </Fragment>
-                        ))
+                        <>
+                          <SearchIcon className='h-8 w-8 mx-auto mb-2 text-muted-foreground' />
+                          <p>No conversations found</p>
+                          <p className='text-xs mt-1'>Try searching with different keywords</p>
+                        </>
                       )}
                     </div>
                   </div>
-                </div>
-                <form className='flex w-full flex-none gap-2' onSubmit={handleSendMessage}>
-                  <div className='border-input focus-within:ring-ring flex flex-1 items-center gap-2 rounded-md border px-2 py-1 focus-within:ring-1 focus-within:outline-hidden lg:gap-4'>
-                    <div className='space-x-1'>
-                      <Button size='icon' type='button' variant='ghost' className='h-8 rounded-md'>
-                        <PlusIcon size={20} className='stroke-muted-foreground' />
-                      </Button>
-                      <Button
-                        size='icon'
-                        type='button'
-                        variant='ghost'
-                        className='hidden h-8 rounded-md lg:inline-flex'
-                      >
-                        <ImagePlusIcon size={20} className='stroke-muted-foreground' />
-                      </Button>
-                      <Button
-                        size='icon'
-                        type='button'
-                        variant='ghost'
-                        className='hidden h-8 rounded-md lg:inline-flex'
-                      >
-                        <PaperclipIcon size={20} className='stroke-muted-foreground' />
-                      </Button>
-                    </div>
-                    <label className='flex-1'>
-                      <span className='sr-only'>Chat Text Box</span>
-                      <input
-                        type='text'
-                        placeholder='Type your messages...'
-                        className='h-8 w-full bg-inherit focus-visible:outline-hidden'
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        disabled={!isConnected}
-                      />
-                    </label>
+                ) : (
+                  <div className='p-4 space-y-2'>
+                    {filteredRooms.map((room) => {
+                      const roomInfo = getRoomDisplayInfo(room)
+                      
+                      return (
+                        <button
+                          key={room.id}
+                          type='button'
+                          className={cn(
+                            'w-full p-3 rounded-lg text-left transition-colors hover:bg-muted/50',
+                            selectedRoomId === room.id && 'bg-muted'
+                          )}
+                          onClick={() => handleSelectRoom(room.id)}
+                        >
+                          <div className='flex items-start gap-3'>
+                            <Avatar className='h-10 w-10'>
+                              <AvatarImage src={roomInfo.avatar} alt={roomInfo.initials} />
+                              <AvatarFallback>{roomInfo.initials}</AvatarFallback>
+                            </Avatar>
+                            <div className='flex-1 min-w-0'>
+                              <div className='flex justify-between items-start mb-1'>
+                                <h4 className={cn(
+                                  'text-sm font-medium truncate',
+                                  roomInfo.hasUnreadMessage && 'font-semibold'
+                                )}>
+                                  {roomInfo.name}
+                                </h4>
+                                <div className='flex items-center gap-1 flex-shrink-0'>
+                                  <span className='text-xs text-muted-foreground'>
+                                    {formatSmartTimestamp(room.lastTimestamp || '')}
+                                  </span>
+                                  {roomInfo.hasUnreadMessage && (
+                                    <div className='w-2 h-2 bg-blue-500 rounded-full'></div>
+                                  )}
+                                </div>
+                              </div>
+                              <p className={cn(
+                                'text-xs truncate',
+                                roomInfo.hasUnreadMessage ? 'text-foreground font-medium' : 'text-muted-foreground'
+                              )}>
+                                {roomInfo.lastMessage}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+
+          {/* Right Side - Chat Area */}
+          {selectedRoom ? (
+            <Card className={cn(
+              'lg:col-span-2',
+              mobileSelectedUser ? 'fixed inset-0 z-50 lg:relative lg:z-auto' : 'hidden lg:flex lg:flex-col'
+            )}>
+              {/* Chat Header */}
+              <CardHeader className='border-b'>
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center gap-3'>
                     <Button
+                      size='sm'
                       variant='ghost'
-                      size='icon'
-                      className='hidden sm:inline-flex'
-                      type='submit'
-                      disabled={!isConnected || !newMessage.trim()}
+                      className='lg:hidden'
+                      onClick={() => setMobileSelectedUser(false)}
                     >
-                      <SendIcon size={20} />
+                      <ArrowLeftIcon className='h-4 w-4' />
+                    </Button>
+                    {(() => {
+                      const roomInfo = getRoomDisplayInfo(selectedRoom)
+                      return (
+                        <>
+                          <Avatar className='h-10 w-10'>
+                            <AvatarImage src={roomInfo.avatar} alt={roomInfo.initials} />
+                            <AvatarFallback>{roomInfo.initials}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className='font-semibold'>{roomInfo.name}</h3>
+                            <p className='text-sm text-muted-foreground'>
+                              {isConnected ? 'Online' : 'Offline'}
+                            </p>
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </div>
+
+                  <div className='flex items-center gap-2'>
+                    <Button
+                      onClick={() => loadMessages(selectedRoomId)}
+                      disabled={!isConnected || isLoading}
+                      size='sm'
+                      variant='outline'
+                    >
+                      {isLoading ? (
+                        <RefreshCwIcon className='h-4 w-4 animate-spin' />
+                      ) : (
+                        <RefreshCwIcon className='h-4 w-4' />
+                      )}
+                    </Button>
+                    <Button size='sm' variant='ghost'>
+                      <VideoIcon className='h-4 w-4' />
+                    </Button>
+                    <Button size='sm' variant='ghost'>
+                      <PhoneIcon className='h-4 w-4' />
+                    </Button>
+                    <Button size='sm' variant='ghost'>
+                      <MoreVerticalIcon className='h-4 w-4' />
                     </Button>
                   </div>
-                  <Button className='h-full sm:hidden' type='submit' disabled={!isConnected || !newMessage.trim()}>
-                    <SendIcon size={18} /> Send
+                </div>
+              </CardHeader>
+
+              {/* Messages Area */}
+              <CardContent className='flex-1 p-0'>
+                <ScrollArea className='h-[400px] p-4'>
+                  <div className='flex flex-col-reverse gap-4'>
+                    {Object.keys(currentMessage).length === 0 ? (
+                      <div className='flex items-center justify-center py-8'>
+                        <div className='text-sm text-muted-foreground text-center'>
+                          {isLoading ? 'Loading messages...' : 'No messages yet. Start the conversation!'}
+                        </div>
+                      </div>
+                    ) : (
+                      Object.keys(currentMessage).map((key) => (
+                        <Fragment key={key}>
+                          {currentMessage[key].map((msg, index) => (
+                            <div
+                              key={`${msg.sender}-${msg.timestamp}-${index}`}
+                              className={cn(
+                                'max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow-sm',
+                                msg.sender === 'You'
+                                  ? 'bg-primary text-primary-foreground self-end ml-auto'
+                                  : 'bg-muted self-start mr-auto'
+                              )}
+                            >
+                              <p className='text-sm'>{msg.message}</p>
+                              <span className={cn(
+                                'text-xs opacity-70 mt-1 block',
+                                msg.sender === 'You' ? 'text-right' : 'text-left'
+                              )}>
+                                {format(msg.timestamp, 'h:mm a')}
+                              </span>
+                            </div>
+                          ))}
+                          <div className='text-center text-xs text-muted-foreground py-2'>
+                            {key}
+                          </div>
+                        </Fragment>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+
+              {/* Message Input */}
+              <div className='border-t p-4'>
+                <form onSubmit={handleSendMessage} className='flex gap-2'>
+                  <div className='flex-1 flex items-center gap-2 border rounded-lg px-3 py-2'>
+                    <Button size='sm' type='button' variant='ghost'>
+                      <PlusIcon className='h-4 w-4' />
+                    </Button>
+                    <Button size='sm' type='button' variant='ghost'>
+                      <PaperclipIcon className='h-4 w-4' />
+                    </Button>
+                    <input
+                      type='text'
+                      placeholder='Type your message...'
+                      className='flex-1 bg-transparent border-none outline-none text-sm'
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      disabled={!isConnected}
+                    />
+                  </div>
+                  <Button 
+                    type='submit' 
+                    disabled={!isConnected || !newMessage.trim()}
+                    size='sm'
+                  >
+                    <SendIcon className='h-4 w-4' />
                   </Button>
                 </form>
               </div>
-            </div>
+            </Card>
           ) : (
-            <div
-              className={cn(
-                'bg-primary-foreground absolute inset-0 left-full z-50 hidden w-full flex-1 flex-col justify-center rounded-md border shadow-xs transition-all duration-200 sm:static sm:z-auto sm:flex'
-              )}
-            >
-              <div className='flex flex-col items-center space-y-6'>
-                <div className='border-border flex size-16 items-center justify-center rounded-full border-2'>
-                  <MessageCircle className='size-8' />
+            <Card className='lg:col-span-2 hidden lg:flex lg:flex-col'>
+              <CardContent className='flex-1 flex items-center justify-center'>
+                <div className='flex flex-col items-center space-y-6 text-center'>
+                  <div className='h-16 w-16 rounded-full bg-muted flex items-center justify-center'>
+                    <MessageCircle className='h-8 w-8 text-muted-foreground' />
+                  </div>
+                  <div className='space-y-2'>
+                    <h3 className='text-xl font-semibold'>Your Messages</h3>
+                    <p className='text-muted-foreground text-sm max-w-sm'>
+                      {isConnected 
+                        ? 'Select a conversation to start chatting or create a new one.' 
+                        : 'Connect to the chat server to start messaging.'
+                      }
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => setCreateConversationDialog(true)}
+                    disabled={!isConnected}
+                  >
+                    {isConnected ? 'Start New Chat' : 'Connecting...'}
+                  </Button>
                 </div>
-                <div className='space-y-2 text-center'>
-                  <h1 className='text-xl font-semibold'>Your messages</h1>
-                  <p className='text-muted-foreground text-sm'>
-                    {isConnected ? 'Select a room to start chatting.' : 'Connect to SignalR to start chatting.'}
-                  </p>
-                </div>
-                <Button
-                  className='bg-blue-500 px-6 text-white hover:bg-blue-600'
-                  onClick={() => setCreateConversationDialog(true)}
-                  disabled={!isConnected}
-                >
-                  {isConnected ? 'Create Chat' : 'Connect First'}
-                </Button>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           )}
-        </section>
-        <NewChat
-          onOpenChange={setCreateConversationDialog}
-          open={createConversationDialogOpened}
-          onRoomCreated={handleRoomCreated}
-        />
-      </Main>
-    </>
+        </div>
+      </div>
+
+      <NewChat
+        onOpenChange={setCreateConversationDialog}
+        open={createConversationDialogOpened}
+        onRoomCreated={handleRoomCreated}
+      />
+    </Main>
   )
 }
