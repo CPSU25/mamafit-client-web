@@ -12,7 +12,7 @@ interface ChatMessage {
   type: number
 }
 
-export class SignalRService {
+export class ChatService {
   private connection: signalR.HubConnection | null = null
   private isConnecting = false
   private listeners: Map<string, ((...args: unknown[]) => void)[]> = new Map()
@@ -118,6 +118,17 @@ export class SignalRService {
     this.connection.on('NoMessages', (message: string) => {
       console.log('📭 Không có tin nhắn:', message)
       this.emit('NoMessages', message)
+    })
+
+    // User Presence Events
+    this.connection.on('OnlineUsers', (userId: string, userName?: string) => {
+      console.log('🟢 User online:', { userId, userName })
+      this.emit('useronline', userId, userName)
+    })
+
+    this.connection.on('OfflineUsers', (userId: string, userName?: string) => {
+      console.log('🔴 User offline:', { userId, userName })
+      this.emit('useroffline', userId, userName)
     })
 
     console.log('Event listeners đã được setup')
@@ -316,4 +327,4 @@ export class SignalRService {
 }
 
 // Singleton instance
-export const signalRService = new SignalRService()
+export const chatService = new ChatService()

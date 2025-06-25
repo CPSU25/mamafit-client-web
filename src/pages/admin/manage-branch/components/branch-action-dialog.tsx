@@ -16,10 +16,13 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CloudinarySingleImageUpload } from '@/components/cloudinary-single-image-upload'
 import { Branch } from '../data/schema'
-import { useCreateBranch, useUpdateBranch } from '@/services/admin/branch.service'
+import { useCreateBranch, useUpdateBranch } from '@/services/admin/manage-branch.service'
+import { useGetListUser } from '@/services/admin/manage-user.service'
 import { BranchRequest } from '@/@types/branch.type'
+import { ManageUserType } from '@/@types/manage-user.type'
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Branch name is required.' }),
@@ -46,6 +49,12 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
   const isEdit = !!currentRow
   const createBranchMutation = useCreateBranch()
   const updateBranchMutation = useUpdateBranch()
+
+  // Get list of users with branch manager role
+  const { data: branchManagersData, isLoading: isLoadingManagers } = useGetListUser({
+    roleName: 'BranchManager',
+    pageSize: 100 // Get enough managers for selection
+  })
 
   const form = useForm<BranchForm>({
     resolver: zodResolver(formSchema),
@@ -215,9 +224,34 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
                 name='branchManagerId'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Manager ID</FormLabel>
+                    <FormLabel className='col-span-2 text-right'>Branch Manager</FormLabel>
                     <FormControl>
-                      <Input placeholder='MGR001' className='col-span-4' disabled={isLoading} {...field} />
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isLoading || isLoadingManagers}
+                      >
+                        <SelectTrigger className='col-span-4'>
+                          <SelectValue placeholder='Select a branch manager' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {isLoadingManagers ? (
+                            <SelectItem value='loading' disabled>
+                              Loading managers...
+                            </SelectItem>
+                          ) : branchManagersData?.data?.items?.length === 0 ? (
+                            <SelectItem value='no-managers' disabled>
+                              No branch managers available
+                            </SelectItem>
+                          ) : (
+                            branchManagersData?.data?.items?.map((user: ManageUserType) => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {user.fullName} ({user.userEmail})
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage className='col-span-4 col-start-3' />
                   </FormItem>
