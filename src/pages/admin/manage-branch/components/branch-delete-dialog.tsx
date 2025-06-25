@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Branch } from '../data/schema'
-import { useDeleteBranch } from '@/services/admin/branch.service'
+import { useDeleteBranch } from '@/services/admin/manage-branch.service'
 
 interface Props {
   open: boolean

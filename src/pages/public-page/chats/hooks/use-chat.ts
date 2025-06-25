@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { signalRService } from '@/services/chat/signalr.service'
+import { chatService } from '@/services/chat/chat.service'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { ChatMessage, ChatRoom, Member } from '@/@types/chat.types'
 import { type Convo } from '../data/chat-types'
@@ -19,6 +19,7 @@ export interface UseChatReturn {
   isLoadingRooms: boolean
   error: string | null
   loadedRooms: Set<string>
+  onlineUsers: Set<string>
 }
 
 export function useChat(): UseChatReturn {
@@ -32,10 +33,15 @@ export function useChat(): UseChatReturn {
   const [loadedRooms, setLoadedRooms] = useState<Set<string>>(new Set())
   const [joinedRooms, setJoinedRooms] = useState<Set<string>>(new Set())
   const [hasLoadedRooms, setHasLoadedRooms] = useState(false)
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
+
+  // Track processed messages to prevent duplicates
+  const [processedMessages, setProcessedMessages] = useState<Set<string>>(new Set())
 
   // Use refs to prevent unnecessary re-renders
   const loadRoomsCalledRef = useRef(false)
   const connectionCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const listenersSetupRef = useRef(false)
 
   const [createRoomPromise, setCreateRoomPromise] = useState<{
     resolve: (room: ChatRoom) => void
@@ -94,7 +100,7 @@ export function useChat(): UseChatReturn {
       setError(null)
 
       // Gọi SignalR method
-      signalRService.loadRoom().catch((err) => {
+      chatService.loadRoom().catch((err) => {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load rooms'
         setError(errorMessage)
         console.error('❌ Failed to load rooms:', err)
@@ -115,7 +121,7 @@ export function useChat(): UseChatReturn {
       setError(null)
 
       // Gọi SignalR method
-      signalRService.createRoom(userId1, userId2).catch((err) => {
+      chatService.createRoom(userId1, userId2).catch((err) => {
         const errorMessage = err instanceof Error ? err.message : 'Failed to create room'
         setError(errorMessage)
         console.error('❌ Failed to create room:', err)
@@ -137,7 +143,7 @@ export function useChat(): UseChatReturn {
       try {
         setError(null)
         setIsLoading(true)
-        await signalRService.loadMessageHistory(roomId, pageSize, page)
+        await chatService.loadMessageHistory(roomId, pageSize, page)
 
         // Mark room as loaded (only for first page)
         if (page === 1) {
@@ -155,11 +161,41 @@ export function useChat(): UseChatReturn {
     [loadedRooms]
   )
 
-  // Setup SignalR event listeners
+  // Setup SignalR event listeners (only once)
   useEffect(() => {
+    // Prevent duplicate listener setup
+    if (listenersSetupRef.current) {
+      console.log('⏭️ Event listeners already setup, skipping')
+      return
+    }
+
+    console.log('🔧 Setting up SignalR event listeners')
+    listenersSetupRef.current = true
     const handleReceiveMessage = (...args: unknown[]) => {
       const message = args[0] as ChatMessage
       console.log('📨 Received message:', message)
+
+      // Prevent duplicate message processing using message ID
+      const messageId = message.id || `${message.chatRoomId}-${message.messageTimestamp || Date.now()}`
+
+      if (processedMessages.has(messageId)) {
+        console.log('⏭️ Skipping duplicate message:', messageId)
+        return
+      }
+
+      // Mark message as processed (with cleanup to prevent memory leak)
+      setProcessedMessages((prev) => {
+        const newSet = new Set([...prev, messageId])
+
+        // Clean up old message IDs to prevent memory leak (keep last 1000)
+        if (newSet.size > 1000) {
+          const recentIds = Array.from(newSet).slice(-1000)
+          return new Set(recentIds)
+        }
+
+        return newSet
+      })
+
       const convo = mapChatMessageToConvo(message)
 
       // Update messages for the chat room
@@ -189,6 +225,9 @@ export function useChat(): UseChatReturn {
           return timeB - timeA
         })
       })
+
+      // Note: Notification handling is now done in useSignalRAutoConnect
+      // to prevent duplication and centralize message processing
     }
 
     const handleMessageHistory = (...args: unknown[]) => {
@@ -222,13 +261,31 @@ export function useChat(): UseChatReturn {
       // We can show a toast or notification here if needed
     }
 
+    const handleUserOnline = (...args: unknown[]) => {
+      const userId = args[0] as string
+      const userName = args[1] as string
+      console.log('🟢 User came online:', { userId, userName })
+      setOnlineUsers((prev) => new Set([...prev, userId]))
+    }
+
+    const handleUserOffline = (...args: unknown[]) => {
+      const userId = args[0] as string
+      const userName = args[1] as string
+      console.log('🔴 User went offline:', { userId, userName })
+      setOnlineUsers((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(userId)
+        return newSet
+      })
+    }
+
     const handleRoomCreated = async (...args: unknown[]) => {
       const roomId = args[0] as string
       console.log('🏠 Room created successfully:', roomId)
 
       try {
         // Join the newly created room (server doesn't auto-join new rooms)
-        await signalRService.joinRoom(roomId)
+        await chatService.joinRoom(roomId)
         setJoinedRooms((prev) => new Set([...prev, roomId]))
 
         // Reload rooms to get the new room data via SignalR
@@ -345,22 +402,30 @@ export function useChat(): UseChatReturn {
       }
     }
 
-    signalRService.on('ReceiveMessage', handleReceiveMessage)
-    signalRService.on('MessageHistory', handleMessageHistory)
-    signalRService.on('RoomCreated', handleRoomCreated)
-    signalRService.on('Error', handleError)
-    signalRService.on('LoadRoom', handleLoadRoom)
-    signalRService.on('NoRooms', handleNoRooms)
-    signalRService.on('NoMessages', handleNoMessages)
+    chatService.on('ReceiveMessage', handleReceiveMessage)
+    chatService.on('MessageHistory', handleMessageHistory)
+    chatService.on('RoomCreated', handleRoomCreated)
+    chatService.on('Error', handleError)
+    chatService.on('LoadRoom', handleLoadRoom)
+    chatService.on('NoRooms', handleNoRooms)
+    chatService.on('NoMessages', handleNoMessages)
+    chatService.on('OnlineUsers', handleUserOnline)
+    chatService.on('OfflineUsers', handleUserOffline)
 
     return () => {
-      signalRService.off('ReceiveMessage', handleReceiveMessage)
-      signalRService.off('MessageHistory', handleMessageHistory)
-      signalRService.off('RoomCreated', handleRoomCreated)
-      signalRService.off('Error', handleError)
-      signalRService.off('LoadRoom', handleLoadRoom)
-      signalRService.off('NoRooms', handleNoRooms)
-      signalRService.off('NoMessages', handleNoMessages)
+      console.log('🧹 Cleaning up SignalR event listeners')
+      chatService.off('ReceiveMessage', handleReceiveMessage)
+      chatService.off('MessageHistory', handleMessageHistory)
+      chatService.off('RoomCreated', handleRoomCreated)
+      chatService.off('Error', handleError)
+      chatService.off('LoadRoom', handleLoadRoom)
+      chatService.off('NoRooms', handleNoRooms)
+      chatService.off('NoMessages', handleNoMessages)
+      chatService.off('OnlineUsers', handleUserOnline)
+      chatService.off('OfflineUsers', handleUserOffline)
+
+      // Reset ref to allow re-setup if needed
+      listenersSetupRef.current = false
     }
   }, [mapChatMessageToConvo, loadRooms, createRoomPromise, loadRoomsPromise, isConnected, joinedRooms])
 
@@ -373,7 +438,7 @@ export function useChat(): UseChatReturn {
 
     // Set up optimized connection monitoring
     connectionCheckIntervalRef.current = setInterval(() => {
-      const connected = signalRService.isConnected
+      const connected = chatService.isConnected
       const newStatus = connected ? 'Connected' : 'Disconnected'
 
       // Only update if status actually changed
@@ -403,7 +468,7 @@ export function useChat(): UseChatReturn {
       try {
         setError(null)
         console.log(`🏠 Manually joining room: ${roomId}`)
-        await signalRService.joinRoom(roomId)
+        await chatService.joinRoom(roomId)
         console.log(`✅ Manually joined room: ${roomId}`)
 
         // Track that we've joined this room
@@ -422,7 +487,7 @@ export function useChat(): UseChatReturn {
     async (roomId: string, message: string) => {
       try {
         setError(null)
-        await signalRService.sendMessage(roomId, message)
+        await chatService.sendMessage(roomId, message)
         console.log(`✅ Message sent to room ${roomId}`)
 
         // Update room list with the sent message (optimistic update)
@@ -461,6 +526,7 @@ export function useChat(): UseChatReturn {
     isLoading,
     isLoadingRooms,
     error,
-    loadedRooms
+    loadedRooms,
+    onlineUsers
   }
 }

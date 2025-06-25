@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Main } from '@/components/layout/main'
 import { NewChat } from './components/new-chat'
+import { NotificationSettings } from './components/notification-settings'
 import { type Convo } from './data/chat-types'
 import { useChat } from './hooks/use-chat'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
@@ -310,6 +311,7 @@ export default function Chats() {
                 </div>
 
                 <div className='flex gap-1'>
+                  <NotificationSettings />
                   <Button
                     size='icon'
                     variant='ghost'
