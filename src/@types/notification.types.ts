@@ -83,8 +83,8 @@ export interface UseNotificationReturn {
   markAsRead: (notificationId: string) => Promise<void>
   getUnreadCount: () => Promise<void>
   clearError: () => void
-  
+
   // Connection management
   connect: () => Promise<void>
   disconnect: () => Promise<void>
-} 
+}

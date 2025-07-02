@@ -1,308 +1,237 @@
-import React from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { useEffect } from 'react'
 import { useNotificationSignalR } from '@/hooks/use-notification-signalr'
-import { useNotification } from '@/services/notification/notification.service'
-import { NotificationType } from '@/@types/notification.types'
-import { Bell, RefreshCw, Check, Loader2 } from 'lucide-react'
+import { NotificationResponseDto } from '@/services/notification/notification-signalr.service'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Bell, BellRing, Check, Trash2, Wifi, WifiOff } from 'lucide-react'
+import { toast } from 'sonner'
 
 /**
- * Example component demonstrating the notification system usage
- * This is for development/testing purposes
+ * Combined example component
  */
 export function NotificationExamples() {
-  const {
-    notifications,
-    unreadCount,
-    isLoading,
-    error,
-    hasMore,
-    isConnected,
-    loadNotifications,
-    markAsRead,
-    getUnreadCount,
-    clearError
-  } = useNotificationSignalR()
-
-  const { showSignalRNotification, requestPermission, hasPermission } = useNotification()
-
-  // Example: Create a mock notification for testing
-  const createMockNotification = (type: NotificationType) => {
-    const mockNotifications = {
-      [NotificationType.SYSTEM]: {
-        title: 'System Update',
-        body: 'The system has been updated with new features!'
-      },
-      [NotificationType.CHAT_MESSAGE]: {
-        title: 'New Message',
-        body: 'You have received a new chat message from Sarah'
-      },
-      [NotificationType.ORDER_UPDATE]: {
-        title: 'Order Update',
-        body: 'Your order #12345 has been shipped and is on the way'
-      },
-      [NotificationType.APPOINTMENT_REMINDER]: {
-        title: 'Appointment Reminder',
-        body: 'You have an appointment tomorrow at 2:00 PM'
-      },
-      [NotificationType.USER_ACTION]: {
-        title: 'Profile Updated',
-        body: 'Your profile information has been successfully updated'
-      },
-      [NotificationType.PROMOTION]: {
-        title: 'Special Offer!',
-        body: '50% off on all maternity dresses this weekend only!'
-      }
-    }
-
-    const mock = mockNotifications[type]
-    const notification = {
-      id: `mock-${Date.now()}`,
-      title: mock.title,
-      body: mock.body,
-      type,
-      userId: 'current-user',
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      data: { source: 'example', type: 'mock' }
-    }
-
-    showSignalRNotification(notification)
-  }
-
-  const handleRequestPermission = async () => {
-    try {
-      await requestPermission()
-    } catch (error) {
-      console.error('Failed to request notification permission:', error)
-    }
-  }
+  useEffect(() => {
+    console.log('🔔 NotificationExamples component mounted')
+  }, [])
 
   return (
-    <div className="space-y-6 p-6 max-w-4xl mx-auto">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Notification System Examples
-        </h1>
-        <p className="text-muted-foreground">
-          Demonstrate and test the real-time notification system
+    <div className='container mx-auto p-6'>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold'>Notification System Examples</h1>
+        <p className='text-muted-foreground mt-2'>
+          Examples of how to use the real-time notification system. Make sure you're logged in to receive notifications.
         </p>
       </div>
 
-      {/* Connection Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Connection Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <Badge variant={isConnected ? 'default' : 'destructive'}>
-              {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
-            </Badge>
-            <Badge variant="outline">
-              Unread: {unreadCount}
-            </Badge>
-            {!hasPermission && (
-              <Button onClick={handleRequestPermission} size="sm" variant="outline">
-                Request Notification Permission
-              </Button>
-            )}
-          </div>
-          
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm">{error}</p>
-              <Button onClick={clearError} size="sm" variant="outline" className="mt-2">
-                Clear Error
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        <NotificationStatus />
+        <NotificationList />
+      </div>
 
-      {/* Test Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Test Notifications</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <Button 
-              onClick={() => createMockNotification(NotificationType.SYSTEM)}
-              variant="outline"
-            >
-              🔔 System
-            </Button>
-            <Button 
-              onClick={() => createMockNotification(NotificationType.CHAT_MESSAGE)}
-              variant="outline"
-            >
-              💬 Chat
-            </Button>
-            <Button 
-              onClick={() => createMockNotification(NotificationType.ORDER_UPDATE)}
-              variant="outline"
-            >
-              📦 Order
-            </Button>
-            <Button 
-              onClick={() => createMockNotification(NotificationType.APPOINTMENT_REMINDER)}
-              variant="outline"
-            >
-              📅 Appointment
-            </Button>
-            <Button 
-              onClick={() => createMockNotification(NotificationType.USER_ACTION)}
-              variant="outline"
-            >
-              👤 User Action
-            </Button>
-            <Button 
-              onClick={() => createMockNotification(NotificationType.PROMOTION)}
-              variant="outline"
-            >
-              🎉 Promotion
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notification Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Notification Management
-            <div className="flex gap-2">
-              <Button 
-                onClick={() => loadNotifications(1, 10)} 
-                size="sm" 
-                variant="outline"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                )}
-                Reload
-              </Button>
-              <Button 
-                onClick={getUnreadCount} 
-                size="sm" 
-                variant="outline"
-              >
-                Get Count
-              </Button>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading && notifications.length === 0 ? (
-            <div className="text-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-              <p className="text-muted-foreground">Loading notifications...</p>
-            </div>
-          ) : notifications.length > 0 ? (
-            <div className="space-y-3">
-              {notifications.slice(0, 5).map((notification) => (
-                <div 
-                  key={notification.id}
-                  className={`p-3 border rounded-lg ${
-                    !notification.isRead ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{notification.title}</p>
-                      <p className="text-sm text-muted-foreground">{notification.body}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(notification.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {!notification.isRead && (
-                        <Button
-                          onClick={() => markAsRead(notification.id)}
-                          size="sm"
-                          variant="ghost"
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Badge variant={notification.isRead ? 'secondary' : 'default'}>
-                        {notification.isRead ? 'Read' : 'Unread'}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {notifications.length > 5 && (
-                <p className="text-center text-sm text-muted-foreground">
-                  ... and {notifications.length - 5} more notifications
-                </p>
-              )}
-              
-              {hasMore && (
-                <div className="text-center">
-                  <Button
-                    onClick={() => loadNotifications(Math.floor(notifications.length / 10) + 1, 10)}
-                    size="sm"
-                    variant="outline"
-                    disabled={isLoading}
-                  >
-                    Load More
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-muted-foreground">No notifications found</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Try connecting to the server or creating test notifications
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Usage Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Usage Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h4 className="font-medium mb-2">Real Notifications</h4>
-            <p className="text-sm text-muted-foreground">
-              Real notifications come from the server via SignalR. Check the notification dropdown 
-              in the header (bell icon) to see all notifications in a proper UI.
-            </p>
-          </div>
-          
-          <div>
-            <h4 className="font-medium mb-2">Environment Setup</h4>
-            <p className="text-sm text-muted-foreground">
-              Make sure you have <code className="bg-muted px-1 rounded">VITE_API_NOTIFICATION_HUB</code> or 
-              <code className="bg-muted px-1 rounded">VITE_API_BASE_URL</code> set in your environment variables.
-            </p>
-          </div>
-          
-          <div>
-            <h4 className="font-medium mb-2">Integration</h4>
-            <p className="text-sm text-muted-foreground">
-              The notification system is automatically integrated into the main layout. 
-              No additional setup required for basic usage.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className='mt-8 p-4 border rounded-lg bg-muted/50'>
+        <h3 className='text-lg font-semibold mb-2'>How it works:</h3>
+        <ul className='text-sm text-muted-foreground space-y-1'>
+          <li>• The notification service automatically connects when you log in</li>
+          <li>• Real-time notifications are received via SignalR WebSocket</li>
+          <li>• Browser notifications are shown (if permission granted)</li>
+          <li>• Toast notifications appear in the UI</li>
+          <li>• Notifications are stored locally and can be managed</li>
+          <li>• Connection is automatically maintained with reconnection logic</li>
+        </ul>
+      </div>
     </div>
   )
-} 
+}
+
+/**
+ * Component hiển thị notification status và controls
+ */
+export function NotificationStatus() {
+  const { isConnected, connectionState, connectionInfo, connect, disconnect, forceConnect, forceDisconnect } =
+    useNotificationSignalR({
+      autoConnect: true,
+      onReceiveNotification: (notification: NotificationResponseDto) => {
+        // Show toast when receiving new notification
+        toast.success(`🔔 ${notification.notificationTitle}`, {
+          description: notification.notificationContent,
+          duration: 5000
+        })
+      },
+      onConnectionStateChange: (connected: boolean) => {
+        if (connected) {
+          toast.success('🎉 Connected to notification server!')
+        } else {
+          toast.error('❌ Disconnected from notification server')
+        }
+      },
+      onError: (error: string) => {
+        toast.error(`❌ Notification Error: ${error}`)
+      }
+    })
+
+  return (
+    <Card className='w-full max-w-md'>
+      <CardHeader>
+        <CardTitle className='flex items-center gap-2'>
+          {isConnected ? <Wifi className='h-5 w-5 text-green-500' /> : <WifiOff className='h-5 w-5 text-red-500' />}
+          Notification Status
+        </CardTitle>
+        <CardDescription>Real-time notification connection status</CardDescription>
+      </CardHeader>
+      <CardContent className='space-y-4'>
+        <div className='flex items-center justify-between'>
+          <span className='text-sm font-medium'>Connection:</span>
+          <Badge variant={isConnected ? 'default' : 'destructive'}>{connectionState}</Badge>
+        </div>
+
+        <div className='flex items-center justify-between'>
+          <span className='text-sm font-medium'>Auto-connect:</span>
+          <Badge variant={connectionInfo.autoConnectEnabled ? 'default' : 'secondary'}>
+            {connectionInfo.autoConnectEnabled ? 'Enabled' : 'Disabled'}
+          </Badge>
+        </div>
+
+        <div className='flex items-center justify-between'>
+          <span className='text-sm font-medium'>Reconnect attempts:</span>
+          <Badge variant='outline'>{connectionInfo.reconnectAttempts}</Badge>
+        </div>
+
+        <div className='grid grid-cols-2 gap-2'>
+          <Button
+            size='sm'
+            onClick={isConnected ? disconnect : connect}
+            variant={isConnected ? 'destructive' : 'default'}
+          >
+            {isConnected ? 'Disconnect' : 'Connect'}
+          </Button>
+        </div>
+
+        <div className='grid grid-cols-2 gap-2'>
+          <Button size='sm' variant='secondary' onClick={forceConnect}>
+            Force Connect
+          </Button>
+
+          <Button size='sm' variant='secondary' onClick={forceDisconnect}>
+            Force Disconnect
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+/**
+ * Component hiển thị danh sách notifications
+ */
+export function NotificationList() {
+  const { notifications, unreadCount, markAsReadLocally, removeNotification, clearNotifications } =
+    useNotificationSignalR({
+      autoConnect: true,
+      onReceiveNotification: (notification: NotificationResponseDto) => {
+        console.log('🔔 New notification received in list:', notification)
+      }
+    })
+
+  return (
+    <Card className='w-full max-w-2xl'>
+      <CardHeader>
+        <CardTitle className='flex items-center gap-2'>
+          <Bell className='h-5 w-5' />
+          Notifications
+          {unreadCount > 0 && (
+            <Badge variant='destructive' className='ml-2'>
+              {unreadCount}
+            </Badge>
+          )}
+        </CardTitle>
+        <CardDescription>Real-time notifications from server</CardDescription>
+      </CardHeader>
+      <CardContent className='space-y-4'>
+        <div className='flex justify-between items-center'>
+          <div className='text-sm text-muted-foreground'>{notifications.length} notifications total</div>
+          <Button size='sm' variant='outline' onClick={clearNotifications} disabled={notifications.length === 0}>
+            Clear All
+          </Button>
+        </div>
+
+        <div className='space-y-2 max-h-96 overflow-y-auto'>
+          {notifications.length === 0 ? (
+            <div className='text-center py-8 text-muted-foreground'>
+              No notifications yet. Connect to start receiving notifications.
+            </div>
+          ) : (
+            notifications.map((notification) => (
+              <NotificationItem
+                key={notification.id}
+                notification={notification}
+                onMarkAsRead={() => markAsReadLocally(notification.id)}
+                onRemove={() => removeNotification(notification.id)}
+              />
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+/**
+ * Component cho từng notification item
+ */
+interface NotificationItemProps {
+  notification: NotificationResponseDto
+  onMarkAsRead: () => void
+  onRemove: () => void
+}
+
+function NotificationItem({ notification, onMarkAsRead, onRemove }: NotificationItemProps) {
+  const formattedDate = new Date(notification.createdAt).toLocaleString()
+
+  return (
+    <div className={`p-3 border rounded-lg ${notification.isRead ? 'bg-muted/50' : 'bg-card'}`}>
+      <div className='flex items-start justify-between gap-2'>
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2'>
+            <h4 className='text-sm font-medium truncate'>{notification.notificationTitle || 'No title'}</h4>
+            {!notification.isRead && (
+              <Badge variant='destructive' className='shrink-0'>
+                <BellRing className='h-3 w-3' />
+              </Badge>
+            )}
+            {notification.type && (
+              <Badge variant='outline' className='shrink-0'>
+                {notification.type}
+              </Badge>
+            )}
+          </div>
+
+          {notification.notificationContent && (
+            <p className='text-xs text-muted-foreground mt-1'>{notification.notificationContent}</p>
+          )}
+
+          <div className='flex items-center gap-4 mt-2 text-xs text-muted-foreground'>
+            <span>{formattedDate}</span>
+            {notification.actionUrl && <span className='text-blue-500'>Has action</span>}
+          </div>
+        </div>
+
+        <div className='flex items-center gap-1 shrink-0'>
+          {!notification.isRead && (
+            <Button size='sm' variant='ghost' onClick={onMarkAsRead} className='h-6 w-6 p-0'>
+              <Check className='h-3 w-3' />
+            </Button>
+          )}
+          <Button
+            size='sm'
+            variant='ghost'
+            onClick={onRemove}
+            className='h-6 w-6 p-0 text-destructive hover:text-destructive'
+          >
+            <Trash2 className='h-3 w-3' />
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}

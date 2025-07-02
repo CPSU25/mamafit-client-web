@@ -1,5 +1,13 @@
-import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject, StorageError, UploadTaskSnapshot } from "firebase/storage";
+import { initializeApp } from 'firebase/app'
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+  StorageError,
+  UploadTaskSnapshot
+} from 'firebase/storage'
 import { toast } from 'sonner'
 
 const firebaseConfig = {
@@ -10,11 +18,11 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
-};
+}
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+const app = initializeApp(firebaseConfig)
+const storage = getStorage(app)
 
 // Types for upload response
 export interface FirebaseUploadResponse {
@@ -50,12 +58,12 @@ class FirebaseStorageService {
   private generateFileName(originalName: string, customName?: string): string {
     const timestamp = Date.now()
     const randomStr = Math.random().toString(36).substring(2, 8)
-    
+
     if (customName) {
       const extension = originalName.split('.').pop()
       return `${customName}_${timestamp}_${randomStr}.${extension}`
     }
-    
+
     const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'))
     const extension = originalName.split('.').pop()
     return `${nameWithoutExt}_${timestamp}_${randomStr}.${extension}`
@@ -65,7 +73,7 @@ class FirebaseStorageService {
    * Upload single image to Firebase Storage
    */
   async uploadImage(
-    file: File, 
+    file: File,
     options: UploadOptions = {},
     onProgress?: (progress: number) => void
   ): Promise<FirebaseUploadResponse> {
@@ -122,7 +130,7 @@ class FirebaseStorageService {
             try {
               // Upload completed successfully
               const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
-              
+
               const result: FirebaseUploadResponse = {
                 downloadURL,
                 fullPath: uploadTask.snapshot.ref.fullPath,
@@ -150,14 +158,14 @@ class FirebaseStorageService {
    * Upload multiple images
    */
   async uploadMultipleImages(
-    files: File[], 
+    files: File[],
     options: UploadOptions = {},
     onProgress?: (progress: number) => void
   ): Promise<FirebaseUploadResponse[]> {
     try {
       let completedUploads = 0
       const totalFiles = files.length
-      
+
       const uploadPromises = files.map((file, index) => {
         const fileOptions = { ...options }
 
@@ -169,10 +177,10 @@ class FirebaseStorageService {
         return this.uploadImage(file, fileOptions, (fileProgress) => {
           // Calculate overall progress
           if (onProgress) {
-            const overallProgress = ((completedUploads * 100) + fileProgress) / totalFiles
+            const overallProgress = (completedUploads * 100 + fileProgress) / totalFiles
             onProgress(Math.round(overallProgress))
           }
-        }).then(result => {
+        }).then((result) => {
           completedUploads++
           return result
         })
@@ -288,4 +296,4 @@ export const useFirebaseUpload = () => {
     isConfigured: firebaseStorageService.isConfigured(),
     getFileURL: firebaseStorageService.getFileURL.bind(firebaseStorageService)
   }
-} 
+}

@@ -163,12 +163,8 @@ export function FirebaseImageUpload({
       {/* Cảnh báo nếu Firebase chưa được cấu hình */}
       {!isConfigured && (
         <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4'>
-          <p className='text-sm text-yellow-800'>
-            ⚠️ Firebase Storage chưa được cấu hình đúng cách.
-          </p>
-          <p className='text-xs text-yellow-700 mt-1'>
-            Vui lòng kiểm tra Firebase configuration và Storage rules.
-          </p>
+          <p className='text-sm text-yellow-800'>⚠️ Firebase Storage chưa được cấu hình đúng cách.</p>
+          <p className='text-xs text-yellow-700 mt-1'>Vui lòng kiểm tra Firebase configuration và Storage rules.</p>
         </div>
       )}
 
@@ -304,4 +300,4 @@ export function FirebaseImageUpload({
       )}
     </div>
   )
-} 
+}
