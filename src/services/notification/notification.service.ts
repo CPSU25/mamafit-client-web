@@ -1,4 +1,6 @@
 import { toast } from 'sonner'
+import { notificationSignalRService } from './notification-signalr.service'
+import { NotificationResponseDto } from '@/@types/notification.types'
 
 export interface NotificationOptions {
   title: string
@@ -127,6 +129,25 @@ export class NotificationService {
     await this.showNotification(options)
   }
 
+  // Method tiện ích cho SignalR notifications
+  async showSignalRNotification(notification: NotificationResponseDto): Promise<void> {
+    const options: NotificationOptions = {
+      title: notification.title,
+      body: notification.body,
+      icon: '/images/mamafit-logo.svg',
+      tag: `signalr-${notification.id}`,
+      requireInteraction: false,
+      data: {
+        type: 'signalr_notification',
+        notificationId: notification.id,
+        notificationType: notification.type,
+        ...notification.data
+      }
+    }
+
+    await this.showNotification(options)
+  }
+
   // Check permission status
   get hasPermission(): boolean {
     return this.permission === 'granted'
@@ -159,12 +180,19 @@ export const useNotification = () => {
     await notificationService.showChatMessageNotification(senderName, message, roomId, avatar)
   }
 
+  const showSignalRNotification = async (notification: NotificationResponseDto) => {
+    await notificationService.showSignalRNotification(notification)
+  }
+
   return {
     requestPermission,
     showNotification,
     showChatNotification,
+    showSignalRNotification,
     hasPermission: notificationService.hasPermission,
     isSupported: notificationService.isNotificationSupported,
-    permissionStatus: notificationService.permissionStatus
+    permissionStatus: notificationService.permissionStatus,
+    // SignalR service integration
+    signalRService: notificationSignalRService
   }
 }
