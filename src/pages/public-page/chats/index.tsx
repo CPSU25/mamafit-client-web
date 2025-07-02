@@ -14,6 +14,7 @@ import { NewChat } from './components/new-chat'
 import { NotificationSettings } from './components/notification-settings'
 import { type Convo } from './data/chat-types'
 import { useChat } from './hooks/use-chat'
+import { useRoomMessagesData } from './hooks/use-room-messages'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { ChatRoom, Member } from '@/@types/chat.types'
 import {
@@ -60,45 +61,54 @@ export default function Chats() {
     []
   )
 
-  // Use the chat hook for SignalR functionality
+  // ===== MAIN CHAT HOOK =====
   const {
     isConnected,
     sendMessage,
-    loadMessages,
-    loadRooms,
     joinRoom,
     rooms,
-    messages: realMessages,
-    isLoading,
+    messages: realTimeMessages, // Realtime messages từ SignalR
+    isLoading: isCreatingRoom,
     isLoadingRooms,
-    error
+    error: chatError,
+    loadRooms
   } = useChat()
 
-  // Auto-load rooms when SignalR is connected (only once with better conditions)
+  // ===== ROOM MESSAGES HOOK =====
+  // Load messages cho room hiện tại
+  const {
+    messages: selectedRoomMessages,
+    isLoading: isLoadingMessages,
+    error: messagesError,
+    refetch: refetchMessages
+  } = useRoomMessagesData({
+    roomId: selectedRoomId,
+    realtimeMessages: realTimeMessages,
+    pageSize: 20,
+    page: 1
+  })
+
+  // Auto-load rooms when SignalR is connected
   useEffect(() => {
-    // More restrictive conditions to prevent duplicate calls
-    const shouldAutoLoad = isConnected && rooms.length === 0 && !isLoadingRooms && !error // Don't auto-load if there's an error
+    const shouldAutoLoad = isConnected && rooms.length === 0 && !isLoadingRooms && !chatError
 
     if (shouldAutoLoad) {
       console.log('🔄 Auto-loading rooms since SignalR is connected and no rooms exist...')
-      loadRooms().catch((err) => {
-        console.error('❌ Auto-load rooms failed:', err)
-      })
+      loadRooms()
     }
-  }, [isConnected, rooms.length, isLoadingRooms, error, loadRooms]) // Include loadRooms since it's memoized
+  }, [isConnected, rooms.length, isLoadingRooms, chatError, loadRooms])
 
   // Auto-mark currently selected room as viewed when new messages arrive
   useEffect(() => {
     if (selectedRoomId) {
       setViewedRooms((prev) => new Set([...prev, selectedRoomId]))
     }
-  }, [realMessages, selectedRoomId])
+  }, [realTimeMessages, selectedRoomId])
 
   // Memoize filtered rooms to prevent unnecessary recalculations
   const filteredRooms = useMemo(() => {
     return rooms
       .filter((room) => {
-        // First filter: ensure room has valid ID and basic properties
         if (!room || !room.id || typeof room.id !== 'string' || room.id.trim() === '') {
           console.warn('⚠️ Filtering out invalid room in UI:', room)
           return false
@@ -106,23 +116,16 @@ export default function Chats() {
         return true
       })
       .filter((room) => {
-        // Second filter: search functionality
         const roomName = room.name || `Room ${room.id}`
         const searchTerm = search.trim().toLowerCase()
 
-        if (!searchTerm) return true // Show all if no search term
-
+        if (!searchTerm) return true
         return roomName.toLowerCase().includes(searchTerm)
       })
-  }, [rooms, search]) // Only recalculate when rooms or search changes
+  }, [rooms, search])
 
-  // Memoize selected room and messages
+  // Memoize selected room
   const selectedRoom = useMemo(() => rooms.find((room) => room.id === selectedRoomId), [rooms, selectedRoomId])
-
-  const selectedRoomMessages = useMemo(
-    () => (selectedRoom ? realMessages[selectedRoom.id] || [] : []),
-    [selectedRoom, realMessages]
-  )
 
   // Memoize grouped messages by date
   const currentMessage = useMemo(() => {
@@ -139,18 +142,30 @@ export default function Chats() {
   }, [selectedRoomMessages])
 
   // Handle manual refresh of rooms
-  const handleRefreshRooms = async () => {
+  const handleRefreshRooms = () => {
     if (!isConnected) {
       console.log('❌ Cannot refresh rooms: Not connected to SignalR')
       return
     }
 
+    console.log('🔄 Manually refreshing rooms...')
+    loadRooms()
+    console.log('✅ Rooms refreshed successfully')
+  }
+
+  // Handle manual refresh of messages
+  const handleRefreshMessages = async () => {
+    if (!selectedRoomId || !isConnected) {
+      console.log('❌ Cannot refresh messages: No room selected or not connected')
+      return
+    }
+
     try {
-      console.log('🔄 Manually refreshing rooms...')
-      await loadRooms()
-      console.log('✅ Rooms refreshed successfully')
+      console.log('🔄 Manually refreshing messages...')
+      await refetchMessages()
+      console.log('✅ Messages refreshed successfully')
     } catch (err) {
-      console.error('❌ Failed to refresh rooms:', err)
+      console.error('❌ Failed to refresh messages:', err)
     }
   }
 
@@ -169,10 +184,7 @@ export default function Chats() {
       // Join the room if not already joined
       await joinRoom(roomId)
 
-      // Load messages for the room
-      await loadMessages(roomId)
-
-      console.log('✅ Successfully selected and loaded newly created room')
+      console.log('✅ Successfully selected newly created room')
     } catch (err) {
       console.error('❌ Failed to auto-select newly created room:', err)
     }
@@ -198,11 +210,10 @@ export default function Chats() {
       // Mark room as viewed (remove unread indicator)
       setViewedRooms((prev) => new Set([...prev, roomId]))
 
-      // First join the room (if not already joined)
+      // Join the room (SignalR)
       await joinRoom(roomId)
 
-      // Then load messages
-      await loadMessages(roomId)
+      // Messages will be loaded automatically by React Query hook
     } catch (err) {
       console.error('Failed to select room:', err)
     }
@@ -244,10 +255,6 @@ export default function Chats() {
 
     // Check if room has unread messages
     const hasUnreadMessage = () => {
-      // Show unread indicator if:
-      // 1. There is a last message
-      // 2. Last message is not from current user
-      // 3. Room hasn't been viewed yet
       return Boolean(room.lastMessage && room.lastUserId !== user?.userId && !viewedRooms.has(room.id))
     }
 
@@ -290,6 +297,9 @@ export default function Chats() {
       hasUnreadMessage: hasUnreadMessage()
     }
   }
+
+  // Combine errors
+  const error = chatError || (messagesError instanceof Error ? messagesError.message : null)
 
   // Loading state
   if (isLoadingRooms && rooms.length === 0) {
@@ -366,13 +376,7 @@ export default function Chats() {
             <AlertTriangle className='h-4 w-4' />
             <AlertDescription className='flex items-center justify-between'>
               <span>⚠️ {error}</span>
-              <Button
-                size='sm'
-                variant='outline'
-                onClick={handleRefreshRooms}
-                disabled={!isConnected}
-                className='ml-4'
-              >
+              <Button size='sm' variant='outline' onClick={handleRefreshRooms} disabled={!isConnected} className='ml-4'>
                 Retry
               </Button>
             </AlertDescription>
@@ -428,13 +432,11 @@ export default function Chats() {
                     onClick={handleRefreshRooms}
                     disabled={!isConnected || isLoadingRooms}
                   >
-                    <RefreshCwIcon
-                      className={cn('h-4 w-4', isLoadingRooms && 'animate-spin')}
-                    />
+                    <RefreshCwIcon className={cn('h-4 w-4', isLoadingRooms && 'animate-spin')} />
                   </Button>
                 </div>
               </div>
-              
+
               {/* Search */}
               <div className='relative'>
                 <SearchIcon className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
@@ -491,7 +493,7 @@ export default function Chats() {
                   <div className='p-4 space-y-2'>
                     {filteredRooms.map((room) => {
                       const roomInfo = getRoomDisplayInfo(room)
-                      
+
                       return (
                         <button
                           key={room.id}
@@ -509,10 +511,12 @@ export default function Chats() {
                             </Avatar>
                             <div className='flex-1 min-w-0'>
                               <div className='flex justify-between items-start mb-1'>
-                                <h4 className={cn(
-                                  'text-sm font-medium truncate',
-                                  roomInfo.hasUnreadMessage && 'font-semibold'
-                                )}>
+                                <h4
+                                  className={cn(
+                                    'text-sm font-medium truncate',
+                                    roomInfo.hasUnreadMessage && 'font-semibold'
+                                  )}
+                                >
                                   {roomInfo.name}
                                 </h4>
                                 <div className='flex items-center gap-1 flex-shrink-0'>
@@ -524,10 +528,12 @@ export default function Chats() {
                                   )}
                                 </div>
                               </div>
-                              <p className={cn(
-                                'text-xs truncate',
-                                roomInfo.hasUnreadMessage ? 'text-foreground font-medium' : 'text-muted-foreground'
-                              )}>
+                              <p
+                                className={cn(
+                                  'text-xs truncate',
+                                  roomInfo.hasUnreadMessage ? 'text-foreground font-medium' : 'text-muted-foreground'
+                                )}
+                              >
                                 {roomInfo.lastMessage}
                               </p>
                             </div>
@@ -543,10 +549,12 @@ export default function Chats() {
 
           {/* Right Side - Chat Area */}
           {selectedRoom ? (
-            <Card className={cn(
-              'lg:col-span-2',
-              mobileSelectedUser ? 'fixed inset-0 z-50 lg:relative lg:z-auto' : 'hidden lg:flex lg:flex-col'
-            )}>
+            <Card
+              className={cn(
+                'lg:col-span-2',
+                mobileSelectedUser ? 'fixed inset-0 z-50 lg:relative lg:z-auto' : 'hidden lg:flex lg:flex-col'
+              )}
+            >
               {/* Chat Header */}
               <CardHeader className='border-b'>
                 <div className='flex items-center justify-between'>
@@ -569,9 +577,7 @@ export default function Chats() {
                           </Avatar>
                           <div>
                             <h3 className='font-semibold'>{roomInfo.name}</h3>
-                            <p className='text-sm text-muted-foreground'>
-                              {isConnected ? 'Online' : 'Offline'}
-                            </p>
+                            <p className='text-sm text-muted-foreground'>{isConnected ? 'Online' : 'Offline'}</p>
                           </div>
                         </>
                       )
@@ -580,12 +586,12 @@ export default function Chats() {
 
                   <div className='flex items-center gap-2'>
                     <Button
-                      onClick={() => loadMessages(selectedRoomId)}
-                      disabled={!isConnected || isLoading}
+                      onClick={handleRefreshMessages}
+                      disabled={!isConnected || isLoadingMessages}
                       size='sm'
                       variant='outline'
                     >
-                      {isLoading ? (
+                      {isLoadingMessages ? (
                         <RefreshCwIcon className='h-4 w-4 animate-spin' />
                       ) : (
                         <RefreshCwIcon className='h-4 w-4' />
@@ -608,10 +614,17 @@ export default function Chats() {
               <CardContent className='flex-1 p-0'>
                 <ScrollArea className='h-[400px] p-4'>
                   <div className='flex flex-col-reverse gap-4'>
-                    {Object.keys(currentMessage).length === 0 ? (
+                    {isLoadingMessages && selectedRoomMessages.length === 0 ? (
                       <div className='flex items-center justify-center py-8'>
                         <div className='text-sm text-muted-foreground text-center'>
-                          {isLoading ? 'Loading messages...' : 'No messages yet. Start the conversation!'}
+                          <RefreshCwIcon className='h-6 w-6 animate-spin mx-auto mb-2' />
+                          Loading messages...
+                        </div>
+                      </div>
+                    ) : Object.keys(currentMessage).length === 0 ? (
+                      <div className='flex items-center justify-center py-8'>
+                        <div className='text-sm text-muted-foreground text-center'>
+                          No messages yet. Start the conversation!
                         </div>
                       </div>
                     ) : (
@@ -628,17 +641,17 @@ export default function Chats() {
                               )}
                             >
                               <p className='text-sm'>{msg.message}</p>
-                              <span className={cn(
-                                'text-xs opacity-70 mt-1 block',
-                                msg.sender === 'You' ? 'text-right' : 'text-left'
-                              )}>
+                              <span
+                                className={cn(
+                                  'text-xs opacity-70 mt-1 block',
+                                  msg.sender === 'You' ? 'text-right' : 'text-left'
+                                )}
+                              >
                                 {format(msg.timestamp, 'h:mm a')}
                               </span>
                             </div>
                           ))}
-                          <div className='text-center text-xs text-muted-foreground py-2'>
-                            {key}
-                          </div>
+                          <div className='text-center text-xs text-muted-foreground py-2'>{key}</div>
                         </Fragment>
                       ))
                     )}
@@ -665,11 +678,7 @@ export default function Chats() {
                       disabled={!isConnected}
                     />
                   </div>
-                  <Button 
-                    type='submit' 
-                    disabled={!isConnected || !newMessage.trim()}
-                    size='sm'
-                  >
+                  <Button type='submit' disabled={!isConnected || !newMessage.trim() || isCreatingRoom} size='sm'>
                     <SendIcon className='h-4 w-4' />
                   </Button>
                 </form>
@@ -685,16 +694,12 @@ export default function Chats() {
                   <div className='space-y-2'>
                     <h3 className='text-xl font-semibold'>Your Messages</h3>
                     <p className='text-muted-foreground text-sm max-w-sm'>
-                      {isConnected 
-                        ? 'Select a conversation to start chatting or create a new one.' 
-                        : 'Connect to the chat server to start messaging.'
-                      }
+                      {isConnected
+                        ? 'Select a conversation to start chatting or create a new one.'
+                        : 'Connect to the chat server to start messaging.'}
                     </p>
                   </div>
-                  <Button
-                    onClick={() => setCreateConversationDialog(true)}
-                    disabled={!isConnected}
-                  >
+                  <Button onClick={() => setCreateConversationDialog(true)} disabled={!isConnected}>
                     {isConnected ? 'Start New Chat' : 'Connecting...'}
                   </Button>
                 </div>
