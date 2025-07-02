@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Main } from '@/components/layout/main'
 import { Overview } from './component/overview'
 import { RecentSales } from './component/recent-sales'
+import { NotificationExamples } from '@/examples/notification-examples'
 
 export default function AdminDashboard() {
   return (
@@ -141,6 +142,7 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
         </Tabs>
+        <NotificationExamples />
       </Main>
     </>
   )

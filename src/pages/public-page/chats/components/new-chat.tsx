@@ -6,7 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useGetListUser } from '@/services/admin/manage-user.service'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
-import { useChat } from '../hooks/use-chat'
+import { useCreateRoom } from '@/services/chat/chat.service'
 import { ManageUserType } from '@/@types/manage-user.type'
 import { toast } from 'sonner'
 
@@ -23,17 +23,21 @@ type Props = {
   onOpenChange: (open: boolean) => void
   onRoomCreated?: (roomId: string) => void
 }
+
 export function NewChat({ onOpenChange, open, onRoomCreated }: Props) {
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
-  const [isCreatingRoom, setIsCreatingRoom] = useState(false)
 
   const { user: currentUser } = useAuthStore()
-  const { createRoom } = useChat()
+
+  // ===== REACT QUERY HOOKS =====
 
   // Load users from API
   const { data: usersResponse, isLoading: isLoadingUsers } = useGetListUser({
     pageSize: 100 // Load all users
   })
+
+  // Create room mutation
+  const createRoomMutation = useCreateRoom()
 
   // Map ManageUserType to User format
   const users: User[] =
@@ -64,15 +68,18 @@ export function NewChat({ onOpenChange, open, onRoomCreated }: Props) {
     if (!selectedUsers.length || !currentUser?.userId) return
 
     try {
-      setIsCreatingRoom(true)
       const selectedUser = selectedUsers[0]
 
-      console.log('🏗️ Creating chat room via SignalR...', {
+      console.log('🏗️ Creating chat room via React Query...', {
         userId1: currentUser.userId,
         userId2: selectedUser.id
       })
 
-      const createdRoom = await createRoom(currentUser.userId, selectedUser.id)
+      // Use React Query mutation instead of direct hook call
+      const createdRoom = await createRoomMutation.mutateAsync({
+        userId1: currentUser.userId,
+        userId2: selectedUser.id
+      })
 
       console.log('✅ Room created successfully:', createdRoom)
       toast.success(`Chat room created with ${selectedUser.fullName}`)
@@ -87,25 +94,25 @@ export function NewChat({ onOpenChange, open, onRoomCreated }: Props) {
     } catch (error) {
       console.error('❌ Failed to create room:', error)
 
-      // Extract specific error message from SignalR or generic fallback
+      // Extract specific error message
       let errorMessage = 'Failed to create chat room. Please try again.'
 
       if (error instanceof Error) {
-        // Handle specific SignalR errors
+        // Handle specific errors
         if (error.message.includes('Unauthorized')) {
           errorMessage = 'You are not authorized to create a chat with this user.'
         } else if (error.message.includes('Invalid user')) {
           errorMessage = 'Invalid user selected. Please try again.'
         } else if (error.message.includes('Connection')) {
           errorMessage = 'Connection error. Please check your internet and try again.'
+        } else if (error.message.includes('already exists')) {
+          errorMessage = 'A chat room with this user already exists.'
         } else {
           errorMessage = error.message
         }
       }
 
       toast.error(errorMessage)
-    } finally {
-      setIsCreatingRoom(false)
     }
   }
 
@@ -184,9 +191,9 @@ export function NewChat({ onOpenChange, open, onRoomCreated }: Props) {
           <Button
             variant={'default'}
             onClick={handleCreateChat}
-            disabled={selectedUsers.length === 0 || isCreatingRoom}
+            disabled={selectedUsers.length === 0 || createRoomMutation.isPending}
           >
-            {isCreatingRoom ? (
+            {createRoomMutation.isPending ? (
               <>
                 <Loader2 className='h-4 w-4 animate-spin mr-2' />
                 Creating...

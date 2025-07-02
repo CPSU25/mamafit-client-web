@@ -8,6 +8,7 @@ import { SearchProvider } from '@/context/search-context'
 import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
 import { ModeToggle } from '@/components/mode-toggle'
+import { NotificationDropdown } from '@/components/notification-dropdown'
 
 interface Props {
   children?: React.ReactNode
@@ -27,6 +28,7 @@ function SystemLayout({ role, children }: Props) {
                 <Search placeholder='Search...' />
               </div>
               <div className='flex items-center gap-2'>
+                <NotificationDropdown />
                 <ModeToggle />
               </div>
             </div>

@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
+import { FirebaseImageUpload } from '@/components/firebase-image-upload'
 import { useCreateCategory, useUpdateCategory } from '@/services/admin/category.service'
 import { toast } from 'sonner'
 import { Category } from '../data/schema'
@@ -144,15 +144,19 @@ export function CategoryFormDialog({ open, onOpenChange, currentRow }: Props) {
                   <FormItem className='items-center space-y-2 gap-x-4 gap-y-1'>
                     <FormLabel>Category Images</FormLabel>
                     <FormControl>
-                      <CloudinaryImageUpload
+                      <FirebaseImageUpload
                         value={field.value || []}
                         onChange={field.onChange}
                         maxFiles={5}
                         placeholder='Upload category images or enter URL'
                         disabled={isSubmitting}
                         uploadOptions={{
-                          folder: 'categories', // Tổ chức ảnh theo thư mục
-                          tags: ['category'] // Thêm tag để dễ quản lý
+                          folder: 'categories/', // Tổ chức ảnh theo thư mục
+                          metadata: {
+                            customMetadata: {
+                              type: 'category'
+                            }
+                          }
                         }}
                       />
                     </FormControl>
