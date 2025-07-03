@@ -46,11 +46,8 @@ export class ChatService {
     console.log('🔧 SignalR Service được khởi tạo')
   }
 
-  // ===== SIGNALR CONNECTION MANAGEMENT =====
-
-  // Bước 1: Tạo connection
   private createConnection(): signalR.HubConnection {
-    const baseURL = import.meta.env.VITE_API_CHAT_HUB
+    const baseURL = import.meta.env.VITE_HUB_URL
 
     if (!baseURL) {
       throw new Error('VITE_API_CHAT_HUB không được định nghĩa trong environment')
@@ -74,7 +71,6 @@ export class ChatService {
     return connection
   }
 
-  // Bước 2: Connect tới SignalR Hub
   async connect(): Promise<void> {
     if (this.isConnecting) {
       console.log('⏳ Đang trong quá trình kết nối, bỏ qua yêu cầu mới')
@@ -90,13 +86,11 @@ export class ChatService {
       this.isConnecting = true
       console.log('🚀 Bắt đầu kết nối SignalR...')
 
-      // Tạo connection mới nếu chưa có
       if (!this.connection) {
         this.connection = this.createConnection()
         this.setupEventListeners()
       }
 
-      // Kết nối
       await this.connection.start()
       console.log('🎉 Kết nối SignalR thành công!')
     } catch (error) {
@@ -107,17 +101,12 @@ export class ChatService {
     }
   }
 
-  // Bước 3: Setup event listeners cho SignalR realtime events
   private setupEventListeners(): void {
     if (!this.connection) return
 
-    // ===== REALTIME MESSAGE EVENTS =====
-
-    // Nhận tin nhắn mới từ SignalR Hub
     this.connection.on('ReceiveMessage', (message: SignalRChatMessage) => {
       console.log('📨 Nhận tin nhắn mới từ SignalR:', message)
 
-      // Convert SignalR message format to frontend ChatMessage format
       const frontendMessage: ChatMessage = {
         id: message.id,
         message: message.message,
@@ -125,23 +114,19 @@ export class ChatService {
         senderName: message.senderName,
         chatRoomId: message.chatRoomId,
         senderAvatar: message.senderAvatar,
-        type: convertSignalRTypeToMessageType(message.type), // Convert number to MessageType enum
-        messageTimestamp: new Date(message.messageTimestamp), // Convert ISO string to Date
+        type: convertSignalRTypeToMessageType(message.type),
+        messageTimestamp: new Date(message.messageTimestamp),
         isRead: false
       }
 
       this.emit('ReceiveMessage', frontendMessage)
     })
 
-    // Xác nhận tin nhắn đã gửi thành công
     this.connection.on('MessageSent', (messageId: string, timestamp: string) => {
       console.log('✅ Tin nhắn đã gửi thành công:', { messageId, timestamp })
       this.emit('MessageSent', messageId, new Date(timestamp))
     })
 
-    // ===== USER PRESENCE EVENTS =====
-
-    // User online/offline status
     this.connection.on('UserOnline', (userId: string, userName?: string) => {
       console.log('🟢 User online:', { userId, userName })
       this.emit('UserOnline', userId, userName)
@@ -152,15 +137,11 @@ export class ChatService {
       this.emit('UserOffline', userId, userName)
     })
 
-    // Danh sách users đang online
     this.connection.on('OnlineUsersList', (users: SignalRUserPresence[]) => {
       console.log('👥 Danh sách users online:', users)
       this.emit('OnlineUsersList', users)
     })
-
-    // ===== ROOM EVENTS =====
-
-    // Xác nhận đã join room thành công
+      
     this.connection.on('JoinedRoom', (roomId: string) => {
       console.log('🏠 Đã join room thành công:', roomId)
       this.emit('JoinedRoom', roomId)
