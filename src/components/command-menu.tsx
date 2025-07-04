@@ -14,16 +14,16 @@ import {
 } from '@/components/ui/command'
 import { sidebarData } from '@/components/layout/data/sidebar-data'
 import { ScrollArea } from './ui/scroll-area'
-import { usePermission } from '@/services/auth/permission.service'
+import { useAuth } from '@/context/auth-context'
 
 export function CommandMenu() {
   const navigate = useNavigate()
   const { setTheme } = useTheme()
   const { open, setOpen } = useSearch()
-  const { userInfo } = usePermission()
+  const { userPermission } = useAuth()
 
   // Get current user role, fallback to 'Admin' if not available
-  const currentUserRole = userInfo?.role || 'Admin'
+  const currentUserRole = userPermission?.roleName || 'Admin'
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {

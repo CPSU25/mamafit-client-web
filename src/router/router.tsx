@@ -1,5 +1,4 @@
-import { AppLayout, SystemLayout, GuestLayout } from '@/layouts'
-import { AuthMiddleware } from '@/middleware/auth.middleware'
+import { AppLayout, SystemLayout, GuestLayout, AuthGuard } from '@/layouts'
 import {
   AdminDashboardPage,
   ManageBranchPage,
@@ -36,17 +35,17 @@ export const router = createBrowserRouter([
         ]
       },
 
-      // Admin routes - Direct protected routes without nested /system
+      // Admin routes - Simplified with AuthGuard
       {
         path: '/system/admin',
         element: (
-          <AuthMiddleware allowedRoles={['Admin']}>
+          <AuthGuard requiredRole='Admin'>
             <SystemLayout role='Admin' />
-          </AuthMiddleware>
+          </AuthGuard>
         ),
         children: [
           {
-            index: true, // Default route for /system/admin
+            index: true,
             element: <Navigate to='/system/admin/dashboard' replace />
           },
           { path: 'dashboard', element: <AdminDashboardPage /> },
@@ -63,13 +62,13 @@ export const router = createBrowserRouter([
       {
         path: '/system/branch',
         element: (
-          <AuthMiddleware allowedRoles={['BranchManager']}>
+          <AuthGuard requiredRole='BranchManager'>
             <SystemLayout role='BranchManager' />
-          </AuthMiddleware>
+          </AuthGuard>
         ),
         children: [
           {
-            index: true, // Default route for /system/branch
+            index: true,
             element: <Navigate to='/system/branch/dashboard' replace />
           },
           {
@@ -91,13 +90,13 @@ export const router = createBrowserRouter([
       {
         path: '/system/designer',
         element: (
-          <AuthMiddleware allowedRoles={['Designer']}>
+          <AuthGuard requiredRole='Designer'>
             <SystemLayout role='Designer' />
-          </AuthMiddleware>
+          </AuthGuard>
         ),
         children: [
           {
-            index: true, // Default route for /system/designer
+            index: true,
             element: <Navigate to='/system/designer/dashboard' replace />
           },
           {
@@ -115,13 +114,13 @@ export const router = createBrowserRouter([
       {
         path: '/system/factory-manager',
         element: (
-          <AuthMiddleware allowedRoles={['Manager']}>
+          <AuthGuard requiredRole='Manager'>
             <SystemLayout role='Manager' />
-          </AuthMiddleware>
+          </AuthGuard>
         ),
         children: [
           {
-            index: true, // Default route for /system/factory-manager
+            index: true,
             element: <Navigate to='/system/factory-manager/dashboard' replace />
           },
           {
@@ -152,17 +151,16 @@ export const router = createBrowserRouter([
       },
 
       // Factory Staff routes
-
       {
         path: '/system/factory-staff',
         element: (
-          <AuthMiddleware allowedRoles={['Staff']}>
+          <AuthGuard requiredRole='Staff'>
             <SystemLayout role='Staff' />
-          </AuthMiddleware>
+          </AuthGuard>
         ),
         children: [
           {
-            index: true, // Default route for /system/factory-staff
+            index: true,
             element: <Navigate to='/system/factory-staff/dashboard' replace />
           },
           {

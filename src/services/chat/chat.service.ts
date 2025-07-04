@@ -137,9 +137,9 @@ export class ChatService {
       this.emit('UserOffline', userId, userName)
     })
 
-    this.connection.on('OnlineUsersList', (users: SignalRUserPresence[]) => {
+    this.connection.on('ListOnlineUsers', (users: SignalRUserPresence[]) => {
       console.log('👥 Danh sách users online:', users)
-      this.emit('OnlineUsersList', users)
+      this.emit('ListOnlineUsers', users)
     })
       
     this.connection.on('JoinedRoom', (roomId: string) => {
