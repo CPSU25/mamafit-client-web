@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useLocation } from 'react-router-dom'
 import { sidebarData } from './data/sidebar-data'
-import { usePermission } from '@/services/auth/permission.service'
+import { useAuth } from '@/context/auth-context'
 
 interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
   fixed?: boolean
@@ -16,7 +16,7 @@ interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
 export const Header = ({ className, fixed, title, subtitle, children, ...props }: HeaderProps) => {
   const [offset, setOffset] = React.useState(0)
   const location = useLocation()
-  const { userInfo } = usePermission()
+  const { userPermission } = useAuth()
 
   React.useEffect(() => {
     const onScroll = () => {
@@ -32,9 +32,9 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
 
   // Find active navigation item based on current path and user role
   const getActiveNavItem = () => {
-    if (!userInfo?.role) return null
+    if (!userPermission?.roleName) return null
 
-    const currentRole = sidebarData.role.find((role) => role.name === userInfo.role)
+    const currentRole = sidebarData.role.find((role) => role.name === userPermission.roleName)
     if (!currentRole) return null
 
     const currentPath = location.pathname

@@ -4,7 +4,7 @@ import { NavGroup } from './nav-group'
 import { LogoHeader } from './logo-header-sidebar'
 import { UserRole } from '@/@types/auth.type'
 import { NavUser } from './nav-user'
-import { usePermission } from '@/services/auth/permission.service'
+import { useAuth } from '@/context/auth-context'
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   role: UserRole
@@ -12,7 +12,16 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 function AppSidebar({ role, ...props }: AppSidebarProps) {
   const currentRole = sidebarData.role.find((r) => r.name === role)
-  const { userInfo } = usePermission()
+  const { userPermission } = useAuth()
+
+  // Transform userPermission to match NavUser expected format
+  const userInfo = userPermission ? {
+    username: userPermission.userName,
+    email: userPermission.userEmail,
+    role: userPermission.roleName,
+    avatar: userPermission.profilePicture || '/default-avatar.png'
+  } : null
+
   return (
     <Sidebar collapsible='icon' variant='floating' {...props}>
       <SidebarHeader>
