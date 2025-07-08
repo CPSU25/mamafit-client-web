@@ -12,4 +12,16 @@ export interface ManageBranchType {
   longitude: number
 }
 
-export type BranchRequest = Omit<ManageBranchType, 'id'>
+// API Request type based on actual API schema
+export interface BranchRequest {
+  branchManagerId: string
+  name: string
+  description: string
+  openingHours: string
+  images: string[]
+  mapId: string
+  shortName: string
+  longName: string
+  latitude: number
+  longitude: number
+}

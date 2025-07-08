@@ -30,6 +30,7 @@ import {
   VideoIcon,
   AlertTriangle
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function Chats() {
   const [search, setSearch] = useState('')
@@ -71,7 +72,9 @@ export default function Chats() {
     isLoading: isCreatingRoom,
     isLoadingRooms,
     error: chatError,
-    loadRooms
+    loadRooms,
+    lastCreatedRoomId,
+    lastInvitedRoomId
   } = useChat()
 
   // ===== ROOM MESSAGES HOOK =====
@@ -104,6 +107,32 @@ export default function Chats() {
       setViewedRooms((prev) => new Set([...prev, selectedRoomId]))
     }
   }, [realTimeMessages, selectedRoomId])
+
+  useEffect(() => {
+    const roomId = lastCreatedRoomId || lastInvitedRoomId
+    if (!roomId) return
+    const label =
+      lastCreatedRoomId === roomId ? 'Bạn vừa tạo một phòng chat mới!' : 'Bạn vừa được mời vào một phòng chat mới!'
+
+    toast(
+      <div className='flex flex-col'>
+        <span className='font-semibold'>{label}</span>
+        <button
+          className='mt-2 text-primary underline'
+          onClick={() => {
+            setSelectedRoomId(roomId)
+            setMobileSelectedUser(true)
+            setViewedRooms((prev) => new Set([...prev, roomId]))
+            toast.dismiss()
+          }}
+        >
+          Nhấn để mở phòng chat
+        </button>
+      </div>,
+      { duration: 6000 }
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastCreatedRoomId, lastInvitedRoomId])
 
   // Memoize filtered rooms to prevent unnecessary recalculations
   const filteredRooms = useMemo(() => {

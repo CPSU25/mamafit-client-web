@@ -141,31 +141,27 @@ export class ChatService {
       console.log('👥 Danh sách users online:', users)
       this.emit('ListOnlineUsers', users)
     })
-      
+
     this.connection.on('JoinedRoom', (roomId: string) => {
       console.log('🏠 Đã join room thành công:', roomId)
       this.emit('JoinedRoom', roomId)
     })
 
-    // Xác nhận đã leave room thành công
     this.connection.on('LeftRoom', (roomId: string) => {
       console.log('🚪 Đã leave room thành công:', roomId)
       this.emit('LeftRoom', roomId)
     })
-
-    // ===== ERROR HANDLING =====
 
     this.connection.on('Error', (errorMessage: string) => {
       console.error('❌ Lỗi từ SignalR server:', errorMessage)
       this.emit('Error', errorMessage)
     })
 
-    // ===== LEGACY EVENTS (sẽ loại bỏ dần) =====
-
-    // TODO: Loại bỏ các event này sau khi frontend hook được cập nhật
-    this.connection.on('RoomCreated', (roomId: string) => {
-      console.log('⚠️ [DEPRECATED] RoomCreated event - sử dụng REST API thay thế')
-      this.emit('RoomCreated', roomId)
+    this.connection.on('InvitedToRoom', (roomId: string) => {
+      console.log('👥 Đã được mời vào room:', roomId)
+      this.emit('InvitedToRoom', roomId)
+      this.joinRoom(roomId)
+      this.emit('JoinedRoom', roomId)
     })
 
     this.connection.on('LoadRoom', (rooms: unknown[]) => {
@@ -191,9 +187,6 @@ export class ChatService {
     console.log('✅ SignalR event listeners đã được setup')
   }
 
-  // ===== SIGNALR REALTIME METHODS =====
-
-  // Join room (chỉ SignalR)
   async joinRoom(roomId: string): Promise<void> {
     if (!this.connection) {
       throw new Error('Chưa có connection. Hãy gọi connect() trước')

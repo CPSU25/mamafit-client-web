@@ -17,7 +17,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CloudinarySingleImageUpload } from '@/components/cloudinary-single-image-upload'
+import { FirebaseSingleImageUpload } from '@/components/firebase-single-image-upload'
+import { BranchLocationPicker } from '@/components/branch-location-picker'
 import { Branch } from '../data/schema'
 import { useCreateBranch, useUpdateBranch } from '@/services/admin/manage-branch.service'
 import { useGetListUser } from '@/services/admin/manage-user.service'
@@ -26,15 +27,17 @@ import { ManageUserType } from '@/@types/manage-user.type'
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Branch name is required.' }),
-  shortName: z.string().min(1, { message: 'Short name is required.' }),
-  longName: z.string().min(1, { message: 'Long name is required.' }),
   description: z.string().min(1, { message: 'Description is required.' }),
   openingHours: z.string().min(1, { message: 'Opening hours is required.' }),
   branchManagerId: z.string().min(1, { message: 'Branch manager ID is required.' }),
-  mapId: z.string().min(1, { message: 'Map ID is required.' }),
-  latitude: z.string().min(1, { message: 'Latitude is required.' }),
-  longitude: z.string().min(1, { message: 'Longitude is required.' }),
-  image: z.string().optional()
+  location: z.object({
+    mapId: z.string().min(1, { message: 'Location is required.' }),
+    shortName: z.string().min(1, { message: 'Short name is required.' }),
+    longName: z.string().min(1, { message: 'Long name is required.' }),
+    latitude: z.number(),
+    longitude: z.number()
+  }),
+  images: z.array(z.string()).optional()
 })
 
 type BranchForm = z.infer<typeof formSchema>
@@ -61,44 +64,47 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
     defaultValues: isEdit
       ? {
           name: currentRow.name || '',
-          shortName: currentRow.shortName || '',
-          longName: currentRow.longName || '',
           description: currentRow.description || '',
           openingHours: currentRow.openingHours || '',
           branchManagerId: currentRow.branchManagerId || '',
-          mapId: currentRow.mapId || '',
-          latitude: currentRow.latitude?.toString() || '',
-          longitude: currentRow.longitude?.toString() || '',
-          image: currentRow.images?.[0] || ''
+          location: {
+            mapId: currentRow.mapId || '',
+            shortName: currentRow.shortName || '',
+            longName: currentRow.longName || '',
+            latitude: currentRow.latitude || 0,
+            longitude: currentRow.longitude || 0
+          },
+          images: currentRow.images || []
         }
       : {
           name: '',
-          shortName: '',
-          longName: '',
           description: '',
           openingHours: '',
           branchManagerId: '',
-          mapId: '',
-          latitude: '',
-          longitude: '',
-          image: ''
+          location: {
+            mapId: '',
+            shortName: '',
+            longName: '',
+            latitude: 0,
+            longitude: 0
+          },
+          images: []
         }
   })
-
   const onSubmit = async (values: BranchForm) => {
     try {
       // Transform the data to match BranchRequest schema
       const branchData: BranchRequest = {
         name: values.name,
-        shortName: values.shortName,
-        longName: values.longName,
         description: values.description,
         openingHours: values.openingHours,
         branchManagerId: values.branchManagerId,
-        mapId: values.mapId,
-        latitude: parseFloat(values.latitude),
-        longitude: parseFloat(values.longitude),
-        images: values.image ? [values.image] : []
+        mapId: values.location.mapId,
+        shortName: values.location.shortName,
+        longName: values.location.longName,
+        latitude: values.location.latitude,
+        longitude: values.location.longitude,
+        images: values.images || []
       }
 
       if (isEdit && currentRow) {
@@ -132,106 +138,90 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
         }
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left'>
-          <DialogTitle>{isEdit ? 'Edit Branch' : 'Add New Branch'}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className='sm:max-w-2xl'>
+        <DialogHeader className='text-left pb-6'>
+          <DialogTitle className='text-xl font-semibold'>{isEdit ? 'Edit Branch' : 'Add New Branch'}</DialogTitle>
+          <DialogDescription className='text-sm text-muted-foreground'>
             {isEdit ? 'Update the branch details here. ' : 'Create new branch here. '}
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4'>
+        <div className='flex-1 overflow-y-auto pr-2'>
           <Form {...form}>
-            <form id='branch-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-4 p-0.5'>
-              <FormField
-                control={form.control}
-                name='name'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Branch Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder='Main Branch' className='col-span-4' disabled={isLoading} {...field} />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='shortName'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Short Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder='MB001' className='col-span-4' disabled={isLoading} {...field} />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='longName'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Long Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='Main Branch Location'
-                        className='col-span-4'
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
+            <form id='branch-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <FormField
+                  control={form.control}
+                  name='name'
+                  render={({ field }) => (
+                    <FormItem className='space-y-2'>
+                      <FormLabel className='text-sm font-medium'>Branch Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder='Main Branch'
+                          className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='openingHours'
+                  render={({ field }) => (
+                    <FormItem className='space-y-2'>
+                      <FormLabel className='text-sm font-medium'>Opening Hours</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder='9:00 AM - 6:00 PM'
+                          className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
                 name='description'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Description</FormLabel>
+                  <FormItem className='space-y-2'>
+                    <FormLabel className='text-sm font-medium'>Description</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder='Branch description...'
-                        className='col-span-4 resize-none'
-                        rows={3}
+                        className='resize-none transition-all duration-200 focus:ring-2 focus:ring-primary/20'
+                        rows={4}
                         disabled={isLoading}
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name='openingHours'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Opening Hours</FormLabel>
-                    <FormControl>
-                      <Input placeholder='9:00 AM - 6:00 PM' className='col-span-4' disabled={isLoading} {...field} />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
+
               <FormField
                 control={form.control}
                 name='branchManagerId'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Branch Manager</FormLabel>
+                  <FormItem className='space-y-2'>
+                    <FormLabel className='text-sm font-medium'>Branch Manager</FormLabel>
                     <FormControl>
                       <Select
                         value={field.value}
                         onValueChange={field.onChange}
                         disabled={isLoading || isLoadingManagers}
                       >
-                        <SelectTrigger className='col-span-4'>
+                        <SelectTrigger className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'>
                           <SelectValue placeholder='Select a branch manager' />
                         </SelectTrigger>
                         <SelectContent>
@@ -253,87 +243,59 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
                         </SelectContent>
                       </Select>
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
-                name='mapId'
+                name='location'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Map ID</FormLabel>
+                  <FormItem className='space-y-2'>
+                    <FormLabel className='text-sm font-medium'>Location</FormLabel>
                     <FormControl>
-                      <Input placeholder='MAP001' className='col-span-4' disabled={isLoading} {...field} />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='latitude'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Latitude</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='10.762622'
-                        type='number'
-                        step='any'
-                        className='col-span-4'
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='longitude'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>Longitude</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='106.660172'
-                        type='number'
-                        step='any'
-                        className='col-span-4'
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='image'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-start space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right pt-2'>Branch Image</FormLabel>
-                    <FormControl>
-                      <CloudinarySingleImageUpload
+                      <BranchLocationPicker
                         value={field.value}
                         onChange={field.onChange}
+                        disabled={isLoading}
+                        className='w-full transition-all duration-200'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='images'
+                render={({ field }) => (
+                  <FormItem className='space-y-2'>
+                    <FormLabel className='text-sm font-medium'>Image</FormLabel>
+                    <FormControl>
+                      <FirebaseSingleImageUpload
+                        value={field.value?.[0] || ''}
+                        onChange={(url) => field.onChange(url ? [url] : [])}
                         placeholder='Upload branch image'
-                        className='col-span-4'
+                        className='w-full transition-all duration-200'
                         disabled={isLoading}
                       />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
             </form>
           </Form>
         </div>
-        <DialogFooter>
-          <Button type='submit' form='branch-form' disabled={isLoading}>
+        <DialogFooter className='pt-6 border-t'>
+          <Button
+            type='submit'
+            form='branch-form'
+            disabled={isLoading}
+            className='px-6 py-2 transition-all duration-200 hover:scale-105'
+          >
             {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : 'Save changes'}
           </Button>
         </DialogFooter>
