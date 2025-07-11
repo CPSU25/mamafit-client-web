@@ -24,7 +24,8 @@ export const categoryKeys = {
   details: () => [...categoryKeys.all, 'detail'] as const,
   detail: (id: string) => [...categoryKeys.details(), id] as const,
   styles: (categoryId: string) => [...categoryKeys.all, 'styles', categoryId] as const,
-  stylesList: (params: StyleQueryParams) => [...categoryKeys.all, 'styles', 'list', params] as const
+  stylesList: (categoryId: string, params: StyleQueryParams) =>
+    [...categoryKeys.all, 'styles', categoryId, 'list', params] as const
 }
 
 // Fetch Categories
@@ -52,7 +53,7 @@ export const useCategories = (params?: CategoryQueryParams) => {
 // Fetch Styles by Category
 export const useStylesByCategory = (categoryId: string, params?: StyleQueryParams) => {
   return useQuery({
-    queryKey: categoryKeys.stylesList(params || {}),
+    queryKey: categoryKeys.stylesList(categoryId, params || {}),
     queryFn: async () => {
       const response = await categoryAPI.getStylesByCategory(categoryId, params)
       if (response.data.statusCode === 200) {
@@ -141,7 +142,7 @@ export const useUpdateCategory = () => {
 // Get Styles
 export const useGetStyles = (params?: StyleQueryParams) => {
   return useQuery({
-    queryKey: categoryKeys.stylesList(params || {}),
+    queryKey: ['styles', 'list', params || {}],
     queryFn: async () => {
       const response = await styleAPI.getStyles(params)
       if (response.data.statusCode === 200) {
@@ -207,8 +208,9 @@ export const useCreateStyle = () => {
 
       // Also invalidate category lists in case style count affects display
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
+      // Refetch styles for the specific category
       queryClient.refetchQueries({
-        queryKey: categoryKeys.stylesList({ index: 1, pageSize: 10, sortBy: 'createdAt_desc' })
+        queryKey: categoryKeys.stylesList(variables.categoryId, { index: 1, pageSize: 10, sortBy: 'createdAt_desc' })
       })
     },
     onError: (error) => {

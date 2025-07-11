@@ -15,13 +15,7 @@ interface NotificationDropdownProps {
 }
 
 export function NotificationDropdown({ className }: NotificationDropdownProps) {
-  const {
-    notifications,
-    unreadCount,
-    isConnected,
-    markAsReadLocally,
-    clearNotifications
-  } = useNotificationSignalR()
+  const { notifications, unreadCount, isConnected, markAsReadLocally, clearNotifications } = useNotificationSignalR()
 
   const { showSignalRNotification } = useNotification()
   const [isOpen, setIsOpen] = useState(false)
@@ -40,9 +34,10 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
       const latestNotification = notifications[0]
       if (latestNotification && !latestNotification.isRead) {
         // Check if this is a newly received notification
-        const createdAt = typeof latestNotification.createdAt === 'string' 
-          ? new Date(latestNotification.createdAt)
-          : latestNotification.createdAt
+        const createdAt =
+          typeof latestNotification.createdAt === 'string'
+            ? new Date(latestNotification.createdAt)
+            : latestNotification.createdAt
         const isVeryRecent = createdAt.getTime() > Date.now() - 5000 // 5 seconds
         if (isVeryRecent) {
           const toastNotification = {
@@ -52,9 +47,10 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
             type: getNotificationTypeFromString(latestNotification.type),
             userId: latestNotification.receiverId || '',
             isRead: latestNotification.isRead,
-            createdAt: typeof latestNotification.createdAt === 'string' 
-              ? latestNotification.createdAt 
-              : latestNotification.createdAt.toISOString(),
+            createdAt:
+              typeof latestNotification.createdAt === 'string'
+                ? latestNotification.createdAt
+                : latestNotification.createdAt.toISOString(),
             data: latestNotification.metadata ? JSON.parse(latestNotification.metadata) : undefined
           }
           showSignalRNotification(toastNotification)
@@ -80,16 +76,16 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
 
   const getNotificationTypeFromString = (type?: string): NotificationType => {
     if (!type) return NotificationType.SYSTEM
-    
+
     const typeMap: Record<string, NotificationType> = {
-      'CHAT_MESSAGE': NotificationType.CHAT_MESSAGE,
-      'ORDER_UPDATE': NotificationType.ORDER_UPDATE,
-      'APPOINTMENT_REMINDER': NotificationType.APPOINTMENT_REMINDER,
-      'USER_ACTION': NotificationType.USER_ACTION,
-      'PROMOTION': NotificationType.PROMOTION,
-      'SYSTEM': NotificationType.SYSTEM
+      CHAT_MESSAGE: NotificationType.CHAT_MESSAGE,
+      ORDER_UPDATE: NotificationType.ORDER_UPDATE,
+      APPOINTMENT_REMINDER: NotificationType.APPOINTMENT_REMINDER,
+      USER_ACTION: NotificationType.USER_ACTION,
+      PROMOTION: NotificationType.PROMOTION,
+      SYSTEM: NotificationType.SYSTEM
     }
-    
+
     return typeMap[type.toUpperCase()] || NotificationType.SYSTEM
   }
 
@@ -143,9 +139,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
           <p className='text-sm text-muted-foreground line-clamp-2'>
             {notification.notificationContent || 'Không có nội dung'}
           </p>
-          <p className='text-xs text-muted-foreground mt-1'>
-            {formatRelativeTime(notification.createdAt)}
-          </p>
+          <p className='text-xs text-muted-foreground mt-1'>{formatRelativeTime(notification.createdAt)}</p>
         </div>
         {!notification.isRead && (
           <div className='flex-shrink-0'>
