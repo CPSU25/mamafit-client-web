@@ -6,8 +6,10 @@ export interface ManageBranchType {
   openingHours: string
   images: string[]
   mapId: string
-  shortName: string
-  longName: string
+  province: string
+  district: string
+  ward: string
+  street: string
   latitude: number
   longitude: number
 }
@@ -20,8 +22,10 @@ export interface BranchRequest {
   openingHours: string
   images: string[]
   mapId: string
-  shortName: string
-  longName: string
+  province: string
+  district: string
+  ward: string
+  street: string
   latitude: number
   longitude: number
 }

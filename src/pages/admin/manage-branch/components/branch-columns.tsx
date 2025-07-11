@@ -50,10 +50,16 @@ export const columns: ColumnDef<Branch>[] = [
     enableHiding: false
   },
   {
-    accessorKey: 'shortName',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Short Name' />,
-    cell: ({ row }) => <div className='text-sm font-mono'>{row.getValue('shortName')}</div>,
-    meta: { className: 'w-32' }
+    id: 'address',
+    header: 'Address',
+    cell: ({ row }) => {
+      const branch = row.original
+      const address = [branch.street, branch.ward, branch.district, branch.province]
+        .filter(Boolean)
+        .join(', ')
+      return <LongText className='max-w-64 text-sm'>{address || 'No address'}</LongText>
+    },
+    enableSorting: false
   },
   {
     accessorKey: 'description',
@@ -73,17 +79,17 @@ export const columns: ColumnDef<Branch>[] = [
     enableSorting: false
   },
   {
-    id: 'location',
-    header: 'Location',
+    id: 'coordinates',
+    header: 'Coordinates',
     cell: ({ row }) => {
       const branch = row.original
       const lat = branch.latitude
       const lng = branch.longitude
 
       return (
-        <div className='text-sm'>
-          <div>{lat !== null && lat !== undefined ? lat.toFixed(6) : 'N/A'}</div>
-          <div>{lng !== null && lng !== undefined ? lng.toFixed(6) : 'N/A'}</div>
+        <div className='text-xs font-mono'>
+          <div>Lat: {lat !== null && lat !== undefined ? lat.toFixed(6) : 'N/A'}</div>
+          <div>Lng: {lng !== null && lng !== undefined ? lng.toFixed(6) : 'N/A'}</div>
         </div>
       )
     },
