@@ -10,15 +10,11 @@ interface AuthGuardProps {
   fallbackPath?: string
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = ({ 
-  children, 
-  requiredRole, 
-  fallbackPath = '/system/sign-in' 
-}) => {
+const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiredRole, fallbackPath = '/system/sign-in' }) => {
   const { isAuthenticated, isLoading, hasRole } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  
+
   // ✅ Tránh hiển thị toast nhiều lần
   const hasShownToast = useRef(false)
   const currentPath = useRef(location.pathname)
@@ -35,9 +31,9 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
 
     // Nếu chưa authenticated, redirect về login (silent)
     if (!isAuthenticated) {
-      navigate(fallbackPath, { 
-        state: { from: location }, 
-        replace: true 
+      navigate(fallbackPath, {
+        state: { from: location },
+        replace: true
       })
       return
     }
@@ -69,6 +65,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   if (requiredRole && !hasRole(requiredRole)) return null
 
   return <>{children}</>
-} 
+}
 
 export default AuthGuard

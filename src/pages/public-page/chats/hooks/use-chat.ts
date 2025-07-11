@@ -20,6 +20,8 @@ export interface UseChatReturn {
   error: string | null
   loadedRooms: Set<string>
   onlineUsers: Set<string>
+  lastCreatedRoomId: string | null
+  lastInvitedRoomId: string | null
 }
 
 export function useChat(): UseChatReturn {
@@ -30,34 +32,19 @@ export function useChat(): UseChatReturn {
   const [loadedRooms, setLoadedRooms] = useState<Set<string>>(new Set())
   const [joinedRooms, setJoinedRooms] = useState<Set<string>>(new Set())
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
-
-  // Track processed messages to prevent duplicates
+  const [lastCreatedRoomId, setLastCreatedRoomId] = useState<string | null>(null)
+  const [lastInvitedRoomId, setLastInvitedRoomId] = useState<string | null>(null)
   const [processedMessages, setProcessedMessages] = useState<Set<string>>(new Set())
-
-  // Use refs to prevent unnecessary re-renders
   const connectionCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const listenersSetupRef = useRef(false)
-
   const { user } = useAuthStore()
 
-  // ===== REACT QUERY HOOKS =====
-
-  // Lấy danh sách rooms qua React Query
   const { data: roomsData, isLoading: isLoadingRooms, error: roomsError, refetch: refetchRooms } = useMyRooms()
-
-  // Extract rooms from React Query response
   const rooms = useMemo(() => roomsData || [], [roomsData])
-
-  // Create room mutation
   const createRoomMutation = useCreateRoom()
-
-  // Chat cache helper
   const chatCache = useChatCache()
-
-  // Memoize user data to prevent unnecessary re-renders
   const memoizedUser = useMemo(() => user, [user?.userId, user?.fullName])
 
-  // Map ChatMessage to Convo format for UI (memoized)
   const mapChatMessageToConvo = useCallback(
     (msg: ChatMessage): Convo => {
       return {
@@ -69,43 +56,54 @@ export function useChat(): UseChatReturn {
     [memoizedUser?.userId]
   )
 
-  // ===== INTERFACE METHODS =====
-
-  // Load rooms - now uses React Query refetch
   const loadRooms = useCallback(() => {
     console.log('🔄 Refreshing rooms via React Query...')
     refetchRooms()
   }, [refetchRooms])
-
-  // Create room - now uses React Query mutation
   const createRoom = useCallback(
     async (userId1: string, userId2: string): Promise<ChatRoom> => {
       try {
         setError(null)
-        console.log('🏗️ Creating room via React Query...', { userId1, userId2 })
-
         const result = await createRoomMutation.mutateAsync({ userId1, userId2 })
-        console.log('✅ Room created successfully:', result)
-
+        setLastCreatedRoomId(result.id) // <-- Track phòng vừa tạo
         return result
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to create room'
         setError(errorMessage)
-        console.error('❌ Failed to create room:', err)
         throw err
       }
     },
     [createRoomMutation]
   )
 
-  // Load messages for a specific room - simplified since React Query handles caching
   const loadMessages = useCallback((roomId: string) => {
     console.log(`📜 Loading messages for room ${roomId} - handled by React Query`)
-    // React Query automatically handles this via useRoomMessages hook
-    // Mark room as "loaded" for UI purposes
     setLoadedRooms((prev) => new Set([...prev, roomId]))
   }, [])
+  const joinRoom = useCallback(
+    async (roomId: string) => {
+      // Skip if already joined
+      if (joinedRooms.has(roomId)) {
+        console.log(`⏭️ Room ${roomId} already joined`)
+        return
+      }
 
+      try {
+        setError(null)
+        console.log(`🏠 Joining room via SignalR: ${roomId}`)
+        await chatService.joinRoom(roomId)
+        console.log(`✅ Join room request sent: ${roomId}`)
+
+        // Note: JoinedRoom event will update joinedRooms state
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to join room'
+        setError(errorMessage)
+        console.error('❌ Failed to join room:', err)
+        throw err
+      }
+    },
+    [joinedRooms]
+  )
   // ===== SIGNALR REALTIME EVENT HANDLERS =====
 
   // Setup SignalR event listeners (only for realtime events)
@@ -238,6 +236,17 @@ export function useChat(): UseChatReturn {
     const handleNoMessages = () => {
       console.log('⚠️ [DEPRECATED] NoMessages event - handled by React Query')
     }
+    const handleInvitedToRoom = async (...args: unknown[]) => {
+      const roomId = args[0] as string
+      console.log('👥 Được mời vào phòng mới:', roomId)
+      try {
+        await joinRoom(roomId)
+        chatCache.invalidateRooms()
+        setLastInvitedRoomId(roomId) // invalidate rooms cache để UI cập nhật ngay
+      } catch (err) {
+        console.error('❌ Không thể join room được mời:', err)
+      }
+    }
 
     // Register realtime event listeners
     chatService.on('ReceiveMessage', handleReceiveMessage)
@@ -248,18 +257,13 @@ export function useChat(): UseChatReturn {
     chatService.on('LeftRoom', handleLeftRoom)
     chatService.on('MessageSent', handleMessageSent)
     chatService.on('Error', handleError)
-
-    // Legacy event listeners (for backward compatibility)
-    chatService.on('RoomCreated', handleRoomCreated)
-    chatService.on('LoadRoom', handleLoadRoom)
-    chatService.on('MessageHistory', handleMessageHistory)
-    chatService.on('NoRooms', handleNoRooms)
-    chatService.on('NoMessages', handleNoMessages)
+    chatService.on('InvitedToRoom', handleInvitedToRoom)
 
     return () => {
       console.log('🧹 Cleaning up SignalR event listeners')
 
       // Remove realtime event listeners
+      chatService.off('InvitedToRoom', handleInvitedToRoom)
       chatService.off('ReceiveMessage', handleReceiveMessage)
       chatService.off('UserOnline', handleUserOnline)
       chatService.off('UserOffline', handleUserOffline)
@@ -279,7 +283,7 @@ export function useChat(): UseChatReturn {
       // Reset ref to allow re-setup if needed
       listenersSetupRef.current = false
     }
-  }, [mapChatMessageToConvo, chatCache])
+  }, [mapChatMessageToConvo, chatCache, processedMessages, joinRoom])
 
   // Monitor connection status with optimized interval
   useEffect(() => {
@@ -325,31 +329,6 @@ export function useChat(): UseChatReturn {
 
   // ===== SIGNALR ROOM OPERATIONS =====
 
-  const joinRoom = useCallback(
-    async (roomId: string) => {
-      // Skip if already joined
-      if (joinedRooms.has(roomId)) {
-        console.log(`⏭️ Room ${roomId} already joined`)
-        return
-      }
-
-      try {
-        setError(null)
-        console.log(`🏠 Joining room via SignalR: ${roomId}`)
-        await chatService.joinRoom(roomId)
-        console.log(`✅ Join room request sent: ${roomId}`)
-
-        // Note: JoinedRoom event will update joinedRooms state
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to join room'
-        setError(errorMessage)
-        console.error('❌ Failed to join room:', err)
-        throw err
-      }
-    },
-    [joinedRooms]
-  )
-
   const sendMessage = useCallback(
     async (roomId: string, message: string) => {
       try {
@@ -388,6 +367,8 @@ export function useChat(): UseChatReturn {
     isLoadingRooms,
     error,
     loadedRooms,
-    onlineUsers
+    onlineUsers,
+    lastCreatedRoomId,
+    lastInvitedRoomId
   }
 }

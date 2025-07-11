@@ -15,12 +15,14 @@ function AppSidebar({ role, ...props }: AppSidebarProps) {
   const { userPermission } = useAuth()
 
   // Transform userPermission to match NavUser expected format
-  const userInfo = userPermission ? {
-    username: userPermission.userName,
-    email: userPermission.userEmail,
-    role: userPermission.roleName,
-    avatar: userPermission.profilePicture || '/default-avatar.png'
-  } : null
+  const userInfo = userPermission
+    ? {
+        username: userPermission.userName,
+        email: userPermission.userEmail,
+        role: userPermission.roleName,
+        avatar: userPermission.profilePicture || '/default-avatar.png'
+      }
+    : null
 
   return (
     <Sidebar collapsible='icon' variant='floating' {...props}>

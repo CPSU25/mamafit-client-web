@@ -18,9 +18,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(false)
   const [userPermission, setUserPermission] = useState<PermissionResponse | null>(null)
 
-  const hasRole = useCallback((role: string): boolean => {
-    return userPermission?.roleName === role
-  }, [userPermission?.roleName])
+  const hasRole = useCallback(
+    (role: string): boolean => {
+      return userPermission?.roleName === role
+    },
+    [userPermission?.roleName]
+  )
 
   const checkAuth = useCallback(async () => {
     if (!isAuthenticated) {
@@ -50,13 +53,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isAuthenticated])
 
-  const value = useMemo<AuthContextType>(() => ({
-    isAuthenticated,
-    isLoading,
-    userPermission,
-    hasRole,
-    checkAuth
-  }), [isAuthenticated, isLoading, userPermission, hasRole, checkAuth])
+  const value = useMemo<AuthContextType>(
+    () => ({
+      isAuthenticated,
+      isLoading,
+      userPermission,
+      hasRole,
+      checkAuth
+    }),
+    [isAuthenticated, isLoading, userPermission, hasRole, checkAuth]
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
@@ -67,4 +73,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
-} 
+}

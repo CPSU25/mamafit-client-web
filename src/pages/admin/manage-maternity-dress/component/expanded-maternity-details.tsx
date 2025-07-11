@@ -345,10 +345,10 @@ export default function ExpendMaternityDressDetails() {
                           <p className='text-sm font-bold text-primary mt-1'>{maternityDressDetails.length}</p>
                         </div>
                         <div className='p-3 bg-accent/10 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-accent uppercase tracking-wide'>
+                          <span className='text-xs font-medium text-foreground uppercase tracking-wide'>
                             Tổng số lượng sản phẩm
                           </span>
-                          <p className='text-sm font-bold text-accent mt-1'>{totalStock}</p>
+                          <p className='text-sm font-bold text-foreground mt-1'>{totalStock}</p>
                         </div>
                         <div className='p-3 bg-secondary/10 rounded-lg shadow-md'>
                           <span className='text-xs font-medium text-secondary-foreground uppercase tracking-wide'>

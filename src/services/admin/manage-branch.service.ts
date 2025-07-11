@@ -65,7 +65,8 @@ export const useUpdateBranch = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (body: BranchRequest & { id: string }) => {
-      const response = await manageBranchAPI.updateBranch(body.id, body)
+      const { id, ...branchData } = body
+      const response = await manageBranchAPI.updateBranch(id, branchData)
       // Accept both 200 and 204 status codes for successful update
       if (response.data.statusCode === 200 || response.data.statusCode === 204) {
         return response.data

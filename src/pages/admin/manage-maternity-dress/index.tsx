@@ -480,8 +480,8 @@ export default function MaternityDressPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className='flex flex-col gap-1'>
-                        <span className='font-semibold text-accent'>
+                      <div className='flex flex-col gap-1 '>
+                        <span className='font-semibold text-foreground'>
                           {formatCurrency(calculateTotalPrice(dress.price))}
                         </span>
                         {/* {Array.isArray(dress.price) && dress.price.length > 1 && (
