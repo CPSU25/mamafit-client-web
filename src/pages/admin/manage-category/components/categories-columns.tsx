@@ -165,8 +165,8 @@ export const columns: ColumnDef<Category>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       return (
-        <Badge variant={status === 'active' ? 'default' : 'secondary'}>
-          {status === 'active' ? 'Active' : 'Inactive'}
+        <Badge variant={status === 'ACTIVE' ? 'default' : 'secondary'}>
+          {status === 'ACTIVE' ? 'Active' : 'Inactive'}
         </Badge>
       )
     },

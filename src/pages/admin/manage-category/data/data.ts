@@ -16,6 +16,6 @@ export const pageSizeOptions = [
 
 // Category status options
 export const categoryStatusOptions = [
-  { value: 'active', label: 'Hoạt động' },
-  { value: 'inactive', label: 'Không hoạt động' }
+  { value: 'ACTIVE', label: 'Hoạt động' },
+  { value: 'INACTIVE', label: 'Không hoạt động' }
 ]

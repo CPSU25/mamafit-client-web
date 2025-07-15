@@ -44,10 +44,6 @@ export const router = createBrowserRouter([
           </AuthGuard>
         ),
         children: [
-          {
-            index: true,
-            element: <Navigate to='/system/admin/dashboard' replace />
-          },
           { path: 'dashboard', element: <AdminDashboardPage /> },
           { path: 'manage-category', element: <ManageCategoryPage /> },
           { path: 'manage-user', element: <ManageUserPage /> },
@@ -67,10 +63,6 @@ export const router = createBrowserRouter([
           </AuthGuard>
         ),
         children: [
-          {
-            index: true,
-            element: <Navigate to='/system/branch/dashboard' replace />
-          },
           {
             path: 'dashboard',
             element: <BranchDashboard />
@@ -96,10 +88,6 @@ export const router = createBrowserRouter([
         ),
         children: [
           {
-            index: true,
-            element: <Navigate to='/system/designer/dashboard' replace />
-          },
-          {
             path: 'messages',
             element: <ChatPage />
           },
@@ -119,10 +107,6 @@ export const router = createBrowserRouter([
           </AuthGuard>
         ),
         children: [
-          {
-            index: true,
-            element: <Navigate to='/system/factory-manager/dashboard' replace />
-          },
           {
             path: 'dashboard',
             element: <FactoryManagerDashboard />
@@ -159,10 +143,6 @@ export const router = createBrowserRouter([
           </AuthGuard>
         ),
         children: [
-          {
-            index: true,
-            element: <Navigate to='/system/factory-staff/dashboard' replace />
-          },
           {
             path: 'dashboard',
             element: <div>Dashboard Page</div>

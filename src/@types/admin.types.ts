@@ -125,3 +125,18 @@ export interface BulkAction {
   productIds: string[]
   newStatus?: 'Active' | 'Out-of-stock' | 'Upcoming' | 'Discontinued' | 'Incomplete' | 'Draft'
 }
+
+// Manage User Type
+export type ManageUserType = {
+  id: string
+  userName: string
+  userEmail: string
+  dateOfBirth: string
+  profilePicture: string
+  phoneNumber: string
+  roleName: string
+  fullName: string
+  createdAt: string
+  updatedAt: string
+  isVerify: boolean
+}

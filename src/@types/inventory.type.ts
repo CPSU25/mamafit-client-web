@@ -2,6 +2,7 @@ export interface CategoryType {
   id: string
   name: string
   description: string
+  status: 'ACTIVE' | 'INACTIVE'
   images?: Array<string>
   createdAt?: Date | string
   updatedAt?: Date | string
