@@ -56,6 +56,11 @@ export const sidebarData: SidebarData = {
               icon: Package2
             },
             {
+              title: 'Manage Components',
+              url: 'manage-component',
+              icon: Package
+            },
+            {
               title: 'Manage Transactions',
               url: 'manage-transaction',
               icon: ShoppingCart

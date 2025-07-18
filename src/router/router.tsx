@@ -3,6 +3,7 @@ import {
   AdminDashboardPage,
   ManageBranchPage,
   ManageCategoryPage,
+  ManageComponentPage,
   ManageMaternityDressPage,
   ManageUserPage
 } from '@/pages/admin'
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
           { path: 'manage-user', element: <ManageUserPage /> },
           { path: 'manage-branch', element: <ManageBranchPage /> },
           { path: 'manage-maternity-dress', element: <ManageMaternityDressPage /> },
+          { path: 'manage-component', element: <ManageComponentPage /> },
           { path: 'manage-transaction', element: <div>Transactions Page</div> },
           { path: 'settings', element: <div>System Settings Page</div> }
         ]
