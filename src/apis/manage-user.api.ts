@@ -1,4 +1,4 @@
-import { ManageUserType } from '@/@types/manage-user.type'
+import { ManageUserType } from '@/@types/admin.types'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { api } from '@/lib/axios/axios'
 

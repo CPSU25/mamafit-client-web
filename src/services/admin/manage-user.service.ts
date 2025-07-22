@@ -1,5 +1,5 @@
 import manageUserAPI, { CreateUserData } from '@/apis/manage-user.api'
-import { ManageUserType } from '@/@types/manage-user.type'
+import { ManageUserType } from '@/@types/admin.types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface ManageUserQueryParams {

@@ -27,9 +27,6 @@ export const maternityDressKeys = {
   maternityDressesDetail: (id: string) => [...maternityDressKeys.maternityDressesDetails(), 'detail', id] as const
 }
 
-// ===============================
-// INVENTORY PRODUCTS HOOKS
-// ===============================
 // Fetch Maternity Dresses with filters
 export const useGetMaternityDresses = (params?: MaternityDressQueryParams) => {
   return useQuery({

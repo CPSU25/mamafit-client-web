@@ -1,4 +1,4 @@
-import { Cross } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,10 +27,8 @@ export function CategoryTableToolbar<TData>({ table }: CategoryTableToolbarProps
               column={table.getColumn('status')}
               title='Status'
               options={[
-                { label: 'Active', value: 'active' },
-                { label: 'Inactive', value: 'inactive' },
-                { label: 'Invited', value: 'invited' },
-                { label: 'Suspended', value: 'suspended' }
+                { label: 'Active', value: 'ACTIVE' },
+                { label: 'Inactive', value: 'INACTIVE' }
               ]}
             />
           )}
@@ -38,7 +36,7 @@ export function CategoryTableToolbar<TData>({ table }: CategoryTableToolbarProps
         {isFiltered && (
           <Button variant='ghost' onClick={() => table.resetColumnFilters()} className='h-8 px-2 lg:px-3'>
             Reset
-            <Cross className='ml-2 h-4 w-4' />
+            <X className='ml-2 h-4 w-4' />
           </Button>
         )}
       </div>

@@ -23,12 +23,12 @@ import { Branch } from '../data/schema'
 import { useCreateBranch, useUpdateBranch } from '@/services/admin/manage-branch.service'
 import { useGetListUser } from '@/services/admin/manage-user.service'
 import { BranchRequest } from '@/@types/branch.type'
-import { ManageUserType } from '@/@types/manage-user.type'
+import { ManageUserType } from '@/@types/admin.types'
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Branch name is required.' }),
   description: z.string().min(1, { message: 'Description is required.' }),
-  openingHours: z.string().min(1, { message: 'Opening hours is required.' }),
+  openingHour: z.string().min(1, { message: 'Opening hours is required.' }),
   branchManagerId: z.string().min(1, { message: 'Branch manager ID is required.' }),
   mapId: z.string().optional(),
   province: z.string().min(1, { message: 'Province is required.' }),
@@ -65,7 +65,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
       ? {
           name: currentRow.name || '',
           description: currentRow.description || '',
-          openingHours: currentRow.openingHours || '',
+          openingHour: currentRow.openingHour || '',
           branchManagerId: currentRow.branchManagerId || '',
           mapId: currentRow.mapId || '',
           province: currentRow.province || '',
@@ -79,7 +79,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
       : {
           name: '',
           description: '',
-          openingHours: '',
+          openingHour: '',
           branchManagerId: '',
           mapId: '',
           province: '',
@@ -91,14 +91,14 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
           images: []
         }
   })
-  
+
   const onSubmit = async (values: BranchForm) => {
     try {
       // Transform the data to match BranchRequest schema
       const branchData: BranchRequest = {
         name: values.name,
         description: values.description,
-        openingHours: values.openingHours,
+        openingHour: values.openingHour,
         branchManagerId: values.branchManagerId,
         mapId: values.mapId || '',
         province: values.province,
@@ -149,7 +149,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className='flex-1 overflow-y-auto pr-2'>
           <Form {...form}>
             <form id='branch-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
@@ -175,7 +175,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
 
                 <FormField
                   control={form.control}
-                  name='openingHours'
+                  name='openingHour'
                   render={({ field }) => (
                     <FormItem className='space-y-2'>
                       <FormLabel className='text-sm font-medium'>Opening Hours</FormLabel>
@@ -279,7 +279,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
             </form>
           </Form>
         </div>
-        
+
         <DialogFooter className='pt-6 border-t'>
           <Button
             type='submit'

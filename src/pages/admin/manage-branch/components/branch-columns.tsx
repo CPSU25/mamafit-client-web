@@ -54,9 +54,7 @@ export const columns: ColumnDef<Branch>[] = [
     header: 'Address',
     cell: ({ row }) => {
       const branch = row.original
-      const address = [branch.street, branch.ward, branch.district, branch.province]
-        .filter(Boolean)
-        .join(', ')
+      const address = [branch.street, branch.ward, branch.district, branch.province].filter(Boolean).join(', ')
       return <LongText className='max-w-64 text-sm'>{address || 'No address'}</LongText>
     },
     enableSorting: false
@@ -67,9 +65,9 @@ export const columns: ColumnDef<Branch>[] = [
     cell: ({ row }) => <LongText className='max-w-48'>{row.getValue('description')}</LongText>
   },
   {
-    accessorKey: 'openingHours',
+    accessorKey: 'openingHour',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Opening Hours' />,
-    cell: ({ row }) => <div className='text-sm'>{row.getValue('openingHours')}</div>,
+    cell: ({ row }) => <div className='text-sm'>{row.getValue('openingHour')}</div>,
     enableSorting: false
   },
   {

@@ -1,11 +1,9 @@
 import { z } from 'zod'
 import { CategoryType } from '@/@types/inventory.type'
 
-// Status schema cho category
-const categoryStatusSchema = z.union([z.literal('active'), z.literal('inactive')])
+const categoryStatusSchema = z.union([z.literal('ACTIVE'), z.literal('INACTIVE')])
 export type CategoryStatus = z.infer<typeof categoryStatusSchema>
 
-// Category schema dựa trên CategoryType từ API
 const categorySchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -13,15 +11,13 @@ const categorySchema = z.object({
   images: z.array(z.string()).optional(),
   createdAt: z.union([z.string(), z.date()]).optional(),
   updatedAt: z.union([z.string(), z.date()]).optional(),
-  // Derived fields for compatibility
-  status: categoryStatusSchema.optional()
+  status: categoryStatusSchema
 })
 
 export type Category = z.infer<typeof categorySchema>
 
 export const categoryListSchema = z.array(categorySchema)
 
-// Helper function to transform CategoryType từ API sang Category format cho component
 export const transformCategoryTypeToCategory = (apiCategory: CategoryType): Category => {
   return {
     id: apiCategory.id,
@@ -30,12 +26,10 @@ export const transformCategoryTypeToCategory = (apiCategory: CategoryType): Cate
     images: apiCategory.images || [],
     createdAt: apiCategory.createdAt,
     updatedAt: apiCategory.updatedAt,
-    // Default status là active
-    status: 'active' as CategoryStatus
+    status: apiCategory.status as CategoryStatus
   }
 }
 
-// Style schema
 export const styleSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -48,10 +42,8 @@ export const styleSchema = z.object({
   updatedAt: z.union([z.string(), z.date()]).optional()
 })
 
-// List schemas
 export const styleListSchema = z.array(styleSchema)
 
-// Types
 export type StyleSchema = z.infer<typeof styleSchema>
 
 // Form data types (re-export from inventory.type.ts for convenience)

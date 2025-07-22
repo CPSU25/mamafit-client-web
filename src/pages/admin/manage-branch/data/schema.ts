@@ -13,7 +13,7 @@ export const transformManageBranchTypeToBranch = (apiBranch: ManageBranchType): 
     branchManagerId: apiBranch.branchManagerId,
     name: apiBranch.name,
     description: apiBranch.description,
-    openingHours: apiBranch.openingHours,
+    openingHour: apiBranch.openingHour,
     images: apiBranch.images,
     mapId: apiBranch.mapId,
     province: apiBranch.province,

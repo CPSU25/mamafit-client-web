@@ -64,7 +64,12 @@ export function BranchDeleteDialog({ open, onOpenChange, currentRow }: Props) {
               <strong>Branch Details:</strong>
             </p>
             <ul className='text-sm space-y-1 ml-4'>
-              <li>• Address: {[currentRow.street, currentRow.ward, currentRow.district, currentRow.province].filter(Boolean).join(', ')}</li>
+              <li>
+                • Address:{' '}
+                {[currentRow.street, currentRow.ward, currentRow.district, currentRow.province]
+                  .filter(Boolean)
+                  .join(', ')}
+              </li>
               <li>• Manager ID: {currentRow.branchManagerId}</li>
               <li>
                 • Coordinates: {currentRow.latitude}, {currentRow.longitude}

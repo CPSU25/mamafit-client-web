@@ -3,7 +3,7 @@ export interface ManageBranchType {
   branchManagerId: string
   name: string
   description: string
-  openingHours: string
+  openingHour: string
   images: string[]
   mapId: string
   province: string
@@ -19,7 +19,7 @@ export interface BranchRequest {
   branchManagerId: string
   name: string
   description: string
-  openingHours: string
+  openingHour: string
   images: string[]
   mapId: string
   province: string

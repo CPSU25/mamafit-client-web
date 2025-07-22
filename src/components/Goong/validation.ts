@@ -7,7 +7,7 @@ export const addAddressFormSchema = z.object({
   ward: z.string().min(1, { message: 'Ward is required' }).trim(),
   street: z.string().min(1, { message: 'Street is required' }).trim(),
   latitude: z.number().min(-90).max(90, { message: 'Invalid latitude' }),
-  longitude: z.number().min(-180).max(180, { message: 'Invalid longitude' }),
+  longitude: z.number().min(-180).max(180, { message: 'Invalid longitude' })
 })
 
 export type AddAddressFormSchema = z.infer<typeof addAddressFormSchema>
@@ -19,7 +19,7 @@ export const branchLocationSchema = z.object({
   ward: z.string().min(1, { message: 'Ward is required' }).trim(),
   street: z.string().min(1, { message: 'Street is required' }).trim(),
   latitude: z.number(),
-  longitude: z.number(),
+  longitude: z.number()
 })
 
 export type BranchLocationSchema = z.infer<typeof branchLocationSchema>

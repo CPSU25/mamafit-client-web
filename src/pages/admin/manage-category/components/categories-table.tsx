@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -105,7 +105,7 @@ export function CategoriesTable({ columns, data }: CategoriesTableProps) {
   return (
     <div className='space-y-4'>
       {/* Search Filter */}
-      <CategoryTableToolbar table={table} />
+      <CategoryTableToolbar<Category> table={table} />
 
       {/* Table */}
       <div className='rounded-md border'>
@@ -130,10 +130,9 @@ export function CategoriesTable({ columns, data }: CategoriesTableProps) {
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <>
+                <Fragment key={row.id}>
                   {/* Main row */}
                   <TableRow
-                    key={row.id}
                     data-state={row.getIsSelected() && 'selected'}
                     className={`group/row cursor-pointer transition-colors hover:bg-muted/50 ${
                       row.getIsExpanded() ? 'bg-muted/30' : ''
@@ -161,7 +160,7 @@ export function CategoriesTable({ columns, data }: CategoriesTableProps) {
 
                   {/* Expanded row content */}
                   {row.getIsExpanded() && (
-                    <TableRow key={`${row.id}-expanded`}>
+                    <TableRow>
                       <TableCell colSpan={expandableColumns.length} className='p-0'>
                         <div className='border-l-4 border-primary'>
                           <ExpandedCategoryStyles categoryId={row.original.id} />
@@ -169,7 +168,7 @@ export function CategoriesTable({ columns, data }: CategoriesTableProps) {
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               ))
             ) : (
               <TableRow>
