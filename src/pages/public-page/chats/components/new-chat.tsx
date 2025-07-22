@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useGetListUser } from '@/services/admin/manage-user.service'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { useCreateRoom } from '@/services/chat/chat.service'
-import { ManageUserType } from '@/@types/manage-user.type'
+import { ManageUserType } from '@/@types/admin.types'
 import { toast } from 'sonner'
 
 type User = {

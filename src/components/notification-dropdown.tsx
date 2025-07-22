@@ -40,6 +40,16 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
             : latestNotification.createdAt
         const isVeryRecent = createdAt.getTime() > Date.now() - 5000 // 5 seconds
         if (isVeryRecent) {
+          const parseMetadata = (metadata?: string) => {
+            if (!metadata) return undefined
+            try {
+              return JSON.parse(metadata)
+            } catch (error) {
+              console.warn('Failed to parse notification metadata:', error)
+              return undefined
+            }
+          }
+
           const toastNotification = {
             id: latestNotification.id,
             title: latestNotification.notificationTitle || 'Thông báo mới',
@@ -51,7 +61,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
               typeof latestNotification.createdAt === 'string'
                 ? latestNotification.createdAt
                 : latestNotification.createdAt.toISOString(),
-            data: latestNotification.metadata ? JSON.parse(latestNotification.metadata) : undefined
+            data: parseMetadata(latestNotification.metadata)
           }
           showSignalRNotification(toastNotification)
         }

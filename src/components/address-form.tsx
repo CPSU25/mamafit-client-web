@@ -14,9 +14,9 @@ interface AddressFormProps {
 
 export function AddressForm({ namePrefix = '' }: AddressFormProps) {
   const { control, watch, setValue } = useFormContext()
-  
+
   const prefix = namePrefix ? `${namePrefix}.` : ''
-  
+
   const province = watch(`${prefix}province`)
   const district = watch(`${prefix}district`)
   const ward = watch(`${prefix}ward`)
@@ -27,14 +27,11 @@ export function AddressForm({ namePrefix = '' }: AddressFormProps) {
   // Combine address parts for geocoding
   const addressParts = [street, ward, district, province].filter(Boolean)
   const fullAddress = addressParts.join(', ')
-  
+
   const [debouncedAddress] = useDebounce(fullAddress, 1000)
   const hasAllFields = addressParts.length === 4
 
-  const { data: geocodingData, isLoading: isGeocoding } = useForwardGeocoding(
-    debouncedAddress,
-    hasAllFields
-  )
+  const { data: geocodingData, isLoading: isGeocoding } = useForwardGeocoding(debouncedAddress, hasAllFields)
 
   // Auto-update coordinates when geocoding data is available
   useEffect(() => {
@@ -49,8 +46,8 @@ export function AddressForm({ namePrefix = '' }: AddressFormProps) {
   const mapCenter: [number, number] = latitude && longitude ? [longitude, latitude] : [105.8542, 21.0285] // Default to Hanoi
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className='space-y-4'>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <FormField
           control={control}
           name={`${prefix}province`}
@@ -58,7 +55,7 @@ export function AddressForm({ namePrefix = '' }: AddressFormProps) {
             <FormItem>
               <FormLabel>Province/City</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Hà Nội, TP. Hồ Chí Minh" {...field} />
+                <Input placeholder='e.g., Hà Nội, TP. Hồ Chí Minh' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -72,7 +69,7 @@ export function AddressForm({ namePrefix = '' }: AddressFormProps) {
             <FormItem>
               <FormLabel>District</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Quận Ba Đình, Quận 1" {...field} />
+                <Input placeholder='e.g., Quận Ba Đình, Quận 1' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -86,7 +83,7 @@ export function AddressForm({ namePrefix = '' }: AddressFormProps) {
             <FormItem>
               <FormLabel>Ward</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Phường Trúc Bạch" {...field} />
+                <Input placeholder='e.g., Phường Trúc Bạch' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -100,7 +97,7 @@ export function AddressForm({ namePrefix = '' }: AddressFormProps) {
             <FormItem>
               <FormLabel>Street Address</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., 123 Đường ABC" {...field} />
+                <Input placeholder='e.g., 123 Đường ABC' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -110,25 +107,25 @@ export function AddressForm({ namePrefix = '' }: AddressFormProps) {
 
       {/* Map Preview */}
       {hasAllFields && (
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <MapPin className="w-4 h-4" />
-            <span className="font-medium">Location Preview</span>
-            {isGeocoding && <Loader className="w-4 h-4 animate-spin" />}
+        <Card className='p-4'>
+          <div className='flex items-center gap-2 mb-3'>
+            <MapPin className='w-4 h-4' />
+            <span className='font-medium'>Location Preview</span>
+            {isGeocoding && <Loader className='w-4 h-4 animate-spin' />}
           </div>
-          
-          <div className="h-64 rounded-lg overflow-hidden">
-            <GoongMap center={mapCenter} zoom={15} className="w-full h-full" />
+
+          <div className='h-64 rounded-lg overflow-hidden'>
+            <GoongMap center={mapCenter} zoom={15} className='w-full h-full' />
           </div>
-          
+
           {fullAddress && (
-            <div className="mt-3 p-2 bg-muted rounded text-sm">
+            <div className='mt-3 p-2 bg-muted rounded text-sm'>
               <strong>Address:</strong> {fullAddress}
             </div>
           )}
-          
+
           {latitude && longitude && (
-            <div className="mt-2 p-2 bg-muted rounded text-sm">
+            <div className='mt-2 p-2 bg-muted rounded text-sm'>
               <strong>Coordinates:</strong> {latitude.toFixed(6)}, {longitude.toFixed(6)}
             </div>
           )}
@@ -136,4 +133,4 @@ export function AddressForm({ namePrefix = '' }: AddressFormProps) {
       )}
     </div>
   )
-} 
+}

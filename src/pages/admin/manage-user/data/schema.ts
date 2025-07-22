@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ManageUserType } from '@/@types/manage-user.type'
+import { ManageUserType } from '@/@types/admin.types'
 
 const userStatusSchema = z.union([z.literal('active'), z.literal('inactive')])
 export type UserStatus = z.infer<typeof userStatusSchema>

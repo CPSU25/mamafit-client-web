@@ -125,3 +125,109 @@ export interface BulkAction {
   productIds: string[]
   newStatus?: 'Active' | 'Out-of-stock' | 'Upcoming' | 'Discontinued' | 'Incomplete' | 'Draft'
 }
+
+// Manage User Type
+export type ManageUserType = {
+  id: string
+  userName: string
+  userEmail: string
+  dateOfBirth: string
+  profilePicture: string
+  phoneNumber: string
+  roleName: string
+  fullName: string
+  createdAt: string
+  updatedAt: string
+  isVerify: boolean
+}
+export interface ComponentType {
+  id: string
+  name: string
+  description: string
+  images: Array<string>
+  globalStatus: 'ACTIVE' | 'INACTIVE'
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
+}
+
+export interface ComponentByIdType extends ComponentType {
+  options: Array<ComponentOptionType>
+}
+
+export interface ComponentOptionType {
+  id: string
+  name: string
+  description: string
+  componentId: string
+  componentName: string
+  price: number
+  tag: {
+    parentTag: Array<string>
+    childTag: Array<string>
+  } | null
+  images: Array<string>
+  componentOptionType: 'APPROVED' | 'PENDING' | 'REJECTED' | 'QUOTATION_PENDING'
+  createdBy: string
+  updatedBy: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ComponentOptionFormData {
+  componentId: string
+  name: string
+  description: string
+  price: number
+  tag: {
+    parentTag: Array<string>
+    childTag: Array<string>
+  }
+  images: Array<string>
+  componentOptionType: 'APPROVED' | 'PENDING' | 'REJECTED' | 'QUOTATION_PENDING'
+}
+
+export interface ComponentTypeFormData {
+  name: string
+  description: string
+  images: Array<string>
+}
+
+//Milestone Type
+export interface MilestoneType {
+  id: string
+  name: string
+  description: string
+  applyFor: Array<string>
+  sequenceOrder: number
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+}
+export interface MilestoneByIdType extends MilestoneType {
+  tasks: Array<TaskType>
+}
+
+export interface TaskType {
+  id: string
+  name: string
+  description: string
+  milestoneId: string
+  sequenceOrder: number
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+}
+export interface MilestoneFormData {
+  name: string
+  description: string
+  applyFor: Array<string>
+  sequenceOrder: number
+}
+export interface TaskFormData {
+  name: string
+  description: string
+  milestoneId: string
+  sequenceOrder: number
+}
