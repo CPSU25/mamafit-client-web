@@ -43,47 +43,6 @@ function CategoryImage({ src, alt, count }: { src: string; alt: string; count: n
   )
 }
 
-// // Actions cell component
-// function ActionsCell({ category }: { category: Category }) {
-//   const { setOpen, setCurrentRow } = useCategories()
-
-//   const handleEdit = (e: React.MouseEvent) => {
-//     e.stopPropagation()
-//     setCurrentRow(category)
-//     setOpen('edit')
-//   }
-
-//   const handleDelete = (e: React.MouseEvent) => {
-//     e.stopPropagation()
-//     setCurrentRow(category)
-//     setOpen('delete')
-//   }
-
-//   return (
-//     <DropdownMenu>
-//       <DropdownMenuTrigger asChild>
-//         <Button variant='ghost' className='h-8 w-8 p-0'>
-//           <span className='sr-only'>Mở menu</span>
-//           <MoreHorizontal className='h-4 w-4' />
-//         </Button>
-//       </DropdownMenuTrigger>
-//       <DropdownMenuContent align='end' className='w-[160px]'>
-//         <DropdownMenuItem onClick={handleEdit}>
-//           <Edit className='h-4 w-4 mr-2' />
-//           Chỉnh sửa
-//         </DropdownMenuItem>
-//         <DropdownMenuItem
-//           onClick={handleDelete}
-//           className='text-red-600 focus:text-red-600 hover:text-red-600'
-//         >
-//           <Trash2 className='h-4 w-4 mr-2' />
-//           Xóa
-//         </DropdownMenuItem>
-//       </DropdownMenuContent>
-//     </DropdownMenu>
-//   )
-// }
-
 export const columns: ColumnDef<Category>[] = [
   {
     id: 'select',

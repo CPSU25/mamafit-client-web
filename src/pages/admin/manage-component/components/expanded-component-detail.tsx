@@ -24,7 +24,6 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
   const [activeTab, setActiveTab] = useState('options')
   const [showAddForm, setShowAddForm] = useState(false)
 
-  // React Query hooks
   const { data: optionsData, isLoading: optionsLoading, error: optionsError } = useComponent(componentId)
   const createOptionMutation = useCreateComponentOption()
   const deleteOptionMutation = useDeleteComponentOption()

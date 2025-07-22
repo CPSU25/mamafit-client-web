@@ -104,6 +104,7 @@ export function ComponentFormDialog({ open, onOpenChange, currentRow }: Props) {
               : 'Create new component for the system. Fields with * are required.'}
           </DialogDescription>
         </DialogHeader>
+
         <div className='-mr-4 h-[32rem] w-full overflow-y-auto py-1 pr-4'>
           <Form {...form}>
             <form id='component-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6 p-0.5'>

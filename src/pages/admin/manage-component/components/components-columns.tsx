@@ -84,7 +84,7 @@ export const columns: ColumnDef<Component>[] = [
         'sticky left-24 md:table-cell'
       )
     },
-    enableHiding: false
+    enableHiding: true
   },
   {
     accessorKey: 'description',
@@ -100,7 +100,7 @@ export const columns: ColumnDef<Component>[] = [
         'sticky left-6 md:table-cell'
       )
     },
-    enableHiding: false
+    enableHiding: true
   },
   {
     accessorKey: 'images',
@@ -116,7 +116,7 @@ export const columns: ColumnDef<Component>[] = [
       return <ComponentImage src={images[0]} alt={componentName} count={images.length} />
     },
     enableSorting: false,
-    enableHiding: false
+    enableHiding: true
   },
   {
     accessorKey: 'globalStatus',
@@ -130,7 +130,7 @@ export const columns: ColumnDef<Component>[] = [
       )
     },
     enableSorting: false,
-    enableHiding: false
+    enableHiding: true
   },
   {
     accessorKey: 'createdAt',
@@ -140,7 +140,7 @@ export const columns: ColumnDef<Component>[] = [
       return <div className='text-muted-foreground text-sm'>{dayjs(date).format('DD/MM/YYYY')}</div>
     },
     enableSorting: false,
-    enableHiding: false
+    enableHiding: true
   },
   {
     id: 'actions',

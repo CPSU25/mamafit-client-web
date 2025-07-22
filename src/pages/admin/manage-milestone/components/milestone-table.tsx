@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -7,7 +7,6 @@ import {
   VisibilityState,
   flexRender,
   getCoreRowModel,
-  getExpandedRowModel,
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
@@ -15,23 +14,24 @@ import {
   getSortedRowModel,
   useReactTable
 } from '@tanstack/react-table'
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DataTablePagination } from '../../components/data-table-pagination'
+import { MilestoneTableToolbar } from './milestone-table-toolbar'
 import { Button } from '@/components/ui/button'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { DataTablePagination } from '@/pages/admin/components/data-table-pagination'
-import { ComponentTableToolbar } from './component-table-toolbar'
-import { ExpandedComponentDetail } from './expanded-component-detail'
+import { ExpandedMilestoneDetail } from './expanded-milestone-detail'
 
-interface ComponentsTableProps<TData, TValue> {
+interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
 }
 
-export function ComponentsTable<TData, TValue>({ columns, data }: ComponentsTableProps<TData, TValue>) {
+export function MilestoneTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = useState<SortingState>([])
   const [expanded, setExpanded] = useState<ExpandedState>({})
 
   const expandableColumns: ColumnDef<TData, TValue>[] = [
@@ -63,7 +63,6 @@ export function ComponentsTable<TData, TValue>({ columns, data }: ComponentsTabl
     },
     ...columns
   ]
-
   const table = useReactTable({
     data,
     columns: expandableColumns,
@@ -77,35 +76,29 @@ export function ComponentsTable<TData, TValue>({ columns, data }: ComponentsTabl
     enableRowSelection: true,
     enableExpanding: true,
     onRowSelectionChange: setRowSelection,
+    onExpandedChange: setExpanded,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onExpandedChange: setExpanded,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: () => true
+    getFacetedUniqueValues: getFacetedUniqueValues()
   })
 
   return (
     <div className='space-y-4'>
-      <ComponentTableToolbar table={table} />
+      <MilestoneTableToolbar table={table} />
       <div className='rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className='group/row'>
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead
-                      key={header.id}
-                      colSpan={header.colSpan}
-                      className={header.column.columnDef.meta?.className ?? ''}
-                    >
+                    <TableHead key={header.id} colSpan={header.colSpan}>
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   )
@@ -129,7 +122,6 @@ export function ComponentsTable<TData, TValue>({ columns, data }: ComponentsTabl
                         key={cell.id}
                         className={cell.column.columnDef.meta?.className ?? ''}
                         onClick={(e) => {
-                          // Prevent row click when clicking on checkboxes or action buttons
                           if (
                             (e.target as HTMLElement).closest('[data-action-button="true"]') ||
                             (e.target as HTMLElement).closest('input[type="checkbox"]')
@@ -147,7 +139,7 @@ export function ComponentsTable<TData, TValue>({ columns, data }: ComponentsTabl
                     <TableRow>
                       <TableCell colSpan={expandableColumns.length} className='p-0'>
                         <div className='border-l-4 border-primary'>
-                          <ExpandedComponentDetail componentId={(row.original as { id: string }).id} />
+                          <ExpandedMilestoneDetail milestoneId={(row.original as { id: string }).id} />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -157,14 +149,13 @@ export function ComponentsTable<TData, TValue>({ columns, data }: ComponentsTabl
             ) : (
               <TableRow>
                 <TableCell colSpan={expandableColumns.length} className='h-24 text-center'>
-                  No results.
+                  Không có dữ liệu.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-
       <DataTablePagination table={table} />
     </div>
   )

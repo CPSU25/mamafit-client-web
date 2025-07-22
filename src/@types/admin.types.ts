@@ -193,3 +193,41 @@ export interface ComponentTypeFormData {
   description: string
   images: Array<string>
 }
+
+//Milestone Type
+export interface MilestoneType {
+  id: string
+  name: string
+  description: string
+  applyFor: Array<string>
+  sequenceOrder: number
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+}
+export interface MilestoneByIdType extends MilestoneType {
+  tasks: Array<TaskType>
+}
+
+export interface TaskType {
+  id: string
+  name: string
+  description: string
+  milestoneId: string
+  sequenceOrder: number
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+}
+export interface MilestoneFormData {
+  name: string
+  description: string
+  applyFor: Array<string>
+  sequenceOrder: number
+}
+export interface TaskFormData {
+  name: string
+  description: string
+  milestoneId: string
+  sequenceOrder: number
+}

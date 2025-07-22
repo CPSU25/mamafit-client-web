@@ -9,14 +9,14 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Component } from '../data/schema'
 import { useComponents } from '../context/components-context'
+import { Component } from '../data/schema'
 
-interface ComponentTableRowActionsProps {
-  row: Row<Component>
+interface ComponentTableRowActionsProps<TData> {
+  row: Row<TData>
 }
 
-export function ComponentTableRowActions({ row }: ComponentTableRowActionsProps) {
+export function ComponentTableRowActions<TData>({ row }: ComponentTableRowActionsProps<TData>) {
   const { setOpen, setCurrentRow } = useComponents()
   return (
     <>
@@ -30,7 +30,7 @@ export function ComponentTableRowActions({ row }: ComponentTableRowActionsProps)
         <DropdownMenuContent align='end' className='w-[160px]'>
           <DropdownMenuItem
             onClick={() => {
-              setCurrentRow(row.original)
+              setCurrentRow(row.original as Component)
               setOpen('edit')
             }}
           >
@@ -42,7 +42,7 @@ export function ComponentTableRowActions({ row }: ComponentTableRowActionsProps)
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => {
-              setCurrentRow(row.original)
+              setCurrentRow(row.original as Component)
               setOpen('delete')
             }}
             className='text-destructive focus:text-destructive'
