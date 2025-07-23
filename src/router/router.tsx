@@ -5,6 +5,8 @@ import {
   ManageCategoryPage,
   ManageComponentPage,
   ManageMaternityDressPage,
+  ManageMilestonePage,
+  ManageOrderPage,
   ManageUserPage
 } from '@/pages/admin'
 import { HomePage } from '@/pages/guest'
@@ -13,7 +15,6 @@ import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
 import { FactoryManagerDashboard } from '@/pages/factory-manager'
 import { DesignerDashboard } from '@/pages/designer'
 import { BranchDashboard, CashierPage } from '@/pages/branch'
-import ManageMilestonePage from '@/pages/admin/manage-milestone'
 
 export const router = createBrowserRouter([
   {
@@ -53,6 +54,7 @@ export const router = createBrowserRouter([
           { path: 'manage-maternity-dress', element: <ManageMaternityDressPage /> },
           { path: 'manage-component', element: <ManageComponentPage /> },
           { path: 'manage-milestone', element: <ManageMilestonePage /> },
+          { path: 'manage-order', element: <ManageOrderPage /> },
           { path: 'manage-transaction', element: <div>Transactions Page</div> },
           { path: 'settings', element: <div>System Settings Page</div> }
         ]

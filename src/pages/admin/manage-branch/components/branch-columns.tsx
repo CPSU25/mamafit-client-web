@@ -82,11 +82,11 @@ export const createBranchColumns = ({ managers = [] }: BranchColumnsProps = {}):
     enableSorting: false
   },
   {
-    accessorKey: 'branchManager',
+    accessorKey: 'branchManagerId',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Branch Manager' />,
     cell: ({ row }) => {
-      const branchManagerId = row.getValue('branchManagerId') as string
-      const manager = managers.find((m) => m.id === branchManagerId)
+      const branchManager = row.getValue('branchManagerId') as string
+      const manager = managers.find((m) => m.id === branchManager)
 
       if (!manager) {
         return <div className='text-sm text-muted-foreground'>Manager not found</div>
@@ -99,7 +99,8 @@ export const createBranchColumns = ({ managers = [] }: BranchColumnsProps = {}):
         </div>
       )
     },
-    enableSorting: false
+    enableSorting: false,
+    enableHiding: false
   },
   {
     id: 'status',

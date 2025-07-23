@@ -25,8 +25,7 @@ export const ExpandedCategoryStyles = ({ categoryId }: ExpandedCategoryStylesPro
   const queryParams = useMemo(
     () => ({
       index: 1,
-      pageSize: 10,
-      sortBy: 'createdAt_desc' as const
+      pageSize: 10
     }),
     []
   )

@@ -66,6 +66,11 @@ export const sidebarData: SidebarData = {
               icon: FolderOpen
             },
             {
+              title: 'Manage Orders',
+              url: 'manage-order',
+              icon: Package
+            },
+            {
               title: 'Manage Transactions',
               url: 'manage-transaction',
               icon: ShoppingCart
