@@ -7,13 +7,18 @@ import { createOrderColumns } from './components/order-columns'
 import { OrderTable } from './components/order-table'
 import { OrderStatistics } from './components/order-statistics'
 import { OrderDialogs } from './components/order-dialogs'
+import { OrderDetailSidebar } from './components/order-detail-sidebar'
 import OrderProvider from './contexts/order-context'
+import { useOrders as useOrdersContext } from './contexts/order-context'
+import { OrderById } from '@/@types/admin.types'
 
-export default function ManageOrderPage() {
+function ManageOrderContent() {
   const [queryParams] = useState({
     index: 0,
     pageSize: 10
   })
+
+  const { open, setOpen, currentRow } = useOrdersContext()
 
   // Fetch orders data
   const { data: ordersResponse, isLoading: ordersLoading, error: ordersError } = useOrders(queryParams)
@@ -38,19 +43,17 @@ export default function ManageOrderPage() {
   const deliveredOrders = orderList.filter((order) => order.status === 'COMPLETED').length
   const returnAmount = orderList
     .filter((order) => order.status === 'RETURNED')
-    .reduce((total, order) => total + order.totalAmount, 0)
+    .reduce((total, order) => total + (order.totalAmount ?? 0), 0)
 
   // Loading state
   if (ordersLoading || usersLoading) {
     return (
-      <Main>
-        <div className='flex items-center justify-center h-96'>
-          <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4'></div>
-            <p className='text-muted-foreground'>Đang tải dữ liệu đơn hàng...</p>
-          </div>
+      <div className='flex items-center justify-center h-96'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4'></div>
+          <p className='text-muted-foreground'>Đang tải dữ liệu đơn hàng...</p>
         </div>
-      </Main>
+      </div>
     )
   }
 
@@ -58,20 +61,22 @@ export default function ManageOrderPage() {
   if (ordersError) {
     const errorMessage = ordersError instanceof Error ? ordersError.message : 'Đã xảy ra lỗi'
     return (
-      <Main>
-        <div className='flex items-center justify-center h-96'>
-          <div className='text-center'>
-            <p className='text-destructive mb-2'>Không thể tải danh sách đơn hàng</p>
-            <p className='text-muted-foreground text-sm'>{errorMessage}</p>
-          </div>
+      <div className='flex items-center justify-center h-96'>
+        <div className='text-center'>
+          <p className='text-destructive mb-2'>Không thể tải danh sách đơn hàng</p>
+          <p className='text-muted-foreground text-sm'>{errorMessage}</p>
         </div>
-      </Main>
+      </div>
     )
   }
 
+  const isDetailOpen = open === 'view' || open === 'edit'
+  const handleCloseSidebar = () => setOpen(null)
+
   return (
-    <OrderProvider>
-      <Main>
+    <div className='flex h-full relative'>
+      {/* Main Content */}
+      <div className={`flex-1 transition-all duration-300 ${isDetailOpen ? 'mr-80 lg:mr-96' : ''}`}>
         <div className='space-y-6'>
           {/* Page Header */}
           <div className='flex items-center justify-between'>
@@ -110,8 +115,21 @@ export default function ManageOrderPage() {
           </div>
         </div>
 
-        {/* Dialogs */}
+        {/* Other Dialogs (except detail) */}
         <OrderDialogs />
+      </div>
+
+      {/* Order Detail Sidebar */}
+      <OrderDetailSidebar order={currentRow as OrderById} isOpen={isDetailOpen} onClose={handleCloseSidebar} />
+    </div>
+  )
+}
+
+export default function ManageOrderPage() {
+  return (
+    <OrderProvider>
+      <Main>
+        <ManageOrderContent />
       </Main>
     </OrderProvider>
   )

@@ -80,8 +80,8 @@ export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDial
   ]
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-6xl max-h-[95vh] overflow-y-auto p-0'>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onOpenChange(false)}>
+      <DialogContent className='max-w-4xl max-h-[95vh] overflow-y-auto p-0'>
         <DialogHeader className='p-6 pb-0'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center space-x-3'>

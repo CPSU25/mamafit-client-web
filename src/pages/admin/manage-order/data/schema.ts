@@ -69,6 +69,7 @@ export const transformOrderData = (order: Partial<OrderType>): OrderType => {
     parentOrderId: order.parentOrderId,
     branchId: order.branchId,
     userId: order.userId || '',
+    totalPaid: order.totalPaid || 0,
     orderDate: order.orderDate || new Date().toISOString(),
     voucherDiscountId: order.voucherDiscountId,
     orderTotal: order.orderTotal || 0,

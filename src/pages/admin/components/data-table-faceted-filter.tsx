@@ -19,7 +19,7 @@ import { Separator } from '@/components/ui/separator'
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>
   title?: string
-  options: {
+  options?: {
     label: string
     value: string
     icon?: React.ComponentType<{ className?: string }>
@@ -33,6 +33,11 @@ export function DataTableFacetedFilter<TData, TValue>({
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const facets = column?.getFacetedUniqueValues()
   const selectedValues = new Set((column?.getFilterValue() as string[]) || [])
+
+  // Return null if options is not provided or empty
+  if (!options || options.length === 0) {
+    return null
+  }
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -97,7 +102,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                     <span>{option.label}</span>
                     {facets?.get(option.value) && (
                       <span className='ml-auto flex h-4 w-4 items-center justify-center font-mono text-xs'>
-                        {facets.get(option.value)}
+                        {facets?.get(option.value)}
                       </span>
                     )}
                   </CommandItem>

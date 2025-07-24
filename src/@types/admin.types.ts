@@ -269,22 +269,24 @@ export interface OrderType {
   orderTotal: number
   address?: string
   code: string
-  discountSubtotal: number
-  depositSubtotal: number
-  remainingBalance: number
-  totalAmount: number
-  shippingFee: number
-  paymentStatus: PaymentStatus
-  paymentMethod: PaymentMethod
-  deliveryMethod: DeliveryMethod
-  paymentType: PaymentType
+  totalPaid: number
+  discountSubtotal?: number
+  depositSubtotal?: number
+  remainingBalance?: number
+  serviceAmount?: number
+  totalAmount?: number
+  shippingFee?: number
+  paymentStatus?: PaymentStatus
+  paymentMethod?: PaymentMethod
+  deliveryMethod?: DeliveryMethod
+  paymentType?: PaymentType
   canceledAt?: string
   canceledReason?: string
   subTotalAmount?: number
   warrantyCode?: string
   type: TypeOrder
   status: OrderStatus
-  addressId: string
+  addressId?: string
   createdAt: string
   updatedAt: string
   createdBy: string
@@ -312,4 +314,55 @@ export interface OrderById extends OrderType {
 }
 export interface AssignTask {
   milestoneIds: string[]
+}
+
+export interface AssignCharge {
+  chargeId: string
+  orderItemId: string
+  milestoneId: string
+}
+
+export interface checkListStatus {
+  maternityDressTaskIds: Array<string>
+  orderItemId: string
+  status: OrderStatus
+}
+
+//Voucher Type
+export interface VoucherBatchType {
+  id: string
+  batchName: string
+  batchCode: string
+  startDate: string
+  endDate: string
+  description: string
+  totalQuantity: number
+  discountType: string
+  discountValue: number
+  minimumOrderValue: string
+  maximumDiscountValue: string
+  isAutoGenerate: boolean
+  remainingQuantity: number
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
+}
+export interface VoucherBatchFormData {
+  batchName: string
+  batchCode: string
+  startDate: string
+  endDate: string
+  description: string
+}
+export interface VoucherDiscountType {
+  id: string
+  voucherBatchId: string
+  code: string
+  status: string
+  isDeleted: boolean
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
 }

@@ -1,6 +1,6 @@
 import { Row } from '@tanstack/react-table'
 import { OrderType } from '@/@types/admin.types'
-import { MoreHorizontal, Eye, Edit, Trash2, CheckCircle, Package } from 'lucide-react'
+import { MoreHorizontal, Eye, Edit, Trash2, CheckCircle, Package, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,18 +11,24 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { useOrders } from '../contexts/order-context'
+import { useNavigate } from 'react-router-dom'
 
-interface OrderTableRowActionProps {
-  row: Row<OrderType>
+interface OrderTableRowActionProps<TData> {
+  row: Row<TData>
 }
 
-export function OrderTableRowAction({ row }: OrderTableRowActionProps) {
-  const order = row.original
+export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TData>) {
+  const order = row.original as OrderType
   const { setOpen, setCurrentRow } = useOrders()
+  const navigate = useNavigate()
 
   const handleViewDetails = () => {
     setCurrentRow(order)
     setOpen('view')
+  }
+
+  const handleViewDetailPage = () => {
+    navigate(`/system/admin/manage-order/${order.id}`)
   }
 
   const handleEdit = () => {
@@ -47,7 +53,7 @@ export function OrderTableRowAction({ row }: OrderTableRowActionProps) {
 
   const canEdit = !['COMPLETED', 'CANCELLED', 'RETURNED'].includes(order.status)
   const canDelete = ['CREATED', 'CONFIRMED'].includes(order.status)
-  const canAssignTask = ['CONFIRMED', 'IN_DESIGN', 'IN_PRODUCTION'].includes(order.status)
+  const canAssignTask = ['CONFIRMED', 'IN_DESIGN', 'IN_PRODUCTION', 'CREATED'].includes(order.status)
 
   return (
     <DropdownMenu>
@@ -63,7 +69,12 @@ export function OrderTableRowAction({ row }: OrderTableRowActionProps) {
 
         <DropdownMenuItem onClick={handleViewDetails}>
           <Eye className='mr-2 h-4 w-4' />
-          Xem chi tiết
+          Xem chi tiết (Sidebar)
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={handleViewDetailPage}>
+          <ExternalLink className='mr-2 h-4 w-4' />
+          Xem trang chi tiết
         </DropdownMenuItem>
 
         {canEdit && (

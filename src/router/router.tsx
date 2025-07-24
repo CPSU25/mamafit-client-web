@@ -7,7 +7,9 @@ import {
   ManageMaternityDressPage,
   ManageMilestonePage,
   ManageOrderPage,
-  ManageUserPage
+  ManageUserPage,
+  ManageVoucherPage,
+  OrderDetailPage
 } from '@/pages/admin'
 import { HomePage } from '@/pages/guest'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
@@ -55,6 +57,8 @@ export const router = createBrowserRouter([
           { path: 'manage-component', element: <ManageComponentPage /> },
           { path: 'manage-milestone', element: <ManageMilestonePage /> },
           { path: 'manage-order', element: <ManageOrderPage /> },
+          { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
+          { path: 'manage-voucher', element: <ManageVoucherPage /> },
           { path: 'manage-transaction', element: <div>Transactions Page</div> },
           { path: 'settings', element: <div>System Settings Page</div> }
         ]

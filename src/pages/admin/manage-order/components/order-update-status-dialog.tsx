@@ -57,7 +57,7 @@ export function OrderUpdateStatusDialog({ open, onOpenChange, order }: OrderUpda
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onOpenChange(false)}>
       <DialogContent className='max-w-md'>
         <DialogHeader>
           <DialogTitle className='flex items-center space-x-2'>
@@ -76,8 +76,8 @@ export function OrderUpdateStatusDialog({ open, onOpenChange, order }: OrderUpda
                 {getStatusLabel(order.status, 'order')}
               </Badge>
               <span className='text-muted-foreground'>|</span>
-              <Badge variant='secondary' className={`text-xs ${getStatusColor(order.paymentStatus, 'payment')}`}>
-                {getStatusLabel(order.paymentStatus, 'payment')}
+              <Badge variant='secondary' className={`text-xs ${getStatusColor(order.paymentStatus || '', 'payment')}`}>
+                {getStatusLabel(order.paymentStatus || '', 'payment')}
               </Badge>
             </div>
           </div>

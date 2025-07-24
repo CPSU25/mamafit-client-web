@@ -52,10 +52,10 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
   },
   {
     accessorKey: 'userId',
-    id: 'customerInfo',
+    id: 'customerInfor',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Khách hàng' />,
     cell: ({ row }) => {
-      const userId = row.getValue('userId') as string
+      const userId = row.getValue('customerInfor') as string
       const customer = user.find((u) => u.id === userId)
       return (
         <div className='flex items-center'>

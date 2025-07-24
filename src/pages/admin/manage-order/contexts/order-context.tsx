@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function OrderProvider({ children }: Props) {
-  const [open, setOpen] = useDialogState<OrderDialogType>(null)
+  const [open, setOpen] = useDialogState<OrderDialogType>(null, 'direct')
   const [currentRow, setCurrentRow] = useState<OrderType | null>(null)
 
   return <OrderContext value={{ open, setOpen, currentRow, setCurrentRow }}>{children}</OrderContext>

@@ -20,13 +20,12 @@ export function OrderDeleteDialog({ open, onOpenChange, order }: OrderDeleteDial
   if (!order) return null
 
   const handleDelete = () => {
-    // TODO: Implement delete logic
     console.log('Deleting order:', order.id)
     onOpenChange(false)
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onOpenChange(false)}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Xác nhận xóa đơn hàng</AlertDialogTitle>

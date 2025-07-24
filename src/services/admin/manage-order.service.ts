@@ -36,6 +36,7 @@ export const useOrder = (id: string) => {
     queryFn: async () => {
       const response = await ManageOrderAPI.getOrderById(id)
       if (response.data.statusCode === 200) {
+        console.log(response.data)
         return response.data
       }
       throw new Error(response.data.message || 'Failed to fetch order')

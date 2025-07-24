@@ -12,7 +12,8 @@ import {
   Award,
   Tags,
   MessagesSquare,
-  Building
+  Building,
+  Ticket
 } from 'lucide-react'
 
 import { type SidebarData } from '../types'
@@ -69,6 +70,11 @@ export const sidebarData: SidebarData = {
               title: 'Manage Orders',
               url: 'manage-order',
               icon: Package
+            },
+            {
+              title: 'Manage Vouchers',
+              url: 'manage-voucher',
+              icon: Ticket
             },
             {
               title: 'Manage Transactions',
