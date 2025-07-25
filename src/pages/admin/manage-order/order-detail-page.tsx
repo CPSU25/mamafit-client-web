@@ -96,7 +96,7 @@ export default function OrderDetailPage() {
     statusTimeline: [
       { status: 'Order Placed', date: '26 March 2025 8:00 am', updatedBy: 'Customer', completed: true },
       { status: 'Accepted', date: '26 March 2025 12:00 pm', updatedBy: 'Store Owner', completed: true },
-      { status: 'Ready to Ship', date: '27 March 2025 9:30 am', updatedBy: 'Distributer', completed: true },
+      { status: 'Ready to Ship', date: '27 March 2025 9:30 am', updatedBy: 'Distributer', completed: false },
       { status: 'Shipped', date: '28 March 2025 9:00 pm', updatedBy: 'Delivery Partner', completed: false },
       { status: 'Delivered', date: '', updatedBy: '', completed: false }
     ],

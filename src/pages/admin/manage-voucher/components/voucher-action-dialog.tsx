@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { discountTypeOptions } from '../data/data'
 import { VoucherBatch } from '../data/schema'
 import { useCreateVoucherBatch } from '@/services/admin/manage-voucher.service'
+import { VoucherBatchFormData } from '@/@types/admin.types'
 import { useState } from 'react'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -32,13 +33,25 @@ const voucherBatchFormSchema = z
     startDate: z.string().min(1, 'Ngày bắt đầu là bắt buộc'),
     endDate: z.string().min(1, 'Ngày kết thúc là bắt buộc'),
     totalQuantity: z.number().min(1, 'Số lượng phải lớn hơn 0').max(10000, 'Số lượng phải nhỏ hơn 10.000'),
-    discountType: z.enum(['PERCENTAGE', 'FIXED_AMOUNT'], {
+    discountType: z.enum(['PERCENTAGE', 'FIXED'], {
       required_error: 'Loại giảm giá là bắt buộc'
     }),
     discountValue: z.number().min(0.01, 'Giá trị giảm giá phải lớn hơn 0'),
-    minimumOrderValue: z.string().min(1, 'Giá trị đơn hàng tối thiểu là bắt buộc'),
-    maximumDiscountValue: z.string().min(1, 'Giá trị giảm giá tối đa là bắt buộc')
+    minimumOrderValue: z.number().min(0, 'Giá trị đơn hàng tối thiểu phải ≥ 0'),
+    maximumDiscountValue: z.number().min(0, 'Giá trị giảm giá tối đa phải ≥ 0'),
+    isAutoGenerate: z.boolean()
   })
+  .refine(
+    (data) => {
+      const start = dayjs(data.startDate)
+      const today = dayjs().startOf('day')
+      return !start.isBefore(today)
+    },
+    {
+      message: 'Ngày bắt đầu không được ở quá khứ',
+      path: ['startDate']
+    }
+  )
   .refine(
     (data) => {
       const start = dayjs(data.startDate)
@@ -63,7 +76,7 @@ const voucherBatchFormSchema = z
     }
   )
 
-type VoucherBatchFormData = z.infer<typeof voucherBatchFormSchema>
+type VoucherBatchFormDataType = z.infer<typeof voucherBatchFormSchema>
 
 interface VoucherBatchFormDialogProps {
   open: boolean
@@ -78,7 +91,7 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
 
   const createVoucherBatchMutation = useCreateVoucherBatch()
 
-  const form = useForm<VoucherBatchFormData>({
+  const form = useForm<VoucherBatchFormDataType>({
     resolver: zodResolver(voucherBatchFormSchema),
     defaultValues: isEditing
       ? {
@@ -88,10 +101,11 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
           startDate: currentRow?.startDate || '',
           endDate: currentRow?.endDate || '',
           totalQuantity: currentRow?.totalQuantity || 1,
-          discountType: (currentRow?.discountType as 'PERCENTAGE' | 'FIXED_AMOUNT') || 'PERCENTAGE',
+          discountType: (currentRow?.discountType as 'PERCENTAGE' | 'FIXED') || 'PERCENTAGE',
           discountValue: currentRow?.discountValue || 0,
-          minimumOrderValue: currentRow?.minimumOrderValue || '',
-          maximumDiscountValue: currentRow?.maximumDiscountValue || ''
+          minimumOrderValue: 0,
+          maximumDiscountValue: 0,
+          isAutoGenerate: true
         }
       : {
           batchName: '',
@@ -102,18 +116,26 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
           totalQuantity: 1,
           discountType: 'PERCENTAGE',
           discountValue: 0,
-          minimumOrderValue: '',
-          maximumDiscountValue: ''
+          minimumOrderValue: 0,
+          maximumDiscountValue: 0,
+          isAutoGenerate: true
         }
   })
 
-  const onSubmit = async (data: VoucherBatchFormData) => {
+  const onSubmit = async (data: VoucherBatchFormDataType) => {
     try {
       if (isEditing && currentRow) {
         // TODO: Implement update voucher batch when API is available
         toast.error('Chỉnh sửa voucher batch chưa được hỗ trợ')
       } else {
-        await createVoucherBatchMutation.mutateAsync(data)
+        // Transform data to match API format
+        const apiData: VoucherBatchFormData = {
+          ...data,
+          startDate: dayjs(data.startDate).toISOString(),
+          endDate: dayjs(data.endDate).toISOString()
+        }
+
+        await createVoucherBatchMutation.mutateAsync(apiData)
         toast.success('Tạo lô voucher thành công!')
       }
       form.reset()
@@ -204,11 +226,12 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Ngày bắt đầu *</FormLabel>
-                      <Popover open={startCalendarOpen} onOpenChange={setStartCalendarOpen}>
+                      <Popover open={startCalendarOpen} onOpenChange={setStartCalendarOpen} modal={true}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
                               variant='outline'
+                              type='button'
                               className='w-full justify-start text-left font-normal'
                               disabled={isLoading}
                             >
@@ -217,16 +240,25 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className='w-auto p-0' align='start'>
+                        <PopoverContent className='w-auto p-0 z-50' align='start'>
                           <Calendar
                             mode='single'
                             selected={field.value ? new Date(field.value) : undefined}
                             onSelect={(date) => {
-                              field.onChange(date ? dayjs(date).format('YYYY-MM-DD') : '')
-                              setStartCalendarOpen(false)
+                              if (date) {
+                                field.onChange(dayjs(date).format('YYYY-MM-DD'))
+                                setStartCalendarOpen(false)
+                              }
                             }}
-                            disabled={(date) => date < new Date()}
+                            disabled={(date) => {
+                              const today = new Date()
+                              today.setHours(0, 0, 0, 0)
+                              return date < today
+                            }}
                             initialFocus
+                            defaultMonth={new Date()}
+                            fromDate={new Date()}
+                            showOutsideDays={false}
                           />
                         </PopoverContent>
                       </Popover>
@@ -241,11 +273,12 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Ngày kết thúc *</FormLabel>
-                      <Popover open={endCalendarOpen} onOpenChange={setEndCalendarOpen}>
+                      <Popover open={endCalendarOpen} onOpenChange={setEndCalendarOpen} modal={true}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
                               variant='outline'
+                              type='button'
                               className='w-full justify-start text-left font-normal'
                               disabled={isLoading}
                             >
@@ -254,16 +287,49 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className='w-auto p-0' align='start'>
+                        <PopoverContent className='w-auto p-0 z-50' align='start'>
                           <Calendar
                             mode='single'
                             selected={field.value ? new Date(field.value) : undefined}
                             onSelect={(date) => {
-                              field.onChange(date ? dayjs(date).format('YYYY-MM-DD') : '')
-                              setEndCalendarOpen(false)
+                              if (date) {
+                                field.onChange(dayjs(date).format('YYYY-MM-DD'))
+                                setEndCalendarOpen(false)
+                              }
                             }}
-                            disabled={(date) => date < new Date()}
+                            disabled={(date) => {
+                              const today = new Date()
+                              today.setHours(0, 0, 0, 0)
+                              const startDate = form.getValues('startDate')
+
+                              // Disable dates before today
+                              if (date < today) {
+                                return true
+                              }
+
+                              // Disable dates before or equal to start date
+                              if (startDate) {
+                                const start = new Date(startDate)
+                                start.setHours(0, 0, 0, 0)
+                                return date <= start
+                              }
+
+                              return false
+                            }}
                             initialFocus
+                            defaultMonth={
+                              form.getValues('startDate') ? new Date(form.getValues('startDate')) : new Date()
+                            }
+                            fromDate={
+                              form.getValues('startDate')
+                                ? (() => {
+                                    const start = new Date(form.getValues('startDate'))
+                                    start.setDate(start.getDate() + 1)
+                                    return start
+                                  })()
+                                : new Date()
+                            }
+                            showOutsideDays={false}
                           />
                         </PopoverContent>
                       </Popover>
@@ -349,7 +415,13 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                     <FormItem>
                       <FormLabel>Giá trị đơn hàng tối thiểu *</FormLabel>
                       <FormControl>
-                        <Input placeholder='VD: 100000' {...field} disabled={isLoading} />
+                        <Input
+                          type='number'
+                          placeholder='VD: 100000'
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          disabled={isLoading}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -363,7 +435,13 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                     <FormItem>
                       <FormLabel>Giá trị giảm giá tối đa *</FormLabel>
                       <FormControl>
-                        <Input placeholder='VD: 50000' {...field} disabled={isLoading} />
+                        <Input
+                          type='number'
+                          placeholder='VD: 50000'
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          disabled={isLoading}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

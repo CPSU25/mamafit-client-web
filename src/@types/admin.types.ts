@@ -351,9 +351,15 @@ export interface VoucherBatchType {
 export interface VoucherBatchFormData {
   batchName: string
   batchCode: string
+  description: string
   startDate: string
   endDate: string
-  description: string
+  totalQuantity: number
+  discountType: 'PERCENTAGE' | 'FIXED'
+  discountValue: number
+  minimumOrderValue: number
+  maximumDiscountValue: number
+  isAutoGenerate: boolean
 }
 export interface VoucherDiscountType {
   id: string

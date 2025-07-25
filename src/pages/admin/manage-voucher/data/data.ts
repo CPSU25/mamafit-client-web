@@ -9,7 +9,7 @@ export const pageSizeOptions = [
 // Discount type options
 export const discountTypeOptions = [
   { value: 'PERCENTAGE', label: 'Phần trăm (%)' },
-  { value: 'FIXED_AMOUNT', label: 'Số tiền cố định (VND)' }
+  { value: 'FIXED', label: 'Số tiền cố định (VND)' }
 ]
 
 // Status options for voucher batch

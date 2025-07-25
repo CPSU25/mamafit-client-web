@@ -15,7 +15,7 @@ function ManageVoucherContent() {
   const { activeTab, setActiveTab } = useVoucher()
   const [queryParams] = useState({
     index: 0,
-    pageSize: 10
+    pageSize: 100
   })
 
   const { data: voucherBatchResponse, isLoading: isLoadingBatch, error: errorBatch } = useVoucherBatch(queryParams)
