@@ -5,15 +5,18 @@ import {
   ManageCategoryPage,
   ManageComponentPage,
   ManageMaternityDressPage,
-  ManageUserPage
+  ManageMilestonePage,
+  ManageOrderPage,
+  ManageUserPage,
+  ManageVoucherPage,
+  OrderDetailPage
 } from '@/pages/admin'
 import { HomePage } from '@/pages/guest'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
 import { FactoryManagerDashboard } from '@/pages/factory-manager'
-import { DesignerDashboard } from '@/pages/designer'
+import { DesignerDashboard, ManageTemplatePage } from '@/pages/designer'
 import { BranchDashboard, CashierPage } from '@/pages/branch'
-import ManageMilestonePage from '@/pages/admin/manage-milestone'
 
 export const router = createBrowserRouter([
   {
@@ -53,6 +56,9 @@ export const router = createBrowserRouter([
           { path: 'manage-maternity-dress', element: <ManageMaternityDressPage /> },
           { path: 'manage-component', element: <ManageComponentPage /> },
           { path: 'manage-milestone', element: <ManageMilestonePage /> },
+          { path: 'manage-order', element: <ManageOrderPage /> },
+          { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
+          { path: 'manage-voucher', element: <ManageVoucherPage /> },
           { path: 'manage-transaction', element: <div>Transactions Page</div> },
           { path: 'settings', element: <div>System Settings Page</div> }
         ]
@@ -98,6 +104,10 @@ export const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <DesignerDashboard />
+          },
+          {
+            path: 'manage-template',
+            element: <ManageTemplatePage />
           }
         ]
       },

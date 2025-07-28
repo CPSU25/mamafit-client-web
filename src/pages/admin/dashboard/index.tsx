@@ -5,21 +5,8 @@ import { Main } from '@/components/layout/main'
 import { Overview } from './component/overview'
 import { RecentSales } from './component/recent-sales'
 import { NotificationExamples } from '@/examples/notification-examples'
-import CreatePresetModal from '@/components/create-preset-modal'
-import { useState } from 'react'
-interface PresetData {
-  image: string
-  collar: string
-  body: string
-  sleeves: string
-  skirt: string
-}
+
 export default function AdminDashboard() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const handleSave = (presetData: PresetData) => {
-    console.log('Saved preset data:', presetData)
-    // Handle the saved data here
-  }
   return (
     <>
       <Main>
@@ -156,8 +143,6 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
         <NotificationExamples />
-        <Button onClick={() => setIsModalOpen(true)}>Create New Preset</Button>
-        <CreatePresetModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={handleSave} />
       </Main>
     </>
   )

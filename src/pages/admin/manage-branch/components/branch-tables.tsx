@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  ColumnDef,
   ColumnFiltersState,
   RowData,
   SortingState,
@@ -18,6 +17,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Branch } from '../data/schema'
 import { DataTablePagination } from '../../components/data-table-pagination'
 import { BranchTableToolbar } from './branch-table-toolbar'
+import { createBranchColumns } from './branch-columns'
+import { useGetListUser } from '@/services/admin/manage-user.service'
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -27,15 +28,23 @@ declare module '@tanstack/react-table' {
 }
 
 interface BranchTableProps {
-  columns: ColumnDef<Branch>[]
   data: Branch[]
 }
 
-export function BranchTable({ columns, data }: BranchTableProps) {
+export function BranchTable({ data }: BranchTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [sorting, setSorting] = useState<SortingState>([])
+
+  // Fetch managers data
+  const { data: branchManagersData } = useGetListUser({
+    roleName: 'BranchManager',
+    pageSize: 100 // Get all managers for mapping
+  })
+
+  const managers = branchManagersData?.data?.items || []
+  const columns = createBranchColumns({ managers })
 
   const table = useReactTable({
     data,

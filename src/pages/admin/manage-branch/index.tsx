@@ -3,7 +3,6 @@ import BranchProvider from './context/branch-context'
 import { BranchPrimaryButtons } from './components/branch-primary-buttons'
 import { BranchDialogs } from './components/branch-dialogs'
 import { BranchTable } from './components/branch-tables'
-import { columns } from './components/branch-columns'
 import { Branch, transformManageBranchTypeToBranch } from './data/schema'
 import { useGetBranches } from '@/services/admin/manage-branch.service'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -89,7 +88,7 @@ export default function ManageBranchPage() {
             </div>
           </div>
 
-          <BranchTable columns={columns} data={branches} />
+          <BranchTable data={branches} />
           <BranchDialogs />
         </div>
       </div>
