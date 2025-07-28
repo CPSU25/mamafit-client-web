@@ -12,8 +12,7 @@ import ComponentsProvider from './context/components-context'
 export default function ManageComponentPage() {
   const [queryParams] = useState({
     index: 0,
-    pageSize: 10,
-    sortBy: 'createdat_desc'
+    pageSize: 10
   })
 
   const { data: apiResponse, isLoading, error } = useComponentsAPI(queryParams)

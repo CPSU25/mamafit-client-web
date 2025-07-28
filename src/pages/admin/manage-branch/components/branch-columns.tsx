@@ -7,8 +7,13 @@ import { Branch } from '../data/schema'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { BranchTableRowActions } from './branch-table-row-action'
 import LongText from '@/components/long-text'
+import { ManageUserType } from '@/@types/admin.types'
 
-export const columns: ColumnDef<Branch>[] = [
+interface BranchColumnsProps {
+  managers?: ManageUserType[]
+}
+
+export const createBranchColumns = ({ managers = [] }: BranchColumnsProps = {}): ColumnDef<Branch>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -66,32 +71,36 @@ export const columns: ColumnDef<Branch>[] = [
   },
   {
     accessorKey: 'openingHour',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Opening Hours' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Opening Time' />,
     cell: ({ row }) => <div className='text-sm'>{row.getValue('openingHour')}</div>,
     enableSorting: false
   },
   {
-    accessorKey: 'branchManagerId',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Manager ID' />,
-    cell: ({ row }) => <div className='text-sm font-mono'>{row.getValue('branchManagerId')}</div>,
+    accessorKey: 'closingHour',
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Closing Time' />,
+    cell: ({ row }) => <div className='text-sm'>{row.getValue('closingHour')}</div>,
     enableSorting: false
   },
   {
-    id: 'coordinates',
-    header: 'Coordinates',
+    accessorKey: 'branchManagerId',
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Branch Manager' />,
     cell: ({ row }) => {
-      const branch = row.original
-      const lat = branch.latitude
-      const lng = branch.longitude
+      const branchManager = row.getValue('branchManagerId') as string
+      const manager = managers.find((m) => m.id === branchManager)
+
+      if (!manager) {
+        return <div className='text-sm text-muted-foreground'>Manager not found</div>
+      }
 
       return (
-        <div className='text-xs font-mono'>
-          <div>Lat: {lat !== null && lat !== undefined ? lat.toFixed(6) : 'N/A'}</div>
-          <div>Lng: {lng !== null && lng !== undefined ? lng.toFixed(6) : 'N/A'}</div>
+        <div className='text-sm'>
+          <div className='font-medium'>{manager.fullName}</div>
+          <div className='text-xs text-muted-foreground'>@{manager.userName || manager.userEmail}</div>
         </div>
       )
     },
-    enableSorting: false
+    enableSorting: false,
+    enableHiding: false
   },
   {
     id: 'status',
@@ -121,3 +130,5 @@ export const columns: ColumnDef<Branch>[] = [
     cell: BranchTableRowActions
   }
 ]
+
+export const columns = createBranchColumns()

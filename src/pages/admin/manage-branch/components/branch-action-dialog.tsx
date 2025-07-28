@@ -28,7 +28,18 @@ import { ManageUserType } from '@/@types/admin.types'
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Branch name is required.' }),
   description: z.string().min(1, { message: 'Description is required.' }),
-  openingHour: z.string().min(1, { message: 'Opening hours is required.' }),
+  openingHour: z
+    .string()
+    .min(1, { message: 'Opening time is required.' })
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
+      message: 'Please enter a valid time format (HH:MM or HH:MM:SS).'
+    }),
+  closingHour: z
+    .string()
+    .min(1, { message: 'Closing time is required.' })
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
+      message: 'Please enter a valid time format (HH:MM or HH:MM:SS).'
+    }),
   branchManagerId: z.string().min(1, { message: 'Branch manager ID is required.' }),
   mapId: z.string().optional(),
   province: z.string().min(1, { message: 'Province is required.' }),
@@ -53,10 +64,9 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
   const createBranchMutation = useCreateBranch()
   const updateBranchMutation = useUpdateBranch()
 
-  // Get list of users with branch manager role
   const { data: branchManagersData, isLoading: isLoadingManagers } = useGetListUser({
     roleName: 'BranchManager',
-    pageSize: 100 // Get enough managers for selection
+    pageSize: 10
   })
 
   const form = useForm<BranchForm>({
@@ -66,6 +76,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
           name: currentRow.name || '',
           description: currentRow.description || '',
           openingHour: currentRow.openingHour || '',
+          closingHour: currentRow.closingHour || '',
           branchManagerId: currentRow.branchManagerId || '',
           mapId: currentRow.mapId || '',
           province: currentRow.province || '',
@@ -80,6 +91,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
           name: '',
           description: '',
           openingHour: '',
+          closingHour: '',
           branchManagerId: '',
           mapId: '',
           province: '',
@@ -99,6 +111,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
         name: values.name,
         description: values.description,
         openingHour: values.openingHour,
+        closingHour: values.closingHour,
         branchManagerId: values.branchManagerId,
         mapId: values.mapId || '',
         province: values.province,
@@ -152,130 +165,192 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
 
         <div className='flex-1 overflow-y-auto pr-2'>
           <Form {...form}>
-            <form id='branch-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <FormField
-                  control={form.control}
-                  name='name'
-                  render={({ field }) => (
-                    <FormItem className='space-y-2'>
-                      <FormLabel className='text-sm font-medium'>Branch Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder='Main Branch'
-                          className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'
-                          disabled={isLoading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <form id='branch-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+              {/* Basic Information Section */}
+              <div className='space-y-4'>
+                <div className='border-b pb-2'>
+                  <h3 className='text-lg font-medium text-foreground'>Basic Information</h3>
+                  <p className='text-sm text-muted-foreground'>General details about the branch</p>
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name='openingHour'
-                  render={({ field }) => (
-                    <FormItem className='space-y-2'>
-                      <FormLabel className='text-sm font-medium'>Opening Hours</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder='9:00 AM - 6:00 PM'
-                          className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'
-                          disabled={isLoading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className='grid grid-cols-1 gap-6'>
+                  <FormField
+                    control={form.control}
+                    name='name'
+                    render={({ field }) => (
+                      <FormItem className='space-y-2'>
+                        <FormLabel className='text-sm font-medium'>Branch Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder='Main Branch'
+                            className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='description'
+                    render={({ field }) => (
+                      <FormItem className='space-y-2'>
+                        <FormLabel className='text-sm font-medium'>Description</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder='Branch description...'
+                            className='resize-none transition-all duration-200 focus:ring-2 focus:ring-primary/20'
+                            rows={4}
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
-              <FormField
-                control={form.control}
-                name='description'
-                render={({ field }) => (
-                  <FormItem className='space-y-2'>
-                    <FormLabel className='text-sm font-medium'>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder='Branch description...'
-                        className='resize-none transition-all duration-200 focus:ring-2 focus:ring-primary/20'
-                        rows={4}
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Operating Hours Section */}
+              <div className='space-y-4'>
+                <div className='border-b pb-2'>
+                  <h3 className='text-lg font-medium text-foreground'>Operating Hours</h3>
+                  <p className='text-sm text-muted-foreground'>Set the branch operating schedule</p>
+                </div>
 
-              <FormField
-                control={form.control}
-                name='branchManagerId'
-                render={({ field }) => (
-                  <FormItem className='space-y-2'>
-                    <FormLabel className='text-sm font-medium'>Branch Manager</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={isLoading || isLoadingManagers}
-                      >
-                        <SelectTrigger className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'>
-                          <SelectValue placeholder='Select a branch manager' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {isLoadingManagers ? (
-                            <SelectItem value='loading' disabled>
-                              Loading managers...
-                            </SelectItem>
-                          ) : branchManagersData?.data?.items?.length === 0 ? (
-                            <SelectItem value='no-managers' disabled>
-                              No branch managers available
-                            </SelectItem>
-                          ) : (
-                            branchManagersData?.data?.items?.map((user: ManageUserType) => (
-                              <SelectItem key={user.id} value={user.id}>
-                                {user.fullName} ({user.userEmail})
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  <FormField
+                    control={form.control}
+                    name='openingHour'
+                    render={({ field }) => (
+                      <FormItem className='space-y-2'>
+                        <FormLabel className='text-sm font-medium'>Opening Time</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='time'
+                            step='1'
+                            className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='closingHour'
+                    render={({ field }) => (
+                      <FormItem className='space-y-2'>
+                        <FormLabel className='text-sm font-medium'>Closing Time</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='time'
+                            step='1'
+                            className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'
+                            disabled={isLoading}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Management Section */}
+              <div className='space-y-4'>
+                <div className='border-b pb-2'>
+                  <h3 className='text-lg font-medium text-foreground'>Management</h3>
+                  <p className='text-sm text-muted-foreground'>Assign branch manager</p>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name='branchManagerId'
+                  render={({ field }) => (
+                    <FormItem className='space-y-2'>
+                      <FormLabel className='text-sm font-medium'>Branch Manager</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={isLoading || isLoadingManagers}
+                        >
+                          <SelectTrigger className='transition-all duration-200 focus:ring-2 focus:ring-primary/20'>
+                            <SelectValue placeholder='Select a branch manager' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {isLoadingManagers ? (
+                              <SelectItem value='loading' disabled>
+                                Loading managers...
                               </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className='space-y-2'>
-                <FormLabel className='text-sm font-medium'>Branch Address</FormLabel>
-                <AddressForm />
+                            ) : branchManagersData?.data?.items?.length === 0 ? (
+                              <SelectItem value='no-managers' disabled>
+                                No branch managers available
+                              </SelectItem>
+                            ) : (
+                              branchManagersData?.data?.items?.map((user: ManageUserType) => (
+                                <SelectItem key={user.id} value={user.id}>
+                                  {user.fullName} ({user.userEmail})
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              <FormField
-                control={form.control}
-                name='images'
-                render={({ field }) => (
-                  <FormItem className='space-y-2'>
-                    <FormLabel className='text-sm font-medium'>Image</FormLabel>
-                    <FormControl>
-                      <FirebaseSingleImageUpload
-                        value={field.value?.[0] || ''}
-                        onChange={(url) => field.onChange(url ? [url] : [])}
-                        placeholder='Upload branch image'
-                        className='w-full transition-all duration-200'
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Location Section */}
+              <div className='space-y-4'>
+                <div className='border-b pb-2'>
+                  <h3 className='text-lg font-medium text-foreground'>Location</h3>
+                  <p className='text-sm text-muted-foreground'>Set the branch address and coordinates</p>
+                </div>
+
+                <div className='space-y-4'>
+                  <AddressForm />
+                </div>
+              </div>
+
+              {/* Media Section */}
+              <div className='space-y-4'>
+                <div className='border-b pb-2'>
+                  <h3 className='text-lg font-medium text-foreground'>Media</h3>
+                  <p className='text-sm text-muted-foreground'>Upload branch images</p>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name='images'
+                  render={({ field }) => (
+                    <FormItem className='space-y-2'>
+                      <FormLabel className='text-sm font-medium'>Branch Image</FormLabel>
+                      <FormControl>
+                        <FirebaseSingleImageUpload
+                          value={field.value?.[0] || ''}
+                          onChange={(url) => field.onChange(url ? [url] : [])}
+                          placeholder='Upload branch image'
+                          className='w-full transition-all duration-200'
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </form>
           </Form>
         </div>

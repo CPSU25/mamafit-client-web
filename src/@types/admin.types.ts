@@ -231,3 +231,53 @@ export interface TaskFormData {
   milestoneId: string
   sequenceOrder: number
 }
+
+//Voucher Type
+export interface VoucherBatchType {
+  id: string
+  batchName: string
+  batchCode: string
+  startDate: string
+  endDate: string
+  description: string
+  totalQuantity: number
+  discountType: string
+  discountValue: number
+  minimumOrderValue: string
+  maximumDiscountValue: string
+  isAutoGenerate: boolean
+  remainingQuantity: number
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
+}
+export interface VoucherBatchFormData {
+  batchName: string
+  batchCode: string
+  description: string
+  startDate: string
+  endDate: string
+  totalQuantity: number
+  discountType: 'PERCENTAGE' | 'FIXED'
+  discountValue: number
+  minimumOrderValue: number
+  maximumDiscountValue: number
+  isAutoGenerate: boolean
+}
+export interface VoucherDiscountType {
+  id: string
+  voucherBatchId: string
+  code: string
+  status: string
+  isDeleted: boolean
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
+}
+
+export interface AssignVoucher {
+  voucherBatchId: string
+  userId: string
+}
