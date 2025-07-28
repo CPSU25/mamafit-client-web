@@ -16,7 +16,6 @@ interface StyleQueryParams {
   sortBy?: string
 }
 
-// Query Keys
 export const categoryKeys = {
   all: ['categories'] as const,
   lists: () => [...categoryKeys.all, 'list'] as const,
@@ -28,7 +27,6 @@ export const categoryKeys = {
     [...categoryKeys.all, 'styles', categoryId, 'list', params] as const
 }
 
-// Fetch Categories
 export const useCategories = (params?: CategoryQueryParams) => {
   return useQuery({
     queryKey: categoryKeys.list(params || {}),
@@ -40,7 +38,6 @@ export const useCategories = (params?: CategoryQueryParams) => {
       throw new Error(response.data.message || 'Failed to fetch categories')
     },
     retry: (failureCount, error: unknown) => {
-      // Don't retry on client errors (4xx)
       const status = (error as { response?: { status?: number } })?.response?.status
       if (status && status >= 400 && status < 500) {
         return false
@@ -50,7 +47,6 @@ export const useCategories = (params?: CategoryQueryParams) => {
   })
 }
 
-// Fetch Styles by Category
 export const useStylesByCategory = (categoryId: string, params?: StyleQueryParams) => {
   return useQuery({
     queryKey: categoryKeys.stylesList(categoryId, params || {}),
@@ -72,7 +68,6 @@ export const useStylesByCategory = (categoryId: string, params?: StyleQueryParam
   })
 }
 
-// Create Category
 export const useCreateCategory = () => {
   const queryClient = useQueryClient()
 
@@ -85,10 +80,8 @@ export const useCreateCategory = () => {
       throw new Error(response.data.message || 'Failed to create category')
     },
     onSuccess: () => {
-      // Comprehensive cache invalidation
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
 
-      // Force refetch for better UX
       queryClient.refetchQueries({ queryKey: categoryKeys.lists() })
     },
     onError: (error) => {
@@ -104,7 +97,6 @@ export const useCreateCategory = () => {
   })
 }
 
-// Update Category
 export const useUpdateCategory = () => {
   const queryClient = useQueryClient()
 
@@ -117,13 +109,10 @@ export const useUpdateCategory = () => {
       throw new Error(response.data.message || 'Failed to update category')
     },
     onSuccess: (data, variables) => {
-      // Comprehensive cache invalidation
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
 
-      // Update specific category detail if exists
       queryClient.setQueryData(categoryKeys.detail(variables.id), data)
 
-      // Force refetch for better UX
       queryClient.refetchQueries({ queryKey: categoryKeys.lists() })
     },
     onError: (error) => {
@@ -139,7 +128,6 @@ export const useUpdateCategory = () => {
   })
 }
 
-// Get Styles
 export const useGetStyles = (params?: StyleQueryParams) => {
   return useQuery({
     queryKey: ['styles', 'list', params || {}],
@@ -152,7 +140,6 @@ export const useGetStyles = (params?: StyleQueryParams) => {
     }
   })
 }
-// Delete Category
 export const useDeleteCategory = () => {
   const queryClient = useQueryClient()
 
@@ -165,14 +152,11 @@ export const useDeleteCategory = () => {
       throw new Error(response.data.message || 'Failed to delete category')
     },
     onSuccess: (_, deletedId) => {
-      // Comprehensive cache invalidation
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
 
-      // Remove deleted category from cache
       queryClient.removeQueries({ queryKey: categoryKeys.detail(deletedId) })
       queryClient.removeQueries({ queryKey: categoryKeys.styles(deletedId) })
 
-      // Force refetch for immediate UI update
       queryClient.refetchQueries({ queryKey: categoryKeys.lists() })
     },
     onError: (error) => {
@@ -188,7 +172,6 @@ export const useDeleteCategory = () => {
   })
 }
 
-// Create Style
 export const useCreateStyle = () => {
   const queryClient = useQueryClient()
 
@@ -201,14 +184,11 @@ export const useCreateStyle = () => {
       throw new Error(response.data.message || 'Failed to create style')
     },
     onSuccess: (_, variables) => {
-      // Invalidate styles for the specific category
       queryClient.invalidateQueries({
         queryKey: categoryKeys.styles(variables.categoryId)
       })
 
-      // Also invalidate category lists in case style count affects display
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
-      // Refetch styles for the specific category
       queryClient.refetchQueries({
         queryKey: categoryKeys.stylesList(variables.categoryId, { index: 1, pageSize: 10, sortBy: 'createdAt_desc' })
       })
@@ -226,7 +206,6 @@ export const useCreateStyle = () => {
   })
 }
 
-// Delete Style
 export const useDeleteStyle = () => {
   const queryClient = useQueryClient()
 
@@ -239,10 +218,7 @@ export const useDeleteStyle = () => {
       throw new Error(response.data.message || 'Failed to delete style')
     },
     onSuccess: () => {
-      // Comprehensive invalidation since we don't know which category the style belonged to
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
-
-      // Force refetch for immediate UI update
       queryClient.refetchQueries({ queryKey: categoryKeys.lists() })
     },
     onError: (error) => {
