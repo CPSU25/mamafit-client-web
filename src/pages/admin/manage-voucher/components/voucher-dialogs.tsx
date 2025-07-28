@@ -1,6 +1,7 @@
 import { useVoucher } from '../contexts/voucher-context'
 import { VoucherBatchFormDialog } from './voucher-action-dialog'
 import { VoucherBatchDeleteDialog } from './voucher-delete-dialog'
+import { VoucherAssignDialog } from './voucher-assign-dialog'
 
 export function VoucherDialogs() {
   const { open, setOpen, currentVoucherBatch, setCurrentVoucherBatch, currentVoucherDiscount } = useVoucher()
@@ -39,6 +40,18 @@ export function VoucherDialogs() {
               }, 500)
             }}
             currentRow={currentVoucherBatch}
+          />
+
+          <VoucherAssignDialog
+            key={`voucher-assign-${currentVoucherBatch.id}`}
+            open={open === 'assign-voucher'}
+            onOpenChange={() => {
+              setOpen('assign-voucher')
+              setTimeout(() => {
+                setCurrentVoucherBatch(null)
+              }, 500)
+            }}
+            voucherBatch={currentVoucherBatch}
           />
         </>
       )}

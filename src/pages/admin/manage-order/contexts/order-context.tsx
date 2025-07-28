@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { OrderType } from '@/@types/admin.types'
+import { OrderType } from '@/@types/manage-order.types'
 import useDialogState from '@/hooks/use-dialog-state'
 
 type OrderDialogType = 'view' | 'update' | 'edit' | 'delete' | 'assign-task'

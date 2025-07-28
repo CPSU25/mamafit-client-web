@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import { Main } from '@/components/layout/main'
 import { useOrders } from '@/services/admin/manage-order.service'
 import { useGetListUser } from '@/services/admin/manage-user.service'
@@ -10,7 +10,7 @@ import { OrderDialogs } from './components/order-dialogs'
 import { OrderDetailSidebar } from './components/order-detail-sidebar'
 import OrderProvider from './contexts/order-context'
 import { useOrders as useOrdersContext } from './contexts/order-context'
-import { OrderById } from '@/@types/admin.types'
+import { OrderById } from '@/@types/manage-order.types'
 
 function ManageOrderContent() {
   const [queryParams] = useState({

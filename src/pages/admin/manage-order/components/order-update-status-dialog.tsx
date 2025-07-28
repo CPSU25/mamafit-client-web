@@ -1,4 +1,4 @@
-import { OrderType } from '@/@types/admin.types'
+import { OrderType } from '@/@types/manage-order.types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'

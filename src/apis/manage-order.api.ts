@@ -6,7 +6,7 @@ import {
   OrderStatus,
   OrderType,
   PaymentStatus
-} from '@/@types/admin.types'
+} from '@/@types/manage-order.types'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { api } from '@/lib/axios/axios'
 
@@ -42,8 +42,7 @@ const ManageOrderAPI = {
   //update status and assign task, charge
   assignTask: (orderItemId: string, body: AssignTask) =>
     api.post<ItemBaseResponse<[]>>(`/order-item/assign-task/${orderItemId}`, body), //không sài
-  assignCharge: (orderItemId: string, body: AssignCharge) =>
-    api.post<ItemBaseResponse<[]>>(`/order-item/assign-charge/${orderItemId}`, body),
+  assignCharge: (body: AssignCharge) => api.post<ItemBaseResponse<[]>>(`/order-item/assign-charge`, body),
   checkListStatus: (body: checkListStatus) => api.put<ItemBaseResponse<[]>>(`/order-item/check-list-status`, body)
 }
 

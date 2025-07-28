@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { OrderType } from '@/@types/admin.types'
+import { OrderType } from '@/@types/manage-order.types'
 
 // Validation schema for order filters
 export const orderFiltersSchema = z.object({

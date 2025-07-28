@@ -1,5 +1,5 @@
 import { Row } from '@tanstack/react-table'
-import { OrderType } from '@/@types/admin.types'
+import { OrderType } from '@/@types/manage-order.types'
 import { MoreHorizontal, Eye, Edit, Trash2, CheckCircle, Package, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {

@@ -1,4 +1,4 @@
-import { VoucherBatchFormData, VoucherBatchType, VoucherDiscountType } from '@/@types/admin.types'
+import { AssignVoucher, VoucherBatchFormData, VoucherBatchType, VoucherDiscountType } from '@/@types/admin.types'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { api } from '@/lib/axios/axios'
 
@@ -31,6 +31,9 @@ const manageVoucherApi = {
   },
   deletedVoucherBatch: (id: string) => {
     return api.delete<ItemBaseResponse<[]>>(`/voucher-batch/${id}`)
+  },
+  assignVoucher: (data: AssignVoucher) => {
+    return api.put<ItemBaseResponse<[]>>(`/voucher-discount/assign/${data.voucherBatchId}/${data.userId}`)
   }
 }
 

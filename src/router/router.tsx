@@ -15,7 +15,7 @@ import { HomePage } from '@/pages/guest'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
 import { FactoryManagerDashboard } from '@/pages/factory-manager'
-import { DesignerDashboard } from '@/pages/designer'
+import { DesignerDashboard, ManageTemplatePage } from '@/pages/designer'
 import { BranchDashboard, CashierPage } from '@/pages/branch'
 
 export const router = createBrowserRouter([
@@ -104,6 +104,10 @@ export const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <DesignerDashboard />
+          },
+          {
+            path: 'manage-template',
+            element: <ManageTemplatePage />
           }
         ]
       },

@@ -1,4 +1,4 @@
-import { OrderType } from '@/@types/admin.types'
+import { OrderType } from '@/@types/manage-order.types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -125,7 +125,9 @@ export function OrderAssignTaskDialog({ open, onOpenChange, order }: OrderAssign
                 <div>
                   <span className='text-muted-foreground'>Tổng tiền:</span>
                   <span className='ml-2 font-medium'>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                      order.totalAmount ?? 0
+                    )}
                   </span>
                 </div>
                 <div>

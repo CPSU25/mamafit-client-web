@@ -1,5 +1,5 @@
 import { Row } from '@tanstack/react-table'
-import { MoreHorizontal, Trash2, Eye } from 'lucide-react'
+import { MoreHorizontal, Trash2, Eye, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -43,6 +43,13 @@ export function VoucherTableRowActions<TData extends object>({ row }: DataTableR
     }
   }
 
+  const handleAssignVoucher = () => {
+    if (voucherBatch) {
+      setCurrentVoucherBatch(voucherBatch)
+      setOpen('assign-voucher')
+    }
+  }
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -56,6 +63,12 @@ export function VoucherTableRowActions<TData extends object>({ row }: DataTableR
           <Eye className='mr-2 h-4 w-4' />
           Xem chi tiết
         </DropdownMenuItem>
+        {isVoucherBatch && (
+          <DropdownMenuItem onClick={handleAssignVoucher}>
+            <UserPlus className='mr-2 h-4 w-4' />
+            Assign voucher
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleDelete} className='text-destructive focus:text-destructive'>
           <Trash2 className='mr-2 h-4 w-4' />

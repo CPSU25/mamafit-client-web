@@ -1,4 +1,5 @@
-import { ManageUserType, OrderType } from '@/@types/admin.types'
+import { ManageUserType } from '@/@types/admin.types'
+import { OrderType } from '@/@types/manage-order.types'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'

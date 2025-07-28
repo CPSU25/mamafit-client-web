@@ -1,4 +1,4 @@
-import { AssignTask } from '@/@types/admin.types'
+import { AssignCharge, AssignTask } from '@/@types/manage-order.types'
 import ManageOrderAPI, { OrderQueryParams, OrderStatusUpdate } from '@/apis/manage-order.api'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
@@ -78,6 +78,25 @@ export const useAssignTask = () => {
         return response.data
       }
       throw new Error(response.data.message || 'Failed to assign task')
+    },
+    retry: (failureCount, error: unknown) => {
+      const status = (error as { response?: { status?: number } })?.response?.status
+      if (status && status >= 400 && status < 500) {
+        return false
+      }
+      return failureCount < 3
+    }
+  })
+}
+
+export const useAssignCharge = () => {
+  return useMutation({
+    mutationFn: async (body: AssignCharge) => {
+      const response = await ManageOrderAPI.assignCharge(body)
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      throw new Error(response.data.message || 'Failed to assign charge')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status

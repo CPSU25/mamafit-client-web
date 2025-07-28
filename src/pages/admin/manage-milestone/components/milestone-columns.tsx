@@ -7,30 +7,65 @@ import dayjs from 'dayjs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { MilestoneTableRowActions } from './milestone-row-action'
-import { applyForOptions } from '../data/data'
 
-// Component để hiển thị applyFor badge
-function ApplyForBadge({ applyFor }: { applyFor: string }) {
-  const option = applyForOptions.find((opt) => opt.value === applyFor)
-  const label = option?.label || applyFor
-
-  const badgeVariant = (applyFor: string) => {
-    switch (applyFor) {
-      case 'READY_TO_BUY':
-        return 'default'
-      case 'PRESET':
-        return 'secondary'
-      case 'DESIGN_REQUEST':
-        return 'outline'
-      default:
-        return 'outline'
+// Component để hiển thị applyFor badge với UI/UX được cải thiện
+function ApplyForBadge({ applyFor }: { applyFor: string[] }) {
+  const getBadgeConfig = (type: string) => {
+    const configs = {
+      READY_TO_BUY: {
+        variant: 'default' as const,
+        className: 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200',
+        label: 'Ready to buy'
+      },
+      PRESET: {
+        variant: 'secondary' as const,
+        className: 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200',
+        label: 'Preset'
+      },
+      DESIGN_REQUEST: {
+        variant: 'outline' as const,
+        className: 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200',
+        label: 'Design request'
+      }
     }
+
+    return (
+      configs[type as keyof typeof configs] || {
+        variant: 'outline' as const,
+        className: 'bg-gray-100 text-gray-800 border-gray-200',
+        label: type
+      }
+    )
   }
 
+  // Nếu có quá nhiều items (>3), hiển thị 2 items đầu + "và X khác"
+  const displayItems = applyFor.slice(0, 2)
+  const remainingCount = applyFor.length - 2
+
   return (
-    <Badge variant={badgeVariant(applyFor)} className='text-xs'>
-      {label}
-    </Badge>
+    <div className='flex flex-wrap items-center gap-1 max-w-[200px]'>
+      {displayItems.map((item, index) => {
+        const config = getBadgeConfig(item)
+
+        return (
+          <Badge
+            key={index}
+            variant={config.variant}
+            className={`text-xs font-medium transition-colors ${config.className}`}
+          >
+            {config.label}
+          </Badge>
+        )
+      })}
+
+      {remainingCount > 0 && (
+        <Badge variant='outline' className='text-xs font-medium bg-gray-50 text-gray-600 border-gray-300'>
+          +{remainingCount} khác
+        </Badge>
+      )}
+
+      {applyFor.length === 0 && <span className='text-xs text-muted-foreground italic'>Chưa áp dụng</span>}
+    </div>
   )
 }
 
@@ -107,7 +142,7 @@ export const columns: ColumnDef<Milestone>[] = [
     accessorKey: 'applyFor',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Áp dụng cho' />,
     cell: ({ row }) => {
-      const applyFor = row.getValue('applyFor') as string
+      const applyFor = row.getValue('applyFor') as string[]
       return <ApplyForBadge applyFor={applyFor} />
     },
     enableSorting: true,

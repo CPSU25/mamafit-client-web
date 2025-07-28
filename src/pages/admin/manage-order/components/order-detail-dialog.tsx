@@ -1,4 +1,4 @@
-import { OrderType } from '@/@types/admin.types'
+import { OrderType } from '@/@types/manage-order.types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -229,9 +229,9 @@ export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDial
             {/* Order Summary */}
             <Card>
               <CardHeader>
-                <CardTitle className='text-lg'>Tổng cộng {formatCurrency(order.totalAmount)}</CardTitle>
-                <Badge variant='secondary' className={`w-fit ${getStatusColor(order.paymentStatus, 'payment')}`}>
-                  {getStatusLabel(order.paymentStatus, 'payment')}
+                <CardTitle className='text-lg'>Tổng cộng {formatCurrency(order.totalAmount ?? 0)}</CardTitle>
+                <Badge variant='secondary' className={`w-fit ${getStatusColor(order.paymentStatus ?? '', 'payment')}`}>
+                  {getStatusLabel(order.paymentStatus ?? '', 'payment')}
                 </Badge>
               </CardHeader>
               <CardContent className='space-y-3'>
@@ -241,11 +241,11 @@ export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDial
                 </div>
                 <div className='flex justify-between'>
                   <span>Giảm giá</span>
-                  <span>-{formatCurrency(order.discountSubtotal)}</span>
+                  <span>-{formatCurrency(order.discountSubtotal ?? 0)}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span>Phí vận chuyển</span>
-                  <span>{order.shippingFee > 0 ? formatCurrency(order.shippingFee) : 'MIỄN PHÍ'}</span>
+                  <span>{order.shippingFee && order.shippingFee > 0 ? formatCurrency(order.shippingFee) : 'MIỄN PHÍ'}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span>Đóng gói quà</span>
@@ -254,7 +254,7 @@ export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDial
                 <Separator />
                 <div className='flex justify-between font-medium text-lg'>
                   <span>Tổng cộng</span>
-                  <span>{formatCurrency(order.totalAmount)}</span>
+                  <span>{formatCurrency(order.totalAmount ?? 0)}</span>
                 </div>
 
                 <div className='mt-4 space-y-2'>

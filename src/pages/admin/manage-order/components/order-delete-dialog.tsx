@@ -1,4 +1,4 @@
-import { OrderType } from '@/@types/admin.types'
+import { OrderType } from '@/@types/manage-order.types'
 import {
   AlertDialog,
   AlertDialogAction,

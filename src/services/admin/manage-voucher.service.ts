@@ -1,4 +1,4 @@
-import { VoucherBatchFormData } from '@/@types/admin.types'
+import { AssignVoucher, VoucherBatchFormData } from '@/@types/admin.types'
 import { VoucherQueryParams } from '@/apis/manage-voucher.api'
 import manageVoucherApi from '@/apis/manage-voucher.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -96,6 +96,23 @@ export const useDeleteVoucherBatch = () => {
         return false
       }
       return failureCount < 2
+    }
+  })
+}
+
+export const useAssignVoucher = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: AssignVoucher) => {
+      const response = await manageVoucherApi.assignVoucher(data)
+      if (response.data.statusCode === 200 || response.data.statusCode === 204) {
+        return response.data
+      }
+      throw new Error(response.data.message || 'Failed to assign voucher')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: voucherDiscountKeys.lists() })
+      queryClient.refetchQueries({ queryKey: voucherDiscountKeys.list({}) })
     }
   })
 }

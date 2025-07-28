@@ -12,7 +12,7 @@ import MilestonesProvider from './context/milestones-context'
 export default function ManageMilestonePage() {
   const [queryParams] = useState({
     index: 0,
-    pageSize: 10
+    pageSize: 100
   })
 
   const { data: apiResponse, isLoading, error } = useMilestonesAPI(queryParams)
