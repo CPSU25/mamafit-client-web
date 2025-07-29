@@ -150,23 +150,7 @@ export const columns: ColumnDef<Milestone>[] = [
       return value.includes(row.getValue(id))
     }
   },
-  {
-    accessorKey: 'options',
-    header: 'Tasks',
-    cell: ({ row }) => {
-      const options = row.getValue('options') as Array<{ id: string; name: string }>
-      const taskCount = options?.length || 0
 
-      return (
-        <div className='flex items-center gap-2'>
-          <Badge variant='secondary' className='text-xs'>
-            {taskCount} task{taskCount !== 1 ? 's' : ''}
-          </Badge>
-        </div>
-      )
-    },
-    enableSorting: false
-  },
   {
     accessorKey: 'createdAt',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Ngày tạo' />,

@@ -1,5 +1,6 @@
-import { MilestoneType } from './admin.types'
+import { MilestoneByIdType, MilestoneType } from './admin.types'
 import { PresetType } from './designer.types'
+import { AddressType } from './global.types'
 import { MaternityDressDetailType } from './inventory.type'
 
 //Manage Order Type
@@ -32,21 +33,21 @@ export type PaymentType = 'DEPOSIT' | 'FULL'
 export type TypeOrder = 'NORMAL' | 'WARRANTY'
 export interface OrderType {
   id: string
-  parentOrderId?: string
-  branchId?: string
-  userId: string
-  orderDate: string
-  voucherDiscountId?: string
-  orderTotal: number
-  address?: string
+  addressId?: string
   code: string
-  totalPaid: number
   discountSubtotal?: number
   depositSubtotal?: number
   remainingBalance?: number
-  serviceAmount?: number
+  totalPaid: number
+  parentOrderId?: string
+  branchId?: string
+  userId: string
+  voucherDiscountId?: string
+  type: TypeOrder
+  status: OrderStatus
   totalAmount?: number
   shippingFee?: number
+  serviceAmount?: number
   paymentStatus?: PaymentStatus
   paymentMethod?: PaymentMethod
   deliveryMethod?: DeliveryMethod
@@ -55,9 +56,6 @@ export interface OrderType {
   canceledReason?: string
   subTotalAmount?: number
   warrantyCode?: string
-  type: TypeOrder
-  status: OrderStatus
-  addressId?: string
   createdAt: string
   updatedAt: string
   createdBy: string
@@ -71,6 +69,9 @@ export interface OrderItemType {
   itemType: ItemType
   price: number
   quantity: number
+  maternityDressDetail: MaternityDressDetailType
+  designRequest: DesignRequestType
+  milestones: MilestoneType
   preset: PresetType
   warrantyDate?: string
   warrantyNumber?: string
@@ -78,16 +79,18 @@ export interface OrderItemType {
   updatedAt: string
   createdBy: string
   updateBy: string
+  address?: string
 }
 
 export interface OrderById extends OrderType {
   items: Array<OrderItemType>
+  address?: AddressType
 }
 
 export interface OrderItemById extends OrderItemType {
   maternityDressDetail: MaternityDressDetailType
-  desisgnRequest: DesignRequestType
-  milestones: MilestoneType
+  designRequest: DesignRequestType
+  milestones: MilestoneByIdType
   preset: PresetType
 }
 
@@ -110,10 +113,11 @@ export interface checkListStatus {
 export interface DesignRequestType {
   id: string
   userId: string
+  username: string
   description: string
   images: string[]
   createdAt: string
   updatedAt: string
   createdBy: string
-  updatedBy: string
+  updatedBy: string | null
 }
