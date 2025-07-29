@@ -14,16 +14,22 @@ import {
   Mail,
   Phone,
   MapPin,
-  Plus,
-  Minus,
   MessageSquare,
   Send,
-  Package
+  Package,
+  ShoppingBag,
+  User,
+  CreditCard,
+  Clock,
+  Truck
 } from 'lucide-react'
 import { useOrder } from '@/services/admin/manage-order.service'
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useGetUserById } from '@/services/admin/manage-user.service'
-import { useGetAddress } from '@/services/global/global.service'
+import { ProductImageViewer } from '@/components/ui/image-viewer'
+import { getStatusColor, getStatusLabel } from './data/data'
+import dayjs from 'dayjs'
+import GoongMap from '@/components/Goong/GoongMap'
 
 export default function OrderDetailPage() {
   const { orderId } = useParams()
@@ -31,75 +37,49 @@ export default function OrderDetailPage() {
   const [chatMessage, setChatMessage] = useState('')
   const { data: order } = useOrder(orderId ?? '')
   const { data: user } = useGetUserById(order?.data?.userId ?? '')
-  const { data: address } = useGetAddress(order?.data?.addressId ?? '')
-  // Mock data cho order detail
+
+  console.log('address', order?.data?.address)
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount)
+  }
+
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) return '-'
+    try {
+      const date = dayjs(dateString)
+      if (!date.isValid()) return '-'
+      return date.format('DD/MM/YYYY HH:mm')
+    } catch {
+      return '-'
+    }
+  }
+
+  const getStatusTimeline = () => {
+    const allStatuses = [
+      { key: 'CREATED', label: 'Order Created', icon: ShoppingBag },
+      { key: 'CONFIRMED', label: 'Confirmed Order', icon: Package },
+      { key: 'IN_DESIGN', label: 'In Design', icon: Edit },
+      { key: 'IN_PRODUCTION', label: 'In Production', icon: Package },
+      { key: 'IN_QC', label: 'Quality Check', icon: Package },
+      { key: 'PACKAGING', label: 'Packaging', icon: Package },
+      { key: 'DELIVERING', label: 'Delivering', icon: Truck },
+      { key: 'COMPLETED', label: 'Completed', icon: Package }
+    ]
+
+    const currentStatusIndex = allStatuses.findIndex((s) => s.key === order?.data?.status)
+
+    return allStatuses.map((status, index) => ({
+      ...status,
+      active: index <= currentStatusIndex,
+      current: status.key === order?.data?.status
+    }))
+  }
+
+  // Mock data for chat (kept as requested)
   const orderData = {
-    id: 'ODR115560',
-    code: 'ODR115560',
-    date: '15 March 2025 06:15:00 AM',
-    source: 'Cart',
-    status: 'Ready to Ship',
-    customer: {
-      id: 'CUST001',
-      name: 'Roy Smith',
-      email: 'roy@testgmail.com',
-      phone: '+820 58023O554A1',
-      avatar: '',
-      dateOfBirth: '28 Jan 2001, 24 years',
-      gender: 'Male',
-      type: 'Prime Customer'
-    },
-    shippingAddress: {
-      address: 'Test data 103909 Witamer CR, Niagara Falls, NY 14305, United States'
-    },
-    items: [
-      {
-        id: 'RT15246630',
-        name: 'Bracelet Platinum plated',
-        image: '/placeholder-bracelet.jpg',
-        price: 65.0,
-        quantity: 1
-      },
-      {
-        id: 'RT15246185O',
-        name: 'Sandals women low heel',
-        image: '/placeholder-sandals.jpg',
-        price: 55.0,
-        quantity: 1
-      },
-      {
-        id: 'RT15249630',
-        name: 'Light Bulb WiFi BT connect',
-        image: '/placeholder-bulb.jpg',
-        price: 48.0,
-        quantity: 3
-      },
-      {
-        id: 'RT15246745',
-        name: 'Sandals women High heel',
-        image: '/placeholder-heels.jpg',
-        price: 63.0,
-        quantity: 3
-      }
-    ],
-    payment: {
-      subTotal: 270.0,
-      discount: 10.0,
-      shippingCharge: 0.0,
-      giftPackaging: 0.0,
-      total: 261.0,
-      status: 'Paid',
-      method: 'Net Banking: AmericaSpice Bank',
-      accountNumber: '200525XXXXXX5524',
-      transactionId: 'FGDFG44G5G6G4D1G...'
-    },
-    statusTimeline: [
-      { status: 'Order Placed', date: '26 March 2025 8:00 am', updatedBy: 'Customer', completed: true },
-      { status: 'Accepted', date: '26 March 2025 12:00 pm', updatedBy: 'Store Owner', completed: true },
-      { status: 'Ready to Ship', date: '27 March 2025 9:30 am', updatedBy: 'Distributer', completed: false },
-      { status: 'Shipped', date: '28 March 2025 9:00 pm', updatedBy: 'Delivery Partner', completed: false },
-      { status: 'Delivered', date: '', updatedBy: '', completed: false }
-    ],
     chatMessages: [
       {
         id: 1,
@@ -115,18 +95,7 @@ export default function OrderDetailPage() {
         time: '9:10 pm',
         isCustomer: false
       }
-    ],
-    tracking: {
-      code: 'ROK#554623324',
-      courier: 'Delivaari courier service',
-      estimatedDelivery: '3 days on 20 March 2025'
-    }
-  }
-
-  const statusTimeline = ['CREATED', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED']
-  const handleQuantityChange = (itemId: string, change: number) => {
-    // Handle quantity change logic here
-    console.log(`Item ${itemId} quantity change: ${change}`)
+    ]
   }
 
   const handleSendMessage = () => {
@@ -154,13 +123,18 @@ export default function OrderDetailPage() {
 
         {/* Header */}
         <div className='flex items-center justify-between'>
-          <div>
-            <h1 className='text-2xl font-bold'>Order Details #{order?.data?.code}</h1>
+          <div className='space-y-1'>
+            <h1 className='text-2xl font-bold'>Order Details #{order?.data?.code || 'Loading...'}</h1>
+            {order?.data?.status && (
+              <Badge variant='outline' className={`${getStatusColor(order.data.status, 'order')} text-sm`}>
+                {getStatusLabel(order.data.status, 'order')}
+              </Badge>
+            )}
           </div>
           <div className='flex items-center space-x-2'>
             <Button variant='outline'>
               <Edit className='h-4 w-4 mr-2' />
-              Update
+              Update Status
             </Button>
             <Button variant='outline'>
               <Printer className='h-4 w-4 mr-2' />
@@ -171,8 +145,10 @@ export default function OrderDetailPage() {
 
         {/* Order Info */}
         <div className='flex items-center justify-between'>
-          <div className='text-sm text-muted-foreground'>{order?.data?.createdAt}</div>
-          <Button size='sm'>New Order</Button>
+          <div className='text-sm text-muted-foreground'>Created: {formatDate(order?.data?.createdAt)}</div>
+          <Button size='sm' onClick={() => navigate('/system/admin/manage-order')}>
+            Back to Orders
+          </Button>
         </div>
 
         {/* Main Content */}
@@ -180,110 +156,291 @@ export default function OrderDetailPage() {
           {/* Left Column */}
           <div className='col-span-2 space-y-6'>
             {/* Customer Information */}
-            <Card>
-              <CardHeader>
-                <div className='flex items-center justify-between'>
-                  <CardTitle className='flex items-center'>
-                    <div className='flex items-center'>
-                      <Avatar className='h-8 w-8'>
-                        <AvatarFallback className='text-xs'>
-                          {user?.data.fullName?.charAt(0)?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                        <AvatarImage src={user?.data?.profilePicture} />
-                      </Avatar>
-                      <div className='ml-2'>
-                        <p className='font-medium text-sm'>{user?.data?.fullName || 'N/A'}</p>
-                        <p className='text-xs text-muted-foreground'>{user?.data?.userEmail || 'N/A'}</p>
-                      </div>
-                    </div>
+            {user?.data && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className='text-lg font-medium flex items-center'>
+                    <User className='h-5 w-5 mr-2' />
+                    Customer Information
                   </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className='grid grid-cols-2 gap-4 text-sm'>
-                  <div className='flex items-center space-x-2'>
-                    <Calendar className='h-4 w-4 text-muted-foreground' />
-                    <span>{user?.data.dateOfBirth || 'N/A'}</span>
+                </CardHeader>
+                <CardContent>
+                  <div className='flex items-center space-x-4 mb-4'>
+                    <Avatar className='h-12 w-12'>
+                      <AvatarFallback className='text-sm'>
+                        {user.data.fullName?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                      <AvatarImage src={user.data.profilePicture} />
+                    </Avatar>
+                    <div className='flex-1'>
+                      <h3 className='font-semibold text-lg'>{user.data.fullName}</h3>
+                      <p className='text-muted-foreground flex items-center mt-1'>
+                        <Mail className='h-4 w-4 mr-2' />
+                        {user.data.userEmail}
+                      </p>
+                    </div>
                   </div>
-                  <div className='flex items-center space-x-2'>
-                    <Mail className='h-4 w-4 text-muted-foreground' />
-                    <span>{user?.data?.userEmail || 'N/A'}</span>
+
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    {user.data.phoneNumber && (
+                      <div className='flex items-center space-x-2 text-sm'>
+                        <Phone className='h-4 w-4 text-muted-foreground' />
+                        <span>{user.data.phoneNumber}</span>
+                      </div>
+                    )}
+                    {user.data.dateOfBirth && (
+                      <div className='flex items-center space-x-2 text-sm'>
+                        <Calendar className='h-4 w-4 text-muted-foreground' />
+                        <span>{formatDate(user.data.dateOfBirth)}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className='flex items-center space-x-2'>
-                    <Phone className='h-4 w-4 text-muted-foreground' />
-                    <span>{user?.data?.phoneNumber || 'N/A'}</span>
-                  </div>
-                </div>
-                <Button variant='outline' size='sm' className='mt-4'>
-                  <Edit className='h-4 w-4 mr-2' />
-                  Edit Customer
-                </Button>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Shipping Address */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Shipping Address</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className='space-y-4'>
-                  <p className='text-sm'>
-                    {address?.data?.street}, {address?.data?.ward}, {address?.data?.district}, {address?.data?.province}
-                  </p>
-                  <Button variant='outline' size='sm'>
-                    <Edit className='h-4 w-4 mr-2' />
-                    Edit Address
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {order?.data?.address && order.data.address !== null && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className='text-lg font-medium flex items-center'>
+                    <MapPin className='h-5 w-5 mr-2' />
+                    Shipping Address
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='space-y-4'>
+                    <div className='text-sm space-y-1'>
+                      <p className='font-medium'>{order.data.address.street}</p>
+                      <p className='text-muted-foreground'>
+                        {[order.data.address.ward, order.data.address.district, order.data.address.province]
+                          .filter(Boolean)
+                          .join(', ')}
+                      </p>
+                    </div>
+
+                    {order.data.address.longitude && order.data.address.latitude && (
+                      <div className='rounded-lg overflow-hidden border'>
+                        <GoongMap
+                          center={[order.data.address.longitude, order.data.address.latitude]}
+                          zoom={16}
+                          className='h-48'
+                        />
+                      </div>
+                    )}
+
+                    <Button variant='outline' size='sm'>
+                      <Edit className='h-4 w-4 mr-2' />
+                      Edit Address
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Order Items */}
             <Card>
               <CardHeader>
-                <CardTitle>Order ({order?.data?.items.length} Items)</CardTitle>
+                <CardTitle className='text-lg font-medium flex items-center justify-between'>
+                  <div className='flex items-center'>
+                    <ShoppingBag className='h-5 w-5 mr-2' />
+                    Order Items
+                  </div>
+                  <Badge variant='secondary' className='text-xs'>
+                    {order?.data?.items?.length || 0} items
+                  </Badge>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className='space-y-4'>
-                  {orderData.items.map((item) => (
-                    <div key={item.id} className='flex items-center justify-between p-4 border rounded-lg'>
-                      <div className='flex items-center space-x-4'>
-                        <div className='w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center'>
-                          <Package className='h-6 w-6 text-gray-400' />
-                        </div>
-                        <div>
-                          <h4 className='font-medium'>{item.name}</h4>
-                          <p className='text-sm text-muted-foreground'>ID: {item.id}</p>
-                        </div>
-                      </div>
-                      <div className='flex items-center space-x-4'>
-                        <div className='flex items-center space-x-2'>
-                          <Button
-                            variant='outline'
-                            size='sm'
-                            className='h-8 w-8 p-0'
-                            onClick={() => handleQuantityChange(item.id, -1)}
+                  {order?.data?.items && order.data.items.length > 0 ? (
+                    order.data.items.map((item, index) => {
+                      if (item.itemType === 'DESIGN_REQUEST') {
+                        return (
+                          <div
+                            key={index}
+                            className='border border-primary/20 bg-gradient-to-br from-primary/5 via-primary/3 to-accent/10 rounded-xl overflow-hidden shadow-sm'
                           >
-                            <Minus className='h-4 w-4' />
-                          </Button>
-                          <span className='w-8 text-center'>{item.quantity}</span>
-                          <Button
-                            variant='outline'
-                            size='sm'
-                            className='h-8 w-8 p-0'
-                            onClick={() => handleQuantityChange(item.id, 1)}
-                          >
-                            <Plus className='h-4 w-4' />
-                          </Button>
-                        </div>
-                        <div className='text-right'>
-                          <p className='font-medium'>${item.price.toFixed(2)}</p>
-                          <p className='text-xs text-muted-foreground'>{item.quantity} Item</p>
-                        </div>
-                      </div>
+                            <div className='px-4 py-3 bg-primary text-primary-foreground'>
+                              <div className='flex items-center justify-between'>
+                                <div className='flex items-center space-x-2'>
+                                  <div className='w-6 h-6 bg-white/20 rounded-full flex items-center justify-center'>
+                                    <svg className='w-3 h-3' fill='currentColor' viewBox='0 0 20 20'>
+                                      <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
+                                    </svg>
+                                  </div>
+                                  <span className='font-medium text-sm'>Design Request</span>
+                                </div>
+                                <div className='flex items-center space-x-3'>
+                                  <span className='text-lg font-bold'>{formatCurrency(item.price)}</span>
+                                  <div className='w-7 h-7 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm'>
+                                    <span className='text-xs font-bold'>{item.quantity}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className='p-4 space-y-4'>
+                              {item.designRequest?.description && (
+                                <div className='bg-card/80 backdrop-blur-sm border border-border rounded-lg p-3 shadow-sm'>
+                                  <div className='flex items-center space-x-2 mb-2'>
+                                    <div className='w-4 h-4 bg-primary rounded-full flex items-center justify-center'>
+                                      <svg
+                                        className='w-2 h-2 text-primary-foreground'
+                                        fill='currentColor'
+                                        viewBox='0 0 20 20'
+                                      >
+                                        <path
+                                          fillRule='evenodd'
+                                          d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
+                                          clipRule='evenodd'
+                                        />
+                                      </svg>
+                                    </div>
+                                    <span className='text-sm font-medium text-foreground'>Description</span>
+                                  </div>
+                                  <p className='text-sm text-muted-foreground leading-relaxed pl-6'>
+                                    {item.designRequest.description}
+                                  </p>
+                                </div>
+                              )}
+
+                              {item.designRequest?.images && item.designRequest.images.length > 0 && (
+                                <div className='bg-card/80 backdrop-blur-sm border border-border rounded-lg p-4 shadow-sm'>
+                                  <div className='flex items-center space-x-2 mb-4'>
+                                    <div className='w-4 h-4 bg-primary rounded-full flex items-center justify-center'>
+                                      <svg
+                                        className='w-2 h-2 text-primary-foreground'
+                                        fill='currentColor'
+                                        viewBox='0 0 20 20'
+                                      >
+                                        <path
+                                          fillRule='evenodd'
+                                          d='M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z'
+                                          clipRule='evenodd'
+                                        />
+                                      </svg>
+                                    </div>
+                                    <span className='text-sm font-medium text-foreground'>
+                                      Reference Images ({item.designRequest.images.length})
+                                    </span>
+                                  </div>
+
+                                  {/* Improved image gallery */}
+                                  <div className='w-full'>
+                                    {item.designRequest.images.length === 1 ? (
+                                      // Single image - centered with max width
+                                      <div className='flex justify-center'>
+                                        <div className='w-full max-w-md'>
+                                          <ProductImageViewer
+                                            src={item.designRequest.images[0]}
+                                            alt='Design request image'
+                                            thumbnailClassName='w-full aspect-square rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow'
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : item.designRequest.images.length === 2 ? (
+                                      // Two images - balanced layout
+                                      <div className='grid grid-cols-2 gap-4'>
+                                        {item.designRequest.images.map((imageUrl: string, imgIndex: number) => (
+                                          <div key={imgIndex} className='w-full'>
+                                            <ProductImageViewer
+                                              src={imageUrl}
+                                              alt={`Design request image ${imgIndex + 1}`}
+                                              thumbnailClassName='w-full aspect-square rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow'
+                                            />
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : item.designRequest.images.length === 3 ? (
+                                      // Three images - 2 on top, 1 centered below
+                                      <div className='space-y-4'>
+                                        <div className='grid grid-cols-2 gap-4'>
+                                          {item.designRequest.images
+                                            .slice(0, 2)
+                                            .map((imageUrl: string, imgIndex: number) => (
+                                              <div key={imgIndex} className='w-full'>
+                                                <ProductImageViewer
+                                                  src={imageUrl}
+                                                  alt={`Design request image ${imgIndex + 1}`}
+                                                  className='w-full aspect-square rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow'
+                                                />
+                                              </div>
+                                            ))}
+                                        </div>
+                                        <div className='flex justify-center'>
+                                          <div className='w-1/2'>
+                                            <ProductImageViewer
+                                              src={item.designRequest.images[2]}
+                                              alt='Design request image 3'
+                                              className='w-full aspect-square rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow'
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      // Four or more images - 2x2 grid
+                                      <div className='grid grid-cols-2 gap-4'>
+                                        {item.designRequest.images.map((imageUrl: string, imgIndex: number) => (
+                                          <div key={imgIndex} className='w-full'>
+                                            <ProductImageViewer
+                                              src={imageUrl}
+                                              alt={`Design request image ${imgIndex + 1}`}
+                                              className='w-full aspect-square rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow'
+                                            />
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      } else {
+                        return (
+                          <div key={index} className='flex items-center justify-between p-4 border rounded-lg'>
+                            <div className='flex items-center space-x-4'>
+                              <ProductImageViewer
+                                src={item.preset?.images?.[0] || item.maternityDressDetail?.images?.[0] || ''}
+                                alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
+                                className='w-12 h-12'
+                              />
+                              <div>
+                                <h4 className='font-medium'>{item.itemType}</h4>
+                                <p className='text-sm text-muted-foreground'>ID: {item.id}</p>
+                                {item.preset?.styleName && (
+                                  <p className='text-xs text-muted-foreground'>{item.preset.styleName}</p>
+                                )}
+                                {item.maternityDressDetail?.name && (
+                                  <p className='text-xs text-muted-foreground'>{item.maternityDressDetail.name}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className='flex items-center space-x-4'>
+                              <div className='text-center'>
+                                <div className='w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center'>
+                                  <span className='text-xs font-bold text-primary'>{item.quantity}</span>
+                                </div>
+                              </div>
+                              <div className='text-right'>
+                                <p className='font-medium'>{formatCurrency(item.price)}</p>
+                                <p className='text-xs text-muted-foreground'>
+                                  {item.quantity} Item{item.quantity > 1 ? 's' : ''}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      }
+                    })
+                  ) : (
+                    <div className='text-center py-8 text-muted-foreground'>
+                      <ShoppingBag className='h-12 w-12 mx-auto mb-4 opacity-20' />
+                      <p className='text-sm'>No items in order</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -291,79 +448,69 @@ export default function OrderDetailPage() {
             {/* Order Status */}
             <Card>
               <CardHeader>
-                <CardTitle>Order Status</CardTitle>
+                <CardTitle className='text-lg font-medium flex items-center'>
+                  <Clock className='h-5 w-5 mr-2' />
+                  Order Status
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Status Progress Bar */}
-                <div className='relative mb-6'>
-                  <div className='flex justify-between mb-2'>
-                    {statusTimeline.map((status, index) => (
-                      <div key={index} className='text-xs text-center'>
-                        <div
-                          className={`w-3 h-3 rounded-full mx-auto mb-1 ${
-                            status === order?.data?.status ? 'bg-primary' : 'bg-gray-300'
-                          }`}
-                        />
-                        <span className={status === order?.data?.status ? 'text-foreground' : 'text-muted-foreground'}>
-                          {status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className='w-full h-1 bg-gray-200 rounded'>
-                    <div className='w-3/5 h-1 bg-primary rounded' />
-                  </div>
+                {/* Current Status Badge */}
+                <div className='mb-6'>
+                  <Badge
+                    variant='outline'
+                    className={`${getStatusColor(order?.data?.status || '', 'order')} text-sm font-medium`}
+                  >
+                    {getStatusLabel(order?.data?.status || '', 'order')}
+                  </Badge>
+                  <p className='text-xs text-muted-foreground mt-2'>
+                    Last updated: {formatDate(order?.data?.updatedAt)}
+                  </p>
                 </div>
 
-                {/* Status Timeline Table */}
-                <div className='space-y-2'>
-                  <div className='grid grid-cols-3 gap-4 text-sm font-medium border-b pb-2'>
-                    <span>Date</span>
-                    <span>Status</span>
-                    <span>Updated by</span>
-                  </div>
-                  {statusTimeline.map((status, index) => (
-                    <div key={index} className='grid grid-cols-3 gap-4 text-sm py-2'>
-                      <span>{order?.data?.createdAt}</span>
-                      <span>{status}</span>
-                      <span>{order?.data?.createdBy}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <Button className='w-full mt-4' variant='default'>
-                  Ready to Ship
-                </Button>
-                <Button variant='link' className='w-full text-red-600'>
-                  ← Return
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Shipment Tracking */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Shipment Tracking</CardTitle>
-              </CardHeader>
-              <CardContent>
+                {/* Status Timeline */}
                 <div className='space-y-4'>
-                  <p className='text-sm'>
-                    Item pickup scheduled with {orderData.tracking.courier}. Tracking Code: {orderData.tracking.code}
-                  </p>
-                  <p className='text-sm text-muted-foreground'>
-                    Tentative timeline for delivery is {orderData.tracking.estimatedDelivery}
-                  </p>
+                  {getStatusTimeline().map((item, index) => {
+                    const Icon = item.icon
+                    return (
+                      <div key={index} className='flex items-start space-x-3'>
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
+                            item.current
+                              ? 'bg-primary border-primary text-primary-foreground'
+                              : item.active
+                                ? 'bg-primary/10 border-primary text-primary'
+                                : 'bg-muted border-muted-foreground/20 text-muted-foreground'
+                          }`}
+                        >
+                          <Icon className='h-3 w-3' />
+                        </div>
+                        <div className='flex-1 pb-3'>
+                          <p
+                            className={`text-sm font-medium ${
+                              item.current ? 'text-primary' : item.active ? 'text-foreground' : 'text-muted-foreground'
+                            }`}
+                          >
+                            {item.label}
+                          </p>
+                          {item.current && (
+                            <p className='text-xs text-muted-foreground mt-1'>
+                              Updated at {formatDate(order?.data?.updatedAt)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
 
-                  {/* Map Placeholder */}
-                  <div className='h-48 bg-gray-100 rounded-lg flex items-center justify-center'>
-                    <div className='text-center'>
-                      <MapPin className='h-8 w-8 mx-auto mb-2 text-gray-400' />
-                      <p className='text-sm text-muted-foreground'>Map View</p>
-                    </div>
-                  </div>
-
+                <div className='mt-6 space-y-2'>
+                  <Button className='w-full'>
+                    <Package className='h-4 w-4 mr-2' />
+                    Update Status
+                  </Button>
                   <Button variant='outline' className='w-full'>
-                    Send Tracking Code
+                    <Edit className='h-4 w-4 mr-2' />
+                    Edit Order
                   </Button>
                 </div>
               </CardContent>
@@ -375,112 +522,113 @@ export default function OrderDetailPage() {
             {/* Payment Summary */}
             <Card>
               <CardHeader>
-                <CardTitle className='flex items-center justify-between'>
-                  <span>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      order?.data?.totalPaid ?? 0
-                    )}
-                  </span>
-                  <Badge className='bg-green-100 text-green-800'>{order?.data?.paymentStatus}</Badge>
+                <CardTitle className='text-lg font-medium flex items-center justify-between'>
+                  <div className='flex items-center'>
+                    <CreditCard className='h-5 w-5 mr-2' />
+                    Payment Details
+                  </div>
+                  {order?.data?.paymentStatus && (
+                    <Badge
+                      variant='outline'
+                      className={`${getStatusColor(order.data.paymentStatus, 'payment')} text-xs`}
+                    >
+                      {getStatusLabel(order.data.paymentStatus, 'payment')}
+                    </Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-3'>
-                <div className='flex justify-between text-sm font-bold'>
-                  <span>Product Price</span>
-                  <span>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      order?.data?.subTotalAmount ?? 0
-                    )}
-                  </span>
-                </div>
-                <div className='flex justify-between text-sm'>
-                  <span>Discount Fee</span>
-                  <span>
-                    -
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      order?.data?.discountSubtotal ?? 0
-                    )}
-                  </span>
-                </div>
-                <Separator />
-                <div className='flex justify-between text-sm'>
-                  <span>Deposit</span>
-                  <span>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      order?.data?.depositSubtotal ?? 0
-                    )}
-                  </span>
-                </div>
-                <div className='flex justify-between text-sm'>
-                  <span>Service Fee</span>
-                  <span>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      order?.data?.serviceAmount ?? 0
-                    )}
-                  </span>
-                </div>
-                <div className='flex justify-between text-sm'>
-                  <span>Shipping Charge</span>
-                  <span>
-                    {order?.data?.shippingFee === 0
-                      ? 'FREE'
-                      : `${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order?.data?.shippingFee ?? 0)}`}
-                  </span>
-                </div>
-
-                <Separator />
-                <div className='flex justify-between font-medium'>
-                  <span>Total Paid</span>
-                  <span>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      order?.data?.totalPaid ?? 0
-                    )}
-                  </span>
-                </div>
-                <div className='flex justify-between text-sm font-medium'>
-                  <span>Remaining Balance</span>
-                  <span>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      order?.data?.remainingBalance ?? 0
-                    )}
-                  </span>
-                </div>
-
-                <Separator />
-                <div className='flex justify-between text-sm'>
-                  <span>Total Amount</span>
-                  <span>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      order?.data?.totalAmount ?? 0
-                    )}
-                  </span>
-                </div>
-
-                <div className='mt-4 space-y-2'>
-                  <h4 className='font-medium text-sm'>Payment details</h4>
-                  <div className='text-xs space-y-1'>
-                    <div className='flex justify-between text-sm'>
-                      <span>Payment Method</span>
-                      <span>{order?.data?.paymentMethod}</span>
-                    </div>
-                    <div className='flex justify-between text-sm'>
-                      <span>Delivery Method</span>
-                      <span>{order?.data?.deliveryMethod}</span>
-                    </div>
-                    <div className='flex justify-between text-sm'>
-                      <span>Payment Type</span>
-                      <span>{order?.data?.paymentType}</span>
-                    </div>
-                    <div className='flex space-x-2 mt-3'>
-                      <Button variant='default' size='sm' className='flex-1'>
-                        <Package className='h-4 w-4 mr-2' />
-                        Invoice
-                      </Button>
-                      <Button variant='outline' size='sm' className='flex-1'>
-                        Invoice
-                      </Button>
-                    </div>
+                {order?.data?.subTotalAmount && (
+                  <div className='flex justify-between text-sm'>
+                    <span className='text-muted-foreground'>Product Price</span>
+                    <span className='font-medium'>{formatCurrency(order.data.subTotalAmount)}</span>
                   </div>
+                )}
+
+                {order?.data?.discountSubtotal && order.data.discountSubtotal !== 0 && (
+                  <div className='flex justify-between text-sm'>
+                    <span className='text-muted-foreground'>Discount</span>
+                    <span className='text-green-600 font-medium'>-{formatCurrency(order.data.discountSubtotal)}</span>
+                  </div>
+                )}
+
+                {order?.data?.depositSubtotal && order.data.depositSubtotal !== 0 && (
+                  <div className='flex justify-between text-sm'>
+                    <span className='text-muted-foreground'>Deposit</span>
+                    <span>{formatCurrency(order.data.depositSubtotal)}</span>
+                  </div>
+                )}
+
+                {order?.data?.serviceAmount && order.data.serviceAmount !== 0 && (
+                  <div className='flex justify-between text-sm'>
+                    <span className='text-muted-foreground'>Service Fee</span>
+                    <span>{formatCurrency(order.data.serviceAmount)}</span>
+                  </div>
+                )}
+
+                <div className='flex justify-between text-sm'>
+                  <span className='text-muted-foreground'>Shipping Fee</span>
+                  <span>
+                    {order?.data?.shippingFee && order.data.shippingFee > 0
+                      ? formatCurrency(order.data.shippingFee)
+                      : 'Free'}
+                  </span>
+                </div>
+
+                <Separator />
+
+                <div className='flex justify-between font-semibold text-base'>
+                  <span>Total Amount</span>
+                  <span className='text-primary'>{formatCurrency(order?.data?.totalAmount || 0)}</span>
+                </div>
+
+                {order?.data?.totalPaid && order.data.totalPaid !== 0 && (
+                  <div className='flex justify-between text-sm'>
+                    <span className='text-muted-foreground'>Paid</span>
+                    <span className='text-green-600 font-medium'>{formatCurrency(order.data.totalPaid)}</span>
+                  </div>
+                )}
+
+                {order?.data?.remainingBalance && order.data.remainingBalance !== 0 && (
+                  <div className='flex justify-between text-sm'>
+                    <span className='text-muted-foreground'>Remaining</span>
+                    <span className='text-orange-600 font-medium'>{formatCurrency(order.data.remainingBalance)}</span>
+                  </div>
+                )}
+
+                <Separator />
+
+                <div className='space-y-2'>
+                  <h4 className='font-medium text-sm'>Payment Information</h4>
+                  {order?.data?.paymentMethod && (
+                    <div className='flex justify-between text-sm'>
+                      <span className='text-muted-foreground'>Payment Method</span>
+                      <span>{order.data.paymentMethod === 'CASH' ? 'Cash' : 'Bank Transfer'}</span>
+                    </div>
+                  )}
+                  {order?.data?.deliveryMethod && (
+                    <div className='flex justify-between text-sm'>
+                      <span className='text-muted-foreground'>Delivery Method</span>
+                      <span>{order.data.deliveryMethod === 'DELIVERY' ? 'Delivery' : 'Pickup'}</span>
+                    </div>
+                  )}
+                  {order?.data?.paymentType && (
+                    <div className='flex justify-between text-sm'>
+                      <span className='text-muted-foreground'>Payment Type</span>
+                      <span>{order.data.paymentType}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className='flex space-x-2 mt-4'>
+                  <Button variant='default' size='sm' className='flex-1'>
+                    <Printer className='h-4 w-4 mr-2' />
+                    Print Invoice
+                  </Button>
+                  <Button variant='outline' size='sm' className='flex-1'>
+                    <Edit className='h-4 w-4 mr-2' />
+                    Edit
+                  </Button>
                 </div>
               </CardContent>
             </Card>
