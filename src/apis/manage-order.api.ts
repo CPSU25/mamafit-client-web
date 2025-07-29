@@ -3,6 +3,7 @@ import {
   AssignTask,
   checkListStatus,
   OrderById,
+  OrderItemById,
   OrderStatus,
   OrderType,
   PaymentStatus
@@ -34,6 +35,7 @@ const ManageOrderAPI = {
     return api.get<ListBaseResponse<OrderType>>(url)
   },
   getOrderById: (id: string) => api.get<ItemBaseResponse<OrderById>>(`/order/${id}`),
+  getOrderDetailById: (id: string) => api.get<ItemBaseResponse<OrderItemById>>(`/order-items/${id}`),
   updateOrder: (id: string, body: OrderType) => api.put<ItemBaseResponse<OrderType>>(`/order/${id}`, body),
   updateOrderStatus: (id: string, params: OrderStatusUpdate) =>
     api.put<ItemBaseResponse<OrderType>>(`/order/${id}/status?${params}`),
@@ -42,8 +44,8 @@ const ManageOrderAPI = {
   //update status and assign task, charge
   assignTask: (orderItemId: string, body: AssignTask) =>
     api.post<ItemBaseResponse<[]>>(`/order-item/assign-task/${orderItemId}`, body), //không sài
-  assignCharge: (body: AssignCharge) => api.post<ItemBaseResponse<[]>>(`/order-item/assign-charge`, body),
-  checkListStatus: (body: checkListStatus) => api.put<ItemBaseResponse<[]>>(`/order-item/check-list-status`, body)
+  assignCharge: (body: AssignCharge) => api.post<ItemBaseResponse<[]>>(`/order-items/assign-charge`, body),
+  checkListStatus: (body: checkListStatus) => api.put<ItemBaseResponse<[]>>(`/order-items/check-list-status`, body)
 }
 
 export default ManageOrderAPI

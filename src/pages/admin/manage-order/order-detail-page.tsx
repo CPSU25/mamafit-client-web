@@ -21,24 +21,30 @@ import {
   User,
   CreditCard,
   Clock,
-  Truck
+  Truck,
+  UserCheck
 } from 'lucide-react'
-import { useOrder } from '@/services/admin/manage-order.service'
+import { useOrder, useOrderDetail } from '@/services/admin/manage-order.service'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useGetUserById } from '@/services/admin/manage-user.service'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
 import { getStatusColor, getStatusLabel } from './data/data'
 import dayjs from 'dayjs'
 import GoongMap from '@/components/Goong/GoongMap'
+import { OrderAssignChargeDialog } from './components/order-assign-task-dialog'
 
 export default function OrderDetailPage() {
   const { orderId } = useParams()
   const navigate = useNavigate()
   const [chatMessage, setChatMessage] = useState('')
+  const [assignChargeDialogOpen, setAssignChargeDialogOpen] = useState(false)
   const { data: order } = useOrder(orderId ?? '')
   const { data: user } = useGetUserById(order?.data?.userId ?? '')
+  const { data: orderDetailItem } = useOrderDetail(order?.data?.items?.[0]?.id ?? '')
 
   console.log('address', order?.data?.address)
+  console.log('orderDetailItem', orderDetailItem)
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -104,6 +110,12 @@ export default function OrderDetailPage() {
       console.log('Sending message:', chatMessage)
       setChatMessage('')
     }
+  }
+
+  const handleAssignChargeSuccess = () => {
+    // Refetch order detail data without page reload
+    // The order detail query will automatically refetch when needed
+    console.log('Assign charge success - data will be refetched automatically')
   }
 
   return (
@@ -246,9 +258,22 @@ export default function OrderDetailPage() {
                     <ShoppingBag className='h-5 w-5 mr-2' />
                     Order Items
                   </div>
-                  <Badge variant='secondary' className='text-xs'>
-                    {order?.data?.items?.length || 0} items
-                  </Badge>
+                  <div className='flex items-center space-x-2'>
+                    <Badge variant='secondary' className='text-xs'>
+                      {order?.data?.items?.length || 0} items
+                    </Badge>
+                    {order?.data?.items?.[0]?.itemType === 'DESIGN_REQUEST' && orderDetailItem?.data && (
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => setAssignChargeDialogOpen(true)}
+                        className='h-8 px-3 text-xs'
+                      >
+                        <UserCheck className='h-4 w-4 mr-2' />
+                        Assign Charge
+                      </Button>
+                    )}
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -395,41 +420,69 @@ export default function OrderDetailPage() {
                                   </div>
                                 </div>
                               )}
+
+                              {/* Assign Charge Button for Design Request */}
+                              <div className='mt-4 pt-4 border-t border-border'>
+                                <Button
+                                  size='sm'
+                                  onClick={() => setAssignChargeDialogOpen(true)}
+                                  className='w-full'
+                                  disabled={!orderDetailItem?.data}
+                                >
+                                  <UserCheck className='h-4 w-4 mr-2' />
+                                  Giao việc cho Milestone
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         )
                       } else {
                         return (
-                          <div key={index} className='flex items-center justify-between p-4 border rounded-lg'>
-                            <div className='flex items-center space-x-4'>
-                              <ProductImageViewer
-                                src={item.preset?.images?.[0] || item.maternityDressDetail?.images?.[0] || ''}
-                                alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
-                                className='w-12 h-12'
-                              />
-                              <div>
-                                <h4 className='font-medium'>{item.itemType}</h4>
-                                <p className='text-sm text-muted-foreground'>ID: {item.id}</p>
-                                {item.preset?.styleName && (
-                                  <p className='text-xs text-muted-foreground'>{item.preset.styleName}</p>
-                                )}
-                                {item.maternityDressDetail?.name && (
-                                  <p className='text-xs text-muted-foreground'>{item.maternityDressDetail.name}</p>
-                                )}
-                              </div>
-                            </div>
-                            <div className='flex items-center space-x-4'>
-                              <div className='text-center'>
-                                <div className='w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center'>
-                                  <span className='text-xs font-bold text-primary'>{item.quantity}</span>
+                          <div key={index} className='space-y-4'>
+                            <div className='flex items-center justify-between p-4 border rounded-lg'>
+                              <div className='flex items-center space-x-4'>
+                                <ProductImageViewer
+                                  src={item.preset?.images?.[0] || item.maternityDressDetail?.images?.[0] || ''}
+                                  alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
+                                  className='w-12 h-12'
+                                />
+                                <div>
+                                  <h4 className='font-medium'>{item.itemType}</h4>
+                                  <p className='text-sm text-muted-foreground'>ID: {item.id}</p>
+                                  {item.preset?.styleName && (
+                                    <p className='text-xs text-muted-foreground'>{item.preset.styleName}</p>
+                                  )}
+                                  {item.maternityDressDetail?.name && (
+                                    <p className='text-xs text-muted-foreground'>{item.maternityDressDetail.name}</p>
+                                  )}
                                 </div>
                               </div>
-                              <div className='text-right'>
-                                <p className='font-medium'>{formatCurrency(item.price)}</p>
-                                <p className='text-xs text-muted-foreground'>
-                                  {item.quantity} Item{item.quantity > 1 ? 's' : ''}
-                                </p>
+                              <div className='flex items-center space-x-4'>
+                                <div className='text-center'>
+                                  <div className='w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center'>
+                                    <span className='text-xs font-bold text-primary'>{item.quantity}</span>
+                                  </div>
+                                </div>
+                                <div className='text-right'>
+                                  <p className='font-medium'>{formatCurrency(item.price)}</p>
+                                  <p className='text-xs text-muted-foreground'>
+                                    {item.quantity} Item{item.quantity > 1 ? 's' : ''}
+                                  </p>
+                                </div>
                               </div>
+                            </div>
+
+                            {/* Assign Charge Button for PRESET/READY_TO_BUY items */}
+                            <div className='pt-2 border-t border-border'>
+                              <Button
+                                size='sm'
+                                onClick={() => setAssignChargeDialogOpen(true)}
+                                className='w-full'
+                                disabled={!orderDetailItem?.data}
+                              >
+                                <UserCheck className='h-4 w-4 mr-2' />
+                                Giao việc cho Milestone
+                              </Button>
                             </div>
                           </div>
                         )
@@ -676,6 +729,13 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
+
+      <OrderAssignChargeDialog
+        open={assignChargeDialogOpen}
+        onOpenChange={setAssignChargeDialogOpen}
+        orderItem={orderDetailItem?.data || null}
+        onSuccess={handleAssignChargeSuccess}
+      />
     </Main>
   )
 }

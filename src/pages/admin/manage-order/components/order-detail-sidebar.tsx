@@ -20,12 +20,15 @@ import {
   CreditCard,
   Truck,
   User,
-  ShoppingBag
+  ShoppingBag,
+  UserCheck
 } from 'lucide-react'
 import { useGetUserById } from '@/services/admin/manage-user.service'
-import { useOrder } from '@/services/admin/manage-order.service'
+import { useOrder, useOrderDetail } from '@/services/admin/manage-order.service'
 import GoongMap from '@/components/Goong/GoongMap'
 import dayjs from 'dayjs'
+import { OrderAssignChargeDialog } from './order-assign-task-dialog'
+import { useState } from 'react'
 
 interface OrderDetailSidebarProps {
   order: OrderById | null
@@ -36,6 +39,9 @@ interface OrderDetailSidebarProps {
 export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSidebarProps) {
   const { data: user } = useGetUserById(order?.userId ?? '')
   const { data: orderDetail } = useOrder(order?.id ?? '')
+  const { data: orderDetailItem } = useOrderDetail(orderDetail?.data?.items[0].id ?? '')
+  const [assignChargeDialogOpen, setAssignChargeDialogOpen] = useState(false)
+  console.log(orderDetailItem)
 
   if (!isOpen) return null
 
@@ -81,6 +87,12 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
   }
 
   const statusTimeline = getStatusTimeline()
+
+  const handleAssignChargeSuccess = () => {
+    // Refetch order detail data without page reload
+    // The order detail query will automatically refetch when needed
+    console.log('Assign charge success - data will be refetched automatically')
+  }
 
   return (
     <>
@@ -182,9 +194,22 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                     <ShoppingBag className='h-4 w-4 mr-2' />
                     Order Items
                   </div>
-                  <Badge variant='secondary' className='text-xs'>
-                    {orderDetail?.data?.items?.length || order.items?.length || 0} items
-                  </Badge>
+                  <div className='flex items-center space-x-2'>
+                    <Badge variant='secondary' className='text-xs'>
+                      {orderDetail?.data?.items?.length || order.items?.length || 0} items
+                    </Badge>
+                    {orderDetail?.data?.items?.[0]?.itemType === 'DESIGN_REQUEST' && orderDetailItem?.data && (
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => setAssignChargeDialogOpen(true)}
+                        className='h-6 px-2 text-xs'
+                      >
+                        <UserCheck className='h-3 w-3 mr-1' />
+                        Assign
+                      </Button>
+                    )}
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-4'>
@@ -272,30 +297,60 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                 </div>
                               </div>
                             )}
+
+                            {/* Assign Charge Button for Design Request */}
+                            <div className='pt-2 border-t border-border'>
+                              <Button
+                                size='sm'
+                                onClick={() => setAssignChargeDialogOpen(true)}
+                                className='w-full'
+                                disabled={!orderDetailItem?.data}
+                              >
+                                <UserCheck className='h-4 w-4 mr-2' />
+                                Giao việc cho Milestone
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       )
                     } else {
                       return (
-                        <div key={index} className='flex items-center space-x-3 p-3 bg-muted/30 rounded-lg'>
-                          <ProductImageViewer
-                            src={item.preset?.images?.[0] || item.maternityDressDetail?.images?.[0] || ''}
-                            alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
-                          />
-                          <div className='flex-1 min-w-0'>
-                            <h4 className='font-medium text-sm truncate'>{item.itemType}</h4>
-                            {item.preset?.styleName && (
-                              <p className='text-xs text-muted-foreground truncate'>{item.preset.styleName}</p>
-                            )}
-                            {item.maternityDressDetail?.name && (
-                              <p className='text-xs text-muted-foreground truncate'>{item.maternityDressDetail.name}</p>
-                            )}
-                            <p className='text-sm font-semibold text-primary'>{formatCurrency(item.price)}</p>
-                          </div>
-                          <div className='text-center'>
-                            <div className='w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center'>
-                              <span className='text-xs font-bold text-primary'>{item.quantity}</span>
+                        <div key={index} className='space-y-3'>
+                          <div className='flex items-center space-x-3 p-3 bg-muted/30 rounded-lg'>
+                            <ProductImageViewer
+                              src={item.preset?.images?.[0] || item.maternityDressDetail?.images?.[0] || ''}
+                              alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
+                            />
+                            <div className='flex-1 min-w-0'>
+                              <h4 className='font-medium text-sm truncate'>{item.itemType}</h4>
+                              {item.preset?.styleName && (
+                                <p className='text-xs text-muted-foreground truncate'>{item.preset.styleName}</p>
+                              )}
+                              {item.maternityDressDetail?.name && (
+                                <p className='text-xs text-muted-foreground truncate'>
+                                  {item.maternityDressDetail.name}
+                                </p>
+                              )}
+                              <p className='text-sm font-semibold text-primary'>{formatCurrency(item.price)}</p>
                             </div>
+                            <div className='text-center'>
+                              <div className='w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center'>
+                                <span className='text-xs font-bold text-primary'>{item.quantity}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Assign Charge Button for PRESET/READY_TO_BUY items */}
+                          <div className='pt-2 border-t border-border'>
+                            <Button
+                              size='sm'
+                              onClick={() => setAssignChargeDialogOpen(true)}
+                              className='w-full'
+                              disabled={!orderDetailItem?.data}
+                            >
+                              <UserCheck className='h-4 w-4 mr-2' />
+                              Giao việc cho Milestone
+                            </Button>
                           </div>
                         </div>
                       )
@@ -502,6 +557,12 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
           </div>
         </div>
       </div>
+      <OrderAssignChargeDialog
+        open={assignChargeDialogOpen}
+        onOpenChange={setAssignChargeDialogOpen}
+        orderItem={orderDetailItem?.data || null}
+        onSuccess={handleAssignChargeSuccess}
+      />
     </>
   )
 }

@@ -69,6 +69,25 @@ export const useUpdateOrderStatus = () => {
     }
   })
 }
+export const useOrderDetail = (id: string) => {
+  return useQuery({
+    queryKey: orderKeys.detail(id),
+    queryFn: async () => {
+      const response = await ManageOrderAPI.getOrderDetailById(id)
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      throw new Error(response.data.message || 'Failed to fetch order detail')
+    },
+    retry: (failureCount, error: unknown) => {
+      const status = (error as { response?: { status?: number } })?.response?.status
+      if (status && status >= 400 && status < 500) {
+        return false
+      }
+      return failureCount < 3
+    }
+  })
+}
 
 export const useAssignTask = () => {
   return useMutation({
