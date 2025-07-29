@@ -136,12 +136,19 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
     enableHiding: true
   },
   {
-    accessorKey: 'orderDate',
-    id: 'orderDate',
+    accessorKey: 'createdAt',
+    id: 'createdAt',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Ngày đặt' />,
     cell: ({ row }) => {
-      const orderDate = row.getValue('orderDate') as string
-      return <div className='text-sm text-muted-foreground'>{format(new Date(orderDate), 'dd/MM/yyyy HH:mm')}</div>
+      const createdAt = row.getValue('createdAt') as string
+      try {
+        if (!createdAt) return <div className='text-sm text-muted-foreground'>-</div>
+        const date = new Date(createdAt)
+        if (isNaN(date.getTime())) return <div className='text-sm text-muted-foreground'>-</div>
+        return <div className='text-sm text-muted-foreground'>{format(date, 'dd/MM/yyyy HH:mm')}</div>
+      } catch {
+        return <div className='text-sm text-muted-foreground'>-</div>
+      }
     },
     enableSorting: true,
     enableHiding: true

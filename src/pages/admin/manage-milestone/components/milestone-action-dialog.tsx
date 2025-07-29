@@ -12,8 +12,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { applyForOptions } from '../data/data'
 import { Milestone } from '../data/schema'
@@ -99,114 +101,181 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-[600px]'>
-        <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Milestone' : 'Create New Milestone'}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className='sm:max-w-[700px]'>
+        <DialogHeader className='space-y-3'>
+          <DialogTitle className='text-2xl font-bold'>
+            {isEditing ? 'Edit Milestone' : 'Create New Milestone'}
+          </DialogTitle>
+          <DialogDescription className='text-base'>
             {isEditing
               ? 'Update milestone information. Click save to apply changes.'
               : 'Enter information to create a new milestone. Click create to complete.'}
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-[32rem] w-full overflow-y-auto py-1 pr-4'>
+
+        <div className='-mr-4 h-[36rem] w-full overflow-y-auto py-2 pr-4'>
           <Form {...form}>
-            <form id='milestone-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6 p-0.5 '>
-              <div className='grid grid-cols-2 gap-4'>
-                <FormField
-                  control={form.control}
-                  name='name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Milestone Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Enter milestone name' {...field} disabled={isLoading} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <form id='milestone-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+              {/* Basic Information Card */}
+              <Card className='border-l-4 border-l-blue-500'>
+                <CardContent className='pt-6'>
+                  <h3 className='text-lg font-semibold mb-4 text-gray-800'>Basic Information</h3>
+                  <div className='grid grid-cols-2 gap-6'>
+                    <FormField
+                      control={form.control}
+                      name='name'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-sm font-medium'>Milestone Name *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder='Enter milestone name'
+                              {...field}
+                              disabled={isLoading}
+                              className='focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name='sequenceOrder'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sequence Order *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type='number'
-                          placeholder='1'
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                          disabled={isLoading}
-                          min={1}
-                          max={999}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    <FormField
+                      control={form.control}
+                      name='sequenceOrder'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-sm font-medium'>Sequence Order *</FormLabel>
+                          <FormControl>
+                            <Input
+                              type='number'
+                              placeholder='1'
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                              disabled={isLoading}
+                              min={1}
+                              max={999}
+                              className='focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-              <FormField
-                control={form.control}
-                name='applyFor'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Apply For *</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        // Convert single selection to array
-                        field.onChange([value])
-                      }}
-                      defaultValue={field.value?.[0] || ''}
-                      disabled={isLoading}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder='Select apply for' />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {applyForOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Apply For Card */}
+              <Card className='border-l-4 border-l-green-500'>
+                <CardContent className='pt-6'>
+                  <FormField
+                    control={form.control}
+                    name='applyFor'
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className='space-y-4'>
+                          <div>
+                            <FormLabel className='text-lg font-semibold text-gray-800'>Apply For *</FormLabel>
+                            <p className='text-sm text-gray-600 mt-1'>
+                              Select one or more order types that this milestone applies to
+                            </p>
+                          </div>
 
-              <FormField
-                control={form.control}
-                name='description'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description *</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder='Enter milestone description'
-                        className='min-h-[120px]'
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                          {/* Selected items display */}
+                          {field.value && field.value.length > 0 && (
+                            <div className='flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg'>
+                              {field.value.map((value) => {
+                                const option = applyForOptions.find((opt) => opt.value === value)
+                                return (
+                                  <Badge key={value} variant='secondary' className='px-3 py-1'>
+                                    {option?.label || value}
+                                  </Badge>
+                                )
+                              })}
+                            </div>
+                          )}
+
+                          {/* Checkbox options */}
+                          <div className='grid grid-cols-1 gap-3'>
+                            {applyForOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className='flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors'
+                              >
+                                <Checkbox
+                                  id={option.value}
+                                  checked={field.value?.includes(option.value) || false}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      field.onChange([...(field.value || []), option.value])
+                                    } else {
+                                      field.onChange(field.value?.filter((value) => value !== option.value) || [])
+                                    }
+                                  }}
+                                  disabled={isLoading}
+                                  className='data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600'
+                                />
+                                <label
+                                  htmlFor={option.value}
+                                  className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1'
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Description Card */}
+              <Card className='border-l-4 border-l-purple-500'>
+                <CardContent className='pt-6'>
+                  <FormField
+                    control={form.control}
+                    name='description'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='text-lg font-semibold text-gray-800'>Description *</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder='Enter milestone description'
+                            className='min-h-[120px] focus:ring-2 focus:ring-purple-500 focus:border-transparent'
+                            {...field}
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
             </form>
           </Form>
         </div>
-        <DialogFooter>
-          <Button type='button' variant='outline' onClick={() => onOpenChange(false)} disabled={isLoading}>
+
+        <DialogFooter className='gap-3 pt-4 border-t'>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+            className='px-6'
+          >
             Cancel
           </Button>
-          <Button type='submit' form='milestone-form' disabled={isLoading} className='min-w-[100px]'>
+          <Button
+            type='submit'
+            form='milestone-form'
+            disabled={isLoading}
+            className='min-w-[140px] bg-blue-600 hover:bg-blue-700'
+          >
             {isLoading ? (isEditing ? 'Saving...' : 'Creating...') : isEditing ? 'Save changes' : 'Create milestone'}
           </Button>
         </DialogFooter>
