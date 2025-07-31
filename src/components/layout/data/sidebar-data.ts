@@ -13,7 +13,8 @@ import {
   Tags,
   MessagesSquare,
   Building,
-  Ticket
+  Ticket,
+  CalendarDays
 } from 'lucide-react'
 
 import { type SidebarData } from '../types'
@@ -105,6 +106,11 @@ export const sidebarData: SidebarData = {
               title: 'Dashboard',
               url: 'dashboard',
               icon: LayoutDashboard
+            },
+            {
+              title: 'Manage Appointments',
+              url: 'manage-appointment',
+              icon: CalendarDays
             },
             {
               title: 'Cashier',

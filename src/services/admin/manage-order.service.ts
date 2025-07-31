@@ -110,7 +110,7 @@ export const useAssignTask = () => {
 
 export const useAssignCharge = () => {
   return useMutation({
-    mutationFn: async (body: AssignCharge) => {
+    mutationFn: async (body: AssignCharge[]) => {
       const response = await ManageOrderAPI.assignCharge(body)
       if (response.data.statusCode === 200) {
         return response.data

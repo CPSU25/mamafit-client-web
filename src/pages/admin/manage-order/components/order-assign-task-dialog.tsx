@@ -88,8 +88,10 @@ export function OrderAssignChargeDialog({ open, onOpenChange, orderItem, onSucce
 
   if (!orderItem) return null
 
-  // Handle milestones as array from API response
-  const milestones = Array.isArray(orderItem.milestones) ? orderItem.milestones : [orderItem.milestones].filter(Boolean)
+  const milestones = (
+    Array.isArray(orderItem.milestones) ? orderItem.milestones : [orderItem.milestones].filter(Boolean)
+  ).sort((a, b) => (a.sequenceOrder || 0) - (b.sequenceOrder || 0))
+  console.log('Milestones:', milestones)
 
   const handleChargeSelect = (milestoneId: string, chargeId: string) => {
     // Only allow selection for unassigned milestones
@@ -118,16 +120,15 @@ export function OrderAssignChargeDialog({ open, onOpenChange, orderItem, onSucce
     }
 
     try {
-      // Assign charges sequentially
-      for (const [milestoneId, chargeId] of assignments) {
-        const assignData: AssignCharge = {
-          chargeId,
-          orderItemId: orderItem.id,
-          milestoneId
-        }
+      // Create array of assignments for single API call
+      const assignmentsList: AssignCharge[] = assignments.map(([milestoneId, chargeId]) => ({
+        chargeId,
+        orderItemIds: [orderItem.id],
+        milestoneId
+      }))
 
-        await assignChargeMutation.mutateAsync(assignData)
-      }
+      // Send single API call with all assignments
+      await assignChargeMutation.mutateAsync(assignmentsList)
 
       toast.success(`Đã giao thành công ${assignments.length} milestone`)
 
@@ -175,10 +176,6 @@ export function OrderAssignChargeDialog({ open, onOpenChange, orderItem, onSucce
             </CardHeader>
             <CardContent className='space-y-2'>
               <div className='grid grid-cols-2 gap-4 text-sm'>
-                <div>
-                  <span className='text-muted-foreground'>ID:</span>
-                  <span className='ml-2 font-medium'>{orderItem.id}</span>
-                </div>
                 <div>
                   <span className='text-muted-foreground'>Loại:</span>
                   <Badge variant='secondary' className='ml-2'>

@@ -1,7 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DollarSign, ShoppingCart, Package, TrendingUp } from 'lucide-react'
+import { DateRangePicker } from '@/components/date-range-picker'
+import { useState } from 'react'
+import { DateRange } from 'react-day-picker'
 
 export default function BranchDashboard() {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>()
+
+  console.log('Khoảng ngày đã chọn:', dateRange)
   return (
     <div className='space-y-8'>
       <h1 className='text-3xl font-bold'>Branch Dashboard</h1>
@@ -81,6 +87,13 @@ export default function BranchDashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+      <div className='flex flex-col space-y-4 p-8'>
+        <h1 className='text-2xl font-bold'>Dashboard</h1>
+        <div className='flex items-center space-x-4'>
+          <p>Chọn khoảng thời gian báo cáo:</p>
+          <DateRangePicker className='[&>button]:font-semibold' onDateChange={setDateRange} />
+        </div>
       </div>
     </div>
   )
