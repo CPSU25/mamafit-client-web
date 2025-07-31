@@ -4,7 +4,7 @@ import { Card as UICard, CardContent as UICardContent } from '@/components/ui/ca
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { MaternityDressTaskUI, TaskStatus } from '@/pages/staff/tasks/types'
+import { MaternityDressTaskUI, TaskStatus } from '@/pages/staff/manage-task/tasks/types'
 import { cn } from '@/lib/utils/utils'
 
 interface TaskItemProps {
@@ -13,11 +13,11 @@ interface TaskItemProps {
 }
 
 export const TaskItem: React.FC<TaskItemProps> = ({ task, onStatusChange }) => {
-  const isCompleted = task.status === 'COMPLETED'
+  const isCompleted = task.status === 'DONE'
 
   const getStatusVariant = (): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (task.status) {
-      case 'COMPLETED':
+      case 'DONE':
         return 'default'
       case 'IN_PROGRESS':
         return 'secondary'
@@ -36,7 +36,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onStatusChange }) => {
         <Checkbox
           id={`task-${task.id}`}
           checked={isCompleted}
-          onCheckedChange={(checked) => onStatusChange(task.id, checked ? 'COMPLETED' : 'IN_PROGRESS')}
+          onCheckedChange={(checked) => onStatusChange(task.id, checked ? 'DONE' : 'IN_PROGRESS')}
           className='mt-1'
         />
         <div className='flex-1'>

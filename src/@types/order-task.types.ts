@@ -1,7 +1,14 @@
 import { PresetType } from './designer.types'
 import { DesignRequestType } from './manage-order.types'
 
-export interface OrderTask {
+// Cấu trúc chính cho một order task item
+export interface OrderTaskItem {
+  orderItem: OrderItem
+  milestones: MilestoneOfTask[]
+}
+
+// Thông tin chi tiết của order item
+export interface OrderItem {
   id: string
   createdBy: string
   updatedBy: string
@@ -10,14 +17,18 @@ export interface OrderTask {
   maternityDressDetail?: unknown
   preset?: PresetType
   designRequest?: DesignRequestType
-  milestones: MilestoneOfTask // Đổi tên từ milestone thành milestones
-  orderId?: string
+  orderId: string
   maternityDressDetailId?: string
   presetId?: string
-  itemType?: string
+  itemType: 'PRESET' | 'READY_TO_BUY' | 'CUSTOM'
   price: number
   quantity: number
   warrantyDate?: string
+}
+
+// Backward compatibility - deprecated, sử dụng OrderTaskItem thay thế
+export interface OrderTask extends OrderItem {
+  milestones: MilestoneOfTask[]
 }
 
 export type StatusTask = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
@@ -41,5 +52,5 @@ export interface MilestoneOfTask {
   description: string
   applyFor: string[]
   sequenceOrder: number
-  maternityDressTasks: MaternityDressTask[] // Đây phải là array
+  maternityDressTasks: MaternityDressTask[]
 }

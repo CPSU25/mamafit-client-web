@@ -1,6 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Progress } from '@/components/ui/progress'
-import { StaffTaskUI, TaskStatus as UITaskStatus } from '@/pages/staff/tasks/types'
+import { StaffTaskUI, TaskStatus as UITaskStatus } from '@/pages/staff/manage-task/tasks/types'
 import { TaskItem } from './task-item'
 
 interface MilestoneAccordionProps {
@@ -16,7 +16,7 @@ export const MilestoneAccordion: React.FC<MilestoneAccordionProps> = ({ tasks, o
       {sortedMilestones.map((task) => {
         const milestone = task.milestones
         const totalTasks = milestone.maternityDressTasks.length
-        const completedTasks = milestone.maternityDressTasks.filter((t) => t.status === 'COMPLETED').length
+        const completedTasks = milestone.maternityDressTasks.filter((t) => t.status === 'DONE').length
         const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
 
         const sortedInnerTasks = [...milestone.maternityDressTasks].sort((a, b) => a.sequenceOrder - b.sequenceOrder)
