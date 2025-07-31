@@ -16,7 +16,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
 import { FactoryManagerDashboard } from '@/pages/factory-manager'
 import { DesignerDashboard, ManageTemplatePage } from '@/pages/designer'
-import { BranchDashboard, CashierPage } from '@/pages/branch'
+import { BranchDashboard, CashierPage, ManageAppointmentPage } from '@/pages/branch'
 
 export const router = createBrowserRouter([
   {
@@ -84,6 +84,10 @@ export const router = createBrowserRouter([
           {
             path: 'cashier',
             element: <CashierPage />
+          },
+          {
+            path: 'manage-appointment',
+            element: <ManageAppointmentPage />
           }
         ]
       },

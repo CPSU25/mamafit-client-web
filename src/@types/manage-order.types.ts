@@ -100,7 +100,7 @@ export interface AssignTask {
 
 export interface AssignCharge {
   chargeId: string
-  orderItemId: string
+  orderItemIds: string[]
   milestoneId: string
 }
 
