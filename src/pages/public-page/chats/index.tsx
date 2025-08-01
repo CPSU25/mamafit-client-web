@@ -131,7 +131,6 @@ export default function Chats() {
       </div>,
       { duration: 6000 }
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastCreatedRoomId, lastInvitedRoomId])
 
   // Memoize filtered rooms to prevent unnecessary recalculations

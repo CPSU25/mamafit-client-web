@@ -44,7 +44,7 @@ const ManageOrderAPI = {
   //update status and assign task, charge
   assignTask: (orderItemId: string, body: AssignTask) =>
     api.post<ItemBaseResponse<[]>>(`/order-item/assign-task/${orderItemId}`, body), //không sài
-  assignCharge: (body: AssignCharge) => api.post<ItemBaseResponse<[]>>(`/order-items/assign-charge`, body),
+  assignCharge: (body: AssignCharge[]) => api.post<ItemBaseResponse<[]>>(`/order-items/assign-charge`, body),
   checkListStatus: (body: checkListStatus) => api.put<ItemBaseResponse<[]>>(`/order-items/check-list-status`, body)
 }
 
