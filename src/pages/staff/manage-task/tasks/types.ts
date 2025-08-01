@@ -4,7 +4,7 @@
 // =====================================================================
 import { PresetType } from '@/@types/designer.types' // Đảm bảo import đúng đường dẫn
 
-export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'
 
 export interface MaternityDressTaskUI {
   id: string
@@ -29,7 +29,7 @@ export interface StaffTaskUI {
   preset: PresetType
 }
 
-// Interface mới để group các OrderTask theo preset.id
+// Interface để biểu diễn một order item với các milestone và task được giao cho nhân viên
 export interface ProductTaskGroup {
   preset: PresetType
   milestones: MilestoneUI[]

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent } from '@/components/ui/card'
 import { CheckCircle, Circle, Clock, ChevronDown, ChevronRight } from 'lucide-react'
-import { MilestoneUI, TaskStatus } from '@/pages/staff/tasks/types'
+import { MilestoneUI, TaskStatus } from '@/pages/staff/manage-task/tasks/types'
 
 interface MilestoneItemProps {
   milestone: MilestoneUI
@@ -25,7 +25,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
   const [isOpen, setIsOpen] = useState(false)
 
   const totalTasks = milestone.maternityDressTasks.length
-  const completedTasks = milestone.maternityDressTasks.filter((task) => task.status === 'COMPLETED').length
+  const completedTasks = milestone.maternityDressTasks.filter((task) => task.status === 'DONE').length
   const inProgressTasks = milestone.maternityDressTasks.filter((task) => task.status === 'IN_PROGRESS').length
 
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
@@ -34,7 +34,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
 
   const getStatusColor = (status: TaskStatus) => {
     switch (status) {
-      case 'COMPLETED':
+      case 'DONE':
         return 'bg-green-100 text-green-800 border-green-200'
       case 'IN_PROGRESS':
         return 'bg-blue-100 text-blue-800 border-blue-200'
@@ -49,7 +49,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
 
   const getStatusText = (status: TaskStatus) => {
     switch (status) {
-      case 'COMPLETED':
+      case 'DONE':
         return 'Hoàn thành'
       case 'IN_PROGRESS':
         return 'Đang thực hiện'
@@ -188,7 +188,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
                               {task.status === 'IN_PROGRESS' && (
                                 <Button
                                   size='sm'
-                                  onClick={() => onTaskStatusChange(task.id, 'COMPLETED', orderItemId)}
+                                  onClick={() => onTaskStatusChange(task.id, 'DONE', orderItemId)}
                                   disabled={isUpdating}
                                   className='bg-green-600 hover:bg-green-700 disabled:opacity-50'
                                 >
@@ -196,7 +196,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
                                 </Button>
                               )}
 
-                              {task.status === 'COMPLETED' && (
+                              {task.status === 'DONE' && (
                                 <Button
                                   size='sm'
                                   variant='outline'

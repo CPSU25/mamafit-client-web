@@ -17,7 +17,7 @@ import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
 import { FactoryManagerDashboard } from '@/pages/factory-manager'
 import { DesignerDashboard, ManageTemplatePage } from '@/pages/designer'
 import { BranchDashboard, CashierPage, ManageAppointmentPage } from '@/pages/branch'
-import StaffTasksPage from '@/pages/staff'
+import { OrderItemDetailPage, StaffTasksPage } from '@/pages/staff'
 
 export const router = createBrowserRouter([
   {
@@ -169,6 +169,10 @@ export const router = createBrowserRouter([
           {
             path: 'manage-task',
             element: <StaffTasksPage />
+          },
+          {
+            path: 'order-item/:orderItemId',
+            element: <OrderItemDetailPage />
           }
         ]
       },
