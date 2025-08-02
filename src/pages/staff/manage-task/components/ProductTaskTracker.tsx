@@ -84,7 +84,7 @@ export const ProductTaskTracker: React.FC<ProductTaskTrackerProps> = ({
                   </p>
                   <Button
                     size='sm'
-                    onClick={() => navigate(`/system/factory-staff/order-item/${productGroup.orderItemId}`)}
+                    onClick={() => navigate(`/system/staff/order-item/${productGroup.orderItemId}`)}
                     className='gap-2'
                   >
                     <ExternalLink className='h-4 w-4' />

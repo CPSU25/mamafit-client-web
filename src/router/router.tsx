@@ -15,7 +15,7 @@ import { HomePage } from '@/pages/guest'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
 import { FactoryManagerDashboard } from '@/pages/factory-manager'
-import { DesignerDashboard, ManageTemplatePage } from '@/pages/designer'
+import { DesignerDashboard, ManageTemplatePage, ManageDesignRequestPage } from '@/pages/designer'
 import { BranchDashboard, CashierPage, ManageAppointmentPage } from '@/pages/branch'
 import { OrderItemDetailPage, StaffTasksPage } from '@/pages/staff'
 
@@ -113,13 +113,25 @@ export const router = createBrowserRouter([
           {
             path: 'manage-template',
             element: <ManageTemplatePage />
+          },
+          {
+            path: 'manage-task',
+            element: <StaffTasksPage />
+          },
+          {
+            path: 'manage-design-request',
+            element: <ManageDesignRequestPage />
+          },
+          {
+            path: 'order-item/:orderItemId',
+            element: <OrderItemDetailPage />
           }
         ]
       },
 
       // Factory Manager routes
       {
-        path: '/system/factory-manager',
+        path: '/system/manager',
         element: (
           <AuthGuard requiredRole='Manager'>
             <SystemLayout role='Manager' />
@@ -132,11 +144,11 @@ export const router = createBrowserRouter([
           },
           {
             path: 'manage-production',
-            element: <div>Manage Production Page</div>
+            element: <ManageMaternityDressPage />
           },
           {
             path: 'manage-template',
-            element: <div>Manage Templates Page</div>
+            element: <ManageTemplatePage />
           },
           {
             path: 'manage-design-request',
@@ -155,7 +167,7 @@ export const router = createBrowserRouter([
 
       // Factory Staff routes
       {
-        path: '/system/factory-staff',
+        path: '/system/staff',
         element: (
           <AuthGuard requiredRole='Staff'>
             <SystemLayout role='Staff' />
