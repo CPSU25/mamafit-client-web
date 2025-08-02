@@ -4,7 +4,8 @@
 // =====================================================================
 import { PresetType } from '@/@types/designer.types' // Đảm bảo import đúng đường dẫn
 
-export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'
+export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED' | 'PASS' | 'FAIL'
+export type QualityCheckStatus = 'PASS' | 'FAIL'
 
 export interface MaternityDressTaskUI {
   id: string
@@ -21,6 +22,8 @@ export interface MilestoneUI {
   description: string
   sequenceOrder: number
   maternityDressTasks: MaternityDressTaskUI[]
+  // Kiểm tra xem milestone này có phải là QualityCheck không
+  isQualityCheck?: boolean
 }
 
 export interface StaffTaskUI {

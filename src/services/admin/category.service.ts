@@ -210,7 +210,7 @@ export const useCreateStyle = () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
       // Refetch styles for the specific category
       queryClient.refetchQueries({
-        queryKey: categoryKeys.stylesList(variables.categoryId, { index: 1, pageSize: 10, sortBy: 'createdAt_desc' })
+        queryKey: categoryKeys.stylesList(variables.categoryId, { index: 1, pageSize: 10 })
       })
     },
     onError: (error) => {

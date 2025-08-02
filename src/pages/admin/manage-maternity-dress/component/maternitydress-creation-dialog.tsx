@@ -32,8 +32,7 @@ export default function MaternityDressCreationDialog({
     error: stylesError
   } = useGetStyles({
     index: 1,
-    pageSize: 50,
-    sortBy: 'createdat_desc'
+    pageSize: 50
   })
 
   const form = useForm<MaternityDressFormData>({

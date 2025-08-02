@@ -1,13 +1,10 @@
 import { PresetType } from './designer.types'
 import { DesignRequestType } from './manage-order.types'
-
-// Cấu trúc chính cho một order task item
 export interface OrderTaskItem {
   orderItem: OrderItem
   milestones: MilestoneOfTask[]
 }
 
-// Thông tin chi tiết của order item
 export interface OrderItem {
   id: string
   createdBy: string
@@ -26,7 +23,6 @@ export interface OrderItem {
   warrantyDate?: string
 }
 
-// Backward compatibility - deprecated, sử dụng OrderTaskItem thay thế
 export interface OrderTask extends OrderItem {
   milestones: MilestoneOfTask[]
 }

@@ -60,7 +60,11 @@ export default function OrderItemDetailPage() {
   const { preset, milestones } = orderItemData
   const totalTasks = milestones.reduce((sum, milestone) => sum + milestone.maternityDressTasks.length, 0)
   const completedTasks = milestones.reduce(
-    (sum, milestone) => sum + milestone.maternityDressTasks.filter((task) => task.status === 'DONE').length,
+    (sum, milestone) =>
+      sum +
+      milestone.maternityDressTasks.filter(
+        (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+      ).length,
     0
   )
   const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0

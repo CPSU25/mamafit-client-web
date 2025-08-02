@@ -40,9 +40,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
   const { data: user } = useGetUserById(order?.userId ?? '')
   const { data: orderDetail } = useOrder(order?.id ?? '')
   const { data: orderDetailItem } = useOrderDetail(
-    orderDetail?.data?.items && orderDetail.data.items.length > 0 
-      ? orderDetail.data.items[0].id 
-      : ''
+    orderDetail?.data?.items && orderDetail.data.items.length > 0 ? orderDetail.data.items[0].id : ''
   )
   const [assignChargeDialogOpen, setAssignChargeDialogOpen] = useState(false)
   console.log(orderDetailItem)
