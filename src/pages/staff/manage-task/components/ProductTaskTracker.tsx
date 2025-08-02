@@ -35,19 +35,23 @@ export const ProductTaskTracker: React.FC<ProductTaskTrackerProps> = ({
     <div className='space-y-6'>
       <div className='text-sm text-muted-foreground mb-4'>Hiển thị {productGroups.length} sản phẩm được giao</div>
 
-      {productGroups.map((productGroup, index) => {
+      {productGroups.map((productGroup) => {
         const { preset, milestones } = productGroup
 
         // Tính toán tiến độ tổng thể cho sản phẩm
         const totalTasks = milestones.reduce((sum, milestone) => sum + milestone.maternityDressTasks.length, 0)
         const completedTasks = milestones.reduce(
-          (sum, milestone) => sum + milestone.maternityDressTasks.filter((task) => task.status === 'DONE').length,
+          (sum, milestone) =>
+            sum +
+            milestone.maternityDressTasks.filter(
+              (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+            ).length,
           0
         )
         const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
         return (
-          <Card key={`${productGroup.orderItemId}-${index}`} className='overflow-hidden'>
+          <Card key={`product-${productGroup.orderItemId}`} className='overflow-hidden'>
             <CardHeader className='bg-gradient-to-r from-blue-50 to-indigo-50 border-b'>
               <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
                 <div className='flex items-center gap-4'>
@@ -106,7 +110,7 @@ export const ProductTaskTracker: React.FC<ProductTaskTrackerProps> = ({
                     .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
                     .map((milestone, milestoneIndex) => (
                       <MilestoneItem
-                        key={`${productGroup.orderItemId}-${milestone.sequenceOrder}-${milestoneIndex}`}
+                        key={`milestone-${productGroup.orderItemId}-${milestone.sequenceOrder}`}
                         milestone={milestone}
                         isLast={milestoneIndex === milestones.length - 1}
                         onTaskStatusChange={onTaskStatusChange}

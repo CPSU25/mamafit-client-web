@@ -11,6 +11,45 @@ import { MilestoneUI, TaskStatus } from '@/pages/staff/manage-task/tasks/types'
 import { useUpdateTaskStatus } from '@/services/global/order-task.service'
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 
+// Helper functions for task status display
+const getStatusText = (status: TaskStatus): string => {
+  switch (status) {
+    case 'PENDING':
+      return 'Chờ'
+    case 'IN_PROGRESS':
+      return 'Đang thực hiện'
+    case 'DONE':
+      return 'Hoàn thành'
+    case 'CANCELLED':
+      return 'Đã hủy'
+    case 'PASS':
+      return 'Pass'
+    case 'FAIL':
+      return 'Fail'
+    default:
+      return 'Không xác định'
+  }
+}
+
+const getStatusColor = (status: TaskStatus): string => {
+  switch (status) {
+    case 'PENDING':
+      return 'bg-gray-100 text-gray-600 border-gray-200'
+    case 'IN_PROGRESS':
+      return 'bg-blue-100 text-blue-700 border-blue-200'
+    case 'DONE':
+      return 'bg-green-100 text-green-700 border-green-200'
+    case 'CANCELLED':
+      return 'bg-red-100 text-red-700 border-red-200'
+    case 'PASS':
+      return 'bg-green-100 text-green-700 border-green-200'
+    case 'FAIL':
+      return 'bg-red-100 text-red-700 border-red-200'
+    default:
+      return 'bg-gray-100 text-gray-600 border-gray-200'
+  }
+}
+
 interface OrderItemMilestoneTrackerProps {
   milestones: MilestoneUI[]
   orderItemId: string
@@ -95,7 +134,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   const getActiveMilestoneIndex = () => {
     for (let i = 0; i < sortedMilestones.length; i++) {
       const milestone = sortedMilestones[i]
-      const allTasksCompleted = milestone.maternityDressTasks.every((task) => task.status === 'DONE')
+      const allTasksCompleted = milestone.maternityDressTasks.every(
+        (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+      )
       if (!allTasksCompleted) {
         return i
       }
@@ -116,7 +157,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   }
 
   const getMilestoneStatus = (milestoneIndex: number, milestone: MilestoneUI) => {
-    const completedTasks = milestone.maternityDressTasks.filter((task) => task.status === 'DONE').length
+    const completedTasks = milestone.maternityDressTasks.filter(
+      (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+    ).length
     const totalTasks = milestone.maternityDressTasks.length
     const allCompleted = completedTasks === totalTasks
     const hasInProgress = milestone.maternityDressTasks.some((task) => task.status === 'IN_PROGRESS')
@@ -149,7 +192,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
               const isLocked = milestoneStatus.status === 'locked'
               const isCompleted = milestoneStatus.status === 'completed'
 
-              const completedTasks = milestone.maternityDressTasks.filter((task) => task.status === 'DONE').length
+              const completedTasks = milestone.maternityDressTasks.filter(
+                (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+              ).length
               const totalTasks = milestone.maternityDressTasks.length
               const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
 
@@ -303,7 +348,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                     : 'bg-gray-100 text-gray-500'
                                               }`}
                                             >
-                                              {taskStatus === 'DONE' ? (
+                                              {taskStatus === 'DONE' ||
+                                              taskStatus === 'PASS' ||
+                                              taskStatus === 'FAIL' ? (
                                                 <CheckCircle2 className='h-4 w-4' />
                                               ) : taskStatus === 'IN_PROGRESS' ? (
                                                 <Clock className='h-4 w-4' />
@@ -316,26 +363,10 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                               <p className='text-sm text-gray-600 mt-0.5'>Bước #{task.sequenceOrder}</p>
                                             </div>
                                             <Badge
-                                              variant={
-                                                taskStatus === 'DONE'
-                                                  ? 'default'
-                                                  : taskStatus === 'IN_PROGRESS'
-                                                    ? 'secondary'
-                                                    : 'outline'
-                                              }
-                                              className={`text-xs font-medium ${
-                                                taskStatus === 'DONE'
-                                                  ? 'bg-green-100 text-green-800 border-green-200'
-                                                  : taskStatus === 'IN_PROGRESS'
-                                                    ? 'bg-blue-100 text-blue-800 border-blue-200'
-                                                    : 'bg-gray-100 text-gray-600 border-gray-200'
-                                              }`}
+                                              variant='outline'
+                                              className={`text-xs font-medium ${getStatusColor(taskStatus)}`}
                                             >
-                                              {taskStatus === 'DONE'
-                                                ? 'Hoàn thành'
-                                                : taskStatus === 'IN_PROGRESS'
-                                                  ? 'Đang làm'
-                                                  : 'Chờ'}
+                                              {getStatusText(taskStatus)}
                                             </Badge>
                                           </div>
 
@@ -344,45 +375,46 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                           )}
 
                                           {/* Show image and note if completed - Improved Design */}
-                                          {taskStatus === 'DONE' && (task.image || task.note) && (
-                                            <div className='ml-11 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200'>
-                                              <div className='flex items-center gap-2 mb-3'>
-                                                <CheckCircle2 className='h-4 w-4 text-green-600' />
-                                                <span className='text-sm font-medium text-green-800'>
-                                                  Kết quả hoàn thành
-                                                </span>
-                                              </div>
+                                          {(taskStatus === 'DONE' || taskStatus === 'PASS' || taskStatus === 'FAIL') &&
+                                            (task.image || task.note) && (
+                                              <div className='ml-11 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200'>
+                                                <div className='flex items-center gap-2 mb-3'>
+                                                  <CheckCircle2 className='h-4 w-4 text-green-600' />
+                                                  <span className='text-sm font-medium text-green-800'>
+                                                    Kết quả hoàn thành
+                                                  </span>
+                                                </div>
 
-                                              <div className='space-y-3'>
-                                                {task.image && (
-                                                  <div className='space-y-2'>
-                                                    <p className='text-xs font-medium text-green-700'>
-                                                      Hình ảnh kết quả:
-                                                    </p>
-                                                    <div className='relative group'>
-                                                      <img
-                                                        src={task.image}
-                                                        alt='Kết quả công việc'
-                                                        className='w-full max-w-xs h-32 object-cover rounded-lg shadow-sm border border-green-200 transition-transform group-hover:scale-105'
-                                                      />
-                                                      <div className='absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg' />
-                                                    </div>
-                                                  </div>
-                                                )}
-
-                                                {task.note && (
-                                                  <div className='space-y-2'>
-                                                    <p className='text-xs font-medium text-green-700'>Ghi chú:</p>
-                                                    <div className='bg-white/70 rounded-md p-3 border border-green-100'>
-                                                      <p className='text-sm text-gray-700 leading-relaxed'>
-                                                        {task.note}
+                                                <div className='space-y-3'>
+                                                  {task.image && (
+                                                    <div className='space-y-2'>
+                                                      <p className='text-xs font-medium text-green-700'>
+                                                        Hình ảnh kết quả:
                                                       </p>
+                                                      <div className='relative group'>
+                                                        <img
+                                                          src={task.image}
+                                                          alt='Kết quả công việc'
+                                                          className='w-full max-w-xs h-32 object-cover rounded-lg shadow-sm border border-green-200 transition-transform group-hover:scale-105'
+                                                        />
+                                                        <div className='absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg' />
+                                                      </div>
                                                     </div>
-                                                  </div>
-                                                )}
+                                                  )}
+
+                                                  {task.note && (
+                                                    <div className='space-y-2'>
+                                                      <p className='text-xs font-medium text-green-700'>Ghi chú:</p>
+                                                      <div className='bg-white/70 rounded-md p-3 border border-green-100'>
+                                                        <p className='text-sm text-gray-700 leading-relaxed'>
+                                                          {task.note}
+                                                        </p>
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
                                               </div>
-                                            </div>
-                                          )}
+                                            )}
 
                                           <div className='flex gap-2 pl-11'>
                                             {taskStatus === 'PENDING' && canStart && (
@@ -411,18 +443,46 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                   Tạm dừng
                                                 </Button>
 
-                                                <TaskCompletionDialog
-                                                  taskId={task.id}
-                                                  taskName={task.name}
-                                                  onComplete={(taskId, image, note) =>
-                                                    handleTaskStatusChange(taskId, 'DONE', image, note)
-                                                  }
-                                                  isLoading={updateTaskStatusMutation.isPending}
-                                                />
+                                                {/* Kiểm tra xem có phải Quality Check milestone không */}
+                                                {milestone.isQualityCheck ? (
+                                                  // Quality Check tasks có 2 nút PASS/FAIL
+                                                  <>
+                                                    <Button
+                                                      size='sm'
+                                                      onClick={() => handleTaskStatusChange(task.id, 'PASS')}
+                                                      disabled={updateTaskStatusMutation.isPending}
+                                                      className='bg-green-600 hover:bg-green-700 gap-2'
+                                                    >
+                                                      <CheckCircle2 className='h-4 w-4' />
+                                                      Pass
+                                                    </Button>
+                                                    <Button
+                                                      size='sm'
+                                                      onClick={() => handleTaskStatusChange(task.id, 'FAIL')}
+                                                      disabled={updateTaskStatusMutation.isPending}
+                                                      className='bg-red-600 hover:bg-red-700 gap-2'
+                                                    >
+                                                      <Clock className='h-4 w-4' />
+                                                      Fail
+                                                    </Button>
+                                                  </>
+                                                ) : (
+                                                  // Task thường có nút Hoàn thành
+                                                  <TaskCompletionDialog
+                                                    taskId={task.id}
+                                                    taskName={task.name}
+                                                    onComplete={(taskId, image, note) =>
+                                                      handleTaskStatusChange(taskId, 'DONE', image, note)
+                                                    }
+                                                    isLoading={updateTaskStatusMutation.isPending}
+                                                  />
+                                                )}
                                               </>
                                             )}
 
-                                            {taskStatus === 'DONE' && (
+                                            {(taskStatus === 'DONE' ||
+                                              taskStatus === 'PASS' ||
+                                              taskStatus === 'FAIL') && (
                                               <Badge variant='default' className='gap-1'>
                                                 <CheckCircle2 className='h-3 w-3' />
                                                 Đã xong

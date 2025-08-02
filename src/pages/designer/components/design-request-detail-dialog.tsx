@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import {
   Calendar,
   User,
@@ -15,10 +18,14 @@ import {
   Clock,
   AlertCircle,
   Eye,
-  ExternalLink
+  ExternalLink,
+  Edit,
+  Save
 } from 'lucide-react'
 import dayjs from 'dayjs'
 import { OrderTaskItem } from '@/@types/order-task.types'
+import { useUpdateTaskStatus } from '@/hooks/use-designer-tasks'
+import { CloudinarySingleImageUpload } from '@/components/cloudinary-single-image-upload'
 
 // Interface mở rộng từ OrderTaskItem để bao gồm các field bổ sung
 interface ExtendedOrderTaskItem extends OrderTaskItem {
@@ -35,6 +42,51 @@ interface DesignRequestDetailDialogProps {
 
 export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: DesignRequestDetailDialogProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [editingTask, setEditingTask] = useState<string | null>(null)
+  const [taskStatus, setTaskStatus] = useState<string>('')
+  const [taskNote, setTaskNote] = useState('')
+  const [taskImage, setTaskImage] = useState('')
+
+  // Sử dụng hook để update task status
+  const updateTaskMutation = useUpdateTaskStatus()
+
+  const handleEditTask = (task: { id: string; status: string; note?: string | null; image?: string | null }) => {
+    setEditingTask(task.id)
+    setTaskStatus(task.status)
+    setTaskNote(task.note || '')
+    setTaskImage(task.image || '')
+  }
+
+  const handleSaveTask = (task: { id: string }) => {
+    const body: { status: 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'; note?: string; image?: string } = {
+      status: taskStatus as 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'
+    }
+    if (taskNote) body.note = taskNote
+    if (taskImage) body.image = taskImage
+
+    updateTaskMutation.mutate(
+      {
+        taskId: task.id,
+        orderItemId: designRequest.orderItem.id,
+        body
+      },
+      {
+        onSuccess: () => {
+          setEditingTask(null)
+          setTaskStatus('')
+          setTaskNote('')
+          setTaskImage('')
+        }
+      }
+    )
+  }
+
+  const handleCancelEdit = () => {
+    setEditingTask(null)
+    setTaskStatus('')
+    setTaskNote('')
+    setTaskImage('')
+  }
 
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format('DD/MM/YYYY HH:mm')
@@ -279,31 +331,105 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                   <CardContent>
                     <div className='space-y-3'>
                       {milestone.maternityDressTasks.map((task) => (
-                        <div key={task.id} className='flex items-center justify-between p-3 border rounded-lg'>
-                          <div className='flex-1 space-y-1'>
-                            <div className='flex items-center gap-2'>
-                              <h4 className='font-medium'>{task.name}</h4>
-                              {getTaskStatusBadge(task.status)}
+                        <div key={task.id} className='p-3 border rounded-lg'>
+                          {editingTask === task.id ? (
+                            // Edit Mode
+                            <div className='space-y-4'>
+                              <div className='flex items-center gap-2'>
+                                <h4 className='font-medium'>{task.name}</h4>
+                              </div>
+                              <p className='text-sm text-muted-foreground'>{task.description}</p>
+
+                              {/* Status Select */}
+                              <div className='space-y-2'>
+                                <Label htmlFor={`status-${task.id}`}>Trạng thái:</Label>
+                                <Select value={taskStatus} onValueChange={setTaskStatus}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder='Chọn trạng thái' />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value='PENDING'>Chờ xử lý</SelectItem>
+                                    <SelectItem value='IN_PROGRESS'>Đang thực hiện</SelectItem>
+                                    <SelectItem value='DONE'>Hoàn thành</SelectItem>
+                                    <SelectItem value='CANCELLED'>Đã hủy</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              {/* Note */}
+                              <div className='space-y-2'>
+                                <Label htmlFor={`note-${task.id}`}>Ghi chú:</Label>
+                                <Textarea
+                                  id={`note-${task.id}`}
+                                  value={taskNote}
+                                  onChange={(e) => setTaskNote(e.target.value)}
+                                  placeholder='Thêm ghi chú cho task...'
+                                  rows={3}
+                                />
+                              </div>
+
+                              {/* Image Upload */}
+                              <div className='space-y-2'>
+                                <Label>Hình ảnh kết quả:</Label>
+                                <CloudinarySingleImageUpload
+                                  value={taskImage}
+                                  onChange={(url: string) => setTaskImage(url)}
+                                  placeholder='Upload hình ảnh kết quả task...'
+                                />
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className='flex gap-2'>
+                                <Button
+                                  size='sm'
+                                  onClick={() => handleSaveTask(task)}
+                                  disabled={updateTaskMutation.isPending}
+                                >
+                                  <Save className='h-4 w-4 mr-2' />
+                                  {updateTaskMutation.isPending ? 'Đang lưu...' : 'Lưu'}
+                                </Button>
+                                <Button variant='outline' size='sm' onClick={handleCancelEdit}>
+                                  Hủy
+                                </Button>
+                              </div>
                             </div>
-                            <p className='text-sm text-muted-foreground'>{task.description}</p>
-                            {task.note && (
-                              <p className='text-xs text-muted-foreground bg-muted p-2 rounded'>
-                                <strong>Ghi chú:</strong> {task.note}
-                              </p>
-                            )}
-                            <div className='flex items-center gap-4 text-xs text-muted-foreground'>
-                              <span className='flex items-center gap-1'>
-                                <Calendar className='h-3 w-3' />
-                                Cập nhật: {formatDate(task.updatedAt)}
-                              </span>
-                            </div>
-                          </div>
-                          {task.image && (
-                            <div className='ml-4'>
-                              <Button variant='outline' size='sm' onClick={() => window.open(task.image!, '_blank')}>
-                                <Eye className='h-4 w-4 mr-2' />
-                                Xem hình
-                              </Button>
+                          ) : (
+                            // View Mode
+                            <div className='flex items-center justify-between'>
+                              <div className='flex-1 space-y-1'>
+                                <div className='flex items-center gap-2'>
+                                  <h4 className='font-medium'>{task.name}</h4>
+                                  {getTaskStatusBadge(task.status)}
+                                </div>
+                                <p className='text-sm text-muted-foreground'>{task.description}</p>
+                                {task.note && (
+                                  <p className='text-xs text-muted-foreground bg-muted p-2 rounded'>
+                                    <strong>Ghi chú:</strong> {task.note}
+                                  </p>
+                                )}
+                                <div className='flex items-center gap-4 text-xs text-muted-foreground'>
+                                  <span className='flex items-center gap-1'>
+                                    <Calendar className='h-3 w-3' />
+                                    Cập nhật: {formatDate(task.updatedAt)}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className='flex gap-2 ml-4'>
+                                {task.image && (
+                                  <Button
+                                    variant='outline'
+                                    size='sm'
+                                    onClick={() => window.open(task.image!, '_blank')}
+                                  >
+                                    <Eye className='h-4 w-4 mr-2' />
+                                    Xem hình
+                                  </Button>
+                                )}
+                                <Button variant='outline' size='sm' onClick={() => handleEditTask(task)}>
+                                  <Edit className='h-4 w-4 mr-2' />
+                                  Cập nhật
+                                </Button>
+                              </div>
                             </div>
                           )}
                         </div>
