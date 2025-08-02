@@ -3,7 +3,7 @@ import { ArrowLeft, Package, Tag, Calendar, Loader2, Edit, Trash2 } from 'lucide
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useTemplateDetail } from '@/services/template.service'
+import { useTemplateDetail } from '@/services/designer/template.service'
 
 interface PresetDetailViewProps {
   presetId: string | null

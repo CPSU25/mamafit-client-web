@@ -9,9 +9,9 @@ interface OrderTaskResponse {
   code: string
 }
 
-// Request body cho update task status - cập nhật theo yêu cầu mới
+// Request body cho update task status - cập nhật để hỗ trợ Quality Check với PASS/FAIL
 interface UpdateTaskStatusRequest {
-  status: 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'
+  status: 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED' | 'PASS' | 'FAIL'
   image?: string // Chỉ cần khi hoàn thành task
   note?: string // Chỉ cần khi hoàn thành task
 }

@@ -11,7 +11,7 @@ import {
 } from '@/pages/designer/manage-template/components'
 
 import { useTemplateManager } from '@/hooks/use-template-manager'
-import { useTemplates } from '@/services/template.service'
+import { useTemplates } from '@/services/designer/template.service'
 import { ViewMode, SortBy, FilterBy } from '@/@types/designer.types'
 
 export default function ManageTemplatePage() {

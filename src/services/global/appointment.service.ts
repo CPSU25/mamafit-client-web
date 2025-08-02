@@ -20,7 +20,6 @@ export const appointmentKeys = {
   detail: (id: string) => [...appointmentKeys.details(), id] as const
 }
 
-// Hook để lấy danh sách lịch hẹn
 export const useAppointments = (pageNumber: number = 1, pageSize: number = 10, filters?: AppointmentFilters) => {
   return useQuery({
     queryKey: appointmentKeys.list({ ...filters }),

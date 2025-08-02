@@ -171,6 +171,11 @@ export const sidebarData: SidebarData = {
               title: 'Manage Tasks',
               url: 'manage-task',
               icon: FolderOpen
+            },
+            {
+              title: 'Manage Design Requests',
+              url: 'manage-design-request',
+              icon: Award
             }
           ]
         },

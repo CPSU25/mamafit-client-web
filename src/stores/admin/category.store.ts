@@ -37,7 +37,7 @@ interface CategoryUIState {
 
 const initialFilters: CategoryFilters = {
   search: '',
-  sortBy: 'createdat_desc',
+  sortBy: 'CREATED_AT_DESC',
   pageSize: 10,
   currentPage: 1
 }

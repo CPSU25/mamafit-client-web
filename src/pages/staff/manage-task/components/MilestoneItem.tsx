@@ -25,7 +25,9 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
   const [isOpen, setIsOpen] = useState(false)
 
   const totalTasks = milestone.maternityDressTasks.length
-  const completedTasks = milestone.maternityDressTasks.filter((task) => task.status === 'DONE').length
+  const completedTasks = milestone.maternityDressTasks.filter(
+    (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+  ).length
   const inProgressTasks = milestone.maternityDressTasks.filter((task) => task.status === 'IN_PROGRESS').length
 
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
@@ -42,6 +44,10 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
         return 'bg-gray-100 text-gray-800 border-gray-200'
       case 'CANCELLED':
         return 'bg-red-100 text-red-800 border-red-200'
+      case 'PASS':
+        return 'bg-green-100 text-green-800 border-green-200'
+      case 'FAIL':
+        return 'bg-red-100 text-red-800 border-red-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -57,6 +63,10 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
         return 'Chờ thực hiện'
       case 'CANCELLED':
         return 'Đã hủy'
+      case 'PASS':
+        return 'Pass'
+      case 'FAIL':
+        return 'Fail'
       default:
         return 'Không xác định'
     }
@@ -148,7 +158,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
                       .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
                       .map((task) => (
                         <div
-                          key={task.id}
+                          key={`task-${orderItemId}-${task.id}`}
                           className='flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors'
                         >
                           <div className='flex items-center gap-3'>
@@ -186,17 +196,43 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
                               )}
 
                               {task.status === 'IN_PROGRESS' && (
-                                <Button
-                                  size='sm'
-                                  onClick={() => onTaskStatusChange(task.id, 'DONE', orderItemId)}
-                                  disabled={isUpdating}
-                                  className='bg-green-600 hover:bg-green-700 disabled:opacity-50'
-                                >
-                                  {isUpdating ? 'Đang cập nhật...' : 'Hoàn thành'}
-                                </Button>
+                                <>
+                                  {/* Kiểm tra xem có phải Quality Check milestone không */}
+                                  {milestone.name.toLowerCase().includes('quality') ? (
+                                    // Quality Check tasks có 2 nút PASS/FAIL
+                                    <>
+                                      <Button
+                                        size='sm'
+                                        onClick={() => onTaskStatusChange(task.id, 'PASS', orderItemId)}
+                                        disabled={isUpdating}
+                                        className='bg-green-600 hover:bg-green-700 disabled:opacity-50'
+                                      >
+                                        {isUpdating ? 'Đang cập nhật...' : 'Pass'}
+                                      </Button>
+                                      <Button
+                                        size='sm'
+                                        onClick={() => onTaskStatusChange(task.id, 'FAIL', orderItemId)}
+                                        disabled={isUpdating}
+                                        className='bg-red-600 hover:bg-red-700 disabled:opacity-50'
+                                      >
+                                        {isUpdating ? 'Đang cập nhật...' : 'Fail'}
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    // Task thường có nút Hoàn thành
+                                    <Button
+                                      size='sm'
+                                      onClick={() => onTaskStatusChange(task.id, 'DONE', orderItemId)}
+                                      disabled={isUpdating}
+                                      className='bg-green-600 hover:bg-green-700 disabled:opacity-50'
+                                    >
+                                      {isUpdating ? 'Đang cập nhật...' : 'Hoàn thành'}
+                                    </Button>
+                                  )}
+                                </>
                               )}
 
-                              {task.status === 'DONE' && (
+                              {(task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL') && (
                                 <Button
                                   size='sm'
                                   variant='outline'

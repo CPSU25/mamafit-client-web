@@ -1,9 +1,9 @@
 // Sort options for components
 export const sortOptions = [
-  { value: 'createdat_desc', label: 'Mới nhất' },
-  { value: 'createdat_asc', label: 'Cũ nhất' },
-  { value: 'name_asc', label: 'Tên A-Z' },
-  { value: 'name_desc', label: 'Tên Z-A' }
+  { value: 'CREATED_AT_DESC', label: 'Mới nhất' },
+  { value: 'CREATED_AT_ASC', label: 'Cũ nhất' },
+  { value: 'NAME_ASC', label: 'Tên A-Z' },
+  { value: 'NAME_DESC', label: 'Tên Z-A' }
 ]
 
 // Page size options

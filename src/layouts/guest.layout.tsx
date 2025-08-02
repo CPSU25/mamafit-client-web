@@ -12,9 +12,9 @@ const getDashboardRoute = (role: string) => {
     case 'Designer':
       return '/system/designer/dashboard'
     case 'Manager':
-      return '/system/factory-manager/dashboard'
+      return '/system/manager/dashboard'
     case 'Staff':
-      return '/system/factory-staff/dashboard'
+      return '/system/staff/dashboard'
     default:
       return '/system'
   }

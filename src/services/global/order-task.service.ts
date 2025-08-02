@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 const orderTasksQueryKeys = {
   all: ['orderTasks'] as const,
+  lists: () => [...orderTasksQueryKeys.all, 'list'] as const,
   byOrderItem: (orderItemId: string) => [...orderTasksQueryKeys.all, 'orderItem', orderItemId] as const
 }
 
@@ -27,23 +28,32 @@ const transformDataForUI = (data: OrderTaskItem[]): ProductTaskGroup[] => {
         return null
       }
 
-      // Transform milestones data
-      const milestonesUI: MilestoneUI[] = orderTaskItem.milestones.map((milestone) => ({
-        name: milestone.name,
-        description: milestone.description,
-        sequenceOrder: milestone.sequenceOrder,
-        maternityDressTasks: Array.isArray(milestone.maternityDressTasks)
-          ? milestone.maternityDressTasks.map((task) => ({
-              id: task.id,
-              name: task.name,
-              description: task.description,
-              status: task.status as TaskStatus,
-              sequenceOrder: task.sequenceOrder,
-              image: task.image,
-              note: task.note
-            }))
-          : []
-      }))
+      // Transform milestones data with QualityCheck detection
+      const milestonesUI: MilestoneUI[] = orderTaskItem.milestones.map((milestone) => {
+        const isQualityCheck =
+          milestone.name.toLowerCase().includes('quality') ||
+          milestone.name.toLowerCase().includes('kiểm tra') ||
+          milestone.name.toLowerCase().includes('quality check')
+
+        return {
+          name: milestone.name,
+          description: milestone.description,
+          sequenceOrder: milestone.sequenceOrder,
+          isQualityCheck,
+          maternityDressTasks: Array.isArray(milestone.maternityDressTasks)
+            ? milestone.maternityDressTasks.map((task) => ({
+                id: task.id,
+                name: task.name,
+                description: task.description,
+                // Giữ nguyên status từ API, có thể là PASS/FAIL hoặc DONE/PENDING/IN_PROGRESS
+                status: task.status as TaskStatus,
+                sequenceOrder: task.sequenceOrder,
+                image: task.image,
+                note: task.note
+              }))
+            : []
+        }
+      })
 
       return {
         preset: orderTaskItem.orderItem.preset,
@@ -59,7 +69,7 @@ const transformDataForUI = (data: OrderTaskItem[]): ProductTaskGroup[] => {
  */
 export const useGetOrderTasks = () => {
   return useQuery<OrderTaskItem[], unknown, ProductTaskGroup[]>({
-    queryKey: orderTasksQueryKeys.all,
+    queryKey: orderTasksQueryKeys.lists(),
     queryFn: async () => {
       const response = await orderTaskAPI.getOrderTask()
       console.log('API Response:', response.data) // Debug log
@@ -106,6 +116,7 @@ export const useGetOrderTaskByOrderItemId = (orderItemId: string) => {
 
 /**
  * Hook để cập nhật trạng thái của một task cụ thể - hỗ trợ image và note khi hoàn thành
+ * Quality Check tasks sẽ có status PASS/FAIL thay vì DONE
  */
 export const useUpdateTaskStatus = () => {
   const queryClient = useQueryClient()
@@ -128,8 +139,8 @@ export const useUpdateTaskStatus = () => {
 
       const body: { status: TaskStatus; image?: string; note?: string } = { status }
 
-      // Chỉ thêm image và note khi hoàn thành task
-      if (status === 'DONE') {
+      // Thêm image và note khi task hoàn thành (DONE, PASS, FAIL)
+      if (status === 'DONE' || status === 'PASS' || status === 'FAIL') {
         if (image) body.image = image
         if (note) body.note = note
       }
@@ -141,27 +152,104 @@ export const useUpdateTaskStatus = () => {
       }
       throw new Error(response.data.message || 'Không thể cập nhật trạng thái task')
     },
-    onSuccess: (_, variables) => {
-      // Invalidate và refetch lại danh sách tasks
-      queryClient.invalidateQueries({ queryKey: orderTasksQueryKeys.all })
-      queryClient.invalidateQueries({ queryKey: orderTasksQueryKeys.byOrderItem(variables.orderItemId) })
+    onMutate: async ({ dressTaskId, orderItemId, status, image, note }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: orderTasksQueryKeys.lists() })
+      await queryClient.cancelQueries({ queryKey: orderTasksQueryKeys.byOrderItem(orderItemId) })
 
+      // Snapshot the previous value
+      const previousListData = queryClient.getQueryData<ProductTaskGroup[]>(orderTasksQueryKeys.lists())
+      const previousDetailData = queryClient.getQueryData<ProductTaskGroup>(
+        orderTasksQueryKeys.byOrderItem(orderItemId)
+      )
+
+      // Optimistically update to the new value - LIST DATA
+      if (previousListData) {
+        const updatedListData = previousListData.map((productGroup) => {
+          if (productGroup.orderItemId === orderItemId) {
+            return {
+              ...productGroup,
+              milestones: productGroup.milestones.map((milestone) => ({
+                ...milestone,
+                maternityDressTasks: milestone.maternityDressTasks.map((task) => {
+                  if (task.id === dressTaskId) {
+                    return {
+                      ...task,
+                      status,
+                      ...(image && { image }),
+                      ...(note && { note })
+                    }
+                  }
+                  return task
+                })
+              }))
+            }
+          }
+          return productGroup
+        })
+        queryClient.setQueryData(orderTasksQueryKeys.lists(), updatedListData)
+      }
+
+      // Optimistically update to the new value - DETAIL DATA
+      if (previousDetailData && previousDetailData.orderItemId === orderItemId) {
+        const updatedDetailData = {
+          ...previousDetailData,
+          milestones: previousDetailData.milestones.map((milestone) => ({
+            ...milestone,
+            maternityDressTasks: milestone.maternityDressTasks.map((task) => {
+              if (task.id === dressTaskId) {
+                return {
+                  ...task,
+                  status,
+                  ...(image && { image }),
+                  ...(note && { note })
+                }
+              }
+              return task
+            })
+          }))
+        }
+        queryClient.setQueryData(orderTasksQueryKeys.byOrderItem(orderItemId), updatedDetailData)
+      }
+
+      // Return a context object with the snapshotted value
+      return { previousListData, previousDetailData, orderItemId }
+    },
+    onSuccess: (_, variables) => {
       // Hiển thị thông báo thành công
       const statusText =
         variables.status === 'IN_PROGRESS'
           ? 'bắt đầu'
           : variables.status === 'DONE'
             ? 'hoàn thành'
-            : variables.status === 'PENDING'
-              ? 'chuyển về chờ'
-              : 'cập nhật'
+            : variables.status === 'PASS'
+              ? 'hoàn thành (PASS)'
+              : variables.status === 'FAIL'
+                ? 'hoàn thành (FAIL)'
+                : variables.status === 'PENDING'
+                  ? 'chuyển về chờ'
+                  : 'cập nhật'
 
       toast.success(`Đã ${statusText} nhiệm vụ thành công!`)
     },
-    onError: (error: unknown) => {
+    onError: (error: unknown, _, context) => {
       console.error('Lỗi khi cập nhật trạng thái task:', error)
+
+      // Revert the optimistic update
+      if (context?.previousListData) {
+        queryClient.setQueryData(orderTasksQueryKeys.lists(), context.previousListData)
+      }
+      if (context?.previousDetailData && context?.orderItemId) {
+        queryClient.setQueryData(orderTasksQueryKeys.byOrderItem(context.orderItemId), context.previousDetailData)
+      }
+
       const errorMessage = error instanceof Error ? error.message : 'Không thể cập nhật trạng thái task'
       toast.error(`Lỗi: ${errorMessage}`)
+    },
+    onSettled: (_, __, variables) => {
+      // Always refetch after error or success to ensure we have the latest data
+      queryClient.invalidateQueries({ queryKey: orderTasksQueryKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: orderTasksQueryKeys.byOrderItem(variables.orderItemId) })
     },
     retry: (failureCount, error: unknown) => {
       // Không retry cho lỗi 4xx
