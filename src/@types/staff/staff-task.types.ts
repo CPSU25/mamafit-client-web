@@ -9,7 +9,7 @@ import { PresetType } from '../designer.types'
 /**
  * Staff Task Status - Staff chỉ quản lý các status cơ bản
  */
-export type StaffTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED' | 'PASS' | 'FAIL'
+export type StaffTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED' | 'PASS' | 'FAIL' | 'LOCKED'
 
 /**
  * Staff MaternityDress Task - Task structure cho staff

@@ -4,7 +4,7 @@
 // =====================================================================
 import { PresetType } from '@/@types/designer.types' // Đảm bảo import đúng đường dẫn
 
-export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED' | 'PASS' | 'FAIL'
+export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED' | 'PASS' | 'FAIL' | 'LOCKED'
 export type QualityCheckStatus = 'PASS' | 'FAIL'
 
 export interface MaternityDressTaskUI {
@@ -18,6 +18,7 @@ export interface MaternityDressTaskUI {
   // Optional fields để debug
   uniqueKey?: string
   orderItemId?: string
+  severity?: boolean // Thêm trường severity để đánh dấu lỗi nghiêm trọng
 }
 
 export interface MilestoneUI {
