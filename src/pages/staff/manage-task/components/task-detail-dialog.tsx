@@ -1,17 +1,24 @@
-import { useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
-import { Package, FileText, Image as ImageIcon, Save, X, Edit, ShieldCheck, ShieldX } from 'lucide-react'
-import { ProductTaskGroup, TaskStatus, QualityCheckStatus } from '@/pages/staff/manage-task/tasks/types'
-import { CloudinarySingleImageUpload } from '@/components/cloudinary-single-image-upload'
+import {
+  Package,
+  FileText,
+  Image as ImageIcon,
+  ShieldCheck,
+  ShieldX,
+  Play,
+  Pause,
+  CheckCircle2,
+  Clock
+} from 'lucide-react'
+import { TaskStatus, QualityCheckStatus } from '@/pages/staff/manage-task/tasks/types'
+import { useStaffGetOrderTaskByOrderItemId } from '@/services/staff/staff-task.service'
 
 interface TaskDetailDialogProps {
-  task: ProductTaskGroup | null
+  orderItemId: string | null // Thay đổi từ task object sang orderItemId
   open: boolean
   onOpenChange: (open: boolean) => void
   onTaskStatusChange: (
@@ -27,18 +34,45 @@ interface TaskDetailDialogProps {
 }
 
 export function TaskDetailDialog({
-  task,
+  orderItemId,
   open,
   onOpenChange,
   onTaskStatusChange,
   isUpdating = false
 }: TaskDetailDialogProps) {
-  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
-  const [editingNote, setEditingNote] = useState('')
-  const [editingStatus, setEditingStatus] = useState<TaskStatus>('PENDING')
-  const [editingImage, setEditingImage] = useState('')
+  // Fetch fresh data từ React Query cho orderItem này
+  const { data: task, isLoading, isError } = useStaffGetOrderTaskByOrderItemId(orderItemId || '')
 
-  if (!task) return null
+  // Loading state
+  if (isLoading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className='max-w-4xl max-h-[80vh] overflow-y-auto'>
+          <div className='flex items-center justify-center py-8'>
+            <div className='text-center space-y-2'>
+              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto'></div>
+              <p className='text-muted-foreground'>Đang tải chi tiết...</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  // Error state
+  if (isError || !task) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className='max-w-4xl max-h-[80vh] overflow-y-auto'>
+          <div className='flex items-center justify-center py-8'>
+            <div className='text-center space-y-2'>
+              <p className='text-red-500'>Không thể tải chi tiết công việc</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
 
   const totalTasks = task.milestones.reduce((sum, milestone) => sum + milestone.maternityDressTasks.length, 0)
   const completedTasks = task.milestones.reduce(
@@ -97,37 +131,6 @@ export function TaskDetailDialog({
           </Badge>
         )
     }
-  }
-
-  const handleStartEdit = (taskId: string, currentStatus: TaskStatus, currentNote: string, currentImage: string) => {
-    setEditingTaskId(taskId)
-    setEditingStatus(currentStatus)
-    setEditingNote(currentNote || '')
-    setEditingImage(currentImage || '')
-  }
-
-  const handleSaveEdit = () => {
-    if (!editingTaskId) return
-
-    // Gọi API update với status đã chỉnh sửa
-    // Với Quality Check, status sẽ là PASS/FAIL thay vì DONE + qualityCheckStatus
-    onTaskStatusChange(editingTaskId, editingStatus, task.orderItemId, {
-      image: editingImage || undefined,
-      note: editingNote || undefined
-    })
-
-    // Reset editing state
-    setEditingTaskId(null)
-    setEditingNote('')
-    setEditingStatus('PENDING')
-    setEditingImage('')
-  }
-
-  const handleCancelEdit = () => {
-    setEditingTaskId(null)
-    setEditingNote('')
-    setEditingStatus('PENDING')
-    setEditingImage('')
   }
 
   const isQualityCheckMilestone = (milestoneName: string) => {
@@ -232,101 +235,109 @@ export function TaskDetailDialog({
                                   <h4 className='font-medium'>{taskItem.name}</h4>
                                   <p className='text-sm text-muted-foreground'>{taskItem.description}</p>
 
-                                  {editingTaskId === taskItem.id ? (
-                                    // Edit Mode
-                                    <div className='mt-3 space-y-3'>
-                                      <div>
-                                        <label className='text-sm font-medium'>Trạng thái:</label>
-                                        <Select
-                                          value={editingStatus}
-                                          onValueChange={(value: TaskStatus) => setEditingStatus(value)}
-                                        >
-                                          <SelectTrigger className='w-full mt-1'>
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            {isQualityCheck ? (
-                                              // Quality Check tasks có các option đặc biệt
-                                              <>
-                                                <SelectItem value='PENDING'>Chờ kiểm tra</SelectItem>
-                                                <SelectItem value='IN_PROGRESS'>Đang kiểm tra</SelectItem>
-                                                <SelectItem value='PASS'>Pass - Đạt chất lượng</SelectItem>
-                                                <SelectItem value='FAIL'>Fail - Không đạt chất lượng</SelectItem>
-                                              </>
-                                            ) : (
-                                              // Tasks thường
-                                              <>
-                                                <SelectItem value='PENDING'>Chờ thực hiện</SelectItem>
-                                                <SelectItem value='IN_PROGRESS'>Đang thực hiện</SelectItem>
-                                                <SelectItem value='DONE'>Hoàn thành</SelectItem>
-                                                <SelectItem value='CANCELLED'>Đã hủy</SelectItem>
-                                              </>
-                                            )}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
+                                  {/* View Mode */}
+                                  <div className='mt-2 space-y-2'>
+                                    {taskItem.note && <p className='text-xs text-blue-600'>Ghi chú: {taskItem.note}</p>}
 
-                                      <div>
-                                        <label className='text-sm font-medium'>Ghi chú:</label>
-                                        <Textarea
-                                          value={editingNote}
-                                          onChange={(e) => setEditingNote(e.target.value)}
-                                          placeholder='Thêm ghi chú...'
-                                          className='mt-1'
-                                          rows={3}
+                                    {taskItem.image && (
+                                      <div className='flex items-center gap-2'>
+                                        <ImageIcon className='h-4 w-4 text-muted-foreground' />
+                                        <img
+                                          src={taskItem.image}
+                                          alt='Task result'
+                                          className='w-16 h-16 rounded object-cover'
                                         />
                                       </div>
+                                    )}
 
-                                      {(editingStatus === 'DONE' ||
-                                        editingStatus === 'PASS' ||
-                                        editingStatus === 'FAIL') && (
-                                        <div>
-                                          <label className='text-sm font-medium'>Hình ảnh kết quả:</label>
-                                          <CloudinarySingleImageUpload
-                                            value={editingImage}
-                                            onChange={setEditingImage}
-                                            className='mt-1'
-                                          />
-                                        </div>
-                                      )}
-
-                                      <div className='flex gap-2'>
-                                        <Button size='sm' onClick={handleSaveEdit} disabled={isUpdating}>
-                                          <Save className='h-4 w-4 mr-2' />
-                                          {isUpdating ? 'Đang lưu...' : 'Lưu'}
-                                        </Button>
-                                        <Button size='sm' variant='outline' onClick={handleCancelEdit}>
-                                          <X className='h-4 w-4 mr-2' />
-                                          Hủy
-                                        </Button>
+                                    {isQualityCheck && (taskItem.status === 'PASS' || taskItem.status === 'FAIL') && (
+                                      <div className='flex items-center gap-2'>
+                                        <span className='text-sm text-muted-foreground'>Kết quả:</span>
+                                        {getQualityStatusBadge(taskItem.status as QualityCheckStatus)}
                                       </div>
-                                    </div>
-                                  ) : (
-                                    // View Mode
-                                    <div className='mt-2 space-y-2'>
-                                      {taskItem.note && (
-                                        <p className='text-xs text-blue-600'>Ghi chú: {taskItem.note}</p>
+                                    )}
+
+                                    {/* Quick Action Buttons */}
+                                    <div className='flex gap-2 mt-3'>
+                                      {taskItem.status === 'PENDING' && (
+                                        <Button
+                                          size='sm'
+                                          variant='outline'
+                                          onClick={() =>
+                                            onTaskStatusChange(taskItem.id, 'IN_PROGRESS', task.orderItemId)
+                                          }
+                                          disabled={isUpdating}
+                                          className='gap-2'
+                                        >
+                                          <Play className='h-4 w-4' />
+                                          Bắt đầu
+                                        </Button>
                                       )}
 
-                                      {taskItem.image && (
-                                        <div className='flex items-center gap-2'>
-                                          <ImageIcon className='h-4 w-4 text-muted-foreground' />
-                                          <img
-                                            src={taskItem.image}
-                                            alt='Task result'
-                                            className='w-16 h-16 rounded object-cover'
-                                          />
-                                        </div>
+                                      {taskItem.status === 'IN_PROGRESS' && (
+                                        <>
+                                          <Button
+                                            size='sm'
+                                            variant='outline'
+                                            onClick={() => onTaskStatusChange(taskItem.id, 'PENDING', task.orderItemId)}
+                                            disabled={isUpdating}
+                                            className='gap-2'
+                                          >
+                                            <Pause className='h-4 w-4' />
+                                            Tạm dừng
+                                          </Button>
+
+                                          {isQualityCheck ? (
+                                            // Quality Check tasks có 2 nút PASS/FAIL
+                                            <>
+                                              <Button
+                                                size='sm'
+                                                onClick={() =>
+                                                  onTaskStatusChange(taskItem.id, 'PASS', task.orderItemId)
+                                                }
+                                                disabled={isUpdating}
+                                                className='bg-green-600 hover:bg-green-700 gap-2'
+                                              >
+                                                <CheckCircle2 className='h-4 w-4' />
+                                                Pass
+                                              </Button>
+                                              <Button
+                                                size='sm'
+                                                onClick={() =>
+                                                  onTaskStatusChange(taskItem.id, 'FAIL', task.orderItemId)
+                                                }
+                                                disabled={isUpdating}
+                                                className='bg-red-600 hover:bg-red-700 gap-2'
+                                              >
+                                                <Clock className='h-4 w-4' />
+                                                Fail
+                                              </Button>
+                                            </>
+                                          ) : (
+                                            // Task thường có nút Hoàn thành
+                                            <Button
+                                              size='sm'
+                                              onClick={() => onTaskStatusChange(taskItem.id, 'DONE', task.orderItemId)}
+                                              disabled={isUpdating}
+                                              className='bg-green-600 hover:bg-green-700 gap-2'
+                                            >
+                                              <CheckCircle2 className='h-4 w-4' />
+                                              Hoàn thành
+                                            </Button>
+                                          )}
+                                        </>
                                       )}
 
-                                      {isQualityCheck && (taskItem.status === 'PASS' || taskItem.status === 'FAIL') && (
-                                        <div className='flex items-center gap-2'>
-                                          <span className='text-sm text-muted-foreground'>Kết quả:</span>
-                                          {getQualityStatusBadge(taskItem.status as QualityCheckStatus)}
-                                        </div>
+                                      {(taskItem.status === 'DONE' ||
+                                        taskItem.status === 'PASS' ||
+                                        taskItem.status === 'FAIL') && (
+                                        <Badge variant='default' className='gap-1 self-start'>
+                                          <CheckCircle2 className='h-3 w-3' />
+                                          Đã xong
+                                        </Badge>
                                       )}
                                     </div>
-                                  )}
+                                  </div>
                                 </div>
                               </div>
 
@@ -334,24 +345,6 @@ export function TaskDetailDialog({
                                 <Badge className={`${getStatusColor(taskItem.status)} border`}>
                                   {getStatusText(taskItem.status)}
                                 </Badge>
-
-                                {editingTaskId !== taskItem.id && (
-                                  <Button
-                                    size='sm'
-                                    variant='outline'
-                                    onClick={() =>
-                                      handleStartEdit(
-                                        taskItem.id,
-                                        taskItem.status,
-                                        taskItem.note || '',
-                                        taskItem.image || ''
-                                      )
-                                    }
-                                  >
-                                    <Edit className='h-4 w-4 mr-2' />
-                                    Sửa
-                                  </Button>
-                                )}
                               </div>
                             </div>
                           ))}

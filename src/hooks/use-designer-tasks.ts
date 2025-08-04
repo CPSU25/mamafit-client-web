@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import orderTaskAPI from '@/apis/order-task.api'
+import orderTaskAPI from '@/apis/staff-order-task.api'
 import { toast } from 'sonner'
 
 export function useDesignerTasks() {

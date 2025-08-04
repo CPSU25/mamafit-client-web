@@ -1,24 +1,27 @@
-import React, { useState } from 'react'
+// =====================================================================
+// File: src/pages/admin/manage-order/components/milestone/AdminOrderMilestoneTracker.tsx
+// Mô tả: Component milestone tracker riêng cho Admin
+// Chỉ hiển thị dữ liệu admin structure: milestones.tasks[].detail
+// =====================================================================
+
+import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { CheckCircle2, Clock, Play, Pause, Lock } from 'lucide-react'
-import { MilestoneUI, TaskStatus } from '@/pages/staff/manage-task/tasks/types'
-import { useStaffUpdateTaskStatus } from '@/services/staff/staff-task.service'
-import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
+import { CheckCircle2, Clock, Lock, UserCheck, AlertCircle } from 'lucide-react'
+import { AdminMilestone, AdminTaskStatus } from '@/@types/admin/admin-task.types'
 
-// Helper functions for task status display
-const getStatusText = (status: TaskStatus): string => {
+/**
+ * Helper functions cho admin task status display
+ */
+const getAdminStatusText = (status: AdminTaskStatus): string => {
   switch (status) {
     case 'PENDING':
       return 'Chờ'
     case 'IN_PROGRESS':
       return 'Đang thực hiện'
-    case 'DONE':
+    case 'COMPLETED':
       return 'Hoàn thành'
     case 'CANCELLED':
       return 'Đã hủy'
@@ -31,13 +34,13 @@ const getStatusText = (status: TaskStatus): string => {
   }
 }
 
-const getStatusColor = (status: TaskStatus): string => {
+const getAdminStatusColor = (status: AdminTaskStatus): string => {
   switch (status) {
     case 'PENDING':
       return 'bg-gray-100 text-gray-600 border-gray-200'
     case 'IN_PROGRESS':
       return 'bg-blue-100 text-blue-700 border-blue-200'
-    case 'DONE':
+    case 'COMPLETED':
       return 'bg-green-100 text-green-700 border-green-200'
     case 'CANCELLED':
       return 'bg-red-100 text-red-700 border-red-200'
@@ -50,119 +53,41 @@ const getStatusColor = (status: TaskStatus): string => {
   }
 }
 
-interface OrderItemMilestoneTrackerProps {
-  milestones: MilestoneUI[]
-  orderItemId: string
+interface AdminOrderMilestoneTrackerProps {
+  milestones: AdminMilestone[]
+  isReadOnly?: boolean // Admin có thể chỉ xem hoặc có quyền chỉnh sửa
 }
 
-interface TaskCompletionDialogProps {
-  taskId: string
-  taskName: string
-  onComplete: (taskId: string, image?: string, note?: string) => void
-  isLoading: boolean
-}
-
-const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({ taskId, taskName, onComplete, isLoading }) => {
-  const [open, setOpen] = useState(false)
-  const [image, setImage] = useState<string>('')
-  const [note, setNote] = useState<string>('')
-
-  const handleSubmit = () => {
-    onComplete(taskId, image, note)
-    setOpen(false)
-    setImage('')
-    setNote('')
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size='sm' className='gap-2'>
-          <CheckCircle2 className='h-4 w-4' />
-          Hoàn thành
-        </Button>
-      </DialogTrigger>
-      <DialogContent className='max-w-md'>
-        <DialogHeader>
-          <DialogTitle>Hoàn thành nhiệm vụ</DialogTitle>
-        </DialogHeader>
-        <div className='space-y-4'>
-          <div className='bg-muted p-3 rounded-lg'>
-            <p className='font-medium'>{taskName}</p>
-          </div>
-
-          <div className='space-y-2'>
-            <Label>Hình ảnh kết quả (tùy chọn)</Label>
-            <CloudinaryImageUpload onChange={(urls) => setImage(urls[0] || '')} maxFiles={1} />
-            {image && (
-              <div className='mt-2'>
-                <img src={image} alt='Kết quả' className='w-full h-32 object-cover rounded' />
-              </div>
-            )}
-          </div>
-
-          <div className='space-y-2'>
-            <Label>Ghi chú (tùy chọn)</Label>
-            <Textarea
-              placeholder='Nhập ghi chú về kết quả công việc...'
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={3}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant='outline' onClick={() => setOpen(false)}>
-            Hủy
-          </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? 'Đang xử lý...' : 'Hoàn thành'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps> = ({ milestones, orderItemId }) => {
-  const updateTaskStatusMutation = useStaffUpdateTaskStatus()
-
+export const AdminOrderMilestoneTracker: React.FC<AdminOrderMilestoneTrackerProps> = ({
+  milestones,
+  isReadOnly = false
+}) => {
   // Sắp xếp milestones theo thứ tự
   const sortedMilestones = [...milestones].sort((a, b) => a.sequenceOrder - b.sequenceOrder)
 
-  // Tính toán milestone nào đang active (milestone đầu tiên chưa hoàn thành)
+  // Tính toán milestone nào đang active
   const getActiveMilestoneIndex = () => {
     for (let i = 0; i < sortedMilestones.length; i++) {
       const milestone = sortedMilestones[i]
-      const allTasksCompleted = milestone.maternityDressTasks.every(
-        (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+      const allTasksCompleted = milestone.tasks.every(
+        (task) => task.detail.status === 'COMPLETED' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
       )
       if (!allTasksCompleted) {
         return i
       }
     }
-    return sortedMilestones.length - 1 // Tất cả đã hoàn thành
+    return sortedMilestones.length - 1
   }
 
   const activeMilestoneIndex = getActiveMilestoneIndex()
 
-  const handleTaskStatusChange = (taskId: string, status: TaskStatus, image?: string, note?: string) => {
-    updateTaskStatusMutation.mutate({
-      dressTaskId: taskId,
-      orderItemId: orderItemId,
-      status,
-      image,
-      note
-    })
-  }
-
-  const getMilestoneStatus = (milestoneIndex: number, milestone: MilestoneUI) => {
-    const completedTasks = milestone.maternityDressTasks.filter(
-      (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+  const getMilestoneStatus = (milestoneIndex: number, milestone: AdminMilestone) => {
+    const completedTasks = milestone.tasks.filter(
+      (task) => task.detail.status === 'COMPLETED' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
     ).length
-    const totalTasks = milestone.maternityDressTasks.length
+    const totalTasks = milestone.tasks.length
     const allCompleted = completedTasks === totalTasks
-    const hasInProgress = milestone.maternityDressTasks.some((task) => task.status === 'IN_PROGRESS')
+    const hasInProgress = milestone.tasks.some((task) => task.detail.status === 'IN_PROGRESS')
 
     if (milestoneIndex < activeMilestoneIndex) {
       return { status: 'completed', label: 'Hoàn thành', variant: 'default' as const }
@@ -183,7 +108,15 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
     <div className='space-y-6'>
       <Card>
         <CardHeader>
-          <CardTitle>Quy trình thực hiện ({sortedMilestones.length} giai đoạn)</CardTitle>
+          <CardTitle className='flex items-center justify-between'>
+            <span>Quy trình thực hiện ({sortedMilestones.length} giai đoạn)</span>
+            {isReadOnly && (
+              <Badge variant='outline' className='text-xs'>
+                <AlertCircle className='h-3 w-3 mr-1' />
+                Chỉ xem
+              </Badge>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className='space-y-6'>
@@ -192,14 +125,15 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
               const isLocked = milestoneStatus.status === 'locked'
               const isCompleted = milestoneStatus.status === 'completed'
 
-              const completedTasks = milestone.maternityDressTasks.filter(
-                (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+              const completedTasks = milestone.tasks.filter(
+                (task) =>
+                  task.detail.status === 'COMPLETED' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
               ).length
-              const totalTasks = milestone.maternityDressTasks.length
+              const totalTasks = milestone.tasks.length
               const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
 
               return (
-                <div key={`milestone-${milestone.sequenceOrder}`} className='relative'>
+                <div key={`admin-milestone-${milestone.id}`} className='relative'>
                   {/* Connector line */}
                   {milestoneIndex < sortedMilestones.length - 1 && (
                     <div className={`absolute left-6 top-12 w-0.5 h-16 ${isCompleted ? 'bg-green-300' : 'bg-muted'}`} />
@@ -227,7 +161,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
                     <div className='p-6'>
                       <div className='flex items-start gap-4'>
-                        {/* Enhanced Status Icon */}
+                        {/* Status Icon */}
                         <div
                           className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg ring-4 ${
                             isCompleted
@@ -272,7 +206,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                             </Badge>
                           </div>
 
-                          {/* Enhanced Progress bar */}
+                          {/* Progress bar */}
                           <div className='mb-6'>
                             <div className='flex justify-between items-center text-sm mb-2'>
                               <span className='font-medium text-gray-700'>Tiến độ thực hiện</span>
@@ -305,20 +239,20 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                             </div>
                           </div>
 
-                          {/* Tasks */}
+                          {/* Tasks - Admin structure */}
                           {!isLocked && (
                             <div className='space-y-3'>
-                              {milestone.maternityDressTasks
+                              {milestone.tasks
                                 .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
                                 .map((task) => {
-                                  const taskStatus = task.status
-                                  const canStart = !isLocked
+                                  const taskStatus = task.detail.status
+                                  const canEdit = !isReadOnly
 
                                   return (
                                     <div
                                       key={task.id}
                                       className={`group relative overflow-hidden rounded-xl border transition-all duration-200 ${
-                                        taskStatus === 'DONE'
+                                        taskStatus === 'COMPLETED'
                                           ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-sm'
                                           : taskStatus === 'IN_PROGRESS'
                                             ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm'
@@ -328,7 +262,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                       {/* Status indicator line */}
                                       <div
                                         className={`absolute top-0 left-0 right-0 h-0.5 ${
-                                          taskStatus === 'DONE'
+                                          taskStatus === 'COMPLETED'
                                             ? 'bg-gradient-to-r from-green-400 to-emerald-500'
                                             : taskStatus === 'IN_PROGRESS'
                                               ? 'bg-gradient-to-r from-blue-400 to-indigo-500'
@@ -341,14 +275,14 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                           <div className='flex items-center gap-3'>
                                             <div
                                               className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${
-                                                taskStatus === 'DONE'
+                                                taskStatus === 'COMPLETED'
                                                   ? 'bg-green-100 text-green-600'
                                                   : taskStatus === 'IN_PROGRESS'
                                                     ? 'bg-blue-100 text-blue-600'
                                                     : 'bg-gray-100 text-gray-500'
                                               }`}
                                             >
-                                              {taskStatus === 'DONE' ||
+                                              {taskStatus === 'COMPLETED' ||
                                               taskStatus === 'PASS' ||
                                               taskStatus === 'FAIL' ? (
                                                 <CheckCircle2 className='h-4 w-4' />
@@ -362,21 +296,31 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                               <h4 className='font-semibold text-gray-900'>{task.name}</h4>
                                               <p className='text-sm text-gray-600 mt-0.5'>Bước #{task.sequenceOrder}</p>
                                             </div>
-                                            <Badge
-                                              variant='outline'
-                                              className={`text-xs font-medium ${getStatusColor(taskStatus)}`}
-                                            >
-                                              {getStatusText(taskStatus)}
-                                            </Badge>
+                                            <div className='flex items-center gap-2'>
+                                              <Badge
+                                                variant='outline'
+                                                className={`text-xs font-medium ${getAdminStatusColor(taskStatus)}`}
+                                              >
+                                                {getAdminStatusText(taskStatus)}
+                                              </Badge>
+                                              {task.detail.chargeName && (
+                                                <Badge variant='outline' className='text-xs'>
+                                                  <UserCheck className='h-3 w-3 mr-1' />
+                                                  {task.detail.chargeName}
+                                                </Badge>
+                                              )}
+                                            </div>
                                           </div>
 
                                           {task.description && (
                                             <p className='text-sm text-gray-600 pl-11'>{task.description}</p>
                                           )}
 
-                                          {/* Show image and note if completed - Improved Design */}
-                                          {(taskStatus === 'DONE' || taskStatus === 'PASS' || taskStatus === 'FAIL') &&
-                                            (task.image || task.note) && (
+                                          {/* Show image and note if completed - Admin structure */}
+                                          {(taskStatus === 'COMPLETED' ||
+                                            taskStatus === 'PASS' ||
+                                            taskStatus === 'FAIL') &&
+                                            (task.detail.image || task.detail.note) && (
                                               <div className='ml-11 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200'>
                                                 <div className='flex items-center gap-2 mb-3'>
                                                   <CheckCircle2 className='h-4 w-4 text-green-600' />
@@ -386,14 +330,14 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                 </div>
 
                                                 <div className='space-y-3'>
-                                                  {task.image && (
+                                                  {task.detail.image && (
                                                     <div className='space-y-2'>
                                                       <p className='text-xs font-medium text-green-700'>
                                                         Hình ảnh kết quả:
                                                       </p>
                                                       <div className='relative group'>
                                                         <img
-                                                          src={task.image}
+                                                          src={task.detail.image}
                                                           alt='Kết quả công việc'
                                                           className='w-full max-w-xs h-32 object-cover rounded-lg shadow-sm border border-green-200 transition-transform group-hover:scale-105'
                                                         />
@@ -402,12 +346,12 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                     </div>
                                                   )}
 
-                                                  {task.note && (
+                                                  {task.detail.note && (
                                                     <div className='space-y-2'>
                                                       <p className='text-xs font-medium text-green-700'>Ghi chú:</p>
                                                       <div className='bg-white/70 rounded-md p-3 border border-green-100'>
                                                         <p className='text-sm text-gray-700 leading-relaxed'>
-                                                          {task.note}
+                                                          {task.detail.note}
                                                         </p>
                                                       </div>
                                                     </div>
@@ -416,79 +360,40 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                               </div>
                                             )}
 
-                                          <div className='flex gap-2 pl-11'>
-                                            {taskStatus === 'PENDING' && canStart && (
+                                          {/* Admin chỉ có thể giao việc và theo dõi, không điều khiển trạng thái */}
+                                          {canEdit && !task.detail.chargeName && (
+                                            <div className='pl-11'>
                                               <Button
                                                 size='sm'
                                                 variant='outline'
-                                                onClick={() => handleTaskStatusChange(task.id, 'IN_PROGRESS')}
-                                                disabled={updateTaskStatusMutation.isPending}
+                                                onClick={() => {
+                                                  // TODO: Mở dialog giao việc cho Designer/Staff
+                                                  console.log('Assign task to Designer/Staff:', task.id)
+                                                }}
                                                 className='gap-2'
                                               >
-                                                <Play className='h-4 w-4' />
-                                                Bắt đầu
+                                                <UserCheck className='h-4 w-4' />
+                                                Giao việc
                                               </Button>
-                                            )}
+                                            </div>
+                                          )}
 
-                                            {taskStatus === 'IN_PROGRESS' && (
-                                              <>
-                                                <Button
-                                                  size='sm'
-                                                  variant='outline'
-                                                  onClick={() => handleTaskStatusChange(task.id, 'PENDING')}
-                                                  disabled={updateTaskStatusMutation.isPending}
-                                                  className='gap-2'
-                                                >
-                                                  <Pause className='h-4 w-4' />
-                                                  Tạm dừng
-                                                </Button>
-
-                                                {/* Kiểm tra xem có phải Quality Check milestone không */}
-                                                {milestone.isQualityCheck ? (
-                                                  // Quality Check tasks có 2 nút PASS/FAIL
-                                                  <>
-                                                    <Button
-                                                      size='sm'
-                                                      onClick={() => handleTaskStatusChange(task.id, 'PASS')}
-                                                      disabled={updateTaskStatusMutation.isPending}
-                                                      className='bg-green-600 hover:bg-green-700 gap-2'
-                                                    >
-                                                      <CheckCircle2 className='h-4 w-4' />
-                                                      Pass
-                                                    </Button>
-                                                    <Button
-                                                      size='sm'
-                                                      onClick={() => handleTaskStatusChange(task.id, 'FAIL')}
-                                                      disabled={updateTaskStatusMutation.isPending}
-                                                      className='bg-red-600 hover:bg-red-700 gap-2'
-                                                    >
-                                                      <Clock className='h-4 w-4' />
-                                                      Fail
-                                                    </Button>
-                                                  </>
-                                                ) : (
-                                                  // Task thường có nút Hoàn thành
-                                                  <TaskCompletionDialog
-                                                    taskId={task.id}
-                                                    taskName={task.name}
-                                                    onComplete={(taskId, image, note) =>
-                                                      handleTaskStatusChange(taskId, 'DONE', image, note)
-                                                    }
-                                                    isLoading={updateTaskStatusMutation.isPending}
-                                                  />
-                                                )}
-                                              </>
-                                            )}
-
-                                            {(taskStatus === 'DONE' ||
-                                              taskStatus === 'PASS' ||
-                                              taskStatus === 'FAIL') && (
-                                              <Badge variant='default' className='gap-1'>
-                                                <CheckCircle2 className='h-3 w-3' />
-                                                Đã xong
-                                              </Badge>
-                                            )}
-                                          </div>
+                                          {/* Hiển thị trạng thái hiện tại */}
+                                          {task.detail.chargeName && (
+                                            <div className='pl-11'>
+                                              <div className='flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200'>
+                                                <UserCheck className='h-4 w-4 text-blue-600' />
+                                                <div className='text-sm'>
+                                                  <span className='text-blue-800 font-medium'>
+                                                    Đã giao cho: {task.detail.chargeName}
+                                                  </span>
+                                                  <p className='text-blue-600 text-xs mt-1'>
+                                                    Trạng thái: {getAdminStatusText(taskStatus)}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          )}
                                         </div>
                                       </div>
                                     </div>
