@@ -6,15 +6,29 @@ import { Progress } from '@/components/ui/progress'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { CheckCircle2, Clock, Play, Pause, Lock, ShieldCheck, ShieldX, AlertTriangle, XCircle } from 'lucide-react'
+import {
+  CheckCircle2,
+  Clock,
+  Play,
+  Pause,
+  Lock,
+  ShieldCheck,
+  ShieldX,
+  AlertTriangle,
+  XCircle,
+  Package
+} from 'lucide-react'
 import { MilestoneUI, TaskStatus, QualityCheckStatus } from '@/pages/staff/manage-task/tasks/types'
 import { useStaffUpdateTaskStatus } from '@/services/staff/staff-task.service'
 import { useQualityCheckPostSubmitHandler } from '@/services/staff/quality-check.service'
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 import { QualityCheckTaskManager } from '@/components/quality-check-task-manager'
 import { QualityCheckFailedManager } from './quality-check-failed-manager'
+import { DeliveryOrderSuccessDialog } from '@/components/delivery-order-success-dialog'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
+import ghtkAPI from '@/apis/ghtk.api'
+import { GHTKOrder } from '@/@types/ghtk.types'
 
 // Helper functions for task status display
 const getStatusText = (status: TaskStatus): string => {
@@ -81,6 +95,7 @@ const getQualityStatusBadge = (status: QualityCheckStatus) => {
 interface OrderItemMilestoneTrackerProps {
   milestones: MilestoneUI[]
   orderItemId: string
+  orderId: string
 }
 
 interface TaskCompletionDialogProps {
@@ -152,10 +167,20 @@ const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({ taskId, tas
   )
 }
 
-export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps> = ({ milestones, orderItemId }) => {
+export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps> = ({
+  milestones,
+  orderItemId,
+  orderId
+}) => {
   const updateTaskStatusMutation = useStaffUpdateTaskStatus()
   const { handlePostSubmit } = useQualityCheckPostSubmitHandler()
   const queryClient = useQueryClient()
+
+  // State cho GHTK shipping
+  const [isCreatingShipping, setIsCreatingShipping] = useState(false)
+  const [shippingOrder, setShippingOrder] = useState<GHTKOrder | null>(null)
+  const [showShippingDialog, setShowShippingDialog] = useState(false)
+
   console.log('OrderItemMilestoneTracker rendered:', {
     milestones: milestones.length,
     orderItemId,
@@ -197,6 +222,18 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
       milestoneName.toLowerCase().includes('quality check failed') ||
       milestoneName.toLowerCase().includes('kiểm tra chất lượng thất bại')
     )
+  }
+
+  // Kiểm tra milestone có phải Packing không
+  const isPackingMilestone = (milestoneName: string) => {
+    const lowerName = milestoneName.toLowerCase()
+    return lowerName.includes('packing') || lowerName.includes('đóng gói')
+  }
+
+  // Kiểm tra task có phải Create Shipping không
+  const isCreateShippingTask = (taskName: string) => {
+    const lowerName = taskName.toLowerCase()
+    return lowerName.includes('create delivery order') || lowerName.includes('initiate and submit')
   }
 
   // Kiểm tra milestone có hoàn thành không
@@ -275,6 +312,36 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
       image,
       note
     })
+  }
+
+  // Xử lý tạo đơn hàng shipping
+  const handleCreateShipping = async (taskId: string) => {
+    try {
+      setIsCreatingShipping(true)
+      const response = await ghtkAPI.createShipping(orderId)
+
+      if (response.data.success) {
+        setShippingOrder(response.data.order)
+        setShowShippingDialog(true)
+
+        // Tự động cập nhật task status thành DONE sau khi tạo shipping thành công
+        updateTaskStatusMutation.mutate({
+          dressTaskId: taskId,
+          orderItemId: orderItemId,
+          status: 'DONE',
+          note: `Đã tạo đơn giao hàng GHTK - Tracking ID: ${response.data.order.trackingId}`
+        })
+
+        toast.success('Tạo đơn giao hàng thành công!')
+      } else {
+        toast.error(response.data.message || 'Không thể tạo đơn giao hàng')
+      }
+    } catch (error) {
+      console.error('Error creating shipping:', error)
+      toast.error('Có lỗi xảy ra khi tạo đơn giao hàng')
+    } finally {
+      setIsCreatingShipping(false)
+    }
   }
 
   // Cập nhật getMilestoneStatus để sử dụng isMilestoneLocked
@@ -945,32 +1012,62 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
                                           <div className='flex gap-2 pl-11'>
                                             {taskStatus === 'PENDING' && canStart && (
-                                              <Button
-                                                size='sm'
-                                                variant='outline'
-                                                onClick={() => handleTaskStatusChange(task.id, 'IN_PROGRESS')}
-                                                disabled={updateTaskStatusMutation.isPending}
-                                                className='gap-2'
-                                              >
-                                                <Play className='h-4 w-4' />
-                                                Bắt đầu
-                                              </Button>
+                                              <>
+                                                {/* Logic cho task Create Shipping trong Waiting For Delivery */}
+                                                {isCreateShippingTask(task.name) ? (
+                                                  <Button
+                                                    size='sm'
+                                                    variant='default'
+                                                    onClick={() => handleCreateShipping(task.id)}
+                                                    disabled={isCreatingShipping}
+                                                    className='gap-2 bg-blue-600 hover:bg-blue-700'
+                                                  >
+                                                    <Package className='h-4 w-4' />
+                                                    {isCreatingShipping ? 'Đang tạo...' : 'Tạo đơn giao hàng'}
+                                                  </Button>
+                                                ) : isPackingMilestone(milestone.name) ? (
+                                                  /* Logic cho Packing milestone - cho phép DONE trực tiếp */
+                                                  <TaskCompletionDialog
+                                                    taskId={task.id}
+                                                    taskName={task.name}
+                                                    onComplete={(taskId, image, note) =>
+                                                      handleTaskStatusChange(taskId, 'DONE', image, note)
+                                                    }
+                                                    isLoading={updateTaskStatusMutation.isPending}
+                                                  />
+                                                ) : (
+                                                  /* Logic thông thường cho các milestone khác */
+                                                  <Button
+                                                    size='sm'
+                                                    variant='outline'
+                                                    onClick={() => handleTaskStatusChange(task.id, 'IN_PROGRESS')}
+                                                    disabled={updateTaskStatusMutation.isPending}
+                                                    className='gap-2'
+                                                  >
+                                                    <Play className='h-4 w-4' />
+                                                    Bắt đầu
+                                                  </Button>
+                                                )}
+                                              </>
                                             )}
 
                                             {taskStatus === 'IN_PROGRESS' && (
                                               <>
-                                                <Button
-                                                  size='sm'
-                                                  variant='outline'
-                                                  onClick={() => handleTaskStatusChange(task.id, 'PENDING')}
-                                                  disabled={updateTaskStatusMutation.isPending}
-                                                  className='gap-2'
-                                                >
-                                                  <Pause className='h-4 w-4' />
-                                                  Tạm dừng
-                                                </Button>
+                                                {/* Chỉ cho phép tạm dừng với milestone thường (không phải Packing) */}
+                                                {!isPackingMilestone(milestone.name) && (
+                                                  <Button
+                                                    size='sm'
+                                                    variant='outline'
+                                                    onClick={() => handleTaskStatusChange(task.id, 'PENDING')}
+                                                    disabled={updateTaskStatusMutation.isPending}
+                                                    className='gap-2'
+                                                  >
+                                                    <Pause className='h-4 w-4' />
+                                                    Tạm dừng
+                                                  </Button>
+                                                )}
 
-                                                {/* Chỉ có milestone thường mới có nút Hoàn thành */}
+                                                {/* Nút Hoàn thành cho milestone thường và Packing */}
                                                 {!isQualityCheck && (
                                                   <TaskCompletionDialog
                                                     taskId={task.id}
@@ -1017,6 +1114,14 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialog hiển thị thông tin đơn hàng shipping thành công */}
+      <DeliveryOrderSuccessDialog
+        open={showShippingDialog}
+        onOpenChange={setShowShippingDialog}
+        order={shippingOrder}
+        message='Đơn giao hàng đã được tạo và gửi đến GHTK thành công!'
+      />
     </div>
   )
 }

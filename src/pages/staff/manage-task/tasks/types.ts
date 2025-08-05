@@ -41,4 +41,5 @@ export interface ProductTaskGroup {
   preset: PresetType
   milestones: MilestoneUI[]
   orderItemId: string // ID của order item để update task status
+  orderId: string // ID của order để tạo shipping
 }

@@ -51,6 +51,7 @@ export interface StaffOrderItem {
   updatedAt: string
   maternityDressDetail?: unknown
   orderId: string
+  addOnOptions?: string[]
   preset?: PresetType
   maternityDressDetailId?: string
   presetId?: string
@@ -64,6 +65,8 @@ export interface StaffOrderItem {
  * Staff Order Task Item - Response từ API /order-item-tasks
  */
 export interface StaffOrderTaskItem {
+  orderCode: string
+  measurement?: string[]
   orderItem: StaffOrderItem
   milestones: StaffMilestone[]
 }

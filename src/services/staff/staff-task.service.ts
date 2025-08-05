@@ -70,7 +70,8 @@ const transformStaffDataForUI = (data: StaffOrderTaskItem[]): ProductTaskGroup[]
       const result = {
         preset: staffOrderTaskItem.orderItem.preset,
         milestones: milestonesUI.sort((a, b) => a.sequenceOrder - b.sequenceOrder),
-        orderItemId: staffOrderTaskItem.orderItem.id
+        orderItemId: staffOrderTaskItem.orderItem.id,
+        orderId: staffOrderTaskItem.orderItem.orderId
       }
 
       return result

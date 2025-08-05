@@ -57,7 +57,7 @@ export default function OrderItemDetailPage() {
     )
   }
 
-  const { preset, milestones } = orderItemData
+  const { preset, milestones, orderId } = orderItemData
   const totalTasks = milestones.reduce((sum, milestone) => sum + milestone.maternityDressTasks.length, 0)
   const completedTasks = milestones.reduce(
     (sum, milestone) =>
@@ -156,7 +156,7 @@ export default function OrderItemDetailPage() {
 
         {/* Milestone Tracker */}
         <div className='lg:col-span-2'>
-          <OrderItemMilestoneTracker milestones={milestones} orderItemId={orderItemId} />
+          <OrderItemMilestoneTracker milestones={milestones} orderItemId={orderItemId} orderId={orderId} />
         </div>
       </div>
     </div>
