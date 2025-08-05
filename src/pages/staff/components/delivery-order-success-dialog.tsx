@@ -2,8 +2,8 @@ import React from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, ExternalLink } from 'lucide-react'
-import { DeliveryOrderDisplay } from '@/components/delivery-order-display'
 import { GHTKOrder } from '@/@types/ghtk.types'
+import { DeliveryOrderDisplay } from './delivery-order-display'
 
 interface DeliveryOrderSuccessDialogProps {
   open: boolean

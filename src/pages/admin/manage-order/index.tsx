@@ -20,7 +20,7 @@ import { useOrders as useOrdersContext } from './contexts/order-context'
 import type { OrderById } from '@/@types/manage-order.types'
 
 // Constants
-const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_PAGE_SIZE = 20
 const USERS_FETCH_SIZE = 1000
 
 // Loading skeleton component

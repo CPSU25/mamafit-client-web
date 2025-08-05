@@ -21,7 +21,7 @@ import {
 import { TaskStatus, QualityCheckStatus, MilestoneUI } from '@/pages/staff/manage-task/tasks/types'
 import { useStaffGetOrderTaskByOrderItemId } from '@/services/staff/staff-task.service'
 import { useQualityCheckPostSubmitHandler } from '@/services/staff/quality-check.service'
-import { QualityCheckTaskManager } from '@/components/quality-check-task-manager'
+import { QualityCheckTaskManager } from '@/pages/staff/manage-task/components/quality-check-task-manager'
 
 interface TaskDetailDialogProps {
   orderItemId: string | null

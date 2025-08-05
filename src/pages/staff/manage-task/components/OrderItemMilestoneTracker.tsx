@@ -22,13 +22,13 @@ import { MilestoneUI, TaskStatus, QualityCheckStatus } from '@/pages/staff/manag
 import { useStaffUpdateTaskStatus } from '@/services/staff/staff-task.service'
 import { useQualityCheckPostSubmitHandler } from '@/services/staff/quality-check.service'
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
-import { QualityCheckTaskManager } from '@/components/quality-check-task-manager'
+import { QualityCheckTaskManager } from '@/pages/staff/manage-task/components/quality-check-task-manager'
 import { QualityCheckFailedManager } from './quality-check-failed-manager'
-import { DeliveryOrderSuccessDialog } from '@/components/delivery-order-success-dialog'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import ghtkAPI from '@/apis/ghtk.api'
 import { GHTKOrder } from '@/@types/ghtk.types'
+import { DeliveryOrderSuccessDialog } from '../../components/delivery-order-success-dialog'
 
 // Helper functions for task status display
 const getStatusText = (status: TaskStatus): string => {
