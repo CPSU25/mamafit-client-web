@@ -15,7 +15,7 @@ const staffTaskAPI = {
   /**
    * Lấy danh sách order items được giao cho staff
    */
-  getOrderTasks: () => api.get<StaffTaskResponse<StaffOrderTaskItem[]>>('/order-item-tasks'),
+  getOrderTask: () => api.get<StaffTaskResponse<StaffOrderTaskItem[]>>('/order-item-tasks'),
 
   /**
    * Lấy thông tin chi tiết task theo orderItemId (cho staff)

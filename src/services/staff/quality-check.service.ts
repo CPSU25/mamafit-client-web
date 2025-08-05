@@ -10,12 +10,17 @@ export const useQualityCheckSubmit = () => {
   return useMutation({
     mutationFn: submitQualityCheckStatus,
     onSuccess: (_data, payload) => {
-      // Invalidate relevant queries để refresh data
+      // Invalidate với keys đúng
       queryClient.invalidateQueries({
         queryKey: ['staff-order-task', payload.orderItemId]
       })
       queryClient.invalidateQueries({
-        queryKey: ['staff-tasks']
+        queryKey: ['staffTasks']
+      })
+
+      // Force refetch ngay lập tức
+      queryClient.refetchQueries({
+        queryKey: ['staff-order-task', payload.orderItemId]
       })
     },
     onError: (error) => {
@@ -24,7 +29,6 @@ export const useQualityCheckSubmit = () => {
     }
   })
 }
-
 // Hook để xử lý post-submit logic
 export const useQualityCheckPostSubmitHandler = () => {
   const queryClient = useQueryClient()
@@ -33,9 +37,15 @@ export const useQualityCheckPostSubmitHandler = () => {
     try {
       if (hasFailures) {
         if (hasSeverity) {
-          // Trường hợp có severity = true: Backend sẽ reset Preset Production
-          // Chỉ cần reload data để lấy state mới
           await queryClient.invalidateQueries({
+            queryKey: ['staff-order-task', orderItemId]
+          })
+          await queryClient.invalidateQueries({
+            queryKey: ['staffTasks']
+          })
+
+          // Force refetch
+          await queryClient.refetchQueries({
             queryKey: ['staff-order-task', orderItemId]
           })
 
@@ -44,8 +54,15 @@ export const useQualityCheckPostSubmitHandler = () => {
             message: 'Preset Production đã được reset do có lỗi nghiêm trọng'
           }
         } else {
-          // Trường hợp có FAIL nhưng không severity: Khóa các milestone tiếp theo
           await queryClient.invalidateQueries({
+            queryKey: ['staff-order-task', orderItemId]
+          })
+          await queryClient.invalidateQueries({
+            queryKey: ['staffTasks']
+          })
+
+          // Force refetch
+          await queryClient.refetchQueries({
             queryKey: ['staff-order-task', orderItemId]
           })
 
@@ -55,8 +72,15 @@ export const useQualityCheckPostSubmitHandler = () => {
           }
         }
       } else {
-        // Trường hợp tất cả PASS: Tiếp tục workflow bình thường
         await queryClient.invalidateQueries({
+          queryKey: ['staff-order-task', orderItemId]
+        })
+        await queryClient.invalidateQueries({
+          queryKey: ['staffTasks']
+        })
+
+        // Force refetch
+        await queryClient.refetchQueries({
           queryKey: ['staff-order-task', orderItemId]
         })
 

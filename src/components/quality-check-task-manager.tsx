@@ -64,51 +64,27 @@ export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = (
   // Xử lý submit
   const handleSubmit = async () => {
     if (!canSubmit()) {
-      toast.error('Vui lòng hoàn thành đánh giá tất cả các task')
+      toast.error('Vui lòng hoàn thành đánh giá tất cả task')
       return
     }
 
     try {
-      const response = await qualityCheckMutation.mutateAsync({
-        taskStatuses,
-        orderItemId
+      // Gửi request submit Quality Check
+      await qualityCheckMutation.mutateAsync({
+        orderItemId,
+        taskStatuses: taskStatuses
       })
 
-      if (response.success && response.data) {
-        // Tính lại summary từ taskStatuses
-        const summary = {
-          totalTasks: taskStatuses.length,
-          passedTasks: taskStatuses.filter((t) => t.status === 'PASS').length,
-          failedTasks: taskStatuses.filter((t) => t.status === 'FAIL').length,
-          hasSeverity: taskStatuses.some((t) => t.status === 'FAIL' && t.severity)
-        }
-        const hasFailures = summary.failedTasks > 0
-        const hasSeverity = summary.hasSeverity
+      // Tính toán kết quả để gọi callback
+      const hasFailures = taskStatuses.some((status) => status.status === 'FAIL')
+      const hasSeverity = taskStatuses.some((status) => status.status === 'FAIL' && status.severity)
 
-        // Hiển thị thông báo phù hợp
-        if (hasFailures) {
-          if (hasSeverity) {
-            toast.warning('Quality Check hoàn thành. Có lỗi nghiêm trọng - Preset Production sẽ được reset.', {
-              description: `${summary.passedTasks} task PASS, ${summary.failedTasks} task FAIL (có severity)`
-            })
-          } else {
-            toast.warning('Quality Check hoàn thành. Có lỗi không nghiêm trọng - Các milestone tiếp theo sẽ bị khóa.', {
-              description: `${summary.passedTasks} task PASS, ${summary.failedTasks} task FAIL`
-            })
-          }
-        } else {
-          toast.success('Quality Check hoàn thành thành công!', {
-            description: `Tất cả ${summary.totalTasks} task đều PASS`
-          })
-        }
+      toast.success('Quality Check hoàn thành thành công!')
 
-        // Gọi callback để xử lý logic tiếp theo
-        onSubmitSuccess(hasFailures, hasSeverity)
-      } else {
-        toast.error(response.message || 'Có lỗi xảy ra khi submit Quality Check')
-      }
+      // Gọi callback để parent component xử lý tiếp
+      onSubmitSuccess(hasFailures, hasSeverity)
     } catch (error) {
-      console.error('Error submitting quality check:', error)
+      console.error('Error submitting Quality Check:', error)
       toast.error('Có lỗi xảy ra khi submit Quality Check')
     }
   }
