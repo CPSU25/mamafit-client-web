@@ -24,11 +24,12 @@ import {
   UserCheck
 } from 'lucide-react'
 import { useGetUserById } from '@/services/admin/manage-user.service'
-import { useOrder, useOrderDetail } from '@/services/admin/manage-order.service'
+import { useOrder } from '@/services/admin/manage-order.service'
+import { useAdminOrderItemWithTasks } from '@/services/admin/admin-task.service'
 import GoongMap from '@/components/Goong/GoongMap'
 import dayjs from 'dayjs'
-import { OrderAssignChargeDialog } from './order-assign-task-dialog'
 import { useState } from 'react'
+import { OrderAssignDialog } from './order-assign-dialog'
 
 interface OrderDetailSidebarProps {
   order: OrderById | null
@@ -39,7 +40,7 @@ interface OrderDetailSidebarProps {
 export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSidebarProps) {
   const { data: user } = useGetUserById(order?.userId ?? '')
   const { data: orderDetail } = useOrder(order?.id ?? '')
-  const { data: orderDetailItem } = useOrderDetail(
+  const { data: orderDetailItem } = useAdminOrderItemWithTasks(
     orderDetail?.data?.items && orderDetail.data.items.length > 0 ? orderDetail.data.items[0].id : ''
   )
   const [assignChargeDialogOpen, setAssignChargeDialogOpen] = useState(false)
@@ -200,7 +201,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                     <Badge variant='secondary' className='text-xs'>
                       {orderDetail?.data?.items?.length || order.items?.length || 0} items
                     </Badge>
-                    {orderDetail?.data?.items?.[0]?.itemType === 'DESIGN_REQUEST' && orderDetailItem?.data && (
+                    {orderDetail?.data?.items?.[0]?.itemType === 'DESIGN_REQUEST' && orderDetailItem && (
                       <Button
                         size='sm'
                         variant='outline'
@@ -306,7 +307,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                 size='sm'
                                 onClick={() => setAssignChargeDialogOpen(true)}
                                 className='w-full'
-                                disabled={!orderDetailItem?.data}
+                                disabled={!orderDetailItem}
                               >
                                 <UserCheck className='h-4 w-4 mr-2' />
                                 Giao việc cho Milestone
@@ -348,7 +349,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                               size='sm'
                               onClick={() => setAssignChargeDialogOpen(true)}
                               className='w-full'
-                              disabled={!orderDetailItem?.data}
+                              disabled={!orderDetailItem}
                             >
                               <UserCheck className='h-4 w-4 mr-2' />
                               Giao việc cho Milestone
@@ -559,10 +560,10 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
           </div>
         </div>
       </div>
-      <OrderAssignChargeDialog
+      <OrderAssignDialog
         open={assignChargeDialogOpen}
         onOpenChange={setAssignChargeDialogOpen}
-        orderItem={orderDetailItem?.data || null}
+        orderItem={orderDetailItem || null}
         onSuccess={handleAssignChargeSuccess}
       />
     </>

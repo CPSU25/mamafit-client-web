@@ -32,6 +32,16 @@ interface PresetDetailResponse {
   componentOptions: ComponentOption[]
 }
 
+interface SendPresetToDesignRequestResponse {
+  success: boolean
+  message: string
+  data?: {
+    presetId: string
+    designRequestId: string
+    orderId: string
+  }
+}
+
 export interface PresetListParams {
   index?: number
   pageSize?: number
@@ -71,6 +81,19 @@ export const presetApi = {
   // Delete preset
   deletePreset: async (id: string): Promise<void> => {
     await api.delete(`/preset/${id}`)
+  },
+
+  // Send preset to design request
+  sendPresetToDesignRequest: async (data: {
+    images: string[]
+    type: 'USER'
+    isDefault: boolean
+    price: number
+    designRequestId: string
+    orderId: string
+  }): Promise<ItemBaseResponse<SendPresetToDesignRequestResponse>> => {
+    const response = await api.post('/preset/design-request', data)
+    return response.data
   }
 }
 

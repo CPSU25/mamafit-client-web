@@ -8,19 +8,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Search, Filter, Eye, Clock, CheckCircle, AlertCircle, FileText, Package, ExternalLink } from 'lucide-react'
 import { TaskStatus as StaffTaskStatus, ProductTaskGroup } from '@/pages/staff/manage-task/tasks/types'
-import { useGetOrderTasks, useUpdateTaskStatus } from '@/services/global/order-task.service'
+import { useStaffGetOrderTasks, useStaffUpdateTaskStatus } from '@/services/staff/staff-task.service'
 import { TaskDetailDialog } from './components/task-detail-dialog'
 import { useNavigate } from 'react-router-dom'
 
 export default function StaffTasksPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [selectedTask, setSelectedTask] = useState<ProductTaskGroup | null>(null)
+  const [selectedOrderItemId, setSelectedOrderItemId] = useState<string | null>(null)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
 
   const navigate = useNavigate()
-  const { data: orderItems, isLoading, isError } = useGetOrderTasks()
-  const updateTaskStatusMutation = useUpdateTaskStatus()
+  const { data: orderItems, isLoading, isError } = useStaffGetOrderTasks()
+  const updateTaskStatusMutation = useStaffUpdateTaskStatus()
 
   const handleTaskStatusChange = (
     taskId: string,
@@ -99,7 +99,7 @@ export default function StaffTasksPage() {
     : []
 
   const handleViewDetail = (orderItem: ProductTaskGroup) => {
-    setSelectedTask(orderItem)
+    setSelectedOrderItemId(orderItem.orderItemId)
     setIsDetailDialogOpen(true)
   }
 
@@ -395,7 +395,7 @@ export default function StaffTasksPage() {
 
       {/* Task Detail Dialog */}
       <TaskDetailDialog
-        task={selectedTask}
+        orderItemId={selectedOrderItemId}
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}
         onTaskStatusChange={handleTaskStatusChange}

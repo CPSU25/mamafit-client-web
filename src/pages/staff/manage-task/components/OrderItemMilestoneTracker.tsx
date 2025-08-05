@@ -6,10 +6,15 @@ import { Progress } from '@/components/ui/progress'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { CheckCircle2, Clock, Play, Pause, Lock } from 'lucide-react'
-import { MilestoneUI, TaskStatus } from '@/pages/staff/manage-task/tasks/types'
-import { useUpdateTaskStatus } from '@/services/global/order-task.service'
+import { CheckCircle2, Clock, Play, Pause, Lock, ShieldCheck, ShieldX, AlertTriangle, XCircle } from 'lucide-react'
+import { MilestoneUI, TaskStatus, QualityCheckStatus } from '@/pages/staff/manage-task/tasks/types'
+import { useStaffUpdateTaskStatus } from '@/services/staff/staff-task.service'
+import { useQualityCheckPostSubmitHandler } from '@/services/staff/quality-check.service'
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
+import { QualityCheckTaskManager } from '@/components/quality-check-task-manager'
+import { QualityCheckFailedManager } from './quality-check-failed-manager'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 // Helper functions for task status display
 const getStatusText = (status: TaskStatus): string => {
@@ -26,6 +31,8 @@ const getStatusText = (status: TaskStatus): string => {
       return 'Pass'
     case 'FAIL':
       return 'Fail'
+    case 'LOCKED':
+      return 'Bị khóa'
     default:
       return 'Không xác định'
   }
@@ -45,8 +52,29 @@ const getStatusColor = (status: TaskStatus): string => {
       return 'bg-green-100 text-green-700 border-green-200'
     case 'FAIL':
       return 'bg-red-100 text-red-700 border-red-200'
+    case 'LOCKED':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200'
     default:
       return 'bg-gray-100 text-gray-600 border-gray-200'
+  }
+}
+
+const getQualityStatusBadge = (status: QualityCheckStatus) => {
+  switch (status) {
+    case 'PASS':
+      return (
+        <Badge className='bg-green-100 text-green-800 border-green-200'>
+          <ShieldCheck className='w-3 h-3 mr-1' />
+          Pass
+        </Badge>
+      )
+    case 'FAIL':
+      return (
+        <Badge className='bg-red-100 text-red-800 border-red-200'>
+          <ShieldX className='w-3 h-3 mr-1' />
+          Fail
+        </Badge>
+      )
   }
 }
 
@@ -125,28 +153,121 @@ const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({ taskId, tas
 }
 
 export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps> = ({ milestones, orderItemId }) => {
-  const updateTaskStatusMutation = useUpdateTaskStatus()
-
+  const updateTaskStatusMutation = useStaffUpdateTaskStatus()
+  const { handlePostSubmit } = useQualityCheckPostSubmitHandler()
+  const queryClient = useQueryClient()
+  console.log('OrderItemMilestoneTracker rendered:', {
+    milestones: milestones.length,
+    orderItemId,
+    isPending: updateTaskStatusMutation.isPending
+  })
   // Sắp xếp milestones theo thứ tự
   const sortedMilestones = [...milestones].sort((a, b) => a.sequenceOrder - b.sequenceOrder)
 
-  // Tính toán milestone nào đang active (milestone đầu tiên chưa hoàn thành)
-  const getActiveMilestoneIndex = () => {
-    for (let i = 0; i < sortedMilestones.length; i++) {
-      const milestone = sortedMilestones[i]
-      const allTasksCompleted = milestone.maternityDressTasks.every(
-        (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
-      )
-      if (!allTasksCompleted) {
-        return i
+  // Xử lý sau khi Quality Check submit thành công
+  const handleQualityCheckSuccess = async (hasFailures: boolean, hasSeverity: boolean) => {
+    try {
+      const result = await handlePostSubmit(orderItemId, hasFailures, hasSeverity)
+      console.log('Quality Check post-submit result:', result)
+
+      // Hiển thị toast message
+      if (result.action === 'continue_workflow') {
+        toast.success('Quality Check hoàn thành thành công!')
+      } else if (result.action === 'lock_next_milestones') {
+        toast.warning('Quality Check hoàn thành. Các milestone tiếp theo đã bị khóa do có lỗi.')
+      } else if (result.action === 'reset_preset_production') {
+        toast.error('Quality Check hoàn thành. Preset Production đã được reset do lỗi nghiêm trọng.')
       }
+
+      // KHÔNG cần thêm invalidate ở đây vì đã có trong handlePostSubmit
+    } catch (error) {
+      console.error('Error in post-submit handling:', error)
+      toast.error('Có lỗi xảy ra sau khi submit Quality Check')
     }
-    return sortedMilestones.length - 1 // Tất cả đã hoàn thành
   }
 
-  const activeMilestoneIndex = getActiveMilestoneIndex()
+  // Kiểm tra milestone có phải Quality Check không
+  const isQualityCheckMilestone = (milestoneName: string) => {
+    return milestoneName.toLowerCase().includes('quality') || milestoneName.toLowerCase().includes('kiểm tra')
+  }
+
+  // Kiểm tra milestone có phải Quality Check Failed không
+  const isQualityCheckFailedMilestone = (milestoneName: string) => {
+    return (
+      milestoneName.toLowerCase().includes('quality check failed') ||
+      milestoneName.toLowerCase().includes('kiểm tra chất lượng thất bại')
+    )
+  }
+
+  // Kiểm tra milestone có hoàn thành không
+  const isMilestoneCompleted = (milestone: MilestoneUI) => {
+    const isQualityCheck = isQualityCheckMilestone(milestone.name)
+    const isQualityCheckFailed = isQualityCheckFailedMilestone(milestone.name)
+
+    if (isQualityCheckFailed) {
+      // Quality Check Failed: hoàn thành khi có task DONE
+      const failedTask = milestone.maternityDressTasks.find(
+        (task) =>
+          (task.note && task.note.includes('|')) ||
+          (task.status === 'DONE' && task.note && task.note.includes('Đã hoàn thành sửa chữa'))
+      )
+      return failedTask && failedTask.status === 'DONE'
+    } else if (isQualityCheck) {
+      // Quality Check: hoàn thành khi tất cả tasks có status PASS hoặc FAIL
+      return milestone.maternityDressTasks.every((task) => task.status === 'PASS' || task.status === 'FAIL')
+    } else {
+      // Milestone thường: hoàn thành khi tất cả tasks có status DONE, PASS, hoặc FAIL
+      return milestone.maternityDressTasks.every(
+        (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+      )
+    }
+  }
+
+  // Kiểm tra milestone có bị khóa do Quality Check FAIL không nghiêm trọng
+  const isMilestoneLocked = (_milestone: MilestoneUI, milestoneIndex: number) => {
+    // Tìm Quality Check milestone
+    const qualityCheckMilestoneIndex = sortedMilestones.findIndex((m) => isQualityCheckMilestone(m.name))
+
+    // Nếu có Quality Check milestone và milestone hiện tại ở sau Quality Check
+    if (qualityCheckMilestoneIndex !== -1 && milestoneIndex > qualityCheckMilestoneIndex) {
+      const qualityCheckMilestone = sortedMilestones[qualityCheckMilestoneIndex]
+      const hasFailedTasks = qualityCheckMilestone.maternityDressTasks.some((t) => t.status === 'FAIL')
+      const hasSeverityTasks = qualityCheckMilestone.maternityDressTasks.some((t) => t.status === 'FAIL' && t.severity)
+
+      // Nếu có FAIL tasks
+      if (hasFailedTasks) {
+        // Nếu có severity tasks, lock vĩnh viễn (cần reset Preset Production)
+        if (hasSeverityTasks) {
+          return true
+        }
+
+        // Nếu có FAIL nhưng không có severity, check Quality Check Failed milestone
+        // Tìm Quality Check Failed milestone
+        const qualityCheckFailedMilestone = sortedMilestones.find((m) => isQualityCheckFailedMilestone(m.name))
+
+        if (qualityCheckFailedMilestone) {
+          // Kiểm tra Quality Check Failed đã hoàn thành chưa
+          const isQualityCheckFailedCompleted = isMilestoneCompleted(qualityCheckFailedMilestone)
+
+          // Nếu Quality Check Failed đã hoàn thành, mở khóa
+          if (isQualityCheckFailedCompleted) {
+            return false
+          }
+
+          // Nếu Quality Check Failed chưa hoàn thành, vẫn khóa
+          return true
+        }
+
+        // Nếu không có Quality Check Failed milestone, vẫn khóa
+        return true
+      }
+    }
+
+    return false
+  }
 
   const handleTaskStatusChange = (taskId: string, status: TaskStatus, image?: string, note?: string) => {
+    console.log('handleTaskStatusChange called:', { taskId, status, orderItemId, image, note })
     updateTaskStatusMutation.mutate({
       dressTaskId: taskId,
       orderItemId: orderItemId,
@@ -156,26 +277,56 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
     })
   }
 
+  // Cập nhật getMilestoneStatus để sử dụng isMilestoneLocked
   const getMilestoneStatus = (milestoneIndex: number, milestone: MilestoneUI) => {
-    const completedTasks = milestone.maternityDressTasks.filter(
-      (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
-    ).length
-    const totalTasks = milestone.maternityDressTasks.length
-    const allCompleted = completedTasks === totalTasks
+    const isQualityCheckFailed = isQualityCheckFailedMilestone(milestone.name)
+
+    // Kiểm tra milestone có hoàn thành không
+    const isCompleted = isMilestoneCompleted(milestone)
+
+    // Quality Check Failed có logic riêng, không theo sequential
+    if (isQualityCheckFailed) {
+      const failedTask = milestone.maternityDressTasks.find(
+        (task) =>
+          (task.note && task.note.includes('|')) ||
+          (task.status === 'DONE' && task.note && task.note.includes('Đã hoàn thành sửa chữa'))
+      )
+
+      if (isCompleted) {
+        return { status: 'completed', label: 'Hoàn thành', variant: 'default' as const }
+      } else if (failedTask && failedTask.status === 'IN_PROGRESS') {
+        return { status: 'in-progress', label: 'Đang thực hiện', variant: 'secondary' as const }
+      } else if (failedTask && failedTask.note && failedTask.note.includes('|')) {
+        // Quality Check Failed với failed tasks luôn active
+        return { status: 'active', label: 'Sẵn sàng', variant: 'outline' as const }
+      } else {
+        return { status: 'locked', label: 'Bị khóa', variant: 'secondary' as const }
+      }
+    }
+
+    // Sử dụng function isMilestoneLocked để check
+    const isLockedByQualityCheck = isMilestoneLocked(milestone, milestoneIndex)
+
+    // Sequential locking: milestone chỉ được mở khi TẤT CẢ milestone trước đã hoàn thành 100%
+    let isSequentialLocked = false
+    for (let i = 0; i < milestoneIndex; i++) {
+      const prevMilestone = sortedMilestones[i]
+      if (!isMilestoneCompleted(prevMilestone)) {
+        isSequentialLocked = true
+        break
+      }
+    }
+
     const hasInProgress = milestone.maternityDressTasks.some((task) => task.status === 'IN_PROGRESS')
 
-    if (milestoneIndex < activeMilestoneIndex) {
+    if (isSequentialLocked || isLockedByQualityCheck) {
+      return { status: 'locked', label: 'Bị khóa', variant: 'secondary' as const }
+    } else if (isCompleted) {
       return { status: 'completed', label: 'Hoàn thành', variant: 'default' as const }
-    } else if (milestoneIndex === activeMilestoneIndex) {
-      if (allCompleted) {
-        return { status: 'completed', label: 'Hoàn thành', variant: 'default' as const }
-      } else if (hasInProgress) {
-        return { status: 'in-progress', label: 'Đang thực hiện', variant: 'secondary' as const }
-      } else {
-        return { status: 'active', label: 'Sẵn sàng', variant: 'outline' as const }
-      }
+    } else if (hasInProgress) {
+      return { status: 'in-progress', label: 'Đang thực hiện', variant: 'secondary' as const }
     } else {
-      return { status: 'locked', label: 'Chờ', variant: 'secondary' as const }
+      return { status: 'active', label: 'Sẵn sàng', variant: 'outline' as const }
     }
   }
 
@@ -191,6 +342,8 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
               const milestoneStatus = getMilestoneStatus(milestoneIndex, milestone)
               const isLocked = milestoneStatus.status === 'locked'
               const isCompleted = milestoneStatus.status === 'completed'
+              const isQualityCheck = isQualityCheckMilestone(milestone.name)
+              const isQualityCheckFailed = isQualityCheckFailedMilestone(milestone.name)
 
               const completedTasks = milestone.maternityDressTasks.filter(
                 (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
@@ -198,6 +351,355 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
               const totalTasks = milestone.maternityDressTasks.length
               const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
 
+              // Xử lý Quality Check Failed milestone
+              if (isQualityCheckFailed) {
+                // Tìm task có note chứa danh sách failed tasks hoặc task đã hoàn thành
+                const failedTask = milestone.maternityDressTasks.find(
+                  (task) =>
+                    (task.note && task.note.includes('|')) ||
+                    (task.status === 'DONE' && task.note && task.note.includes('Đã hoàn thành sửa chữa'))
+                )
+
+                // Nếu đã hoàn thành Quality Check Failed (status DONE)
+                if (failedTask && failedTask.status === 'DONE') {
+                  return (
+                    <div key={`milestone-${milestone.sequenceOrder}`} className='relative'>
+                      {/* Connector line */}
+                      {milestoneIndex < sortedMilestones.length - 1 && (
+                        <div className='absolute left-6 top-12 w-0.5 h-16 bg-green-300' />
+                      )}
+
+                      <Card className='overflow-hidden border-green-200 bg-green-50'>
+                        <CardHeader className='bg-gradient-to-r from-green-50 to-emerald-50'>
+                          <CardTitle className='flex items-center gap-2 text-green-800'>
+                            <ShieldCheck className='h-5 w-5' />
+                            {milestone.sequenceOrder}. Quality Check Failed - Đã hoàn thành sửa chữa
+                          </CardTitle>
+                          <div className='flex items-center gap-2'>
+                            <Badge className='bg-green-100 text-green-800 border-green-200'>
+                              <CheckCircle2 className='h-3 w-3 mr-1' />
+                              DONE - Đã sửa chữa hoàn thành
+                            </Badge>
+                          </div>
+                          <p className='text-sm text-green-700'>{milestone.description}</p>
+                          <Progress value={100} className='w-full' />
+                        </CardHeader>
+
+                        <CardContent className='p-6'>
+                          {/* Task Info */}
+                          <div className='bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4'>
+                            <div className='flex items-start gap-3'>
+                              <Badge variant='outline' className='text-xs font-mono mt-1'>
+                                #{failedTask.sequenceOrder}
+                              </Badge>
+                              <div className='flex-1'>
+                                <h4 className='font-medium text-gray-900'>{failedTask.name}</h4>
+                                {failedTask.description && (
+                                  <p className='text-sm text-gray-600 mt-1'>{failedTask.description}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Completed Tasks List */}
+                          <div className='bg-green-100 p-4 rounded-lg border border-green-200'>
+                            <div className='flex items-center gap-2 mb-3'>
+                              <CheckCircle2 className='h-4 w-4 text-green-600' />
+                              <span className='text-sm font-medium text-green-800'>
+                                Đã hoàn thành sửa chữa tất cả vấn đề
+                              </span>
+                            </div>
+
+                            {/* Hiển thị note với danh sách đã hoàn thành */}
+                            {failedTask.note && (
+                              <div className='space-y-2'>
+                                <p className='text-xs font-medium text-green-700'>Chi tiết sửa chữa:</p>
+                                <div className='bg-white/70 rounded-md p-3 border border-green-100'>
+                                  <p className='text-sm text-gray-700 leading-relaxed'>{failedTask.note}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
+                }
+
+                // Nếu chưa hoàn thành Quality Check Failed - chỉ hiển thị form khi có note với "|" và không bị khóa
+                if (
+                  failedTask &&
+                  failedTask.status !== 'DONE' &&
+                  failedTask.note &&
+                  failedTask.note.includes('|') &&
+                  !isLocked
+                ) {
+                  return (
+                    <div key={`milestone-${milestone.sequenceOrder}`} className='relative'>
+                      {/* Connector line */}
+                      {milestoneIndex < sortedMilestones.length - 1 && (
+                        <div className='absolute left-6 top-12 w-0.5 h-16 bg-muted' />
+                      )}
+
+                      <QualityCheckFailedManager
+                        task={{
+                          id: failedTask.id,
+                          name: failedTask.name,
+                          description: failedTask.description,
+                          sequenceOrder: failedTask.sequenceOrder,
+                          note: failedTask.note || ''
+                        }}
+                        orderItemId={orderItemId}
+                        onSubmitSuccess={() => {
+                          // Invalidate queries thay vì reload
+                          queryClient.invalidateQueries({
+                            queryKey: ['staff-order-task', orderItemId]
+                          })
+                          queryClient.refetchQueries({
+                            queryKey: ['staff-order-task', orderItemId]
+                          })
+                        }}
+                        isDisabled={updateTaskStatusMutation.isPending}
+                      />
+                    </div>
+                  )
+                }
+
+                // Nếu Quality Check Failed bị khóa
+                if (isLocked && failedTask) {
+                  return (
+                    <div key={`milestone-${milestone.sequenceOrder}`} className='relative'>
+                      {/* Connector line */}
+                      {milestoneIndex < sortedMilestones.length - 1 && (
+                        <div className='absolute left-6 top-12 w-0.5 h-16 bg-muted' />
+                      )}
+
+                      <Card className='overflow-hidden border-yellow-200 bg-yellow-50'>
+                        <CardHeader className='bg-gradient-to-r from-yellow-50 to-amber-50'>
+                          <CardTitle className='flex items-center gap-2 text-yellow-800'>
+                            <Lock className='h-5 w-5' />
+                            {milestone.sequenceOrder}. Quality Check Failed - Bị khóa
+                          </CardTitle>
+                          <Badge variant='secondary' className='w-fit'>
+                            {milestoneStatus.label}
+                          </Badge>
+                          <p className='text-sm text-yellow-700'>{milestone.description}</p>
+                          <p className='text-xs text-yellow-700 bg-yellow-100 p-2 rounded mt-2'>
+                            ⚠️ Cần hoàn thành milestone trước để mở khóa.
+                          </p>
+                        </CardHeader>
+                      </Card>
+                    </div>
+                  )
+                }
+
+                // Nếu không có failed task hoặc đã xử lý xong thì skip milestone này
+                return null
+              }
+
+              // Xử lý Quality Check milestone thông thường (không phải Failed)
+              if (isQualityCheck && !isQualityCheckFailed) {
+                // Nếu milestone bị khóa
+                if (isLocked) {
+                  return (
+                    <div key={`milestone-${milestone.sequenceOrder}`} className='relative'>
+                      {/* Connector line */}
+                      {milestoneIndex < sortedMilestones.length - 1 && (
+                        <div className='absolute left-6 top-12 w-0.5 h-16 bg-muted' />
+                      )}
+
+                      <Card className='overflow-hidden border-yellow-200 bg-yellow-50'>
+                        <CardHeader className='bg-gradient-to-r from-yellow-50 to-amber-50'>
+                          <CardTitle className='flex items-center gap-2 text-yellow-800'>
+                            <Lock className='h-5 w-5' />
+                            {milestone.sequenceOrder}. Quality Check - Bị khóa
+                          </CardTitle>
+                          <Badge variant='secondary' className='w-fit'>
+                            {milestoneStatus.label}
+                          </Badge>
+                          <p className='text-sm text-yellow-700'>{milestone.description}</p>
+                          <p className='text-xs text-yellow-700 bg-yellow-100 p-2 rounded mt-2'>
+                            ⚠️ Cần hoàn thành milestone trước để mở khóa.
+                          </p>
+                        </CardHeader>
+                      </Card>
+                    </div>
+                  )
+                }
+
+                // Kiểm tra xem Quality Check đã hoàn thành chưa
+                const isQualityCheckDone = milestone.maternityDressTasks.every(
+                  (t) => t.status === 'PASS' || t.status === 'FAIL'
+                )
+
+                // Nếu đã hoàn thành, hiển thị readonly view
+                if (isQualityCheckDone) {
+                  const passedTasks = milestone.maternityDressTasks.filter((t) => t.status === 'PASS').length
+                  const failedTasks = milestone.maternityDressTasks.filter((t) => t.status === 'FAIL').length
+                  const severityTasks = milestone.maternityDressTasks.filter(
+                    (t) => t.status === 'FAIL' && t.severity
+                  ).length
+
+                  return (
+                    <div key={`milestone-${milestone.sequenceOrder}`} className='relative'>
+                      {/* Connector line */}
+                      {milestoneIndex < sortedMilestones.length - 1 && (
+                        <div className='absolute left-6 top-12 w-0.5 h-16 bg-green-300' />
+                      )}
+
+                      <Card className='overflow-hidden border-green-200 bg-green-50'>
+                        <CardHeader className='bg-gradient-to-r from-green-50 to-emerald-50'>
+                          <CardTitle className='flex items-center gap-2 text-green-800'>
+                            <ShieldCheck className='h-5 w-5' />
+                            {milestone.sequenceOrder}. Quality Check - Đã hoàn thành
+                          </CardTitle>
+                          <div className='flex items-center gap-4 text-sm flex-wrap'>
+                            <Badge className='bg-green-100 text-green-800 border-green-200'>
+                              <CheckCircle2 className='h-3 w-3 mr-1' />
+                              {passedTasks} PASS
+                            </Badge>
+                            {failedTasks > 0 && (
+                              <Badge className='bg-red-100 text-red-800 border-red-200'>
+                                <ShieldX className='h-3 w-3 mr-1' />
+                                {failedTasks} FAIL
+                              </Badge>
+                            )}
+                            {severityTasks > 0 && (
+                              <Badge className='bg-red-200 text-red-900 border-red-300'>
+                                <AlertTriangle className='h-3 w-3 mr-1' />
+                                {severityTasks} nghiêm trọng
+                              </Badge>
+                            )}
+                          </div>
+                          <Progress value={100} className='w-full' />
+                          {milestone.description && <p className='text-sm text-green-700'>{milestone.description}</p>}
+                        </CardHeader>
+
+                        <CardContent className='p-6'>
+                          <div className='space-y-4'>
+                            {milestone.maternityDressTasks
+                              .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
+                              .map((taskItem) => {
+                                const isPass = taskItem.status === 'PASS'
+                                const isFail = taskItem.status === 'FAIL'
+                                const hasSeverity = taskItem.severity || false
+
+                                return (
+                                  <div
+                                    key={taskItem.id}
+                                    className={`p-4 border rounded-lg ${
+                                      isPass
+                                        ? 'border-green-200 bg-green-50'
+                                        : isFail
+                                          ? hasSeverity
+                                            ? 'border-red-300 bg-red-50'
+                                            : 'border-orange-200 bg-orange-50'
+                                          : 'border-gray-200'
+                                    }`}
+                                  >
+                                    <div className='space-y-3'>
+                                      {/* Task Info */}
+                                      <div className='flex items-start gap-3'>
+                                        <Badge variant='outline' className='text-xs font-mono mt-1'>
+                                          #{taskItem.sequenceOrder}
+                                        </Badge>
+                                        <div className='flex-1'>
+                                          <h4 className='font-medium text-gray-900'>{taskItem.name}</h4>
+                                          {taskItem.description && (
+                                            <p className='text-sm text-gray-600 mt-1'>{taskItem.description}</p>
+                                          )}
+                                        </div>
+                                        <Badge
+                                          className={
+                                            isPass
+                                              ? 'bg-green-100 text-green-800 border-green-200'
+                                              : 'bg-red-100 text-red-800 border-red-200'
+                                          }
+                                        >
+                                          {taskItem.status}
+                                        </Badge>
+                                      </div>
+
+                                      {/* Status Display */}
+                                      <div className='flex items-center gap-6 ml-12'>
+                                        <div
+                                          className={`flex items-center space-x-2 ${
+                                            isPass ? 'text-green-700' : 'text-gray-500'
+                                          }`}
+                                        >
+                                          <CheckCircle2
+                                            className={`h-4 w-4 ${isPass ? 'text-green-600' : 'text-gray-400'}`}
+                                          />
+                                          <span className='text-sm font-medium'>PASS - Đạt chất lượng</span>
+                                          {isPass && <Badge className='bg-green-600 text-white text-xs'>✓</Badge>}
+                                        </div>
+
+                                        <div
+                                          className={`flex items-center space-x-2 ${
+                                            isFail ? 'text-red-700' : 'text-gray-500'
+                                          }`}
+                                        >
+                                          <XCircle className={`h-4 w-4 ${isFail ? 'text-red-600' : 'text-gray-400'}`} />
+                                          <span className='text-sm font-medium'>FAIL - Không đạt chất lượng</span>
+                                          {isFail && <Badge className='bg-red-600 text-white text-xs'>✓</Badge>}
+                                        </div>
+                                      </div>
+
+                                      {/* Severity Display (chỉ hiện khi FAIL) */}
+                                      {isFail && (
+                                        <div className='ml-12 p-3 bg-red-50 border border-red-200 rounded-md'>
+                                          <div
+                                            className={`flex items-center space-x-2 ${
+                                              hasSeverity ? 'text-red-800' : 'text-red-600'
+                                            }`}
+                                          >
+                                            <AlertTriangle
+                                              className={`h-4 w-4 ${hasSeverity ? 'text-red-700' : 'text-gray-400'}`}
+                                            />
+                                            <span className='text-sm font-medium'>
+                                              Mức độ nghiêm trọng cao (cần reset Preset Production)
+                                            </span>
+                                            {hasSeverity && <Badge className='bg-red-700 text-white text-xs'>✓</Badge>}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
+                }
+
+                // Nếu chưa hoàn thành, hiển thị QualityCheckTaskManager
+                const qualityCheckTasks = milestone.maternityDressTasks.map((task) => ({
+                  id: task.id,
+                  name: task.name,
+                  description: task.description,
+                  sequenceOrder: task.sequenceOrder
+                }))
+
+                return (
+                  <div key={`milestone-${milestone.sequenceOrder}`} className='relative'>
+                    {/* Connector line */}
+                    {milestoneIndex < sortedMilestones.length - 1 && (
+                      <div className='absolute left-6 top-12 w-0.5 h-16 bg-muted' />
+                    )}
+
+                    <QualityCheckTaskManager
+                      tasks={qualityCheckTasks}
+                      orderItemId={orderItemId}
+                      onSubmitSuccess={handleQualityCheckSuccess}
+                      isDisabled={updateTaskStatusMutation.isPending}
+                    />
+                  </div>
+                )
+              }
+
+              // Render milestone thường
               return (
                 <div key={`milestone-${milestone.sequenceOrder}`} className='relative'>
                   {/* Connector line */}
@@ -208,7 +710,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                   <div
                     className={`relative overflow-hidden rounded-xl border transition-all duration-200 ${
                       isLocked
-                        ? 'bg-gray-50/50 border-gray-200 shadow-sm'
+                        ? 'bg-yellow-50/50 border-yellow-200 shadow-sm'
                         : isCompleted
                           ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-md'
                           : 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-md hover:shadow-lg'
@@ -220,7 +722,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                         isCompleted
                           ? 'bg-gradient-to-r from-green-400 to-emerald-500'
                           : isLocked
-                            ? 'bg-gray-300'
+                            ? 'bg-yellow-300'
                             : 'bg-gradient-to-r from-blue-400 to-indigo-500'
                       }`}
                     />
@@ -233,7 +735,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                             isCompleted
                               ? 'bg-gradient-to-br from-green-400 to-green-600 text-white ring-green-100'
                               : isLocked
-                                ? 'bg-gray-300 text-gray-600 ring-gray-100'
+                                ? 'bg-yellow-300 text-yellow-800 ring-yellow-100'
                                 : 'bg-gradient-to-br from-blue-400 to-blue-600 text-white ring-blue-100'
                           }`}
                         >
@@ -251,12 +753,25 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                             <div>
                               <h3
                                 className={`font-bold text-xl mb-1 ${
-                                  isCompleted ? 'text-green-700' : isLocked ? 'text-gray-600' : 'text-blue-700'
+                                  isCompleted ? 'text-green-700' : isLocked ? 'text-yellow-800' : 'text-blue-700'
                                 }`}
                               >
                                 {milestone.name}
+                                {isLocked && (
+                                  <Badge variant='secondary' className='ml-2'>
+                                    {milestoneStatus.label}
+                                  </Badge>
+                                )}
                               </h3>
                               <p className='text-gray-600 leading-relaxed'>{milestone.description}</p>
+                              {isLocked && (
+                                <p className='text-xs text-yellow-700 bg-yellow-100 p-2 rounded mt-2'>
+                                  ⚠️{' '}
+                                  {milestoneStatus.label.includes('Quality Check')
+                                    ? 'Milestone này bị khóa do Quality Check có lỗi không nghiêm trọng. Chờ admin assign người khác xử lý.'
+                                    : 'Cần hoàn thành milestone trước để mở khóa.'}
+                                </p>
+                              )}
                             </div>
                             <Badge
                               variant={milestoneStatus.variant}
@@ -264,7 +779,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                 isCompleted
                                   ? 'bg-green-100 text-green-800 border-green-200'
                                   : isLocked
-                                    ? 'bg-gray-100 text-gray-600 border-gray-200'
+                                    ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
                                     : 'bg-blue-100 text-blue-800 border-blue-200'
                               }`}
                             >
@@ -318,7 +833,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                     <div
                                       key={task.id}
                                       className={`group relative overflow-hidden rounded-xl border transition-all duration-200 ${
-                                        taskStatus === 'DONE'
+                                        taskStatus === 'DONE' || taskStatus === 'PASS' || taskStatus === 'FAIL'
                                           ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-sm'
                                           : taskStatus === 'IN_PROGRESS'
                                             ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm'
@@ -328,7 +843,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                       {/* Status indicator line */}
                                       <div
                                         className={`absolute top-0 left-0 right-0 h-0.5 ${
-                                          taskStatus === 'DONE'
+                                          taskStatus === 'DONE' || taskStatus === 'PASS' || taskStatus === 'FAIL'
                                             ? 'bg-gradient-to-r from-green-400 to-emerald-500'
                                             : taskStatus === 'IN_PROGRESS'
                                               ? 'bg-gradient-to-r from-blue-400 to-indigo-500'
@@ -341,7 +856,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                           <div className='flex items-center gap-3'>
                                             <div
                                               className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${
-                                                taskStatus === 'DONE'
+                                                taskStatus === 'DONE' || taskStatus === 'PASS' || taskStatus === 'FAIL'
                                                   ? 'bg-green-100 text-green-600'
                                                   : taskStatus === 'IN_PROGRESS'
                                                     ? 'bg-blue-100 text-blue-600'
@@ -374,7 +889,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                             <p className='text-sm text-gray-600 pl-11'>{task.description}</p>
                                           )}
 
-                                          {/* Show image and note if completed - Improved Design */}
+                                          {/* Show image and note if completed */}
                                           {(taskStatus === 'DONE' || taskStatus === 'PASS' || taskStatus === 'FAIL') &&
                                             (task.image || task.note) && (
                                               <div className='ml-11 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200'>
@@ -416,6 +931,18 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                               </div>
                                             )}
 
+                                          {/* Action buttons cho Quality Check tasks hiển thị kết quả */}
+                                          {(taskStatus === 'PASS' || taskStatus === 'FAIL') && (
+                                            <div className='ml-11 p-3 bg-gray-50 border border-gray-200 rounded-md'>
+                                              <div className='flex items-center gap-2'>
+                                                <span className='text-sm text-muted-foreground'>
+                                                  Kết quả Quality Check:
+                                                </span>
+                                                {getQualityStatusBadge(taskStatus as QualityCheckStatus)}
+                                              </div>
+                                            </div>
+                                          )}
+
                                           <div className='flex gap-2 pl-11'>
                                             {taskStatus === 'PENDING' && canStart && (
                                               <Button
@@ -443,31 +970,8 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                   Tạm dừng
                                                 </Button>
 
-                                                {/* Kiểm tra xem có phải Quality Check milestone không */}
-                                                {milestone.isQualityCheck ? (
-                                                  // Quality Check tasks có 2 nút PASS/FAIL
-                                                  <>
-                                                    <Button
-                                                      size='sm'
-                                                      onClick={() => handleTaskStatusChange(task.id, 'PASS')}
-                                                      disabled={updateTaskStatusMutation.isPending}
-                                                      className='bg-green-600 hover:bg-green-700 gap-2'
-                                                    >
-                                                      <CheckCircle2 className='h-4 w-4' />
-                                                      Pass
-                                                    </Button>
-                                                    <Button
-                                                      size='sm'
-                                                      onClick={() => handleTaskStatusChange(task.id, 'FAIL')}
-                                                      disabled={updateTaskStatusMutation.isPending}
-                                                      className='bg-red-600 hover:bg-red-700 gap-2'
-                                                    >
-                                                      <Clock className='h-4 w-4' />
-                                                      Fail
-                                                    </Button>
-                                                  </>
-                                                ) : (
-                                                  // Task thường có nút Hoàn thành
+                                                {/* Chỉ có milestone thường mới có nút Hoàn thành */}
+                                                {!isQualityCheck && (
                                                   <TaskCompletionDialog
                                                     taskId={task.id}
                                                     taskName={task.name}
@@ -500,7 +1004,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                           {isLocked && (
                             <div className='text-center py-4 text-muted-foreground'>
                               <Lock className='h-8 w-8 mx-auto mb-2 opacity-50' />
-                              <p className='text-sm'>Cần hoàn thành giai đoạn trước để mở khóa</p>
+                              <p className='text-sm'>Cần hoàn thành milestone trước để mở khóa</p>
                             </div>
                           )}
                         </div>

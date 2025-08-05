@@ -34,7 +34,7 @@ import { useOrder, useOrderDetail } from '@/services/admin/manage-order.service'
 import { useGetUserById } from '@/services/admin/manage-user.service'
 
 import GoongMap from '@/components/Goong/GoongMap'
-import { OrderAssignChargeDialog } from './components/order-assign-task-dialog'
+import { OrderAssignDialog } from './components/order-assign-dialog'
 import { getStatusColor, getStatusLabel } from './data/data'
 
 // Constants
@@ -763,10 +763,11 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Assign Charge Dialog */}
-        <OrderAssignChargeDialog
+        <OrderAssignDialog
           open={assignChargeDialogOpen}
           onOpenChange={setAssignChargeDialogOpen}
-          orderItem={orderDetailItem?.data || null}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          orderItem={orderDetailItem?.data as any}
           onSuccess={handleAssignChargeSuccess}
         />
       </div>
