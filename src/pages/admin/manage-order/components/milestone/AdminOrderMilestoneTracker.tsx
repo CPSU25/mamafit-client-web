@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { CheckCircle2, Clock, Lock, UserCheck, AlertCircle } from 'lucide-react'
-import { AdminMilestone, AdminTaskStatus } from '@/@types/admin/admin-task.types'
+import { AdminMilestone, AdminTaskStatus } from '@/@types/admin-task.types'
 
 /**
  * Helper functions cho admin task status display

@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Package, User, Users, CheckCircle } from 'lucide-react'
 
-import { AdminOrderItemWithTasks, AdminMilestone } from '@/@types/admin/admin-task.types'
+import { AdminOrderItemWithTasks, AdminMilestone } from '@/@types/admin-task.types'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'

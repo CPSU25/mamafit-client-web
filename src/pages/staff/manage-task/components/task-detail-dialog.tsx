@@ -167,7 +167,7 @@ export function TaskDetailDialog({
   }
 
   // Kiểm tra milestone có bị khóa không (sau Quality Check có FAIL không nghiêm trọng)
-  const isMilestoneLocked = (milestone: MilestoneUI, milestoneIndex: number) => {
+  const isMilestoneLocked = (_milestone: MilestoneUI, milestoneIndex: number) => {
     // Tìm Quality Check milestone
     const qualityCheckMilestoneIndex = task.milestones.findIndex((m) => isQualityCheckMilestone(m.name))
 

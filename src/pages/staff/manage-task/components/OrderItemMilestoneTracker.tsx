@@ -224,7 +224,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   }
 
   // Kiểm tra milestone có bị khóa do Quality Check FAIL không nghiêm trọng
-  const isMilestoneLocked = (milestone: MilestoneUI, milestoneIndex: number) => {
+  const isMilestoneLocked = (_milestone: MilestoneUI, milestoneIndex: number) => {
     // Tìm Quality Check milestone
     const qualityCheckMilestoneIndex = sortedMilestones.findIndex((m) => isQualityCheckMilestone(m.name))
 

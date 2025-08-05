@@ -1,9 +1,3 @@
-// =====================================================================
-// File: src/services/admin/admin-task.service.ts
-// Mô tả: Service riêng cho Admin Task Management
-// Chỉ xử lý data structure của admin, không có mapping với staff
-// =====================================================================
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import adminTaskAPI from '@/apis/admin-task.api'
 import {
@@ -11,22 +5,15 @@ import {
   AdminAssignChargeRequest,
   AdminUpdateTaskStatusRequest,
   AdminTaskStatus
-} from '@/@types/admin/admin-task.types'
+} from '@/@types/admin-task.types'
 import { toast } from 'sonner'
 
-/**
- * Query keys cho admin tasks - tách biệt với staff
- */
 const adminTaskQueryKeys = {
   all: ['adminTasks'] as const,
   orderItems: () => [...adminTaskQueryKeys.all, 'orderItems'] as const,
   orderItem: (id: string) => [...adminTaskQueryKeys.orderItems(), id] as const
 }
 
-/**
- * Hook lấy thông tin order item với milestones và tasks (cho admin)
- * Trả về đúng structure admin: milestones có tasks, task có detail
- */
 export const useAdminOrderItemWithTasks = (orderItemId: string) => {
   return useQuery<AdminOrderItemWithTasks>({
     queryKey: adminTaskQueryKeys.orderItem(orderItemId),
@@ -34,8 +21,6 @@ export const useAdminOrderItemWithTasks = (orderItemId: string) => {
       const response = await adminTaskAPI.getOrderItemWithTasks(orderItemId)
 
       if (response.data.statusCode === 200) {
-        // Trả về trực tiếp data, không transform gì cả
-        // Data đã đúng format admin: milestones.tasks[].detail{status, note, image}
         return response.data.data
       }
       throw new Error(response.data.message || 'Failed to fetch admin order item tasks')
@@ -45,9 +30,6 @@ export const useAdminOrderItemWithTasks = (orderItemId: string) => {
   })
 }
 
-/**
- * Hook assign charge cho milestones (admin only)
- */
 export const useAdminAssignCharge = () => {
   const queryClient = useQueryClient()
 
@@ -61,7 +43,6 @@ export const useAdminAssignCharge = () => {
       throw new Error(response.data.message || 'Failed to assign charge')
     },
     onSuccess: (_, variables) => {
-      // Invalidate các order items liên quan
       variables.forEach((assignment) => {
         assignment.orderItemIds.forEach((orderItemId) => {
           queryClient.invalidateQueries({
@@ -87,9 +68,6 @@ export const useAdminAssignCharge = () => {
   })
 }
 
-/**
- * Hook update check list status (admin only)
- */
 export const useAdminUpdateCheckListStatus = () => {
   const queryClient = useQueryClient()
 
@@ -103,7 +81,6 @@ export const useAdminUpdateCheckListStatus = () => {
       throw new Error(response.data.message || 'Failed to update check list status')
     },
     onSuccess: (_, variables) => {
-      // Invalidate order item liên quan
       queryClient.invalidateQueries({
         queryKey: adminTaskQueryKeys.orderItem(variables.orderItemId)
       })
@@ -118,9 +95,6 @@ export const useAdminUpdateCheckListStatus = () => {
   })
 }
 
-/**
- * Hook update task status cho admin (nếu cần)
- */
 export const useAdminUpdateTaskStatus = () => {
   const queryClient = useQueryClient()
 

@@ -4,7 +4,7 @@
 // API: /order-item-tasks - structure có maternityDressTasks, status/note/image nằm ngoài
 // =====================================================================
 
-import { PresetType } from '../designer.types'
+import { PresetType } from './designer.types'
 
 /**
  * Staff Task Status - Staff chỉ quản lý các status cơ bản
@@ -50,9 +50,8 @@ export interface StaffOrderItem {
   createdAt: string
   updatedAt: string
   maternityDressDetail?: unknown
-  preset?: PresetType
-  designRequest?: unknown
   orderId: string
+  preset?: PresetType
   maternityDressDetailId?: string
   presetId?: string
   itemType: 'PRESET' | 'READY_TO_BUY' | 'CUSTOM'
@@ -72,7 +71,7 @@ export interface StaffOrderTaskItem {
 /**
  * Request để update task status trong staff
  */
-export interface StaffUpdateTaskStatusRequest {
+export interface UpdateTaskStatusRequest {
   status: StaffTaskStatus
   image?: string // Chỉ cần khi hoàn thành task
   note?: string // Chỉ cần khi hoàn thành task
@@ -81,7 +80,7 @@ export interface StaffUpdateTaskStatusRequest {
 /**
  * Response wrapper cho staff task operations
  */
-export interface StaffTaskResponse<T> {
+export interface TaskResponse<T> {
   data: T
   message: string
   statusCode: number

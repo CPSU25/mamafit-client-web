@@ -10,7 +10,7 @@ import {
   AdminAssignChargeRequest,
   AdminUpdateTaskStatusRequest,
   AdminTaskResponse
-} from '@/@types/admin/admin-task.types'
+} from '@/@types/admin-task.types'
 
 /**
  * Admin Task API - Chỉ dành cho admin

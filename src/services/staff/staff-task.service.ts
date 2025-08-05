@@ -5,7 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import staffTaskAPI from '@/apis/staff-order-task.api'
-import { StaffOrderTaskItem, StaffUpdateTaskStatusRequest, StaffTaskStatus } from '@/@types/staff/staff-task.types'
+import { StaffOrderTaskItem, UpdateTaskStatusRequest, StaffTaskStatus } from '@/@types/staff-task.types'
 import { ProductTaskGroup, MilestoneUI } from '@/pages/staff/manage-task/tasks/types'
 import { toast } from 'sonner'
 
@@ -290,7 +290,7 @@ export const useStaffUpdateTaskStatus = () => {
       image?: string
       note?: string
     }) => {
-      const body: StaffUpdateTaskStatusRequest = { status }
+      const body: UpdateTaskStatusRequest = { status }
 
       if (status === 'DONE' || status === 'PASS' || status === 'FAIL') {
         if (image) body.image = image
