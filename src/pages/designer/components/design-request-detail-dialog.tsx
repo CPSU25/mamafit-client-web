@@ -20,17 +20,22 @@ import {
   Eye,
   ExternalLink,
   Edit,
-  Save
+  Save,
+  Send
 } from 'lucide-react'
 import dayjs from 'dayjs'
-import { OrderTaskItem } from '@/@types/order-task.types'
+import { DesignerOrderTaskItemList, OrderItemOfDesigner } from '@/@types/designer-task.types'
 import { useUpdateTaskStatus } from '@/hooks/use-designer-tasks'
 import { CloudinarySingleImageUpload } from '@/components/cloudinary-single-image-upload'
+import { useNavigate } from 'react-router-dom'
+import { useCreateRoom } from '@/services/chat/chat.service'
+import { useAuthStore } from '@/lib/zustand/use-auth-store'
+import { toast } from 'sonner'
 
-// Interface mở rộng từ OrderTaskItem để bao gồm các field bổ sung
-interface ExtendedOrderTaskItem extends OrderTaskItem {
+// Interface mở rộng từ DesignerOrderTaskItemList để handle API response mới
+interface ExtendedOrderTaskItem extends Omit<DesignerOrderTaskItemList, 'orderItem'> {
+  orderItem: OrderItemOfDesigner // Thay đổi từ array thành object duy nhất
   measurement?: unknown
-  orderCode?: string
   addressId?: string | null
 }
 
@@ -47,8 +52,19 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
   const [taskNote, setTaskNote] = useState('')
   const [taskImage, setTaskImage] = useState('')
 
+  const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const createRoomMutation = useCreateRoom()
+
   // Sử dụng hook để update task status
   const updateTaskMutation = useUpdateTaskStatus()
+
+  // orderItem bây giờ là object duy nhất, không phải array
+  const orderItem = designRequest.orderItem
+
+  if (!orderItem || !orderItem.designRequest) {
+    return null
+  }
 
   const handleEditTask = (task: { id: string; status: string; note?: string | null; image?: string | null }) => {
     setEditingTask(task.id)
@@ -67,7 +83,7 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
     updateTaskMutation.mutate(
       {
         taskId: task.id,
-        orderItemId: designRequest.orderItem.id,
+        orderItemId: orderItem.id,
         body
       },
       {
@@ -134,15 +150,56 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
     return Math.round((completedTasks / allTasks.length) * 100)
   }
 
+  // Handle chat với khách hàng
+  const handleChatWithCustomer = async () => {
+    if (!user?.userId || !orderItem.designRequest.userId) {
+      toast.error('Không thể tạo chat room: Thiếu thông tin user')
+      return
+    }
+
+    try {
+      console.log('Creating chat room between:', user.userId, 'and', orderItem.designRequest.userId)
+
+      const newRoom = await createRoomMutation.mutateAsync({
+        userId1: user.userId,
+        userId2: orderItem.designRequest.userId
+      })
+
+      toast.success('Đã tạo chat room thành công!')
+
+      // Navigate đến trang chat với roomId và design request context
+      const chatUrl = `/system/designer/messages?roomId=${newRoom.id}&designRequestId=${orderItem.designRequest.id}&orderId=${orderItem.orderId}&orderCode=${designRequest.orderCode}`
+      navigate(chatUrl)
+      onClose() // Đóng dialog
+    } catch (error) {
+      console.error('Error creating chat room:', error)
+      toast.error('Có lỗi khi tạo chat room')
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle className='flex items-center gap-2'>
-            <Palette className='h-5 w-5' />
-            Chi tiết Design Request - #{designRequest.orderCode || 'N/A'}
-          </DialogTitle>
-          <DialogDescription>Xem thông tin chi tiết và tiến độ thiết kế cho yêu cầu của khách hàng</DialogDescription>
+          <div className='flex items-center justify-between'>
+            <div>
+              <DialogTitle className='flex items-center gap-2'>
+                <Palette className='h-5 w-5' />
+                Chi tiết Design Request - #{designRequest.orderCode || 'N/A'}
+              </DialogTitle>
+              <DialogDescription>
+                Xem thông tin chi tiết và tiến độ thiết kế cho yêu cầu của khách hàng
+              </DialogDescription>
+            </div>
+            <Button
+              onClick={handleChatWithCustomer}
+              disabled={createRoomMutation.isPending}
+              className='flex items-center gap-2'
+            >
+              <Send className='h-4 w-4' />
+              {createRoomMutation.isPending ? 'Đang tạo...' : 'Chat với khách hàng'}
+            </Button>
+          </div>
         </DialogHeader>
 
         <Tabs defaultValue='overview' className='space-y-4'>
@@ -166,22 +223,22 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                   <div>
                     <label className='text-sm font-medium'>Mô tả:</label>
                     <p className='text-sm text-muted-foreground mt-1'>
-                      {designRequest.orderItem.designRequest?.description || 'Không có mô tả'}
+                      {orderItem.designRequest.description || 'Không có mô tả'}
                     </p>
                   </div>
                   <div className='grid grid-cols-2 gap-3'>
                     <div>
                       <label className='text-sm font-medium'>Loại sản phẩm:</label>
-                      <p className='text-sm text-muted-foreground'>{designRequest.orderItem.itemType}</p>
+                      <p className='text-sm text-muted-foreground'>{orderItem.itemType}</p>
                     </div>
                     <div>
                       <label className='text-sm font-medium'>Số lượng:</label>
-                      <p className='text-sm text-muted-foreground'>{designRequest.orderItem.quantity}</p>
+                      <p className='text-sm text-muted-foreground'>{orderItem.quantity}</p>
                     </div>
                   </div>
                   <div>
                     <label className='text-sm font-medium'>Giá trị:</label>
-                    <p className='text-sm text-muted-foreground'>{formatCurrency(designRequest.orderItem.price)}</p>
+                    <p className='text-sm text-muted-foreground'>{formatCurrency(orderItem.price)}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -201,23 +258,17 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                   </div>
                   <div>
                     <label className='text-sm font-medium'>ID khách hàng:</label>
-                    <p className='text-sm text-muted-foreground'>
-                      {designRequest.orderItem.designRequest?.userId || 'N/A'}
-                    </p>
+                    <p className='text-sm text-muted-foreground'>{orderItem.designRequest.userId || 'N/A'}</p>
                   </div>
                   <div className='grid grid-cols-2 gap-3'>
                     <div>
                       <label className='text-sm font-medium'>Tạo bởi:</label>
-                      <p className='text-sm text-muted-foreground'>
-                        {designRequest.orderItem.designRequest?.createdBy || 'N/A'}
-                      </p>
+                      <p className='text-sm text-muted-foreground'>{orderItem.designRequest.createdBy || 'N/A'}</p>
                     </div>
                     <div>
                       <label className='text-sm font-medium'>Ngày tạo:</label>
                       <p className='text-sm text-muted-foreground'>
-                        {designRequest.orderItem.designRequest?.createdAt
-                          ? formatDate(designRequest.orderItem.designRequest.createdAt)
-                          : 'N/A'}
+                        {orderItem.designRequest.createdAt ? formatDate(orderItem.designRequest.createdAt) : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -260,17 +311,16 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                   <ImageIcon className='h-4 w-4' />
-                  Hình ảnh tham khảo ({designRequest.orderItem.designRequest?.images?.length || 0})
+                  Hình ảnh tham khảo ({orderItem.designRequest.images?.length || 0})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {designRequest.orderItem.designRequest?.images &&
-                designRequest.orderItem.designRequest.images.length > 0 ? (
+                {orderItem.designRequest.images && orderItem.designRequest.images.length > 0 ? (
                   <div className='space-y-4'>
                     {/* Main Image */}
                     <div className='aspect-video bg-muted rounded-lg overflow-hidden'>
                       <img
-                        src={designRequest.orderItem.designRequest.images[selectedImageIndex]}
+                        src={orderItem.designRequest.images[selectedImageIndex]}
                         alt={`Reference ${selectedImageIndex + 1}`}
                         className='w-full h-full object-contain'
                       />
@@ -278,7 +328,7 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
 
                     {/* Thumbnail Gallery */}
                     <div className='grid grid-cols-6 gap-2'>
-                      {designRequest.orderItem.designRequest.images.map((image, index) => (
+                      {orderItem.designRequest.images.map((image: string, index: number) => (
                         <button
                           key={index}
                           onClick={() => setSelectedImageIndex(index)}
@@ -295,9 +345,7 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                     <Button
                       variant='outline'
                       className='w-full'
-                      onClick={() =>
-                        window.open(designRequest.orderItem.designRequest!.images[selectedImageIndex], '_blank')
-                      }
+                      onClick={() => window.open(orderItem.designRequest.images![selectedImageIndex], '_blank')}
                     >
                       <ExternalLink className='h-4 w-4 mr-2' />
                       Xem kích thước đầy đủ

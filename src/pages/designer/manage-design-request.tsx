@@ -20,12 +20,12 @@ import {
 import dayjs from 'dayjs'
 import { useDesignerTasks } from '@/hooks/use-designer-tasks'
 import { DesignRequestDetailDialog } from './components/design-request-detail-dialog'
-import { OrderTaskItem } from '@/@types/order-task.types'
+import { DesignerOrderTaskItemList, OrderItemOfDesigner } from '@/@types/designer-task.types'
 
-// Interface mở rộng từ OrderTaskItem để bao gồm các field bổ sung
-interface ExtendedOrderTaskItem extends OrderTaskItem {
+// Interface mở rộng từ DesignerOrderTaskItemList để handle API response mới
+interface ExtendedOrderTaskItem extends Omit<DesignerOrderTaskItemList, 'orderItem'> {
+  orderItem: OrderItemOfDesigner // Thay đổi từ array thành object duy nhất
   measurement?: unknown
-  orderCode?: string
   addressId?: string | null
 }
 
@@ -87,11 +87,13 @@ export function ManageDesignRequestPage() {
 
   const filteredRequests = Array.isArray(requestsArray)
     ? requestsArray.filter((request: ExtendedOrderTaskItem) => {
-        // Chỉ lấy các request có designRequest (design request items)
-        if (!request.orderItem?.designRequest) return false
+        // orderItem bây giờ là object duy nhất, không phải array
+        const orderItem = request.orderItem
+
+        if (!orderItem || !orderItem.designRequest) return false
 
         const orderCode = request.orderCode || 'N/A'
-        const description = request.orderItem.designRequest.description || ''
+        const description = orderItem.designRequest.description || ''
 
         const matchesSearch =
           orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -184,88 +186,94 @@ export function ManageDesignRequestPage() {
 
         <TabsContent value='grid' className='space-y-4'>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {filteredRequests.map((request: ExtendedOrderTaskItem) => (
-              <Card key={request.orderItem.id} className='hover:shadow-lg transition-shadow'>
-                <CardHeader>
-                  <div className='flex items-center justify-between'>
-                    <CardTitle className='text-lg'>Đơn hàng #{request.orderCode || 'N/A'}</CardTitle>
-                    {getStatusBadge(getTaskStatus(request.milestones))}
-                  </div>
-                  <CardDescription>Tạo: {formatDate(request.orderItem.createdAt)}</CardDescription>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                  {/* Design Request Info */}
-                  <div className='space-y-2'>
-                    <div className='flex items-center gap-2 text-sm'>
-                      <FileText className='h-4 w-4 text-muted-foreground' />
-                      <span className='font-medium'>Mô tả:</span>
-                    </div>
-                    <p className='text-sm text-muted-foreground line-clamp-2'>
-                      {request.orderItem.designRequest?.description || 'Không có mô tả'}
-                    </p>
-                  </div>
+            {filteredRequests.map((request: ExtendedOrderTaskItem) => {
+              // orderItem bây giờ là object duy nhất
+              const orderItem = request.orderItem
+              if (!orderItem || !orderItem.designRequest) return null
 
-                  {/* Images preview */}
-                  {request.orderItem.designRequest?.images && request.orderItem.designRequest.images.length > 0 && (
+              return (
+                <Card key={orderItem.id} className='hover:shadow-lg transition-shadow'>
+                  <CardHeader>
+                    <div className='flex items-center justify-between'>
+                      <CardTitle className='text-lg'>Đơn hàng #{request.orderCode || 'N/A'}</CardTitle>
+                      {getStatusBadge(getTaskStatus(request.milestones))}
+                    </div>
+                    <CardDescription>Tạo: {formatDate(orderItem.createdAt)}</CardDescription>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                    {/* Design Request Info */}
                     <div className='space-y-2'>
                       <div className='flex items-center gap-2 text-sm'>
-                        <ImageIcon className='h-4 w-4 text-muted-foreground' />
-                        <span className='font-medium'>
-                          Hình ảnh tham khảo ({request.orderItem.designRequest.images.length})
-                        </span>
+                        <FileText className='h-4 w-4 text-muted-foreground' />
+                        <span className='font-medium'>Mô tả:</span>
                       </div>
-                      <div className='flex gap-2'>
-                        {request.orderItem.designRequest.images.slice(0, 3).map((image, index) => (
-                          <div key={index} className='w-16 h-16 rounded-lg overflow-hidden bg-muted'>
-                            <img src={image} alt={`Reference ${index + 1}`} className='w-full h-full object-cover' />
-                          </div>
-                        ))}
-                        {request.orderItem.designRequest.images.length > 3 && (
-                          <div className='w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-xs text-muted-foreground'>
-                            +{request.orderItem.designRequest.images.length - 3}
-                          </div>
-                        )}
-                      </div>
+                      <p className='text-sm text-muted-foreground line-clamp-2'>
+                        {orderItem.designRequest.description || 'Không có mô tả'}
+                      </p>
                     </div>
-                  )}
 
-                  {/* Tasks Progress */}
-                  <div className='space-y-2'>
-                    <div className='flex items-center gap-2 text-sm'>
-                      <Palette className='h-4 w-4 text-muted-foreground' />
-                      <span className='font-medium'>Tiến độ thiết kế:</span>
-                    </div>
-                    {request.milestones.map((milestone) => (
-                      <div key={milestone.sequenceOrder} className='space-y-1'>
-                        <p className='text-sm font-medium'>{milestone.name}</p>
-                        {milestone.maternityDressTasks.map((task) => (
-                          <div key={task.id} className='flex items-center gap-2 text-xs'>
-                            <div
-                              className={`w-2 h-2 rounded-full ${
-                                task.status === 'COMPLETED'
-                                  ? 'bg-green-500'
-                                  : task.status === 'IN_PROGRESS'
-                                    ? 'bg-blue-500'
-                                    : 'bg-gray-300'
-                              }`}
-                            />
-                            <span className='flex-1'>{task.name}</span>
-                          </div>
-                        ))}
+                    {/* Images preview */}
+                    {orderItem.designRequest.images && orderItem.designRequest.images.length > 0 && (
+                      <div className='space-y-2'>
+                        <div className='flex items-center gap-2 text-sm'>
+                          <ImageIcon className='h-4 w-4 text-muted-foreground' />
+                          <span className='font-medium'>
+                            Hình ảnh tham khảo ({orderItem.designRequest.images.length})
+                          </span>
+                        </div>
+                        <div className='flex gap-2'>
+                          {orderItem.designRequest.images.slice(0, 3).map((image: string, index: number) => (
+                            <div key={index} className='w-16 h-16 rounded-lg overflow-hidden bg-muted'>
+                              <img src={image} alt={`Reference ${index + 1}`} className='w-full h-full object-cover' />
+                            </div>
+                          ))}
+                          {orderItem.designRequest.images.length > 3 && (
+                            <div className='w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-xs text-muted-foreground'>
+                              +{orderItem.designRequest.images.length - 3}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    )}
 
-                  {/* Actions */}
-                  <div className='flex gap-2 pt-2'>
-                    <Button variant='outline' size='sm' className='flex-1' onClick={() => handleViewDetail(request)}>
-                      <Eye className='h-4 w-4 mr-2' />
-                      Xem chi tiết
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    {/* Tasks Progress */}
+                    <div className='space-y-2'>
+                      <div className='flex items-center gap-2 text-sm'>
+                        <Palette className='h-4 w-4 text-muted-foreground' />
+                        <span className='font-medium'>Tiến độ thiết kế:</span>
+                      </div>
+                      {request.milestones.map((milestone) => (
+                        <div key={milestone.sequenceOrder} className='space-y-1'>
+                          <p className='text-sm font-medium'>{milestone.name}</p>
+                          {milestone.maternityDressTasks.map((task) => (
+                            <div key={task.id} className='flex items-center gap-2 text-xs'>
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  task.status === 'COMPLETED'
+                                    ? 'bg-green-500'
+                                    : task.status === 'IN_PROGRESS'
+                                      ? 'bg-blue-500'
+                                      : 'bg-gray-300'
+                                }`}
+                              />
+                              <span className='flex-1'>{task.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Actions */}
+                    <div className='flex gap-2 pt-2'>
+                      <Button variant='outline' size='sm' className='flex-1' onClick={() => handleViewDetail(request)}>
+                        <Eye className='h-4 w-4 mr-2' />
+                        Xem chi tiết
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </TabsContent>
 
@@ -276,36 +284,42 @@ export function ManageDesignRequestPage() {
             </CardHeader>
             <CardContent>
               <div className='space-y-4'>
-                {filteredRequests.map((request: ExtendedOrderTaskItem) => (
-                  <div
-                    key={request.orderItem.id}
-                    className='flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50'
-                  >
-                    <div className='flex-1 space-y-2'>
-                      <div className='flex items-center gap-4'>
-                        <h3 className='font-semibold'>Đơn hàng #{request.orderCode || 'N/A'}</h3>
-                        {getStatusBadge(getTaskStatus(request.milestones))}
+                {filteredRequests.map((request: ExtendedOrderTaskItem) => {
+                  // orderItem bây giờ là object duy nhất
+                  const orderItem = request.orderItem
+                  if (!orderItem || !orderItem.designRequest) return null
+
+                  return (
+                    <div
+                      key={orderItem.id}
+                      className='flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50'
+                    >
+                      <div className='flex-1 space-y-2'>
+                        <div className='flex items-center gap-4'>
+                          <h3 className='font-semibold'>Đơn hàng #{request.orderCode || 'N/A'}</h3>
+                          {getStatusBadge(getTaskStatus(request.milestones))}
+                        </div>
+                        <p className='text-sm text-muted-foreground line-clamp-1'>
+                          {orderItem.designRequest.description || 'Không có mô tả'}
+                        </p>
+                        <div className='flex items-center gap-4 text-xs text-muted-foreground'>
+                          <span className='flex items-center gap-1'>
+                            <Calendar className='h-3 w-3' />
+                            {formatDate(orderItem.createdAt)}
+                          </span>
+                          <span className='flex items-center gap-1'>
+                            <ImageIcon className='h-3 w-3' />
+                            {orderItem.designRequest.images?.length || 0} hình
+                          </span>
+                        </div>
                       </div>
-                      <p className='text-sm text-muted-foreground line-clamp-1'>
-                        {request.orderItem.designRequest?.description || 'Không có mô tả'}
-                      </p>
-                      <div className='flex items-center gap-4 text-xs text-muted-foreground'>
-                        <span className='flex items-center gap-1'>
-                          <Calendar className='h-3 w-3' />
-                          {formatDate(request.orderItem.createdAt)}
-                        </span>
-                        <span className='flex items-center gap-1'>
-                          <ImageIcon className='h-3 w-3' />
-                          {request.orderItem.designRequest?.images?.length || 0} hình
-                        </span>
-                      </div>
+                      <Button variant='outline' size='sm' onClick={() => handleViewDetail(request)}>
+                        <Eye className='h-4 w-4 mr-2' />
+                        Chi tiết
+                      </Button>
                     </div>
-                    <Button variant='outline' size='sm' onClick={() => handleViewDetail(request)}>
-                      <Eye className='h-4 w-4 mr-2' />
-                      Chi tiết
-                    </Button>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </CardContent>
           </Card>

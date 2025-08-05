@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { format, isToday, isYesterday, isThisWeek } from 'date-fns'
 import { cn } from '@/lib/utils/utils'
@@ -12,11 +12,13 @@ import { Badge } from '@/components/ui/badge'
 import { Main } from '@/components/layout/main'
 import { NewChat } from './components/new-chat'
 import { NotificationSettings } from './components/notification-settings'
+import { SendPresetInChat } from './components/send-preset-in-chat'
 import { type Convo } from './data/chat-types'
 import { useChat } from './hooks/use-chat'
 import { useRoomMessagesData } from './hooks/use-room-messages'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { ChatRoom, Member } from '@/@types/chat.types'
+import { useSearchParams } from 'react-router-dom'
 import {
   ArrowLeftIcon,
   MessageCircle,
@@ -28,7 +30,9 @@ import {
   SearchIcon,
   SendIcon,
   VideoIcon,
-  AlertTriangle
+  AlertTriangle,
+  Package,
+  Palette
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -39,8 +43,28 @@ export default function Chats() {
   const [createConversationDialogOpened, setCreateConversationDialog] = useState(false)
   const [newMessage, setNewMessage] = useState('')
   const [viewedRooms, setViewedRooms] = useState<Set<string>>(new Set()) // Track viewed rooms
+  const [isPresetDialogOpen, setIsPresetDialogOpen] = useState(false)
 
   const { user } = useAuthStore()
+  const [searchParams] = useSearchParams()
+
+  // Get design request context from URL params
+  const designRequestContext = useMemo(() => {
+    const roomId = searchParams.get('roomId')
+    const designRequestId = searchParams.get('designRequestId')
+    const orderId = searchParams.get('orderId')
+    const orderCode = searchParams.get('orderCode')
+
+    if (roomId && designRequestId && orderId) {
+      return {
+        roomId,
+        designRequestId,
+        orderId,
+        orderCode: orderCode || 'N/A'
+      }
+    }
+    return null
+  }, [searchParams])
 
   // Helper function to format timestamp smartly (memoized)
   const formatSmartTimestamp = useMemo(
@@ -91,7 +115,28 @@ export default function Chats() {
     page: 1
   })
 
-  // Auto-load rooms when SignalR is connected
+  // Function to handle room selection
+  const handleSelectRoom = useCallback(
+    async (roomId: string) => {
+      try {
+        setSelectedRoomId(roomId)
+        setMobileSelectedUser(true)
+
+        // Mark room as viewed (remove unread indicator)
+        setViewedRooms((prev) => new Set([...prev, roomId]))
+
+        // Join the room (SignalR)
+        await joinRoom(roomId)
+
+        // Messages will be loaded automatically by React Query hook
+      } catch (err) {
+        console.error('Failed to select room:', err)
+      }
+    },
+    [joinRoom]
+  )
+
+  // Auto-load room after connecting
   useEffect(() => {
     const shouldAutoLoad = isConnected && rooms.length === 0 && !isLoadingRooms && !chatError
 
@@ -100,6 +145,18 @@ export default function Chats() {
       loadRooms()
     }
   }, [isConnected, rooms.length, isLoadingRooms, chatError, loadRooms])
+
+  // Auto-select room when design request context is provided
+  useEffect(() => {
+    if (designRequestContext?.roomId && rooms.length > 0) {
+      const targetRoom = rooms.find((room) => room.id === designRequestContext.roomId)
+      if (targetRoom && selectedRoomId !== designRequestContext.roomId) {
+        console.log('🎯 Auto-selecting room from design request context:', designRequestContext.roomId)
+        handleSelectRoom(designRequestContext.roomId)
+        toast.success(`Đã mở chat cho đơn hàng #${designRequestContext.orderCode}`)
+      }
+    }
+  }, [designRequestContext, rooms, selectedRoomId, handleSelectRoom])
 
   // Auto-mark currently selected room as viewed when new messages arrive
   useEffect(() => {
@@ -227,23 +284,6 @@ export default function Chats() {
       setNewMessage('')
     } catch (err) {
       console.error('Failed to send message:', err)
-    }
-  }
-
-  const handleSelectRoom = async (roomId: string) => {
-    try {
-      setSelectedRoomId(roomId)
-      setMobileSelectedUser(true)
-
-      // Mark room as viewed (remove unread indicator)
-      setViewedRooms((prev) => new Set([...prev, roomId]))
-
-      // Join the room (SignalR)
-      await joinRoom(roomId)
-
-      // Messages will be loaded automatically by React Query hook
-    } catch (err) {
-      console.error('Failed to select room:', err)
     }
   }
 
@@ -638,6 +678,43 @@ export default function Chats() {
                 </div>
               </CardHeader>
 
+              {/* Design Request Context (if applicable) */}
+              {designRequestContext && selectedRoomId === designRequestContext.roomId && (
+                <div className='border-b bg-muted/30 p-4'>
+                  <div className='flex items-start gap-3'>
+                    <div className='bg-primary/10 p-2 rounded-lg'>
+                      <Palette className='h-5 w-5 text-primary' />
+                    </div>
+                    <div className='flex-1 min-w-0'>
+                      <div className='flex items-center gap-2 mb-1'>
+                        <h4 className='font-medium text-sm'>Design Request Context</h4>
+                        <Badge variant='secondary' className='text-xs'>
+                          #{designRequestContext.orderCode}
+                        </Badge>
+                      </div>
+                      <p className='text-xs text-muted-foreground mb-2'>
+                        Đang chat về yêu cầu thiết kế cho đơn hàng này
+                      </p>
+                      <div className='flex gap-2'>
+                        <Button size='sm' variant='outline' className='text-xs h-7'>
+                          <Package className='h-3 w-3 mr-1' />
+                          Xem chi tiết đơn hàng
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='default'
+                          className='text-xs h-7'
+                          onClick={() => setIsPresetDialogOpen(true)}
+                        >
+                          <Palette className='h-3 w-3 mr-1' />
+                          Gửi Preset
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Messages Area */}
               <CardContent className='flex-1 p-0'>
                 <ScrollArea className='h-[400px] p-4'>
@@ -694,7 +771,13 @@ export default function Chats() {
                     <Button size='sm' type='button' variant='ghost'>
                       <PlusIcon className='h-4 w-4' />
                     </Button>
-                    <Button size='sm' type='button' variant='ghost'>
+                    <Button
+                      size='sm'
+                      type='button'
+                      variant='ghost'
+                      onClick={() => setIsPresetDialogOpen(true)}
+                      title='Gửi preset'
+                    >
                       <PaperclipIcon className='h-4 w-4' />
                     </Button>
                     <input
@@ -742,6 +825,21 @@ export default function Chats() {
         open={createConversationDialogOpened}
         onRoomCreated={handleRoomCreated}
       />
+
+      {/* Overlay khi preset sidebar mở */}
+      {isPresetDialogOpen && (
+        <div className='fixed inset-0 bg-black/20 z-40' onClick={() => setIsPresetDialogOpen(false)} />
+      )}
+
+      {/* Preset sending sidebar */}
+      {designRequestContext && (
+        <SendPresetInChat
+          isOpen={isPresetDialogOpen}
+          onClose={() => setIsPresetDialogOpen(false)}
+          designRequestId={designRequestContext.designRequestId}
+          orderId={designRequestContext.orderId}
+        />
+      )}
     </Main>
   )
 }

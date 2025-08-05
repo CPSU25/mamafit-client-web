@@ -4,20 +4,20 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useGetOrderTaskByOrderItemId } from '@/services/global/order-task.service'
+import { useStaffGetOrderTaskByOrderItemId } from '@/services/staff/staff-task.service'
 import { OrderItemMilestoneTracker } from '@/pages/staff/manage-task/components/OrderItemMilestoneTracker'
 
 export default function OrderItemDetailPage() {
   const { orderItemId } = useParams<{ orderItemId: string }>()
   const navigate = useNavigate()
 
-  const { data: orderItemData, isLoading, isError } = useGetOrderTaskByOrderItemId(orderItemId!)
+  const { data: orderItemData, isLoading, isError } = useStaffGetOrderTaskByOrderItemId(orderItemId!)
 
   if (!orderItemId) {
     return (
       <div className='container mx-auto p-8 text-center'>
         <h2 className='text-xl font-semibold text-red-500'>Order Item ID không hợp lệ</h2>
-        <Button onClick={() => navigate('/system/factory-staff/manage-task')} className='mt-4'>
+        <Button onClick={() => navigate('/system/staff/manage-task')} className='mt-4'>
           Quay lại danh sách
         </Button>
       </div>
@@ -50,7 +50,7 @@ export default function OrderItemDetailPage() {
           <h2 className='text-xl font-semibold'>Không thể tải thông tin Order Item</h2>
           <p>Đã có lỗi xảy ra khi tải thông tin chi tiết.</p>
         </div>
-        <Button onClick={() => navigate('/system/factory-staff/manage-task')} className='mt-4'>
+        <Button onClick={() => navigate('/system/staff/manage-task')} className='mt-4'>
           Quay lại danh sách
         </Button>
       </div>
@@ -76,7 +76,7 @@ export default function OrderItemDetailPage() {
         <Button
           variant='ghost'
           size='sm'
-          onClick={() => navigate('/system/factory-staff/manage-task')}
+          onClick={() => navigate('/system/staff/manage-task')}
           className='flex items-center gap-2'
         >
           <ArrowLeft className='h-4 w-4' />

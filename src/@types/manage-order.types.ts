@@ -1,4 +1,8 @@
-import { MilestoneByIdType, MilestoneType } from './admin.types'
+// =====================================================================
+// File: src/@types/manage-order.types.ts
+// Mô tả: Types cho manage order - đã tách riêng khỏi admin task types
+// =====================================================================
+
 import { PresetType } from './designer.types'
 import { AddressType } from './global.types'
 import { MaternityDressDetailType } from './inventory.type'
@@ -31,6 +35,10 @@ export type PaymentMethod = 'CASH' | 'ONLINE_BANKING'
 export type DeliveryMethod = 'DELIVERY' | 'PICKUP'
 export type PaymentType = 'DEPOSIT' | 'FULL'
 export type TypeOrder = 'NORMAL' | 'WARRANTY'
+
+/**
+ * Basic Order Type - không có milestone details
+ */
 export interface OrderType {
   id: string
   addressId?: string
@@ -63,6 +71,10 @@ export interface OrderType {
 }
 
 export type ItemType = 'READY_TO_BUY' | 'PRESET' | 'DESIGN_REQUEST'
+
+/**
+ * Basic Order Item Type - không có milestone details phức tạp
+ */
 export interface OrderItemType {
   id: string
   orderId: string
@@ -71,7 +83,7 @@ export interface OrderItemType {
   quantity: number
   maternityDressDetail: MaternityDressDetailType
   designRequest: DesignRequestType
-  milestones: MilestoneType
+  milestones: any // Generic milestone reference
   preset: PresetType
   warrantyDate?: string
   warrantyNumber?: string
@@ -82,34 +94,52 @@ export interface OrderItemType {
   address?: string
 }
 
+/**
+ * Order with items (basic level)
+ */
 export interface OrderById extends OrderType {
   items: Array<OrderItemType>
   address?: AddressType
 }
 
+/**
+ * Basic Order Item by ID - không có chi tiết milestone tasks
+ */
 export interface OrderItemById extends OrderItemType {
   maternityDressDetail: MaternityDressDetailType
   designRequest: DesignRequestType
-  milestones: MilestoneByIdType
+  milestones: any // Generic - sẽ được handle ở admin hoặc staff service riêng
   preset: PresetType
 }
 
+/**
+ * Legacy assign task interface - có thể sẽ deprecated
+ */
 export interface AssignTask {
   milestoneIds: string[]
 }
 
+/**
+ * Assign charge interface - được dùng chung cho admin
+ */
 export interface AssignCharge {
   chargeId: string
   orderItemIds: string[]
   milestoneId: string
 }
 
+/**
+ * Check list status interface
+ */
 export interface checkListStatus {
   maternityDressTaskIds: Array<string>
   orderItemId: string
   status: OrderStatus
 }
 
+/**
+ * Design Request Type
+ */
 export interface DesignRequestType {
   id: string
   userId: string

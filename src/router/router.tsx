@@ -114,18 +114,18 @@ export const router = createBrowserRouter([
             path: 'manage-template',
             element: <ManageTemplatePage />
           },
-          {
-            path: 'manage-task',
-            element: <StaffTasksPage />
-          },
+          // {
+          //   path: 'manage-task',
+          //   element: <StaffTasksPage />
+          // },
           {
             path: 'manage-design-request',
             element: <ManageDesignRequestPage />
-          },
-          {
-            path: 'order-item/:orderItemId',
-            element: <OrderItemDetailPage />
           }
+          // {
+          //   path: 'order-item/:orderItemId',
+          //   element: <OrderItemDetailPage />
+          // }
         ]
       },
 
