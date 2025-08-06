@@ -1,10 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Package, DollarSign } from 'lucide-react'
+import { ArrowLeft, Package, DollarSign, MapPin, Ruler } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useStaffGetOrderTaskByOrderItemId } from '@/services/staff/staff-task.service'
+import globalAPI from '@/apis/global.api'
+import { useQuery } from '@tanstack/react-query'
 import { OrderItemMilestoneTracker } from '@/pages/staff/manage-task/components/OrderItemMilestoneTracker'
 
 export default function OrderItemDetailPage() {
@@ -12,6 +14,14 @@ export default function OrderItemDetailPage() {
   const navigate = useNavigate()
 
   const { data: orderItemData, isLoading, isError } = useStaffGetOrderTaskByOrderItemId(orderItemId!)
+
+  // Hook để lấy thông tin địa chỉ - sử dụng conditional query
+  const { data: addressData, isLoading: isLoadingAddress } = useQuery({
+    queryKey: ['address', orderItemData?.addressId],
+    queryFn: () => globalAPI.getAddress(orderItemData!.addressId!),
+    enabled: !!orderItemData?.addressId,
+    select: (response) => response.data.data
+  })
 
   if (!orderItemId) {
     return (
@@ -57,7 +67,8 @@ export default function OrderItemDetailPage() {
     )
   }
 
-  const { preset, milestones } = orderItemData
+  const { preset, milestones, orderId, orderCode, measurement } = orderItemData
+  
   const totalTasks = milestones.reduce((sum, milestone) => sum + milestone.maternityDressTasks.length, 0)
   const completedTasks = milestones.reduce(
     (sum, milestone) =>
@@ -90,9 +101,10 @@ export default function OrderItemDetailPage() {
         </div>
       </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-        {/* Order Item Info */}
-        <div className='lg:col-span-1'>
+      <div className='space-y-6'>
+        {/* Top Row: Product Info, Measurements, Address */}
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+          {/* Product Info */}
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
@@ -126,14 +138,14 @@ export default function OrderItemDetailPage() {
 
                   <div className='flex items-center gap-2'>
                     <Package className='h-4 w-4 text-muted-foreground' />
-                    <span>Order Item ID:</span>
-                    <code className='text-xs bg-muted px-1 rounded'>{orderItemId}</code>
+                    <span>Mã đơn hàng:</span>
+                    <code className='text-xs bg-muted px-1 rounded'>{orderCode}</code>
                   </div>
 
                   <div className='flex items-center gap-2'>
                     <Package className='h-4 w-4 text-muted-foreground' />
-                    <span>Preset ID:</span>
-                    <code className='text-xs bg-muted px-1 rounded'>{preset.id}</code>
+                    <span>Tên sản phẩm:</span>
+                    <code className='text-xs bg-muted px-1 rounded'>{preset.styleName}</code>
                   </div>
                 </div>
 
@@ -152,11 +164,157 @@ export default function OrderItemDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Measurements */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Ruler className='h-5 w-5' />
+                Thông số đo cơ thể
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-3'>
+              {measurement ? (
+                <>
+                  <div className='grid grid-cols-2 gap-2 text-sm'>
+                    <div className='space-y-2'>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Tuần thai:</span>
+                        <span className='font-medium'>{measurement.weekOfPregnancy} tuần</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Cân nặng:</span>
+                        <span className='font-medium'>{measurement.weight} kg</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Cổ:</span>
+                        <span className='font-medium'>{measurement.neck} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Ngực:</span>
+                        <span className='font-medium'>{measurement.bust} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Vòng ngực:</span>
+                        <span className='font-medium'>{measurement.chestAround} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Áo khoác:</span>
+                        <span className='font-medium'>{measurement.coat} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Bụng:</span>
+                        <span className='font-medium'>{measurement.stomach} cm</span>
+                      </div>
+                    </div>
+                    <div className='space-y-2'>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Eo:</span>
+                        <span className='font-medium'>{measurement.waist} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Eo quần:</span>
+                        <span className='font-medium'>{measurement.pantsWaist} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Hông:</span>
+                        <span className='font-medium'>{measurement.hip} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Đùi:</span>
+                        <span className='font-medium'>{measurement.thigh} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Chiều dài váy:</span>
+                        <span className='font-medium'>{measurement.dressLength} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Dài tay:</span>
+                        <span className='font-medium'>{measurement.sleeveLength} cm</span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Vai:</span>
+                        <span className='font-medium'>{measurement.shoulderWidth} cm</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {measurement.isLocked && (
+                    <div className='mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-md'>
+                      <p className='text-xs text-yellow-700 flex items-center gap-1'>
+                        <span>🔒</span>
+                        Thông số đã được khóa và không thể chỉnh sửa
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className='text-center py-4 text-muted-foreground'>
+                  <Ruler className='h-8 w-8 mx-auto mb-2 opacity-50' />
+                  <p className='text-sm'>Chưa có thông số đo cơ thể</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Address */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <MapPin className='h-5 w-5' />
+                Địa chỉ giao hàng
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingAddress ? (
+                <div className='space-y-2'>
+                  <Skeleton className='h-4 w-full' />
+                  <Skeleton className='h-4 w-3/4' />
+                  <Skeleton className='h-4 w-1/2' />
+                </div>
+              ) : addressData ? (
+                <div className='space-y-3 text-sm'>
+                  <div>
+                    <p className='font-medium text-gray-900'>{addressData.street}</p>
+                  </div>
+                  <div className='space-y-1'>
+                    <p className='text-gray-600'>
+                      <span className='font-medium'>Phường/Xã:</span> {addressData.ward}
+                    </p>
+                    <p className='text-gray-600'>
+                      <span className='font-medium'>Quận/Huyện:</span> {addressData.district}
+                    </p>
+                    <p className='text-gray-600'>
+                      <span className='font-medium'>Tỉnh/Thành phố:</span> {addressData.province}
+                    </p>
+                  </div>
+                  
+                  {addressData.isDefault && (
+                    <div className='mt-3 p-2 bg-blue-50 border border-blue-200 rounded-md'>
+                      <p className='text-xs text-blue-700 flex items-center gap-1'>
+                        <span>⭐</span>
+                        Địa chỉ mặc định
+                      </p>
+                    </div>
+                  )}
+
+                  <div className='mt-3 pt-3 border-t text-xs text-muted-foreground'>
+                    <p>Tọa độ: {addressData.latitude}, {addressData.longitude}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className='text-center py-4 text-muted-foreground'>
+                  <MapPin className='h-8 w-8 mx-auto mb-2 opacity-50' />
+                  <p className='text-sm'>Không có thông tin địa chỉ</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Milestone Tracker */}
-        <div className='lg:col-span-2'>
-          <OrderItemMilestoneTracker milestones={milestones} orderItemId={orderItemId} />
+        {/* Bottom Row: Milestone Tracker */}
+        <div className='w-full'>
+          <OrderItemMilestoneTracker milestones={milestones} orderItemId={orderItemId} orderId={orderId} />
         </div>
       </div>
     </div>

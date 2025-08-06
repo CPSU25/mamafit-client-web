@@ -21,7 +21,7 @@ import {
 import { TaskStatus, QualityCheckStatus, MilestoneUI } from '@/pages/staff/manage-task/tasks/types'
 import { useStaffGetOrderTaskByOrderItemId } from '@/services/staff/staff-task.service'
 import { useQualityCheckPostSubmitHandler } from '@/services/staff/quality-check.service'
-import { QualityCheckTaskManager } from '@/components/quality-check-task-manager'
+import { QualityCheckTaskManager } from '@/pages/staff/manage-task/components/quality-check-task-manager'
 
 interface TaskDetailDialogProps {
   orderItemId: string | null
@@ -189,7 +189,7 @@ export function TaskDetailDialog({
       <DialogContent className='max-w-4xl max-h-[80vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='text-xl font-bold'>{task.preset.styleName}</DialogTitle>
-          <DialogDescription>Chi tiết công việc Order Item: {task.orderItemId}</DialogDescription>
+          <DialogDescription>Order Code: {task.orderCode}</DialogDescription>
         </DialogHeader>
 
         <div className='space-y-6'>
@@ -402,6 +402,7 @@ export function TaskDetailDialog({
                       orderItemId={task.orderItemId}
                       onSubmitSuccess={handleQualityCheckSuccess}
                       isDisabled={isUpdating}
+                      milestoneName={milestone.name}
                     />
                   )
                 }

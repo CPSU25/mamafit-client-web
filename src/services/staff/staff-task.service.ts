@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import staffTaskAPI from '@/apis/staff-order-task.api'
+import globalAPI from '@/apis/global.api'
 import { StaffOrderTaskItem, UpdateTaskStatusRequest, StaffTaskStatus } from '@/@types/staff-task.types'
 import { ProductTaskGroup, MilestoneUI } from '@/pages/staff/manage-task/tasks/types'
 import { toast } from 'sonner'
@@ -70,7 +71,11 @@ const transformStaffDataForUI = (data: StaffOrderTaskItem[]): ProductTaskGroup[]
       const result = {
         preset: staffOrderTaskItem.orderItem.preset,
         milestones: milestonesUI.sort((a, b) => a.sequenceOrder - b.sequenceOrder),
-        orderItemId: staffOrderTaskItem.orderItem.id
+        orderItemId: staffOrderTaskItem.orderItem.id,
+        orderId: staffOrderTaskItem.orderItem.orderId,
+        orderCode: staffOrderTaskItem.orderCode, // Thêm orderCode vào kết quả
+        measurement: staffOrderTaskItem.measurement, // Thêm measurement
+        addressId: staffOrderTaskItem.addressId // Thêm addressId
       }
 
       return result
@@ -127,151 +132,6 @@ export const useStaffGetOrderTaskByOrderItemId = (orderItemId: string) => {
   })
 }
 
-/**
- * Hook cập nhật task status (staff)
- */
-// export const useStaffUpdateTaskStatus = () => {
-//   const queryClient = useQueryClient()
-
-//   return useMutation({
-//     mutationFn: async ({
-//       dressTaskId,
-//       orderItemId,
-//       status,
-//       image,
-//       note
-//     }: {
-//       dressTaskId: string
-//       orderItemId: string
-//       status: StaffTaskStatus
-//       image?: string
-//       note?: string
-//     }) => {
-//       const body: StaffUpdateTaskStatusRequest = { status }
-
-//       // Thêm image và note khi task hoàn thành (DONE, PASS, FAIL)
-//       if (status === 'DONE' || status === 'PASS' || status === 'FAIL') {
-//         if (image) body.image = image
-//         if (note) body.note = note
-//       }
-
-//       const response = await staffTaskAPI.updateTaskStatus(dressTaskId, orderItemId, body)
-
-//       if (response.data.statusCode === 200) {
-//         return response.data
-//       }
-//       throw new Error(response.data.message || 'Không thể cập nhật trạng thái task')
-//     },
-//     onMutate: async ({ dressTaskId, orderItemId, status, image, note }) => {
-//       // Cancel outgoing refetches để tránh race condition
-//       await queryClient.cancelQueries({ queryKey: staffTaskQueryKeys.lists() })
-//       await queryClient.cancelQueries({ queryKey: staffTaskQueryKeys.byOrderItem(orderItemId) })
-
-//       // Snapshot previous values
-//       const previousListData = queryClient.getQueryData<ProductTaskGroup[]>(staffTaskQueryKeys.lists())
-//       const previousDetailData = queryClient.getQueryData<ProductTaskGroup>(staffTaskQueryKeys.byOrderItem(orderItemId))
-
-//       // Optimistic update cho list data
-//       if (previousListData) {
-//         const updatedListData = previousListData.map((productGroup) => {
-//           if (productGroup.orderItemId === orderItemId) {
-//             return {
-//               ...productGroup,
-//               milestones: productGroup.milestones.map((milestone) => ({
-//                 ...milestone,
-//                 maternityDressTasks: milestone.maternityDressTasks.map((task) => {
-//                   if (task.id === dressTaskId && task.orderItemId === orderItemId) {
-//                     return {
-//                       ...task,
-//                       status: status,
-//                       image: image || task.image,
-//                       note: note || task.note
-//                     }
-//                   }
-//                   return task
-//                 })
-//               }))
-//             }
-//           }
-//           return productGroup
-//         })
-
-//         queryClient.setQueryData(staffTaskQueryKeys.lists(), updatedListData)
-//       }
-
-//       // Optimistic update cho detail data
-//       if (previousDetailData && previousDetailData.orderItemId === orderItemId) {
-//         const updatedDetailData = {
-//           ...previousDetailData,
-//           milestones: previousDetailData.milestones.map((milestone) => ({
-//             ...milestone,
-//             maternityDressTasks: milestone.maternityDressTasks.map((task) => {
-//               if (task.id === dressTaskId && task.orderItemId === orderItemId) {
-//                 return {
-//                   ...task,
-//                   status: status,
-//                   image: image || task.image,
-//                   note: note || task.note
-//                 }
-//               }
-//               return task
-//             })
-//           }))
-//         }
-
-//         queryClient.setQueryData(staffTaskQueryKeys.byOrderItem(orderItemId), updatedDetailData)
-//       }
-
-//       return { previousListData, previousDetailData, orderItemId }
-//     },
-//     onSuccess: (_, variables) => {
-//       const statusText =
-//         variables.status === 'IN_PROGRESS'
-//           ? 'bắt đầu'
-//           : variables.status === 'DONE'
-//             ? 'hoàn thành'
-//             : variables.status === 'PASS'
-//               ? 'hoàn thành (PASS)'
-//               : variables.status === 'FAIL'
-//                 ? 'hoàn thành (FAIL)'
-//                 : variables.status === 'PENDING'
-//                   ? 'chuyển về chờ'
-//                   : 'cập nhật'
-
-//       // Invalidate queries để refresh data
-//       queryClient.invalidateQueries({ queryKey: staffTaskQueryKeys.lists() })
-//       queryClient.invalidateQueries({ queryKey: staffTaskQueryKeys.byOrderItem(variables.orderItemId) })
-
-//       toast.success(`Đã ${statusText} nhiệm vụ thành công!`)
-//     },
-//     onError: (error: unknown, _, context) => {
-//       // Revert the optimistic update
-//       if (context?.previousListData) {
-//         queryClient.setQueryData(staffTaskQueryKeys.lists(), context.previousListData)
-//       }
-//       if (context?.previousDetailData && context?.orderItemId) {
-//         queryClient.setQueryData(staffTaskQueryKeys.byOrderItem(context.orderItemId), context.previousDetailData)
-//       }
-
-//       const errorMessage = error instanceof Error ? error.message : 'Không thể cập nhật trạng thái task'
-//       toast.error(`Lỗi: ${errorMessage}`)
-//     },
-//     onSettled: (_, __, variables) => {
-//       // Đảm bảo data luôn fresh
-//       queryClient.invalidateQueries({ queryKey: staffTaskQueryKeys.lists() })
-//       if (variables) {
-//         queryClient.invalidateQueries({ queryKey: staffTaskQueryKeys.byOrderItem(variables.orderItemId) })
-//       }
-//     },
-//     retry: (failureCount, error: unknown) => {
-//       const status = (error as { response?: { status?: number } })?.response?.status
-//       if (status && status >= 400 && status < 500) {
-//         return false
-//       }
-//       return failureCount < 2
-//     }
-//   })
-// }
 
 export const useStaffUpdateTaskStatus = () => {
   const queryClient = useQueryClient()
@@ -443,5 +303,25 @@ export const useStaffUpdateTaskStatus = () => {
         queryClient.invalidateQueries({ queryKey: staffTaskQueryKeys.byOrderItem(variables.orderItemId) })
       }
     }
+  })
+}
+
+/**
+ * Hook lấy current sequence của milestone (staff)
+ */
+export const useStaffGetCurrentSequence = (orderItemId: string) => {
+  return useQuery({
+    queryKey: ['staff-current-sequence', orderItemId],
+    queryFn: async () => {
+      const response = await globalAPI.getCurrentSequence(orderItemId)
+      if (response.data.statusCode === 200) {
+        return response.data.data
+      }
+      throw new Error(response.data.message || 'Failed to fetch current sequence')
+    },
+    enabled: !!orderItemId,
+    staleTime: 1000 * 60 * 5, // 5 phút
+    refetchOnMount: true,
+    refetchOnWindowFocus: false
   })
 }
