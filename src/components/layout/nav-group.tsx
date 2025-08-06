@@ -147,6 +147,9 @@ const SidebarMenuCollapsible = ({ item, href }: { item: NavCollapsible; href: st
         <CollapsibleContent className='CollapsibleContent'>
           <SidebarMenuSub className='ml-3 border-l-2 border-violet-100 dark:border-violet-900/50'>
             {item.items.map((subItem) => {
+              if (!('url' in subItem) || !subItem.url) {
+                return null
+              }
               const isSubActive = checkIsActive(href, subItem)
               return (
                 <SidebarMenuSubItem key={subItem.title}>
@@ -185,7 +188,7 @@ const SidebarMenuCollapsible = ({ item, href }: { item: NavCollapsible; href: st
 }
 
 const SidebarMenuCollapsedDropdown = ({ item, href }: { item: NavCollapsible; href: string }) => {
-  const isActive = checkIsActive(href, item)
+  const isActive = checkIsActive(href, item, true)
 
   return (
     <SidebarMenuItem>
@@ -201,9 +204,6 @@ const SidebarMenuCollapsedDropdown = ({ item, href }: { item: NavCollapsible; hr
             )}
           >
             {item.icon && <item.icon />}
-            <span>{item.title}</span>
-            {item.badge && <NavBadge>{item.badge}</NavBadge>}
-            <ChevronRight className='ml-auto size-4 transition-transform duration-200' />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
 
@@ -213,29 +213,36 @@ const SidebarMenuCollapsedDropdown = ({ item, href }: { item: NavCollapsible; hr
           sideOffset={8}
           className='w-56 border-violet-200 dark:border-violet-800'
         >
-          <DropdownMenuLabel className='text-violet-600 dark:text-violet-400'>
-            {item.title} {item.badge ? `(${item.badge})` : ''}
-          </DropdownMenuLabel>
+          <DropdownMenuLabel className='text-violet-600 dark:text-violet-400'>{item.title}</DropdownMenuLabel>
           <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
 
-          {item.items.map((sub) => (
-            <DropdownMenuItem
-              key={`${sub.title}-${sub.url}`}
-              asChild
-              className={cn(
-                'cursor-pointer transition-colors',
-                checkIsActive(href, sub) && 'bg-violet-100 dark:bg-violet-900/50 text-violet-900 dark:text-violet-100'
-              )}
-            >
-              <Link to={sub.url} className='flex items-center gap-2'>
-                {sub.icon && <sub.icon className='size-4' />}
-                <span className='flex-1'>{sub.title}</span>
-                {sub.badge && (
-                  <span className='text-xs font-bold text-violet-600 dark:text-violet-400'>{sub.badge}</span>
+          {item.items.map((sub) => {
+            // *** SỬA LỖI Ở ĐÂY: THÊM TYPE GUARD ***
+            // Chỉ render những mục con là link (có url), bỏ qua những mục là nhóm con.
+            if (!('url' in sub) || !sub.url) {
+              return null
+            }
+
+            // Từ đây trở xuống, TypeScript đã hiểu `sub` chắc chắn là NavLink và `sub.url` là `string`
+            return (
+              <DropdownMenuItem
+                key={`${sub.title}-${sub.url}`}
+                asChild
+                className={cn(
+                  'cursor-pointer transition-colors',
+                  checkIsActive(href, sub) && 'bg-violet-100 dark:bg-violet-900/50 text-violet-900 dark:text-violet-100'
                 )}
-              </Link>
-            </DropdownMenuItem>
-          ))}
+              >
+                <Link to={sub.url} className='flex items-center gap-2'>
+                  {sub.icon && <sub.icon className='size-4' />}
+                  <span className='flex-1'>{sub.title}</span>
+                  {sub.badge && (
+                    <span className='text-xs font-bold text-violet-600 dark:text-violet-400'>{sub.badge}</span>
+                  )}
+                </Link>
+              </DropdownMenuItem>
+            )
+          })}
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
