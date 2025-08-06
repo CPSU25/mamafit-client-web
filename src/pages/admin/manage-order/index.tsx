@@ -196,17 +196,6 @@ function ManageOrderContent() {
   )
 }
 
-/**
- * Manage Order Page - Admin Module
- *
- * Features:
- * - Hiển thị danh sách đơn hàng với pagination
- * - Thống kê tổng quan về orders
- * - Chi tiết đơn hàng trong sidebar
- * - Quản lý trạng thái đơn hàng
- *
- * @returns {JSX.Element} Order management page
- */
 export default function ManageOrderPage() {
   return (
     <OrderProvider>

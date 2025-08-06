@@ -189,7 +189,7 @@ export function TaskDetailDialog({
       <DialogContent className='max-w-4xl max-h-[80vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='text-xl font-bold'>{task.preset.styleName}</DialogTitle>
-          <DialogDescription>Chi tiết công việc Order Item: {task.orderItemId}</DialogDescription>
+          <DialogDescription>Order Code: {task.orderCode}</DialogDescription>
         </DialogHeader>
 
         <div className='space-y-6'>

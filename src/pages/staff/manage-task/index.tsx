@@ -20,6 +20,7 @@ export default function StaffTasksPage() {
 
   const navigate = useNavigate()
   const { data: orderItems, isLoading, isError } = useStaffGetOrderTasks()
+  console.log('Order Items:', orderItems)
   const updateTaskStatusMutation = useStaffUpdateTaskStatus()
 
   const handleTaskStatusChange = (
@@ -88,7 +89,6 @@ export default function StaffTasksPage() {
     ? orderItems.filter((orderItem) => {
         const styleName = orderItem.preset.styleName || ''
         const orderItemId = orderItem.orderItemId || ''
-
         const matchesSearch =
           styleName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           orderItemId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -249,7 +249,7 @@ export default function StaffTasksPage() {
                       <CardTitle className='text-lg'>{orderItem.preset.styleName}</CardTitle>
                       {getStatusBadge(getTaskStatus(orderItem.milestones))}
                     </div>
-                    <CardDescription>Order Item: {orderItem.orderItemId}</CardDescription>
+                    <CardDescription>Order Code: {orderItem.orderCode}</CardDescription>
                   </CardHeader>
                   <CardContent className='space-y-4'>
                     {/* Product Image */}

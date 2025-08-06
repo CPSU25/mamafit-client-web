@@ -38,8 +38,35 @@ export interface StaffTaskUI {
 
 // Interface để biểu diễn một order item với các milestone và task được giao cho nhân viên
 export interface ProductTaskGroup {
+  measurement: MeasurementType 
+  orderCode: string 
   preset: PresetType
   milestones: MilestoneUI[]
   orderItemId: string // ID của order item để update task status
   orderId: string // ID của order để tạo shipping
+  addressId?: string
+}
+
+export interface MeasurementType{
+  bust: number
+  waist: number
+  hip: number
+  chestAround: number
+  coat: number
+  shoulder: number
+  legLength: number
+  neck: number
+  dressLength: number
+  isLocked: boolean
+  createdAt: string
+  updatedAt: string
+  id: string
+  orderItemId: string
+  pantsWaist: number
+  shoulderWidth: number
+  sleeveLength: number
+  stomach: number
+  thigh: number
+  weekOfPregnancy: number
+  weight: number
 }

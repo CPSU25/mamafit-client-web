@@ -64,7 +64,7 @@ export const ProductTaskTracker: React.FC<ProductTaskTrackerProps> = ({
                     <CardTitle className='text-xl'>{preset.styleName}</CardTitle>
                     <div className='space-y-1'>
                       <p className='text-sm text-muted-foreground'>
-                        Order Item: <span className='font-mono text-xs'>{productGroup.orderItemId}</span>
+                        Order Code: <span className='font-mono text-xs'>{productGroup.orderCode}</span>
                       </p>
                       <p className='text-sm text-muted-foreground'>
                         Preset: <span className='font-mono text-xs'>{preset.id}</span>
