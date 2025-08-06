@@ -190,7 +190,6 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   const handleQualityCheckSuccess = async (hasFailures: boolean, hasSeverity: boolean) => {
     try {
       const result = await handlePostSubmit(orderItemId, hasFailures, hasSeverity)
-      console.log('Quality Check post-submit result:', result)
 
       // Hiển thị toast message
       if (result.action === 'continue_workflow') {

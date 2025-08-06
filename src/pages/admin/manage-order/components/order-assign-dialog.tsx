@@ -30,8 +30,7 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
   const { data: usersResponse, isLoading: isLoadingUsers } = useGetListUser({
     pageSize: 100
   })
-
-  const availableUsers = usersResponse?.data?.items || []
+  const availableUsers = usersResponse?.data?.items.filter((user) => user.roleName === 'Designer' || user.roleName === 'Staff') || []
   const assignMutation = useAssignCharge()
 
   // Group milestones and merge all tasks with same milestone ID
@@ -116,7 +115,7 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <Package className='h-5 w-5 text-blue-600' />
-            Giao việc theo Milestone - Admin
+            Giao việc theo Milestone
           </DialogTitle>
           <p className='text-sm text-muted-foreground'>
             Giao từng milestone cho Designer hoặc Staff. Tất cả tasks trong milestone sẽ được giao cho cùng một người.
