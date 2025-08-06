@@ -21,13 +21,15 @@ interface QualityCheckTaskManagerProps {
   orderItemId: string
   onSubmitSuccess: (hasFailures: boolean, hasSeverity: boolean) => void
   isDisabled?: boolean
+  milestoneName: string
 }
 
 export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = ({
   tasks,
   orderItemId,
   onSubmitSuccess,
-  isDisabled = false
+  isDisabled = false,
+  milestoneName
 }) => {
   const [taskStatuses, setTaskStatuses] = useState<QualityCheckTaskStatus[]>([])
   const qualityCheckMutation = useQualityCheckSubmit()
@@ -100,7 +102,7 @@ export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = (
       <CardHeader className='bg-gradient-to-r from-orange-50 to-amber-50'>
         <CardTitle className='flex items-center gap-2 text-orange-800'>
           <ShieldCheck className='h-5 w-5' />
-          Quality Check - Đánh giá chất lượng
+          {milestoneName}
         </CardTitle>
         <div className='flex items-center gap-4 text-sm flex-wrap'>
           <Badge variant='outline' className='border-orange-200'>

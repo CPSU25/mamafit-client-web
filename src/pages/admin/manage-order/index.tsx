@@ -20,7 +20,7 @@ import { useOrders as useOrdersContext } from './contexts/order-context'
 import type { OrderById } from '@/@types/manage-order.types'
 
 // Constants
-const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_PAGE_SIZE = 20
 const USERS_FETCH_SIZE = 1000
 
 // Loading skeleton component
@@ -196,17 +196,6 @@ function ManageOrderContent() {
   )
 }
 
-/**
- * Manage Order Page - Admin Module
- *
- * Features:
- * - Hiển thị danh sách đơn hàng với pagination
- * - Thống kê tổng quan về orders
- * - Chi tiết đơn hàng trong sidebar
- * - Quản lý trạng thái đơn hàng
- *
- * @returns {JSX.Element} Order management page
- */
 export default function ManageOrderPage() {
   return (
     <OrderProvider>
