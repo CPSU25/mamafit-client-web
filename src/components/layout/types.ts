@@ -16,7 +16,7 @@ interface BaseNavItem {
 
 type NavLink = BaseNavItem & {
   url: string
-  items?: never
+  items?: NavItem[]
 }
 
 type NavCollapsible = BaseNavItem & {
@@ -24,7 +24,7 @@ type NavCollapsible = BaseNavItem & {
   url?: never
 }
 
-type NavItem = NavCollapsible | NavLink
+type NavItem = NavCollapsible | NavLink 
 
 interface NavGroup {
   title: string
