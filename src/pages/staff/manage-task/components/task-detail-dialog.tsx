@@ -402,6 +402,7 @@ export function TaskDetailDialog({
                       orderItemId={task.orderItemId}
                       onSubmitSuccess={handleQualityCheckSuccess}
                       isDisabled={isUpdating}
+                      milestoneName={milestone.name}
                     />
                   )
                 }
