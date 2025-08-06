@@ -68,7 +68,7 @@ export default function OrderItemDetailPage() {
   }
 
   const { preset, milestones, orderId, orderCode, measurement } = orderItemData
-  
+
   const totalTasks = milestones.reduce((sum, milestone) => sum + milestone.maternityDressTasks.length, 0)
   const completedTasks = milestones.reduce(
     (sum, milestone) =>
@@ -238,7 +238,7 @@ export default function OrderItemDetailPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {measurement.isLocked && (
                     <div className='mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-md'>
                       <p className='text-xs text-yellow-700 flex items-center gap-1'>
@@ -288,7 +288,7 @@ export default function OrderItemDetailPage() {
                       <span className='font-medium'>Tỉnh/Thành phố:</span> {addressData.province}
                     </p>
                   </div>
-                  
+
                   {addressData.isDefault && (
                     <div className='mt-3 p-2 bg-blue-50 border border-blue-200 rounded-md'>
                       <p className='text-xs text-blue-700 flex items-center gap-1'>
@@ -299,7 +299,9 @@ export default function OrderItemDetailPage() {
                   )}
 
                   <div className='mt-3 pt-3 border-t text-xs text-muted-foreground'>
-                    <p>Tọa độ: {addressData.latitude}, {addressData.longitude}</p>
+                    <p>
+                      Tọa độ: {addressData.latitude}, {addressData.longitude}
+                    </p>
                   </div>
                 </div>
               ) : (

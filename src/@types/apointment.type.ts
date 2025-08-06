@@ -1,3 +1,5 @@
+import { DateRange } from 'react-day-picker'
+
 export interface User {
   id: string
   userName: string
@@ -51,9 +53,25 @@ export enum AppointmentStatus {
   UP_COMING = 'UP_COMING',
   CANCELED = 'CANCELED',
   COMPLETED = 'COMPLETED',
-  IN_PROGRESS = 'IN_PROGRESS'
+  IN_PROGRESS = 'IN_PROGRESS',
+  CHECKED_IN = 'CHECKED_IN',
+  CHECKED_OUT = 'CHECKED_OUT'
 }
 
+export interface Appointment {
+  id: string
+  user: User
+  branch: Branch
+  bookingTime: string
+  note: string
+  status: AppointmentStatus
+  canceledAt?: string
+  canceledReason?: string
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
+}
 export interface Appointment {
   id: string
   user: User
@@ -79,9 +97,10 @@ export interface AppointmentStats {
 
 export interface AppointmentFilters {
   status?: AppointmentStatus
-  date?: Date
+  dateRange?: DateRange // <-- Thay đổi từ date: Date sang dateRange: DateRange
   searchTerm?: string
   branchId?: string
+  sortBy?: string // <-- Thêm sortBy dựa trên API
 }
 
 export interface CreateAppointmentData {

@@ -8,14 +8,24 @@ export const appointmentApi = {
     pageNumber?: number
     pageSize?: number
     status?: string
-    date?: string
+    startDate?: string
+    endDate?: string
     searchTerm?: string
     branchId?: string
+    sortBy?: string
   }): Promise<ListBaseResponse<Appointment>> => {
-    const response = await api.get('/appointment', { params })
+    // *** THAY ĐỔI Ở ĐÂY ***
+    // Sử dụng object destructuring để loại bỏ 'pageNumber' và thêm 'index' một cách type-safe
+    const { pageNumber, ...restParams } = params || {}
+    const apiParams = {
+      ...restParams,
+      index: pageNumber
+    }
+
+    // `apiParams` giờ đây sẽ không có `pageNumber` và có `index`, không cần dùng `any`
+    const response = await api.get('/appointment', { params: apiParams })
     return response.data
   },
-
   // Lấy chi tiết một lịch hẹn
   getAppointmentById: async (id: string): Promise<ItemBaseResponse<Appointment>> => {
     const response = await api.get(`/appointment/${id}`)
@@ -47,8 +57,8 @@ export const appointmentApi = {
   },
 
   // Hủy lịch hẹn
-  cancelAppointment: async (id: string, reason?: string): Promise<ItemBaseResponse<Appointment>> => {
-    const response = await api.put(`/appointment/${id}/cancel`, { canceledReason: reason })
+  cancelAppointment: async (id: string, reason: string): Promise<ItemBaseResponse<Appointment>> => {
+    const response = await api.put(`/appointment/${id}/cancel`, reason)
     return response.data
   },
 

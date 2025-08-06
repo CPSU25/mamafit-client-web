@@ -24,20 +24,42 @@ export const useAppointments = (pageNumber: number = 1, pageSize: number = 10, f
   return useQuery({
     queryKey: appointmentKeys.list({ ...filters }),
     queryFn: () => {
+      // *** ĐIỀU CHỈNH LẠI LOGIC THỜI GIAN Ở ĐÂY ***
+      let startDate, endDate
+
+      // Xử lý ngày bắt đầu
+      if (filters?.dateRange?.from) {
+        // Tạo một đối tượng Date mới để không thay đổi state gốc
+        startDate = new Date(filters.dateRange.from)
+        // Set thời gian về đầu ngày (00:00:00)
+        startDate.setHours(0, 0, 0, 0)
+      }
+
+      // Xử lý ngày kết thúc
+      if (filters?.dateRange?.to) {
+        // Tạo một đối tượng Date mới
+        endDate = new Date(filters.dateRange.to)
+        // Set thời gian về cuối ngày (23:59:59)
+        endDate.setHours(23, 59, 59, 999)
+      }
+
       const params = {
         pageNumber,
         pageSize,
         status: filters?.status,
-        date: filters?.date ? filters.date.toISOString().split('T')[0] : undefined, // Format YYYY-MM-DD
+        // Sử dụng các biến startDate và endDate đã được xử lý
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString(),
         searchTerm: filters?.searchTerm,
-        branchId: filters?.branchId
+        branchId: filters?.branchId,
+        sortBy: filters?.sortBy || 'CREATED_AT_DESC'
       }
 
-      console.log('🌐 API Call Params:', params)
+      console.log('✅ Corrected API Call Params:', params)
 
       return appointmentApi.getAppointments(params)
     },
-    staleTime: 5 * 60 * 1000 // 5 phút
+    staleTime: 5 * 60 * 1000
   })
 }
 
@@ -53,15 +75,13 @@ export const useAppointment = (id: string) => {
 
 // Hook để tính toán thống kê từ danh sách appointments
 export const useAppointmentStats = (appointments: Appointment[]): AppointmentStats => {
-  const stats: AppointmentStats = {
+  return {
     totalAppointments: appointments.length,
     upComing: appointments.filter((apt) => apt.status === AppointmentStatus.UP_COMING).length,
     inProgress: appointments.filter((apt) => apt.status === AppointmentStatus.IN_PROGRESS).length,
     completed: appointments.filter((apt) => apt.status === AppointmentStatus.COMPLETED).length,
     canceled: appointments.filter((apt) => apt.status === AppointmentStatus.CANCELED).length
   }
-
-  return stats
 }
 
 // Hook để tạo lịch hẹn mới
@@ -137,7 +157,7 @@ export const useCancelAppointment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason?: string }) => appointmentApi.cancelAppointment(id, reason),
+    mutationFn: ({ id }: { id: string }) => appointmentApi.cancelAppointment(id, 'Hủy bởi nhân viên'),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: appointmentKeys.detail(id) })

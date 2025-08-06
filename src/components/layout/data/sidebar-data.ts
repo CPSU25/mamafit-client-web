@@ -14,84 +14,82 @@ import {
   MessagesSquare,
   Building,
   Ticket,
-  CalendarDays
-} from 'lucide-react'
+  CalendarDays,
+  FileText,
+  TrendingUp,
+  BarChart3,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Boxes,
+  ClipboardList,
+  DollarSign,
+  UserCheck,
+  Shirt,
+  Scissors,
+  PaintBucket,
+  Store,
+  Bell
+} from 'lucide-react';
+import { SidebarData } from '../types';
 
-import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'satnaing',
-    email: 'satnaingdev@gmail.com',
-    avatar: '/avatars/shadcn.jpg'
+    name: 'MamaFit Admin',
+    email: 'admin@mamafit.studio',
+    avatar: '/avatars/default.jpg'
   },
   role: [
     {
       name: 'Admin',
       navGroups: [
         {
-          title: 'Admin',
+          title: 'Tổng quan',
           items: [
+            { title: 'Bảng điều khiển', url: 'dashboard', icon: LayoutDashboard },
             {
-              title: 'Dashboard',
-              url: 'dashboard',
-              icon: LayoutDashboard
-            },
-            {
-              title: 'Manage Categories',
-              url: 'manage-category',
-              icon: Tags
-            },
-            {
-              title: 'Manage Users',
-              url: 'manage-user',
-              icon: Users
-            },
-            {
-              title: 'Manage Branches',
-              url: 'manage-branch',
-              icon: Building
-            },
-            {
-              title: 'Manage Maternity Dresses',
-              url: 'manage-maternity-dress',
-              icon: Package2
-            },
-            {
-              title: 'Manage Components',
-              url: 'manage-component',
-              icon: Package
-            },
-            {
-              title: 'Manage Milestones',
-              url: 'manage-milestone',
-              icon: FolderOpen
-            },
-            {
-              title: 'Manage Orders',
-              url: 'manage-order',
-              icon: Package
-            },
-            {
-              title: 'Manage Vouchers',
-              url: 'manage-voucher',
-              icon: Ticket
-            },
-            {
-              title: 'Manage Transactions',
-              url: 'manage-transaction',
-              icon: ShoppingCart
+              title: 'Phân tích & Báo cáo',
+              icon: BarChart3,
+              items: [
+                { title: 'Báo cáo doanh thu', url: 'analytics/revenue', icon: TrendingUp },
+                { title: 'Báo cáo khách hàng', url: 'analytics/customer', icon: Users },
+                { title: 'Báo cáo sản xuất', url: 'analytics/production', icon: Factory }
+              ]
             }
           ]
         },
         {
-          title: 'Settings',
+          title: 'Quản lý hệ thống',
           items: [
+            { title: 'Quản lý người dùng', url: 'manage-user', icon: Users, badge: '256' },
             {
-              title: 'System Settings',
-              url: 'settings',
-              icon: Settings
-            }
+              title: 'Quản lý chi nhánh',
+              icon: Building,
+              items: [
+                { title: 'Danh sách chi nhánh', url: 'manage-branch', icon: Store },
+                { title: 'Phân bổ nhân viên', url: 'manage-branch/staff-allocation', icon: UserCheck }
+              ]
+            },
+            { title: 'Quản lý danh mục', url: 'manage-category', icon: Tags },
+            { title: 'Quản lý váy bầu', url: 'manage-maternity-dress', icon: Shirt },
+            { title: 'Quản lý linh kiện', url: 'manage-component', icon: Boxes },
+            { title: 'Quản lý mốc thời gian', url: 'manage-milestone', icon: Clock }
+          ]
+        },
+        {
+          title: 'Quản lý giao dịch',
+          items: [
+            { title: 'Quản lý đơn hàng', url: 'manage-order', icon: Package, badge: 'New' },
+            { title: 'Quản lý voucher', url: 'manage-voucher', icon: Ticket },
+            { title: 'Quản lý thanh toán', url: 'manage-transaction', icon: DollarSign }
+          ]
+        },
+        {
+          title: 'Cài đặt',
+          items: [
+            { title: 'Cấu hình hệ thống', url: 'settings', icon: Settings },
+            { title: 'Thông báo hệ thống', url: 'system-notifications', icon: Bell }
           ]
         }
       ]
@@ -100,49 +98,39 @@ export const sidebarData: SidebarData = {
       name: 'BranchManager',
       navGroups: [
         {
-          title: 'Branch Management',
+          title: 'Quản lý chi nhánh',
           items: [
-            {
-              title: 'Dashboard',
-              url: 'dashboard',
-              icon: LayoutDashboard
-            },
-            {
-              title: 'Manage Appointments',
-              url: 'manage-appointment',
-              icon: CalendarDays
-            },
-            {
-              title: 'Cashier',
-              url: 'cashier',
-              icon: ShoppingCart
-            },
-            {
-              title: 'Manage Orders',
-              url: 'manage-order',
-              icon: Package
-            },
-            {
-              title: 'Chats',
-              url: 'messages',
-              icon: MessagesSquare
-            },
-            {
-              title: 'Manage Inventory',
-              url: 'manage-inventory',
-              icon: Package2
-            }
+            { title: 'Tổng quan chi nhánh', url: 'dashboard', icon: LayoutDashboard },
+            { title: 'Báo cáo chi nhánh', url: 'reports', icon: BarChart3, badge: '3' }
           ]
         },
         {
-          title: 'Settings',
+          title: 'Vận hành',
           items: [
+            { title: 'Quản lý lịch hẹn', url: 'manage-appointment', icon: CalendarDays, badge: '12' },
+            { title: 'Thu ngân', url: 'cashier', icon: ShoppingCart },
             {
-              title: 'Profile',
-              url: 'profile',
-              icon: User
-            }
+              title: 'Quản lý đơn hàng',
+              icon: Package,
+              items: [
+                { title: 'Đơn hàng mới', url: 'manage-order', icon: AlertCircle, badge: '5' },
+                { title: 'Đang xử lý', url: 'manage-order/processing', icon: Clock },
+                { title: 'Hoàn thành', url: 'manage-order/completed', icon: CheckCircle }
+              ]
+            },
+            { title: 'Quản lý kho', url: 'manage-inventory', icon: Package2 }
           ]
+        },
+        {
+          title: 'Tương tác',
+          items: [
+            { title: 'Tin nhắn khách hàng', url: 'messages', icon: MessagesSquare, badge: '8' },
+            { title: 'Check-in/Check-out', url: 'check-in-out', icon: UserCheck }
+          ]
+        },
+        {
+          title: 'Cài đặt',
+          items: [{ title: 'Thông tin cá nhân', url: 'profile', icon: User }]
         }
       ]
     },
@@ -150,44 +138,38 @@ export const sidebarData: SidebarData = {
       name: 'Designer',
       navGroups: [
         {
-          title: 'Design',
+          title: 'Thiết kế',
           items: [
-            {
-              title: 'Dashboard',
-              url: 'dashboard',
-              icon: LayoutDashboard
-            },
-            {
-              title: 'Manage Templates',
-              url: 'manage-template',
-              icon: Palette
-            },
-            {
-              title: 'Messages',
-              url: 'messages',
-              icon: MessagesSquare
-            },
-            {
-              title: 'Manage Tasks',
-              url: 'manage-task',
-              icon: FolderOpen
-            },
-            {
-              title: 'Manage Design Requests',
-              url: 'manage-design-request',
-              icon: Award
-            }
+            { title: 'Bảng làm việc', url: 'dashboard', icon: LayoutDashboard },
+            { title: 'Thống kê thiết kế', url: 'design-stats', icon: TrendingUp }
           ]
         },
         {
-          title: 'Settings',
+          title: 'Quản lý thiết kế',
           items: [
             {
-              title: 'Profile',
-              url: 'profile',
-              icon: User
-            }
+              title: 'Mẫu thiết kế',
+              icon: Palette,
+              items: [
+                { title: 'Thư viện mẫu', url: 'manage-template', icon: Shirt },
+                { title: 'Tạo mẫu mới', url: 'manage-template/create', icon: PaintBucket },
+                { title: 'Mẫu nổi bật', url: 'manage-template/featured', icon: Award }
+              ]
+            },
+            { title: 'Yêu cầu thiết kế', url: 'manage-design-request', icon: Award, badge: '7' },
+            { title: 'Công việc của tôi', url: 'manage-task', icon: ClipboardList }
           ]
+        },
+        {
+          title: 'Tương tác',
+          items: [
+            { title: 'Chat với khách hàng', url: 'messages', icon: MessagesSquare, badge: '4' },
+            { title: 'Phản hồi thiết kế', url: 'design-feedback', icon: FileText }
+          ]
+        },
+        {
+          title: 'Cài đặt',
+          items: [{ title: 'Hồ sơ cá nhân', url: 'profile', icon: User }]
         }
       ]
     },
@@ -195,82 +177,65 @@ export const sidebarData: SidebarData = {
       name: 'Manager',
       navGroups: [
         {
-          title: 'Factory Management',
+          title: 'Quản lý sản xuất',
           items: [
-            {
-              title: 'Dashboard',
-              url: 'dashboard',
-              icon: LayoutDashboard
-            },
-            {
-              title: 'Manage Production',
-              url: 'manage-production',
-              icon: Factory
-            },
-            {
-              title: 'Manage Templates',
-              url: 'manage-template',
-              icon: Package
-            },
-            {
-              title: 'Manage Design Requests',
-              url: 'manage-design-request',
-              icon: Award
-            },
-            {
-              title: 'Manage Orders',
-              url: 'manage-order',
-              icon: Package
-            },
-            {
-              title: 'Manage Tasks',
-              url: 'manage-task',
-              icon: FolderOpen
-            }
+            { title: 'Tổng quan sản xuất', url: 'dashboard', icon: LayoutDashboard },
+            { title: 'Báo cáo sản xuất', url: 'production-reports', icon: BarChart3 }
           ]
         },
         {
-          title: 'Settings',
+          title: 'Vận hành nhà máy',
           items: [
             {
-              title: 'Profile',
-              url: 'profile',
-              icon: User
-            }
+              title: 'Quản lý sản xuất',
+              icon: Factory,
+              items: [
+                { title: 'Dây chuyền sản xuất', url: 'manage-production', icon: Scissors },
+                { title: 'Lịch sản xuất', url: 'manage-production/schedule', icon: CalendarDays },
+                { title: 'Kiểm tra chất lượng', url: 'manage-production/qc', icon: CheckCircle }
+              ]
+            },
+            { title: 'Quản lý mẫu', url: 'manage-template', icon: Palette },
+            { title: 'Yêu cầu thiết kế', url: 'manage-design-request', icon: Award },
+            { title: 'Đơn hàng sản xuất', url: 'manage-order', icon: Package, badge: '15' }
           ]
+        },
+        {
+          title: 'Quản lý nhân sự',
+          items: [
+            { title: 'Phân công công việc', url: 'manage-task', icon: FolderOpen },
+            { title: 'Theo dõi tiến độ', url: 'track-progress', icon: TrendingUp }
+          ]
+        },
+        {
+          title: 'Cài đặt',
+          items: [{ title: 'Thông tin cá nhân', url: 'profile', icon: User }]
         }
       ]
     },
-
     {
       name: 'Staff',
       navGroups: [
         {
-          title: 'Staff',
+          title: 'Công việc',
           items: [
-            {
-              title: 'Dashboard',
-              url: 'dashboard',
-              icon: LayoutDashboard
-            },
-            {
-              title: 'Manage Tasks',
-              url: 'manage-task',
-              icon: FolderOpen
-            }
+            { title: 'Bảng công việc', url: 'dashboard', icon: LayoutDashboard },
+            { title: 'Nhiệm vụ của tôi', url: 'manage-task', icon: ClipboardList, badge: '5' },
+            { title: 'Tiến độ công việc', url: 'work-progress', icon: TrendingUp }
           ]
         },
         {
-          title: 'Settings',
+          title: 'Bảo hành & Hỗ trợ',
           items: [
-            {
-              title: 'Profile',
-              url: 'profile',
-              icon: User
-            }
+            { title: 'Yêu cầu bảo hành', url: 'warranty-requests', icon: Package2, badge: '2' },
+            { title: 'Cập nhật trạng thái', url: 'status-updates', icon: CheckCircle }
           ]
+        },
+        {
+          title: 'Cài đặt',
+          items: [{ title: 'Thông tin cá nhân', url: 'profile', icon: User }]
         }
       ]
     }
   ]
-}
+};
