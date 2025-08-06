@@ -6,9 +6,10 @@ import AppSidebar from '@/components/layout/app-sidebar'
 import Cookies from 'js-cookie'
 import { SearchProvider } from '@/context/search-context'
 import { Header } from '@/components/layout/header'
-import { Search } from '@/components/search'
-import { ModeToggle } from '@/components/mode-toggle'
+// import { Search } from '@/components/search'
+// import { ModeToggle } from '@/components/mode-toggle'
 import { NotificationDropdown } from '@/components/notification-dropdown'
+import { Search } from '@/components/search'
 
 interface Props {
   children?: React.ReactNode
@@ -29,7 +30,6 @@ function SystemLayout({ role, children }: Props) {
               </div>
               <div className='flex items-center gap-2'>
                 <NotificationDropdown />
-                <ModeToggle />
               </div>
             </div>
           </Header>

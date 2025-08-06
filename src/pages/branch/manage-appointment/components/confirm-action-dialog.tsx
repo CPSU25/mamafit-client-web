@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import { CheckCircle, LogOut, XCircle } from 'lucide-react'
 
 interface ConfirmActionDialogProps {
@@ -29,39 +30,41 @@ export const ConfirmActionDialog = ({
   action,
   isLoading = false
 }: ConfirmActionDialogProps) => {
+  // ----- LOGIC GỐC CỦA BẠN ĐƯỢC GIỮ NGUYÊN -----
   const getActionConfig = () => {
     switch (action) {
       case 'check-in':
         return {
           icon: CheckCircle,
           buttonText: 'Check-in',
-          buttonClass: 'bg-green-600 hover:bg-green-700 text-white',
-          iconColor: 'text-green-600'
+          buttonClass: 'bg-green-500 hover:bg-green-600 text-white',
+          iconClass: 'text-green-500'
         }
       case 'check-out':
         return {
           icon: LogOut,
           buttonText: 'Check-out',
-          buttonClass: 'bg-blue-600 hover:bg-blue-700 text-white',
-          iconColor: 'text-blue-600'
+          buttonClass: 'bg-sky-500 hover:bg-sky-600 text-white',
+          iconClass: 'text-sky-500'
         }
       case 'cancel':
         return {
           icon: XCircle,
           buttonText: 'Hủy lịch',
-          buttonClass: 'bg-red-600 hover:bg-red-700 text-white',
-          iconColor: 'text-red-600'
+          buttonClass: 'bg-destructive hover:bg-destructive/90 text-destructive-foreground',
+          iconClass: 'text-destructive'
         }
       default:
         return {
           icon: CheckCircle,
           buttonText: 'Xác nhận',
           buttonClass: 'bg-primary hover:bg-primary/90',
-          iconColor: 'text-primary'
+          iconClass: 'text-primary'
         }
     }
   }
 
+  // ----- GIAO DIỆN ĐƯỢC REFECTOR -----
   const config = getActionConfig()
   const Icon = config.icon
 
@@ -69,28 +72,27 @@ export const ConfirmActionDialog = ({
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <div className='flex items-center gap-3 mb-2'>
-            <div className={`p-3 rounded-full bg-muted ${config.iconColor}`}>
-              <Icon className='h-6 w-6' />
-            </div>
-            <AlertDialogTitle className='text-xl'>{title}</AlertDialogTitle>
+          <div className='mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted'>
+            <Icon className={`h-6 w-6 ${config.iconClass}`} />
           </div>
-          <AlertDialogDescription className='text-base'>{description}</AlertDialogDescription>
+          <div className='text-center space-y-2 mt-4'>
+            <AlertDialogTitle>{title}</AlertDialogTitle>
+            <AlertDialogDescription>{description}</AlertDialogDescription>
+          </div>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Hủy bỏ</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} disabled={isLoading} className={config.buttonClass}>
-            {isLoading ? (
-              <div className='flex items-center gap-2'>
-                <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
-                <span>Đang xử lý...</span>
-              </div>
-            ) : (
-              <div className='flex items-center gap-2'>
-                <Icon className='h-4 w-4' />
-                <span>{config.buttonText}</span>
-              </div>
-            )}
+        <AlertDialogFooter className='flex-col-reverse sm:flex-row sm:justify-center sm:space-x-2'>
+          <AlertDialogCancel asChild>
+            <Button variant='outline' disabled={isLoading}>
+              Hủy bỏ
+            </Button>
+          </AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button onClick={onConfirm} disabled={isLoading} className={config.buttonClass}>
+              {isLoading && (
+                <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
+              )}
+              {config.buttonText}
+            </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

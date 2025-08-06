@@ -1,5 +1,3 @@
-// src/components/ui/date-range-picker.tsx
-
 'use client'
 
 import * as React from 'react'
@@ -8,41 +6,40 @@ import { vi } from 'date-fns/locale'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { DateRange } from 'react-day-picker'
 
-// Giả định đường dẫn đúng là '@/lib/utils'. Hãy điều chỉnh nếu cần.
 import { cn } from '@/lib/utils/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-/**
- * Interface cho DateRangePicker props.
- * @param {DateRange} [initialDate] - Khoảng ngày khởi tạo ban đầu.
- * @param {(range: DateRange | undefined) => void} [onDateChange] - Callback được gọi khi khoảng ngày thay đổi.
- */
 export interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
-  initialDate?: DateRange
+  // Đổi tên prop để rõ ràng hơn, đây là giá trị được truyền từ ngoài vào
+  value?: DateRange
   onDateChange?: (range: DateRange | undefined) => void
+  // Bỏ initialDate để tránh nhầm lẫn, component sẽ được kiểm soát hoàn toàn bởi prop `value`
 }
 
-export function DateRangePicker({ className, initialDate, onDateChange }: DateRangePickerProps) {
-  const [date, setDate] = React.useState<DateRange | undefined>(
-    initialDate || {
-      from: addDays(new Date(), -6),
-      to: new Date()
-    }
-  )
-  const [month, setMonth] = React.useState<Date>(date?.from || new Date())
+export function DateRangePicker({ className, value, onDateChange }: DateRangePickerProps) {
+  const [date, setDate] = React.useState<DateRange | undefined>(value)
+  const [month, setMonth] = React.useState<Date>(value?.from || new Date())
 
+  // *** SỬA LỖI 1: Đồng bộ hóa state nội bộ khi prop `value` từ bên ngoài thay đổi ***
+  // Điều này cho phép component được reset khi bộ lọc bên ngoài bị xóa.
   React.useEffect(() => {
-    if (onDateChange) {
-      onDateChange(date)
+    setDate(value)
+  }, [value])
+
+  // *** SỬA LỖI 2: Tạo một hàm duy nhất để cập nhật state và thông báo cho component cha ***
+  const handleDateChange = (newDate: DateRange | undefined) => {
+    // Cập nhật state nội bộ
+    setDate(newDate)
+    // Gọi callback để cập nhật state ở component cha
+    onDateChange?.(newDate)
+    // Cập nhật tháng hiển thị trên lịch
+    if (newDate?.from) {
+      setMonth(startOfMonth(newDate.from))
     }
-    // Cập nhật tháng hiển thị khi khoảng ngày thay đổi
-    if (date?.from) {
-      setMonth(startOfMonth(date.from))
-    }
-  }, [date, onDateChange])
+  }
 
   const handlePresetSelect = (preset: string) => {
     const now = new Date()
@@ -52,8 +49,8 @@ export function DateRangePicker({ className, initialDate, onDateChange }: DateRa
         newDate = { from: now, to: now }
         break
       case 'yesterday': {
-        const yesterday = addDays(now, -1)
-        newDate = { from: yesterday, to: yesterday }
+        const d = addDays(now, -1)
+        newDate = { from: d, to: d }
         break
       }
       case 'last7':
@@ -66,10 +63,10 @@ export function DateRangePicker({ className, initialDate, onDateChange }: DateRa
         newDate = { from: addDays(now, -29), to: now }
         break
       case 'thisMonth':
-        newDate = { from: new Date(now.getFullYear(), now.getMonth(), 1), to: now }
+        newDate = { from: startOfMonth(now), to: now }
         break
       case 'lastMonth': {
-        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const lastMonthStart = startOfMonth(addDays(now, -30))
         const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
         newDate = { from: lastMonthStart, to: lastMonthEnd }
         break
@@ -77,17 +74,16 @@ export function DateRangePicker({ className, initialDate, onDateChange }: DateRa
       default:
         break
     }
-    setDate(newDate)
-    if (newDate?.from) {
-      setMonth(startOfMonth(newDate.from))
-    }
+    // Dùng hàm handleDateChange đã tạo
+    handleDateChange(newDate)
   }
+
+  // *** SỬA LỖI 3: Bỏ hoàn toàn useEffect gây ra vòng lặp vô hạn ***
 
   return (
     <div className={cn('grid gap-2', className)}>
       <Popover
         onOpenChange={(open) => {
-          // Reset tháng hiển thị về tháng của ngày bắt đầu mỗi khi mở Popover
           if (open && date?.from) {
             setMonth(startOfMonth(date.from))
           }
@@ -103,10 +99,10 @@ export function DateRangePicker({ className, initialDate, onDateChange }: DateRa
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, 'LLL dd, y', { locale: vi })} - {format(date.to, 'LLL dd, y', { locale: vi })}
+                  {format(date.from, 'dd/MM/yyyy', { locale: vi })} - {format(date.to, 'dd/MM/yyyy', { locale: vi })}
                 </>
               ) : (
-                format(date.from, 'LLL dd, y', { locale: vi })
+                format(date.from, 'dd/MM/yyyy', { locale: vi })
               )
             ) : (
               <span>Chọn một khoảng ngày</span>
@@ -138,7 +134,8 @@ export function DateRangePicker({ className, initialDate, onDateChange }: DateRa
               month={month}
               onMonthChange={setMonth}
               selected={date}
-              onSelect={setDate}
+              // Dùng hàm handleDateChange khi người dùng chọn ngày trên lịch
+              onSelect={handleDateChange}
               numberOfMonths={2}
               locale={vi}
             />
