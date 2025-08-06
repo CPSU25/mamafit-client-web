@@ -21,17 +21,37 @@ export function QuickActions({ role }: QuickActionsProps) {
 
   const getQuickActions = () => {
     // Logic getQuickActions của bạn được giữ nguyên
-    switch(role) {
+    switch (role) {
       case 'Admin':
         return [
-          { icon: Plus, label: 'Thêm người dùng', action: () => navigate('/manage-user/new'), color: 'text-violet-500' },
+          {
+            icon: Plus,
+            label: 'Thêm người dùng',
+            action: () => navigate('/manage-user/new'),
+            color: 'text-violet-500'
+          },
           { icon: Package, label: 'Đơn hàng mới', action: () => navigate('/manage-order'), color: 'text-blue-500' },
-          { icon: MessageCircle, label: 'Thông báo', action: () => navigate('/system-notifications'), color: 'text-green-500' },
-          { icon: ShoppingBag, label: 'Voucher mới', action: () => navigate('/manage-voucher/new'), color: 'text-purple-500' }
+          {
+            icon: MessageCircle,
+            label: 'Thông báo',
+            action: () => navigate('/system-notifications'),
+            color: 'text-green-500'
+          },
+          {
+            icon: ShoppingBag,
+            label: 'Voucher mới',
+            action: () => navigate('/manage-voucher/new'),
+            color: 'text-purple-500'
+          }
         ]
       case 'BranchManager':
         return [
-          { icon: CalendarPlus, label: 'Lịch hẹn mới', action: () => navigate('/manage-appointment'), color: 'text-blue-500' },
+          {
+            icon: CalendarPlus,
+            label: 'Lịch hẹn mới',
+            action: () => navigate('/manage-appointment'),
+            color: 'text-blue-500'
+          },
           { icon: Package, label: 'Đơn hàng', action: () => navigate('/manage-order'), color: 'text-green-500' }
         ]
       case 'Designer':
@@ -44,7 +64,8 @@ export function QuickActions({ role }: QuickActionsProps) {
           { icon: Package, label: 'Sản xuất', action: () => navigate('/manage-production'), color: 'text-green-500' },
           { icon: Plus, label: 'Tạo task', action: () => navigate('/manage-task/new'), color: 'text-orange-500' }
         ]
-      default: return []
+      default:
+        return []
     }
   }
 

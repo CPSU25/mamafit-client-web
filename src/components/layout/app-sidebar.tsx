@@ -30,9 +30,9 @@ function AppSidebar({ role, ...props }: AppSidebarProps) {
   const showSystemStatus = ['Admin', 'BranchManager', 'Manager'].includes(role)
 
   return (
-    <Sidebar 
-      collapsible='icon' 
-      variant='floating' 
+    <Sidebar
+      collapsible='icon'
+      variant='floating'
       className='border-r-0 bg-gradient-to-b from-violet-50/50 via-background to-background dark:from-violet-950/10'
       {...props}
     >
@@ -40,20 +40,20 @@ function AppSidebar({ role, ...props }: AppSidebarProps) {
         <LogoHeader />
         {showSystemStatus && <SystemStatus role={role} />}
       </SidebarHeader>
-      
+
       <SidebarContent className='scrollbar-thin scrollbar-track-transparent scrollbar-thumb-violet-200 dark:scrollbar-thumb-violet-800'>
         {/* Quick Actions for frequently used features */}
         {currentRole && <QuickActions role={role} />}
-        
+
         {currentRole?.navGroups.map((navGroup, index) => (
           <NavGroup key={index} title={navGroup.title} items={navGroup.items} />
         ))}
       </SidebarContent>
-      
+
       <SidebarFooter className='border-t border-violet-100 dark:border-violet-900/20'>
         <NavUser user={userInfo} />
       </SidebarFooter>
-      
+
       <SidebarRail className='bg-gradient-to-b from-violet-100/20 to-transparent dark:from-violet-900/10' />
     </Sidebar>
   )

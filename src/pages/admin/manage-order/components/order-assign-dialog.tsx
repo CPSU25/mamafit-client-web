@@ -30,7 +30,8 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
   const { data: usersResponse, isLoading: isLoadingUsers } = useGetListUser({
     pageSize: 100
   })
-  const availableUsers = usersResponse?.data?.items.filter((user) => user.roleName === 'Designer' || user.roleName === 'Staff') || []
+  const availableUsers =
+    usersResponse?.data?.items.filter((user) => user.roleName === 'Designer' || user.roleName === 'Staff') || []
   const assignMutation = useAssignCharge()
 
   // Group milestones and merge all tasks with same milestone ID

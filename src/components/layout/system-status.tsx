@@ -10,13 +10,13 @@ interface SystemStatusProps {
 export function SystemStatus({ role }: SystemStatusProps) {
   const { state } = useSidebar()
   const isCollapsed = state === 'collapsed'
-  
+
   // Don't show when sidebar is collapsed
   if (isCollapsed) return null
-  
+
   // Mock data - should be fetched from API based on role
   const getStatusData = () => {
-    switch(role) {
+    switch (role) {
       case 'Admin':
         return {
           title: 'Hệ thống',
@@ -51,17 +51,17 @@ export function SystemStatus({ role }: SystemStatusProps) {
         return null
     }
   }
-  
+
   const statusData = getStatusData()
-  
+
   if (!statusData) return null
-  
+
   const getHealthColor = (health: number) => {
     if (health >= 90) return 'bg-green-500'
     if (health >= 70) return 'bg-yellow-500'
     return 'bg-red-500'
   }
-  
+
   return (
     <div className='px-3 py-3 border-t border-violet-100 dark:border-violet-900/20'>
       <div className='space-y-3'>
@@ -72,27 +72,23 @@ export function SystemStatus({ role }: SystemStatusProps) {
               <Activity className='h-4 w-4 text-violet-500' />
               <span className='text-xs font-semibold'>{statusData.title}</span>
             </div>
-            <span className='text-xs text-muted-foreground'>
-              {statusData.systemHealth}%
-            </span>
+            <span className='text-xs text-muted-foreground'>{statusData.systemHealth}%</span>
           </div>
-          
-          <Progress 
-            value={statusData.systemHealth} 
+
+          <Progress
+            value={statusData.systemHealth}
             className={cn('h-2 bg-violet-100 dark:bg-violet-900/30', getHealthColor(statusData.systemHealth))}
           />
-          
-          <div className='mt-2 text-[10px] text-muted-foreground'>
-            Trạng thái hoạt động tốt
-          </div>
+
+          <div className='mt-2 text-[10px] text-muted-foreground'>Trạng thái hoạt động tốt</div>
         </div>
-        
+
         {/* Quick Stats Grid */}
         <div className='grid grid-cols-3 gap-1.5'>
           {statusData.stats.map((stat, index) => {
             const Icon = stat.icon
             return (
-              <button 
+              <button
                 key={index}
                 className='flex flex-col items-center gap-1 p-2 rounded-lg bg-violet-50 dark:bg-violet-950/30 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors group'
               >

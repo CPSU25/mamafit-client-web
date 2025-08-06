@@ -366,9 +366,14 @@ const ManageAppointmentPage = () => {
 
   const handleDateSelect = (date: Date) => setSelectedDate(date)
   const handleFiltersChange = (newFilters: AppointmentFilters) => {
+    // Cập nhật state của bộ lọc (như cũ)
     setFilters(newFilters)
-    if (newFilters.date && newFilters.date !== selectedDate) {
-      setSelectedDate(newFilters.date)
+
+    // *** THÊM ĐOẠN CODE NÀY ĐỂ ĐỒNG BỘ STATE ***
+    // Nếu bộ lọc mới có khoảng ngày và có ngày bắt đầu,
+    // thì cập nhật selectedDate của calendar view về ngày bắt đầu đó.
+    if (newFilters.dateRange && newFilters.dateRange.from) {
+      setSelectedDate(newFilters.dateRange.from)
     }
   }
   const handleViewDetail = (appointment: Appointment) => {
@@ -386,25 +391,51 @@ const ManageAppointmentPage = () => {
     customerName: string
   ) => {
     const configs = {
-      'check-in': { title: 'Xác nhận Check-in', description: `Bạn có chắc chắn muốn check-in cho khách hàng "${customerName}"?` },
-      'check-out': { title: 'Xác nhận Check-out', description: `Bạn có chắc chắn muốn check-out cho khách hàng "${customerName}"?` },
-      cancel: { title: 'Xác nhận Hủy lịch', description: `Bạn có chắc chắn muốn hủy lịch hẹn của khách hàng "${customerName}"?` }
+      'check-in': {
+        title: 'Xác nhận Check-in',
+        description: `Bạn có chắc chắn muốn check-in cho khách hàng "${customerName}"?`
+      },
+      'check-out': {
+        title: 'Xác nhận Check-out',
+        description: `Bạn có chắc chắn muốn check-out cho khách hàng "${customerName}"?`
+      },
+      cancel: {
+        title: 'Xác nhận Hủy lịch',
+        description: `Bạn có chắc chắn muốn hủy lịch hẹn của khách hàng "${customerName}"?`
+      }
     }
-    setConfirmDialog({ isOpen: true, type, appointmentId, title: configs[type].title, description: configs[type].description })
+    setConfirmDialog({
+      isOpen: true,
+      type,
+      appointmentId,
+      title: configs[type].title,
+      description: configs[type].description
+    })
   }
-  const handleCloseConfirmDialog = () => setConfirmDialog({ isOpen: false, type: null, appointmentId: null, title: '', description: '' })
+  const handleCloseConfirmDialog = () =>
+    setConfirmDialog({ isOpen: false, type: null, appointmentId: null, title: '', description: '' })
   const handleConfirmAction = async () => {
     if (!confirmDialog.appointmentId || !confirmDialog.type) return
     try {
       switch (confirmDialog.type) {
-        case 'check-in': await checkInMutation.mutateAsync(confirmDialog.appointmentId); break
-        case 'check-out': await checkOutMutation.mutateAsync(confirmDialog.appointmentId); break
-        case 'cancel': await cancelMutation.mutateAsync({ id: confirmDialog.appointmentId, reason: 'Hủy bởi nhân viên' }); break
+        case 'check-in':
+          await checkInMutation.mutateAsync(confirmDialog.appointmentId)
+          break
+        case 'check-out':
+          await checkOutMutation.mutateAsync(confirmDialog.appointmentId)
+          break
+        case 'cancel':
+          await cancelMutation.mutateAsync({ id: confirmDialog.appointmentId })
+          break
       }
       await refetchAppointments()
       handleCloseConfirmDialog()
-      if (selectedAppointment?.id === confirmDialog.appointmentId) { handleCloseDetailSheet() }
-    } catch (error) { console.error('Error performing action:', error) }
+      if (selectedAppointment?.id === confirmDialog.appointmentId) {
+        handleCloseDetailSheet()
+      }
+    } catch (error) {
+      console.error('Error performing action:', error)
+    }
   }
   const handleCheckIn = (appointmentId: string) => {
     const apt = appointments.find((a) => a.id === appointmentId)
@@ -444,7 +475,9 @@ const ManageAppointmentPage = () => {
         <div className='text-center'>
           <h3 className='text-lg font-semibold text-destructive'>Lỗi tải dữ liệu</h3>
           <p className='text-muted-foreground'>{appointmentsError?.message || 'Không thể kết nối đến máy chủ.'}</p>
-          <Button variant='outline' onClick={() => refetchAppointments()} className='mt-4'>Thử lại</Button>
+          <Button variant='outline' onClick={() => refetchAppointments()} className='mt-4'>
+            Thử lại
+          </Button>
         </div>
       </div>
     )

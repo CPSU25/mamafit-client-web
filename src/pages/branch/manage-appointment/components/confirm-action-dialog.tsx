@@ -21,14 +21,46 @@ interface ConfirmActionDialogProps {
   isLoading?: boolean
 }
 
-export const ConfirmActionDialog = ({ isOpen, onClose, onConfirm, title, description, action, isLoading = false }: ConfirmActionDialogProps) => {
+export const ConfirmActionDialog = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  description,
+  action,
+  isLoading = false
+}: ConfirmActionDialogProps) => {
   // ----- LOGIC GỐC CỦA BẠN ĐƯỢC GIỮ NGUYÊN -----
   const getActionConfig = () => {
     switch (action) {
-      case 'check-in': return { icon: CheckCircle, buttonText: 'Check-in', buttonClass: 'bg-green-500 hover:bg-green-600 text-white', iconClass: 'text-green-500' }
-      case 'check-out': return { icon: LogOut, buttonText: 'Check-out', buttonClass: 'bg-sky-500 hover:bg-sky-600 text-white', iconClass: 'text-sky-500' }
-      case 'cancel': return { icon: XCircle, buttonText: 'Hủy lịch', buttonClass: 'bg-destructive hover:bg-destructive/90 text-destructive-foreground', iconClass: 'text-destructive' }
-      default: return { icon: CheckCircle, buttonText: 'Xác nhận', buttonClass: 'bg-primary hover:bg-primary/90', iconClass: 'text-primary' }
+      case 'check-in':
+        return {
+          icon: CheckCircle,
+          buttonText: 'Check-in',
+          buttonClass: 'bg-green-500 hover:bg-green-600 text-white',
+          iconClass: 'text-green-500'
+        }
+      case 'check-out':
+        return {
+          icon: LogOut,
+          buttonText: 'Check-out',
+          buttonClass: 'bg-sky-500 hover:bg-sky-600 text-white',
+          iconClass: 'text-sky-500'
+        }
+      case 'cancel':
+        return {
+          icon: XCircle,
+          buttonText: 'Hủy lịch',
+          buttonClass: 'bg-destructive hover:bg-destructive/90 text-destructive-foreground',
+          iconClass: 'text-destructive'
+        }
+      default:
+        return {
+          icon: CheckCircle,
+          buttonText: 'Xác nhận',
+          buttonClass: 'bg-primary hover:bg-primary/90',
+          iconClass: 'text-primary'
+        }
     }
   }
 
@@ -50,11 +82,15 @@ export const ConfirmActionDialog = ({ isOpen, onClose, onConfirm, title, descrip
         </AlertDialogHeader>
         <AlertDialogFooter className='flex-col-reverse sm:flex-row sm:justify-center sm:space-x-2'>
           <AlertDialogCancel asChild>
-            <Button variant='outline' disabled={isLoading}>Hủy bỏ</Button>
+            <Button variant='outline' disabled={isLoading}>
+              Hủy bỏ
+            </Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button onClick={onConfirm} disabled={isLoading} className={config.buttonClass}>
-              {isLoading && <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />}
+              {isLoading && (
+                <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
+              )}
               {config.buttonText}
             </Button>
           </AlertDialogAction>

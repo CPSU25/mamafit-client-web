@@ -24,7 +24,7 @@ type NavCollapsible = BaseNavItem & {
   url?: never
 }
 
-type NavItem = NavCollapsible | NavLink 
+type NavItem = NavCollapsible | NavLink
 
 interface NavGroup {
   title: string

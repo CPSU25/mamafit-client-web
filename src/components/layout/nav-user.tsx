@@ -1,7 +1,27 @@
 import { Link } from 'react-router-dom'
-import { Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, User, Heart, Settings, HelpCircle, Moon, Sun } from 'lucide-react'
+import {
+  Bell,
+  ChevronsUpDown,
+  CreditCard,
+  LogOut,
+  Sparkles,
+  User,
+  Heart,
+  Settings,
+  HelpCircle,
+  Moon,
+  Sun
+} from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 import { useLogout } from '@/services/auth/logout.service'
 import { useTheme } from 'next-themes'
@@ -27,7 +47,14 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
     }
   }
   const getRoleDisplay = (role: string) => {
-    const roleConfig = { Admin: { name: 'Quản trị viên', color: 'bg-red-500' }, BranchManager: { name: 'Quản lý chi nhánh', color: 'bg-blue-500' }, Designer: { name: 'Nhà thiết kế', color: 'bg-purple-500' }, Manager: { name: 'Quản lý sản xuất', color: 'bg-green-500' }, Staff: { name: 'Nhân viên', color: 'bg-yellow-500' }, Customer: { name: 'Khách hàng', color: 'bg-violet-500' } }
+    const roleConfig = {
+      Admin: { name: 'Quản trị viên', color: 'bg-red-500' },
+      BranchManager: { name: 'Quản lý chi nhánh', color: 'bg-blue-500' },
+      Designer: { name: 'Nhà thiết kế', color: 'bg-purple-500' },
+      Manager: { name: 'Quản lý sản xuất', color: 'bg-green-500' },
+      Staff: { name: 'Nhân viên', color: 'bg-yellow-500' },
+      Customer: { name: 'Khách hàng', color: 'bg-violet-500' }
+    }
     return roleConfig[role as keyof typeof roleConfig] || { name: role, color: 'bg-gray-500' }
   }
   const roleDisplay = user ? getRoleDisplay(user.role) : null
@@ -109,28 +136,90 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
                 <div className='flex items-center gap-2 w-full'>
                   <Sparkles className='size-4 text-yellow-500 group-hover/item:animate-pulse' />
                   <span className='flex-1'>Nâng cấp Premium</span>
-                  <span className='text-xs bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-2 py-0.5 rounded-full font-bold'>PRO</span>
+                  <span className='text-xs bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-2 py-0.5 rounded-full font-bold'>
+                    PRO
+                  </span>
                 </div>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
             <DropdownMenuGroup>
-              <DropdownMenuItem asChild className='cursor-pointer'><Link to='/settings/account' className='flex items-center gap-2'><User className='size-4' /><span>Thông tin cá nhân</span></Link></DropdownMenuItem>
-              <DropdownMenuItem asChild className='cursor-pointer'><Link to='/settings/preferences' className='flex items-center gap-2'><Heart className='size-4' /><span>Tùy chỉnh</span></Link></DropdownMenuItem>
-              <DropdownMenuItem asChild className='cursor-pointer'><Link to='/settings/billing' className='flex items-center gap-2'><CreditCard className='size-4' /><span>Thanh toán</span></Link></DropdownMenuItem>
-              <DropdownMenuItem asChild className='cursor-pointer'><Link to='/settings/notifications' className='flex items-center gap-2'><Bell className='size-4' /><span>Thông báo</span><span className='ml-auto text-xs bg-red-500 text-white size-5 rounded-full flex items-center justify-center font-bold'>3</span></Link></DropdownMenuItem>
+              <DropdownMenuItem asChild className='cursor-pointer'>
+                <Link to='/settings/account' className='flex items-center gap-2'>
+                  <User className='size-4' />
+                  <span>Thông tin cá nhân</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className='cursor-pointer'>
+                <Link to='/settings/preferences' className='flex items-center gap-2'>
+                  <Heart className='size-4' />
+                  <span>Tùy chỉnh</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className='cursor-pointer'>
+                <Link to='/settings/billing' className='flex items-center gap-2'>
+                  <CreditCard className='size-4' />
+                  <span>Thanh toán</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className='cursor-pointer'>
+                <Link to='/settings/notifications' className='flex items-center gap-2'>
+                  <Bell className='size-4' />
+                  <span>Thông báo</span>
+                  <span className='ml-auto text-xs bg-red-500 text-white size-5 rounded-full flex items-center justify-center font-bold'>
+                    3
+                  </span>
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
             <DropdownMenuGroup>
-              <DropdownMenuItem asChild className='cursor-pointer'><Link to='/settings' className='flex items-center gap-2'><Settings className='size-4' /><span>Cài đặt</span></Link></DropdownMenuItem>
-              <DropdownMenuItem className='cursor-pointer' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-                {theme === 'dark' ? <><Sun className='size-4' /><span>Chế độ sáng</span></> : <><Moon className='size-4' /><span>Chế độ tối</span></>}
+              <DropdownMenuItem asChild className='cursor-pointer'>
+                <Link to='/settings' className='flex items-center gap-2'>
+                  <Settings className='size-4' />
+                  <span>Cài đặt</span>
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className='cursor-pointer'><Link to='/help' className='flex items-center gap-2'><HelpCircle className='size-4' /><span>Trợ giúp</span></Link></DropdownMenuItem>
+              <DropdownMenuItem
+                className='cursor-pointer'
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              >
+                {theme === 'dark' ? (
+                  <>
+                    <Sun className='size-4' />
+                    <span>Chế độ sáng</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className='size-4' />
+                    <span>Chế độ tối</span>
+                  </>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className='cursor-pointer'>
+                <Link to='/help' className='flex items-center gap-2'>
+                  <HelpCircle className='size-4' />
+                  <span>Trợ giúp</span>
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
-            <DropdownMenuItem onClick={handleLogout} disabled={isPending} className='cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 focus:bg-red-50 dark:focus:bg-red-950/30'>
-              {isPending ? <><div className='size-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent' /><span>Đang đăng xuất...</span></> : <><LogOut className='size-4' /><span>Đăng xuất</span></>}
+            <DropdownMenuItem
+              onClick={handleLogout}
+              disabled={isPending}
+              className='cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 focus:bg-red-50 dark:focus:bg-red-950/30'
+            >
+              {isPending ? (
+                <>
+                  <div className='size-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent' />
+                  <span>Đang đăng xuất...</span>
+                </>
+              ) : (
+                <>
+                  <LogOut className='size-4' />
+                  <span>Đăng xuất</span>
+                </>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

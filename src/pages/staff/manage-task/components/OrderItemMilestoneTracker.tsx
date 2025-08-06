@@ -182,7 +182,6 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   const [shippingOrder, setShippingOrder] = useState<GHTKOrder | null>(null)
   const [showShippingDialog, setShowShippingDialog] = useState(false)
 
-  
   // Sắp xếp milestones theo thứ tự
   const sortedMilestones = [...milestones].sort((a, b) => a.sequenceOrder - b.sequenceOrder)
 
@@ -226,12 +225,11 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   // Kiểm tra milestone có phải Warranty Validation không
   const isWarrantyValidationMilestone = (milestoneName: string) => {
     return (
-      milestoneName.toLowerCase().includes('warranty validation') ||
-      milestoneName.toLowerCase().includes('bảo hành')
+      milestoneName.toLowerCase().includes('warranty validation') || milestoneName.toLowerCase().includes('bảo hành')
     )
   }
 
-  // Kiểm tra milestone có phải Quality Check Warranty không  
+  // Kiểm tra milestone có phải Quality Check Warranty không
   const isQualityCheckWarrantyMilestone = (milestoneName: string) => {
     return (
       milestoneName.toLowerCase().includes('quality check warranty') ||
@@ -283,33 +281,36 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
     if (isLoadingCurrentSequence || currentSequence === undefined) {
       return true
     }
-    
+
     // Nếu currentSequence = 0, có nghĩa là tất cả milestone đã hoàn thành 100%
     // => không khóa milestone nào cả
     if (currentSequence === 0) {
       return false
     }
-    
+
     // Milestone bị khóa nếu sequenceOrder > currentSequence
     return milestone.sequenceOrder > currentSequence
   }
 
   const handleTaskStatusChange = (taskId: string, status: TaskStatus, image?: string, note?: string) => {
     console.log('handleTaskStatusChange called:', { taskId, status, orderItemId, image, note })
-    updateTaskStatusMutation.mutate({
-      dressTaskId: taskId,
-      orderItemId: orderItemId,
-      status,
-      image,
-      note
-    }, {
-      onSuccess: () => {
-        // Invalidate current sequence để cập nhật trạng thái khóa/mở khóa milestone
-        queryClient.invalidateQueries({
-          queryKey: ['staff-current-sequence', orderItemId]
-        })
+    updateTaskStatusMutation.mutate(
+      {
+        dressTaskId: taskId,
+        orderItemId: orderItemId,
+        status,
+        image,
+        note
+      },
+      {
+        onSuccess: () => {
+          // Invalidate current sequence để cập nhật trạng thái khóa/mở khóa milestone
+          queryClient.invalidateQueries({
+            queryKey: ['staff-current-sequence', orderItemId]
+          })
+        }
       }
-    })
+    )
   }
 
   // Xử lý tạo đơn hàng shipping
@@ -323,19 +324,22 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
         setShowShippingDialog(true)
 
         // Tự động cập nhật task status thành DONE sau khi tạo shipping thành công
-        updateTaskStatusMutation.mutate({
-          dressTaskId: taskId,
-          orderItemId: orderItemId,
-          status: 'DONE',
-          note: `Đã tạo đơn giao hàng GHTK - Tracking ID: ${response.data.order.trackingId}`
-        }, {
-          onSuccess: () => {
-            // Invalidate current sequence để cập nhật trạng thái khóa/mở khóa milestone
-            queryClient.invalidateQueries({
-              queryKey: ['staff-current-sequence', orderItemId]
-            })
+        updateTaskStatusMutation.mutate(
+          {
+            dressTaskId: taskId,
+            orderItemId: orderItemId,
+            status: 'DONE',
+            note: `Đã tạo đơn giao hàng GHTK - Tracking ID: ${response.data.order.trackingId}`
+          },
+          {
+            onSuccess: () => {
+              // Invalidate current sequence để cập nhật trạng thái khóa/mở khóa milestone
+              queryClient.invalidateQueries({
+                queryKey: ['staff-current-sequence', orderItemId]
+              })
+            }
           }
-        })
+        )
 
         toast.success('Tạo đơn giao hàng thành công!')
       } else {
@@ -400,14 +404,12 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
           <CardTitle>
             Quy trình thực hiện ({sortedMilestones.length} giai đoạn)
             {!isLoadingCurrentSequence && currentSequence !== undefined && (
-              <span className="text-sm font-normal text-muted-foreground ml-2">
+              <span className='text-sm font-normal text-muted-foreground ml-2'>
                 • {currentSequence === 0 ? 'Tất cả giai đoạn đã hoàn thành' : `Giai đoạn hiện tại: ${currentSequence}`}
               </span>
             )}
             {isLoadingCurrentSequence && (
-              <span className="text-sm font-normal text-muted-foreground ml-2">
-                • Đang tải...
-              </span>
+              <span className='text-sm font-normal text-muted-foreground ml-2'>• Đang tải...</span>
             )}
           </CardTitle>
         </CardHeader>
