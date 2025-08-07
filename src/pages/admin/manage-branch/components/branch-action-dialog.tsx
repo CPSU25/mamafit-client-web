@@ -77,7 +77,7 @@ export function BranchActionDialog({ currentRow, open, onOpenChange }: Props) {
           description: currentRow.description || '',
           openingHour: currentRow.openingHour || '',
           closingHour: currentRow.closingHour || '',
-          branchManagerId: currentRow.branchManagerId || '',
+          branchManagerId: currentRow.branchManager.id || '',
           mapId: currentRow.mapId || '',
           province: currentRow.province || '',
           district: currentRow.district || '',
