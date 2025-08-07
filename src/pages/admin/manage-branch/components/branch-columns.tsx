@@ -8,6 +8,7 @@ import { DataTableColumnHeader } from '../../components/data-table-column-header
 import { BranchTableRowActions } from './branch-table-row-action'
 import LongText from '@/components/long-text'
 import { ManageUserType } from '@/@types/admin.types'
+import { BranchManagerType } from '@/@types/branch.type'
 
 interface BranchColumnsProps {
   managers?: ManageUserType[]
@@ -82,11 +83,11 @@ export const createBranchColumns = ({ managers = [] }: BranchColumnsProps = {}):
     enableSorting: false
   },
   {
-    accessorKey: 'branchManagerId',
+    accessorKey: 'branchManager',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Branch Manager' />,
     cell: ({ row }) => {
-      const branchManager = row.getValue('branchManagerId') as string
-      const manager = managers.find((m) => m.id === branchManager)
+      const branchManager = row.getValue('branchManager') as BranchManagerType
+      const manager = managers.find((m) => m.id === branchManager.id)
 
       if (!manager) {
         return <div className='text-sm text-muted-foreground'>Manager not found</div>

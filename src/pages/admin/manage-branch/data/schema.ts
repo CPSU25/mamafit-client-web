@@ -10,7 +10,13 @@ export const branchListSchema = z.array(z.custom<Branch>())
 export const transformManageBranchTypeToBranch = (apiBranch: ManageBranchType): Branch => {
   return {
     id: apiBranch.id,
-    branchManagerId: apiBranch.branchManagerId,
+    branchManager: {
+      id: apiBranch.branchManager.id,
+      fullName: apiBranch.branchManager.fullName,
+      phoneNumber: apiBranch.branchManager.phoneNumber,
+      userEmail: apiBranch.branchManager.userEmail,
+      userName: apiBranch.branchManager.userName
+    },
     name: apiBranch.name,
     description: apiBranch.description,
     openingHour: apiBranch.openingHour,
