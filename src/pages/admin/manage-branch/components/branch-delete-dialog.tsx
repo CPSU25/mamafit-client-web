@@ -70,7 +70,7 @@ export function BranchDeleteDialog({ open, onOpenChange, currentRow }: Props) {
                   .filter(Boolean)
                   .join(', ')}
               </li>
-              <li>• Manager ID: {currentRow.branchManagerId}</li>
+              <li>• Manager ID: {currentRow.branchManager.id}</li>
               <li>
                 • Coordinates: {currentRow.latitude}, {currentRow.longitude}
               </li>

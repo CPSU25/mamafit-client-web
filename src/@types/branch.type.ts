@@ -1,7 +1,7 @@
 export interface ManageBranchType {
   id: string
-  branchManagerId: string
   name: string
+  branchManager: BranchManagerType
   description: string
   openingHour: string
   closingHour: string
@@ -14,7 +14,13 @@ export interface ManageBranchType {
   latitude: number
   longitude: number
 }
-
+export interface BranchManagerType {
+  id: string
+  fullName: string
+  phoneNumber: string
+  userEmail: string
+  userName: string
+}
 // API Request type based on actual API schema
 export interface BranchRequest {
   branchManagerId: string

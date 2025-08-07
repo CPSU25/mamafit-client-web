@@ -27,20 +27,20 @@ export function QuickActions({ role }: QuickActionsProps) {
           {
             icon: Plus,
             label: 'Thêm người dùng',
-            action: () => navigate('/manage-user/new'),
+            action: () => navigate('manage-user/new'),
             color: 'text-violet-500'
           },
-          { icon: Package, label: 'Đơn hàng mới', action: () => navigate('/manage-order'), color: 'text-blue-500' },
+          { icon: Package, label: 'Đơn hàng mới', action: () => navigate('manage-order'), color: 'text-blue-500' },
           {
             icon: MessageCircle,
             label: 'Thông báo',
-            action: () => navigate('/system-notifications'),
+            action: () => navigate('system-notifications'),
             color: 'text-green-500'
           },
           {
             icon: ShoppingBag,
             label: 'Voucher mới',
-            action: () => navigate('/manage-voucher/new'),
+            action: () => navigate('manage-voucher'),
             color: 'text-purple-500'
           }
         ]
@@ -49,20 +49,20 @@ export function QuickActions({ role }: QuickActionsProps) {
           {
             icon: CalendarPlus,
             label: 'Lịch hẹn mới',
-            action: () => navigate('/manage-appointment'),
+            action: () => navigate('manage-appointment'),
             color: 'text-blue-500'
           },
-          { icon: Package, label: 'Đơn hàng', action: () => navigate('/manage-order'), color: 'text-green-500' }
+          { icon: Package, label: 'Đơn hàng', action: () => navigate('manage-order'), color: 'text-green-500' }
         ]
       case 'Designer':
         return [
-          { icon: Plus, label: 'Mẫu mới', action: () => navigate('/manage-template/new'), color: 'text-purple-500' },
-          { icon: MessageCircle, label: 'Tin nhắn', action: () => navigate('/messages'), color: 'text-blue-500' }
+          { icon: Plus, label: 'Mẫu mới', action: () => navigate('manage-template/new'), color: 'text-purple-500' },
+          { icon: MessageCircle, label: 'Tin nhắn', action: () => navigate('messages'), color: 'text-blue-500' }
         ]
       case 'Manager':
         return [
-          { icon: Package, label: 'Sản xuất', action: () => navigate('/manage-production'), color: 'text-green-500' },
-          { icon: Plus, label: 'Tạo task', action: () => navigate('/manage-task/new'), color: 'text-orange-500' }
+          { icon: Package, label: 'Sản xuất', action: () => navigate('manage-production'), color: 'text-green-500' },
+          { icon: Plus, label: 'Tạo task', action: () => navigate('manage-task/new'), color: 'text-orange-500' }
         ]
       default:
         return []

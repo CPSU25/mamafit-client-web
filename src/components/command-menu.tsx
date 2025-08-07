@@ -97,9 +97,7 @@ export function CommandMenu() {
                     <span>{item.title}</span>
                   </div>
                   {item.breadcrumbs.length > 0 && (
-                     <div className='text-xs text-muted-foreground ml-6'>
-                      {item.breadcrumbs.join(' > ')}
-                    </div>
+                    <div className='text-xs text-muted-foreground ml-6'>{item.breadcrumbs.join(' > ')}</div>
                   )}
                 </CommandItem>
               ))}
