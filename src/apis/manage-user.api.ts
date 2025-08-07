@@ -1,6 +1,7 @@
 import { ManageUserType } from '@/@types/admin.types'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { api } from '@/lib/axios/axios'
+import { RoleTypes } from '@/@types/role.types'
 
 interface MaternityDressQueryParams {
   index?: number
@@ -9,7 +10,17 @@ interface MaternityDressQueryParams {
   roleName?: string
 }
 
-// Type for creating new user (might have different fields than full ManageUserType)
+// Type for creating system account - matching the API payload from image
+interface CreateSystemAccountData {
+  userName: string
+  fullName: string
+  password: string
+  userEmail: string
+  phoneNumber: string
+  roleId: string
+}
+
+// Keep the old CreateUserData for backward compatibility if needed
 interface CreateUserData {
   userName: string
   userEmail: string
@@ -35,10 +46,18 @@ const manageUserAPI = {
   },
 
   getUserById: (id: string) => api.get<ItemBaseResponse<ManageUserType>>(`/user/${id}`),
+
+  // New API for creating system account
+  createSystemAccount: (data: CreateSystemAccountData) =>
+    api.post<ItemBaseResponse<ManageUserType>>('/api/auth/create-system-account', data),
+
+  // Keep old method for backward compatibility
   createUser: (data: CreateUserData) => api.post<ItemBaseResponse<ManageUserType>>('/user', data),
+
   updateUser: (id: string, data: ManageUserType) => api.put<ItemBaseResponse<[]>>(`/user/${id}`, data),
-  deleteUser: (id: string) => api.delete<ItemBaseResponse<[]>>(`/user/${id}`)
+  deleteUser: (id: string) => api.delete<ItemBaseResponse<[]>>(`/user/${id}`),
+  getRoles: () => api.get<ListBaseResponse<RoleTypes>>('/role')
 }
 
 export default manageUserAPI
-export type { CreateUserData }
+export type { CreateUserData, CreateSystemAccountData }

@@ -12,7 +12,16 @@ import {
   X,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Sparkles,
+  Heart,
+  Palette,
+  Ruler,
+  ShoppingBag,
+  Star,
+  TrendingUp,
+  Eye,
+  Image as ImageIcon
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -31,7 +40,7 @@ import {
 } from '@/services/admin/maternity-dress.service'
 import { toast } from 'sonner'
 
-// Component riêng để xử lý hình ảnh tránh vòng lặp
+// Enhanced Component riêng để xử lý hình ảnh tránh vòng lặp
 function DetailProductImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const [imgSrc, setImgSrc] = useState(src)
   const [hasError, setHasError] = useState(false)
@@ -50,8 +59,10 @@ function DetailProductImage({ src, alt, className }: { src: string; alt: string;
 
   if (hasError && imgSrc === '/placeholder-image.jpg') {
     return (
-      <div className={`bg-muted flex items-center justify-center ${className || 'w-16 h-16 rounded-xl'}`}>
-        <Package className='h-6 w-6 text-muted-foreground' />
+      <div
+        className={`bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 flex items-center justify-center border border-violet-200 dark:border-violet-700 ${className || 'w-16 h-16 rounded-xl'}`}
+      >
+        <Package className='h-8 w-8 text-violet-400' />
       </div>
     )
   }
@@ -59,43 +70,59 @@ function DetailProductImage({ src, alt, className }: { src: string; alt: string;
   return <img src={imgSrc} alt={alt} className={className} onError={handleError} />
 }
 
-// Component để hiển thị gallery hình ảnh
+// Enhanced Component để hiển thị gallery hình ảnh
 function ImageGallery({ images, productName }: { images: string[]; productName: string }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showAllImages, setShowAllImages] = useState(false)
 
   if (!images || images.length === 0) {
     return (
-      <div className='h-60 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center text-muted-foreground'>
-        <Package className='h-12 w-12 mb-2 opacity-50' />
-        <p className='text-sm'>Chưa có hình ảnh</p>
+      <div className='h-80 border-2 border-dashed border-violet-200 dark:border-violet-700 rounded-2xl bg-gradient-to-br from-violet-50/50 to-purple-50/50 dark:from-violet-900/10 dark:to-purple-900/10 flex flex-col items-center justify-center text-violet-400'>
+        <div className='p-4 bg-violet-100 dark:bg-violet-900/30 rounded-full mb-4'>
+          <ImageIcon className='h-12 w-12' />
+        </div>
+        <h4 className='font-medium text-violet-600 dark:text-violet-400 mb-2'>Chưa có hình ảnh</h4>
+        <p className='text-sm text-violet-500'>Thêm hình ảnh để khách hàng có thể xem sản phẩm</p>
       </div>
     )
   }
 
   if (showAllImages) {
     return (
-      <div className='space-y-4'>
-        <div className='flex items-center justify-between'>
-          <p className='text-sm text-muted-foreground'>Hiển thị tất cả {images.length} hình ảnh</p>
-          <Button size='sm' variant='outline' onClick={() => setShowAllImages(false)} className='text-xs'>
+      <div className='space-y-6'>
+        <div className='flex items-center justify-between p-4 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-xl'>
+          <div className='flex items-center gap-3'>
+            <div className='p-2 bg-violet-100 dark:bg-violet-900/30 rounded-lg'>
+              <Eye className='h-5 w-5 text-violet-600' />
+            </div>
+            <div>
+              <p className='font-medium text-violet-700 dark:text-violet-300'>Tất cả hình ảnh</p>
+              <p className='text-sm text-violet-500'>Hiển thị {images.length} ảnh</p>
+            </div>
+          </div>
+          <Button
+            size='sm'
+            variant='outline'
+            onClick={() => setShowAllImages(false)}
+            className='border-violet-200 text-violet-600 hover:bg-violet-50 rounded-lg'
+          >
+            <ChevronLeft className='h-4 w-4 mr-1' />
             Thu gọn
           </Button>
         </div>
-        <div className='max-h-96 overflow-y-auto space-y-3 pr-2'>
-          <div className='grid grid-cols-2 gap-3'>
+        <div className='max-h-[500px] overflow-y-auto pr-2 custom-scrollbar'>
+          <div className='grid grid-cols-2 lg:grid-cols-3 gap-4'>
             {images.map((image: string, index: number) => (
               <div key={`all-${index}`} className='relative group'>
                 <DetailProductImage
                   src={image}
                   alt={`${productName} ${index + 1}`}
-                  className='w-full h-32 object-cover rounded-lg border-2 border-border group-hover:border-primary transition-colors'
+                  className='w-full h-40 object-cover rounded-xl border-2 border-violet-200 dark:border-violet-700 group-hover:border-violet-400 transition-all duration-300 shadow-sm group-hover:shadow-lg'
                 />
-                <div className='absolute top-2 left-2'>
-                  <Badge variant='secondary' className='text-xs'>
-                    {index + 1}
-                  </Badge>
+                <div className='absolute top-3 left-3'>
+                  <Badge className='bg-violet-500 text-white shadow-lg'>{index + 1}</Badge>
                 </div>
+                <div className='absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl'></div>
               </div>
             ))}
           </div>
@@ -105,16 +132,19 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
   }
 
   return (
-    <div className='space-y-4'>
-      {/* Main image display */}
-      <div className='relative'>
+    <div className='space-y-6'>
+      {/* Enhanced Main image display */}
+      <div className='relative overflow-hidden rounded-2xl'>
         <DetailProductImage
           src={images[currentImageIndex]}
           alt={`${productName} ${currentImageIndex + 1}`}
-          className='w-full h-64 object-cover rounded-lg border-2 border-border'
+          className='w-full h-80 object-cover'
         />
-        <div className='absolute top-2 left-2'>
-          <Badge variant='secondary' className='text-xs'>
+        <div className='absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10'></div>
+
+        {/* Image counter badge */}
+        <div className='absolute top-4 left-4'>
+          <Badge className='bg-black/50 text-white backdrop-blur-sm shadow-lg'>
             {currentImageIndex + 1} / {images.length}
           </Badge>
         </div>
@@ -125,50 +155,56 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
             <Button
               size='sm'
               variant='secondary'
-              className='absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-background/80 hover:bg-background'
+              className='absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 p-0 bg-black/30 hover:bg-black/50 text-white border-0 backdrop-blur-sm shadow-lg'
               onClick={() => setCurrentImageIndex(currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1)}
             >
-              <ChevronLeft className='h-4 w-4' />
+              <ChevronLeft className='h-5 w-5' />
             </Button>
             <Button
               size='sm'
               variant='secondary'
-              className='absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-background/80 hover:bg-background'
+              className='absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 p-0 bg-black/30 hover:bg-black/50 text-white border-0 backdrop-blur-sm shadow-lg'
               onClick={() => setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1)}
             >
-              <ChevronRight className='h-4 w-4' />
+              <ChevronRight className='h-5 w-5' />
             </Button>
           </>
         )}
       </div>
 
-      {/* Thumbnail navigation */}
+      {/* Enhanced Thumbnail navigation */}
       {images.length > 1 && (
-        <div className='flex items-center gap-2'>
-          <div className='flex gap-2 overflow-x-auto pb-2 flex-1'>
+        <div className='flex items-center gap-4'>
+          <div className='flex gap-3 overflow-x-auto pb-2 flex-1 custom-scrollbar'>
             {images.map((image: string, index: number) => (
               <button
                 key={`thumb-${index}`}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`flex-shrink-0 relative ${
-                  currentImageIndex === index ? 'ring-2 ring-primary' : ''
-                } rounded-lg overflow-hidden`}
+                className={`flex-shrink-0 relative group ${
+                  currentImageIndex === index
+                    ? 'ring-2 ring-violet-500 ring-offset-2'
+                    : 'hover:ring-2 hover:ring-violet-300 hover:ring-offset-1'
+                } rounded-xl overflow-hidden transition-all duration-200`}
               >
                 <DetailProductImage
                   src={image}
                   alt={`${productName} thumbnail ${index + 1}`}
-                  className='w-16 h-16 object-cover'
+                  className='w-20 h-20 object-cover'
                 />
+                {currentImageIndex !== index && (
+                  <div className='absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-200'></div>
+                )}
               </button>
             ))}
           </div>
-          {images.length > 4 && (
+          {images.length > 5 && (
             <Button
               size='sm'
               variant='outline'
               onClick={() => setShowAllImages(true)}
-              className='text-xs whitespace-nowrap'
+              className='whitespace-nowrap border-violet-200 text-violet-600 hover:bg-violet-50 rounded-lg'
             >
+              <Eye className='h-4 w-4 mr-2' />
               Xem tất cả
             </Button>
           )}
@@ -224,7 +260,6 @@ export default function ExpendMaternityDressDetails() {
       toast.success('Thêm chi tiết thành công!')
       setShowAddForm(false)
       form.reset()
-      // Reset maternityDressId
       form.setValue('maternityDressId', expandedMaternityDressId)
     } catch (error) {
       console.error('Error adding detail:', error)
@@ -244,10 +279,17 @@ export default function ExpendMaternityDressDetails() {
 
   if (!expandedMaternityDressId) {
     return (
-      <div className='p-8 text-center'>
-        <div className='flex flex-col items-center gap-3'>
-          <Package className='h-16 w-16 text-muted-foreground' />
-          <p className='text-muted-foreground'>Chọn một đầm bầu để xem chi tiết</p>
+      <div className='p-12 text-center'>
+        <div className='max-w-md mx-auto space-y-6'>
+          <div className='w-24 h-24 bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center mx-auto'>
+            <Package className='h-12 w-12 text-violet-400' />
+          </div>
+          <div className='space-y-2'>
+            <h3 className='text-xl font-semibold text-violet-700 dark:text-violet-300'>Chọn đầm bầu để xem chi tiết</h3>
+            <p className='text-violet-500'>
+              Click vào một đầm bầu trong danh sách để xem thông tin chi tiết và quản lý variants
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -259,10 +301,16 @@ export default function ExpendMaternityDressDetails() {
 
   if (isLoadingDetail || !maternityDress) {
     return (
-      <div className='p-8 text-center'>
-        <div className='flex flex-col items-center gap-3'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
-          <p className='text-muted-foreground'>Đang tải thông tin đầm bầu...</p>
+      <div className='p-12 text-center'>
+        <div className='flex flex-col items-center gap-6'>
+          <div className='relative'>
+            <div className='animate-spin rounded-full h-16 w-16 border-4 border-violet-200'></div>
+            <div className='animate-spin rounded-full h-16 w-16 border-4 border-violet-500 border-t-transparent absolute inset-0'></div>
+          </div>
+          <div className='space-y-2 text-center'>
+            <h3 className='text-lg font-medium text-violet-700 dark:text-violet-300'>Đang tải thông tin đầm bầu</h3>
+            <p className='text-violet-500'>Vui lòng chờ trong giây lát...</p>
+          </div>
         </div>
       </div>
     )
@@ -278,124 +326,166 @@ export default function ExpendMaternityDressDetails() {
   )
 
   return (
-    <div className=''>
-      <div className='p-8'>
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className='space-y-6'>
-          <TabsList className='grid w-full grid-cols-3 bg-background shadow-sm border border-border rounded-xl p-1'>
-            <TabsTrigger
-              value='info'
-              className='flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all'
-            >
-              <Info className='h-4 w-4' />
-              Thông tin
-            </TabsTrigger>
-            <TabsTrigger
-              value='details'
-              className='flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all'
-            >
-              <Settings className='h-4 w-4' />
-              Chi tiết ({maternityDressDetails.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value='inventory'
-              className='flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all'
-            >
-              <BarChart3 className='h-4 w-4' />
-              Tồn kho
-            </TabsTrigger>
-          </TabsList>
+    <div className='bg-gradient-to-br from-violet-50/30 to-purple-50/20 dark:from-violet-950/10 dark:to-purple-950/5 min-h-screen'>
+      <div className='p-6 lg:p-8 max-w-7xl mx-auto'>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className='space-y-8'>
+          {/* Enhanced TabsList */}
+          <div className='flex justify-center'>
+            <TabsList className='grid w-full max-w-2xl grid-cols-3 bg-white/80 dark:bg-background/80 backdrop-blur-sm shadow-lg border border-violet-200 dark:border-violet-700 rounded-2xl p-2 h-16'>
+              <TabsTrigger
+                value='info'
+                className='flex items-center gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl transition-all duration-300 font-medium h-12'
+              >
+                <Info className='h-5 w-5' />
+                <span className='hidden sm:inline'>Thông tin</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value='details'
+                className='flex items-center gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl transition-all duration-300 font-medium h-12'
+              >
+                <Settings className='h-5 w-5' />
+                <span className='hidden sm:inline'>Chi tiết</span>
+                <Badge variant='secondary' className='ml-1 bg-violet-100 text-violet-700'>
+                  {maternityDressDetails.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger
+                value='inventory'
+                className='flex items-center gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl transition-all duration-300 font-medium h-12'
+              >
+                <BarChart3 className='h-5 w-5' />
+                <span className='hidden sm:inline'>Tồn kho</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          {/* Tab 1: Product Information */}
-          <TabsContent value='info' className='space-y-6'>
-            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 '>
-              {/* Basic Info */}
-              <Card className='border-0 shadow-xl bg-background py-0 gap-1'>
-                <CardHeader className='bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-t-lg py-2'>
-                  <CardTitle className='flex items-center gap-2'>
-                    <Info className='h-5 w-5' />
+          {/* Tab 1: Enhanced Product Information */}
+          <TabsContent value='info' className='space-y-8'>
+            <div className='grid grid-cols-1 xl:grid-cols-2 gap-8'>
+              {/* Enhanced Basic Info */}
+              <Card className='border-0 shadow-xl bg-white/90 dark:bg-background/90 backdrop-blur-sm overflow-hidden'>
+                <CardHeader className='bg-gradient-to-r from-violet-500 to-purple-600 text-white p-6'>
+                  <CardTitle className='flex items-center gap-3 text-xl'>
+                    <div className='p-2 bg-white/20 rounded-lg'>
+                      <Info className='h-6 w-6' />
+                    </div>
                     Thông Tin Cơ Bản
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='p-4'>
-                  <div className='grid grid-cols-1 gap-4'>
-                    <div className='grid grid-cols-2 gap-6'>
-                      <div className='space-y-3'>
-                        <div className='p-3 bg-muted rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
-                            Mã đầm bầu
-                          </span>
-                          <p className='text-sm font-mono text-foreground mt-1'>{maternityDress.id}</p>
+                <CardContent className='p-6'>
+                  <div className='space-y-6'>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      <div className='space-y-4'>
+                        <div className='p-4 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-xl border border-violet-200 dark:border-violet-700'>
+                          <div className='flex items-center gap-2 mb-2'>
+                            <Sparkles className='h-4 w-4 text-violet-500' />
+                            <span className='text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider'>
+                              Mã sản phẩm
+                            </span>
+                          </div>
+                          <p className='text-sm font-mono text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg'>
+                            {maternityDress.id}
+                          </p>
                         </div>
-                        <div className='p-3 bg-muted rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
-                            Style
-                          </span>
-                          <p className='text-sm text-foreground mt-1'>{maternityDress.styleName}</p>
-                        </div>
-                        <div className='p-3 bg-muted rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>
-                            Slug URL
-                          </span>
-                          <p className='text-sm font-mono text-foreground mt-1'>{maternityDress.slug}</p>
+
+                        <div className='p-4 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 rounded-xl border border-rose-200 dark:border-rose-700'>
+                          <div className='flex items-center gap-2 mb-2'>
+                            <Heart className='h-4 w-4 text-rose-500' />
+                            <span className='text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider'>
+                              Kiểu dáng
+                            </span>
+                          </div>
+                          <p className='text-sm font-medium text-gray-800 dark:text-gray-200'>
+                            {maternityDress.styleName}
+                          </p>
                         </div>
                       </div>
-                      <div className='space-y-3'>
-                        <div className='p-3 bg-primary/10 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-primary uppercase tracking-wide'>Thành Phần</span>
-                          <p className='text-sm font-bold text-primary mt-1'>{maternityDressDetails.length}</p>
+
+                      <div className='space-y-4'>
+                        <div className='p-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl border border-emerald-200 dark:border-emerald-700'>
+                          <div className='flex items-center gap-2 mb-2'>
+                            <Star className='h-4 w-4 text-emerald-500' />
+                            <span className='text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider'>
+                              Biến thể
+                            </span>
+                          </div>
+                          <p className='text-2xl font-bold text-emerald-600 dark:text-emerald-400'>
+                            {maternityDressDetails.length}
+                          </p>
                         </div>
-                        <div className='p-3 bg-accent/10 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-foreground uppercase tracking-wide'>
-                            Tổng số lượng sản phẩm
-                          </span>
-                          <p className='text-sm font-bold text-foreground mt-1'>{totalStock}</p>
-                        </div>
-                        <div className='p-3 bg-secondary/10 rounded-lg shadow-md'>
-                          <span className='text-xs font-medium text-secondary-foreground uppercase tracking-wide'>
-                            Tổng giá trị sản phẩm
-                          </span>
-                          <p className='text-sm font-bold text-secondary-foreground mt-1'>
+
+                        <div className='p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl border border-amber-200 dark:border-amber-700'>
+                          <div className='flex items-center gap-2 mb-2'>
+                            <TrendingUp className='h-4 w-4 text-amber-500' />
+                            <span className='text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider'>
+                              Tổng giá trị
+                            </span>
+                          </div>
+                          <p className='text-lg font-bold text-amber-600 dark:text-amber-400'>
                             {totalValue.toLocaleString()} VNĐ
                           </p>
                         </div>
                       </div>
                     </div>
+
+                    <div className='p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-700'>
+                      <div className='flex items-center gap-2 mb-2'>
+                        <Package className='h-4 w-4 text-blue-500' />
+                        <span className='text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider'>
+                          URL Slug
+                        </span>
+                      </div>
+                      <p className='text-sm font-mono text-blue-800 dark:text-blue-200 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg'>
+                        {maternityDress.slug}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Product Images - Updated */}
-              <Card className='border-0 shadow-xl bg-background py-0 gap-1'>
-                <CardHeader className='bg-gradient-to-r from-accent to-accent/90 text-accent-foreground rounded-t-lg py-2'>
-                  <CardTitle className='flex items-center gap-2'>
-                    <Package className='h-5 w-5' />
-                    Hình Ảnh Đầm Bầu ({maternityDress.images?.length || 0})
+              {/* Enhanced Product Images */}
+              <Card className='border-0 shadow-xl bg-white/90 dark:bg-background/90 backdrop-blur-sm overflow-hidden'>
+                <CardHeader className='bg-gradient-to-r from-rose-500 to-pink-600 text-white p-6'>
+                  <CardTitle className='flex items-center gap-3 text-xl'>
+                    <div className='p-2 bg-white/20 rounded-lg'>
+                      <ImageIcon className='h-6 w-6' />
+                    </div>
+                    Hình Ảnh Sản Phẩm
+                    <Badge className='bg-white/20 text-white ml-auto'>{maternityDress.images?.length || 0} ảnh</Badge>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='p-4'>
+                <CardContent className='p-6'>
                   <ImageGallery images={maternityDress.images || []} productName={maternityDress.name} />
                 </CardContent>
               </Card>
             </div>
 
-            {/* Description - Updated with scrollable textarea */}
-            <Card className='border-0 shadow-xl bg-background py-0 gap-1'>
-              <CardHeader className='bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground rounded-t-lg py-2'>
-                <CardTitle>Mô Tả Đầm Bầu</CardTitle>
+            {/* Enhanced Description */}
+            <Card className='border-0 shadow-xl bg-white/90 dark:bg-background/90 backdrop-blur-sm overflow-hidden'>
+              <CardHeader className='bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6'>
+                <CardTitle className='flex items-center gap-3 text-xl'>
+                  <div className='p-2 bg-white/20 rounded-lg'>
+                    <Package className='h-6 w-6' />
+                  </div>
+                  Mô Tả Sản Phẩm
+                </CardTitle>
               </CardHeader>
-              <CardContent className='p-4'>
+              <CardContent className='p-6'>
                 <div className='relative'>
-                  <Textarea
-                    value={maternityDress.description || 'Chưa có mô tả chi tiết cho đầm bầu này.'}
-                    readOnly
-                    className='min-h-[120px] max-h-[300px] resize-none border-border bg-muted text-foreground leading-relaxed focus:ring-0 focus:border-border'
-                    placeholder='Chưa có mô tả chi tiết cho đầm bầu này.'
-                  />
-                  {!maternityDress.description && (
-                    <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-                      <span className='text-muted-foreground italic text-sm'>
-                        Chưa có mô tả chi tiết cho đầm bầu này.
-                      </span>
+                  {maternityDress.description ? (
+                    <div className='prose prose-violet max-w-none'>
+                      <Textarea
+                        value={maternityDress.description}
+                        readOnly
+                        className='min-h-[150px] max-h-[400px] resize-none border-violet-200 dark:border-violet-700 bg-gradient-to-br from-violet-50/50 to-purple-50/50 dark:from-violet-900/10 dark:to-purple-900/10 text-gray-700 dark:text-gray-300 leading-relaxed focus:ring-0 focus:border-violet-300 rounded-xl'
+                      />
+                    </div>
+                  ) : (
+                    <div className='text-center py-12'>
+                      <div className='w-16 h-16 bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4'>
+                        <Package className='h-8 w-8 text-violet-400' />
+                      </div>
+                      <p className='text-violet-500 italic'>Chưa có mô tả chi tiết cho sản phẩm này.</p>
                     </div>
                   )}
                 </div>
@@ -403,20 +493,25 @@ export default function ExpendMaternityDressDetails() {
             </Card>
           </TabsContent>
 
-          {/* Tab 2: Maternity Dress Details */}
-          <TabsContent value='details' className='space-y-6'>
-            <Card className='border-0 shadow-xl py-0 bg-background gap-1'>
-              <CardHeader className='bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-t-lg my-auto py-1'>
+          {/* Tab 2: Enhanced Maternity Dress Details */}
+          <TabsContent value='details' className='space-y-8'>
+            <Card className='border-0 shadow-xl bg-white/90 dark:bg-background/90 backdrop-blur-sm overflow-hidden'>
+              <CardHeader className='bg-gradient-to-r from-violet-500 to-purple-600 text-white p-6'>
                 <CardTitle className='flex items-center justify-between'>
-                  <div className='flex items-center justify-center'>
-                    <Settings className='h-5 w-5' />
-                    Chi Tiết Đầm Bầu ({maternityDressDetails.length})
+                  <div className='flex items-center gap-3'>
+                    <div className='p-2 bg-white/20 rounded-lg'>
+                      <Settings className='h-6 w-6' />
+                    </div>
+                    <div>
+                      <h3 className='text-xl font-bold'>Chi Tiết Sản Phẩm</h3>
+                      <p className='text-violet-100 text-sm font-normal'>Quản lý các biến thể màu sắc, size và giá</p>
+                    </div>
                   </div>
                   <Button
                     size='sm'
                     onClick={() => setShowAddForm(!showAddForm)}
                     disabled={createDetailMutation.isPending}
-                    className='bg-background text-primary hover:bg-accent border border-border'
+                    className='bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm shadow-lg transition-all duration-300 h-10'
                   >
                     {showAddForm ? (
                       <>
@@ -426,23 +521,25 @@ export default function ExpendMaternityDressDetails() {
                     ) : (
                       <>
                         <Plus className='h-4 w-4 mr-2' />
-                        Thêm Chi Tiết
+                        Thêm Biến Thể
                       </>
                     )}
                   </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent className='p-6'>
-                {/* Add Detail Form */}
+                {/* Enhanced Add Detail Form */}
                 {showAddForm && (
-                  <Card className='mb-6 border-2 border-dashed border-primary/30 bg-primary/5'>
-                    <CardHeader className='pb-4'>
-                      <CardTitle className='text-lg text-primary flex items-center gap-2'>
-                        <Plus className='h-5 w-5' />
-                        Thêm Chi Tiết Mới
+                  <Card className='mb-8 border-2 border-dashed border-violet-300 dark:border-violet-600 bg-gradient-to-br from-violet-50/50 to-purple-50/50 dark:from-violet-900/10 dark:to-purple-900/10 overflow-hidden'>
+                    <CardHeader className='bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 border-b border-violet-200 dark:border-violet-700 p-6'>
+                      <CardTitle className='text-xl text-violet-700 dark:text-violet-300 flex items-center gap-3'>
+                        <div className='p-2 bg-violet-200 dark:bg-violet-800 rounded-lg'>
+                          <Plus className='h-5 w-5' />
+                        </div>
+                        Thêm Biến Thể Mới
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className='pt-0'>
+                    <CardContent className='p-6'>
                       <Form {...form}>
                         <form onSubmit={form.handleSubmit(handleAddDetail)} className='space-y-6'>
                           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
@@ -451,11 +548,14 @@ export default function ExpendMaternityDressDetails() {
                               name='name'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-foreground font-medium'>Tên Chi Tiết *</FormLabel>
+                                  <FormLabel className='text-violet-700 dark:text-violet-300 font-semibold flex items-center gap-2'>
+                                    <Sparkles className='h-4 w-4' />
+                                    Tên Biến Thể *
+                                  </FormLabel>
                                   <FormControl>
                                     <Input
                                       placeholder='VD: Đầm bầu màu đỏ size M'
-                                      className='border-border focus:border-primary focus:ring-primary'
+                                      className='border-violet-200 dark:border-violet-700 focus:border-violet-400 focus:ring-violet-400 rounded-xl h-12 bg-white dark:bg-gray-800'
                                       {...field}
                                     />
                                   </FormControl>
@@ -469,10 +569,13 @@ export default function ExpendMaternityDressDetails() {
                               name='color'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-foreground font-medium'>Màu Sắc *</FormLabel>
+                                  <FormLabel className='text-violet-700 dark:text-violet-300 font-semibold flex items-center gap-2'>
+                                    <Palette className='h-4 w-4' />
+                                    Màu Sắc *
+                                  </FormLabel>
                                   <FormControl>
                                     <select
-                                      className='w-full border border-border focus:border-primary focus:ring-primary bg-background px-3 py-2 text-sm rounded-md'
+                                      className='w-full border border-violet-200 dark:border-violet-700 focus:border-violet-400 focus:ring-violet-400 bg-white dark:bg-gray-800 px-4 py-3 text-sm rounded-xl h-12 transition-colors'
                                       {...field}
                                     >
                                       <option value=''>Chọn màu sắc</option>
@@ -495,10 +598,13 @@ export default function ExpendMaternityDressDetails() {
                               name='size'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-foreground font-medium'>Kích Thước *</FormLabel>
+                                  <FormLabel className='text-violet-700 dark:text-violet-300 font-semibold flex items-center gap-2'>
+                                    <Ruler className='h-4 w-4' />
+                                    Kích Thước *
+                                  </FormLabel>
                                   <FormControl>
                                     <select
-                                      className='w-full border border-border focus:border-primary focus:ring-primary bg-background px-3 py-2 text-sm rounded-md'
+                                      className='w-full border border-violet-200 dark:border-violet-700 focus:border-violet-400 focus:ring-violet-400 bg-white dark:bg-gray-800 px-4 py-3 text-sm rounded-xl h-12 transition-colors'
                                       {...field}
                                     >
                                       <option value=''>Chọn size</option>
@@ -519,12 +625,16 @@ export default function ExpendMaternityDressDetails() {
                               name='quantity'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-foreground font-medium'>Số Lượng *</FormLabel>
+                                  <FormLabel className='text-violet-700 dark:text-violet-300 font-semibold flex items-center gap-2'>
+                                    <ShoppingBag className='h-4 w-4' />
+                                    Số Lượng *
+                                  </FormLabel>
                                   <FormControl>
                                     <Input
                                       type='number'
+                                      min='0'
                                       placeholder='10'
-                                      className='border-border focus:border-primary focus:ring-primary'
+                                      className='border-violet-200 dark:border-violet-700 focus:border-violet-400 focus:ring-violet-400 rounded-xl h-12 bg-white dark:bg-gray-800'
                                       {...field}
                                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                                     />
@@ -539,13 +649,17 @@ export default function ExpendMaternityDressDetails() {
                               name='price'
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className='text-foreground font-medium'>Giá *</FormLabel>
+                                  <FormLabel className='text-violet-700 dark:text-violet-300 font-semibold flex items-center gap-2'>
+                                    <TrendingUp className='h-4 w-4' />
+                                    Giá (VNĐ) *
+                                  </FormLabel>
                                   <FormControl>
                                     <Input
                                       type='number'
-                                      step='0.01'
-                                      placeholder='29.99'
-                                      className='border-border focus:border-primary focus:ring-primary'
+                                      min='0'
+                                      step='1000'
+                                      placeholder='299000'
+                                      className='border-violet-200 dark:border-violet-700 focus:border-violet-400 focus:ring-violet-400 rounded-xl h-12 bg-white dark:bg-gray-800'
                                       {...field}
                                       onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                                     />
@@ -561,11 +675,15 @@ export default function ExpendMaternityDressDetails() {
                             name='description'
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className='text-foreground font-medium'>Mô Tả</FormLabel>
+                                <FormLabel className='text-violet-700 dark:text-violet-300 font-semibold flex items-center gap-2'>
+                                  <Package className='h-4 w-4' />
+                                  Mô Tả Chi Tiết
+                                </FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    placeholder='Mô tả chi tiết về phiên bản này...'
-                                    className='border-border focus:border-primary focus:ring-primary'
+                                    placeholder='Mô tả chi tiết về biến thể này: chất liệu, đặc điểm, phù hợp cho...'
+                                    rows={4}
+                                    className='border-violet-200 dark:border-violet-700 focus:border-violet-400 focus:ring-violet-400 rounded-xl bg-white dark:bg-gray-800 resize-none'
                                     {...field}
                                   />
                                 </FormControl>
@@ -579,38 +697,42 @@ export default function ExpendMaternityDressDetails() {
                             name='images'
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className='text-foreground font-medium'>Hình Ảnh Chi Tiết *</FormLabel>
+                                <FormLabel className='text-violet-700 dark:text-violet-300 font-semibold flex items-center gap-2'>
+                                  <ImageIcon className='h-4 w-4' />
+                                  Hình Ảnh Biến Thể *
+                                </FormLabel>
                                 <FormControl>
                                   <CloudinaryImageUpload
                                     value={field.value || []}
                                     onChange={field.onChange}
                                     maxFiles={5}
-                                    placeholder='Upload hình ảnh chi tiết của phiên bản này'
+                                    placeholder='Upload hình ảnh biến thể hoặc nhập URL'
                                     disabled={createDetailMutation.isPending}
                                     uploadOptions={{
-                                      folder: 'maternity-dress-details', // Tổ chức ảnh theo thư mục chi tiết
-                                      tags: ['maternity-dress-detail', 'product-variant'], // Tags để phân loại
-                                      width: 600, // Resize phù hợp cho chi tiết
+                                      folder: 'maternity-dress-details',
+                                      tags: ['maternity-dress-detail', 'product-variant'],
+                                      width: 600,
                                       height: 600,
-                                      crop: 'limit', // Giữ tỷ lệ, resize trong giới hạn
-                                      quality: 'auto', // Tự động tối ưu chất lượng
-                                      format: 'auto' // Tự động chọn format tốt nhất
+                                      crop: 'limit',
+                                      quality: 'auto',
+                                      format: 'auto'
                                     }}
                                   />
                                 </FormControl>
-                                <p className='text-xs text-muted-foreground'>
-                                  Thêm tối đa 5 hình ảnh để hiển thị chi tiết màu sắc, kích thước của phiên bản này.
+                                <p className='text-xs text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 p-3 rounded-lg border border-violet-200 dark:border-violet-700'>
+                                  💡 Thêm tối đa 5 hình ảnh chất lượng cao để hiển thị chi tiết màu sắc, form dáng của
+                                  biến thể này. Ảnh sẽ được tự động tối ưu để tải nhanh.
                                 </p>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
 
-                          <div className='flex gap-3 pt-4 border-t border-border'>
+                          <div className='flex gap-4 pt-6 border-t border-violet-200 dark:border-violet-700'>
                             <Button
                               type='submit'
                               disabled={createDetailMutation.isPending}
-                              className='bg-primary hover:bg-primary/90 text-primary-foreground'
+                              className='bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl h-12 px-8'
                             >
                               {createDetailMutation.isPending ? (
                                 <>
@@ -620,7 +742,7 @@ export default function ExpendMaternityDressDetails() {
                               ) : (
                                 <>
                                   <Save className='h-4 w-4 mr-2' />
-                                  Thêm Chi Tiết
+                                  Thêm Biến Thể
                                 </>
                               )}
                             </Button>
@@ -628,10 +750,10 @@ export default function ExpendMaternityDressDetails() {
                               type='button'
                               variant='outline'
                               onClick={() => setShowAddForm(false)}
-                              className='border-border hover:bg-muted'
+                              className='border-violet-200 dark:border-violet-700 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl h-12 px-8'
                             >
                               <X className='h-4 w-4 mr-2' />
-                              Hủy
+                              Hủy bỏ
                             </Button>
                           </div>
                         </form>
@@ -640,35 +762,42 @@ export default function ExpendMaternityDressDetails() {
                   </Card>
                 )}
 
-                {/* Details List */}
+                {/* Enhanced Details List */}
                 {maternityDressDetails.length === 0 ? (
-                  <div className='text-center py-12'>
-                    <div className='max-w-sm mx-auto'>
-                      <Settings className='h-16 w-16 mx-auto mb-4 text-muted-foreground' />
-                      <h3 className='text-lg font-medium text-foreground mb-2'>Chưa có chi tiết nào</h3>
-                      <p className='text-muted-foreground mb-6'>
-                        Thêm các chi tiết như màu sắc, size, giá để hoàn thiện đầm bầu và bắt đầu bán hàng
-                      </p>
+                  <div className='text-center py-16'>
+                    <div className='max-w-md mx-auto space-y-6'>
+                      <div className='w-32 h-32 bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center mx-auto'>
+                        <Settings className='h-16 w-16 text-violet-400' />
+                      </div>
+                      <div className='space-y-3'>
+                        <h3 className='text-2xl font-bold text-violet-700 dark:text-violet-300'>
+                          Chưa có biến thể nào
+                        </h3>
+                        <p className='text-violet-500 leading-relaxed'>
+                          Tạo các biến thể với màu sắc, kích thước và giá khác nhau để hoàn thiện sản phẩm và bắt đầu
+                          kinh doanh
+                        </p>
+                      </div>
                       <Button
                         onClick={() => setShowAddForm(true)}
-                        className='bg-primary hover:bg-primary/90 text-primary-foreground'
+                        className='bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl h-12 px-8'
                       >
                         <Plus className='h-4 w-4 mr-2' />
-                        Thêm Chi Tiết Đầu Tiên
+                        Tạo Biến Thể Đầu Tiên
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
                     {maternityDressDetails.map((detail: MaternityDressDetailType) => (
                       <Card
                         key={detail.id}
-                        className='relative group hover:shadow-lg transition-shadow border border-border'
+                        className='relative group hover:shadow-xl transition-all duration-300 border-0 bg-white dark:bg-gray-800 overflow-hidden shadow-lg hover:-translate-y-1'
                       >
                         <Button
                           size='sm'
                           variant='destructive'
-                          className='absolute top-3 right-3 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-10'
+                          className='absolute top-4 right-4 h-9 w-9 p-0 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg rounded-lg'
                           onClick={() => handleRemoveDetail(detail.id)}
                           disabled={deleteDetailMutation.isPending}
                         >
@@ -677,51 +806,91 @@ export default function ExpendMaternityDressDetails() {
 
                         <CardContent className='p-0'>
                           {detail.images && detail.images.length > 0 ? (
-                            <DetailProductImage
-                              src={detail.images[0]}
-                              alt={detail.name}
-                              className='w-full h-48 object-cover rounded-t-lg'
-                            />
+                            <div className='relative overflow-hidden'>
+                              <DetailProductImage
+                                src={detail.images[0]}
+                                alt={detail.name}
+                                className='w-full h-56 object-cover'
+                              />
+                              <div className='absolute inset-0 bg-gradient-to-t from-black/30 to-transparent'></div>
+                              {detail.images.length > 1 && (
+                                <Badge className='absolute bottom-3 left-3 bg-black/50 text-white backdrop-blur-sm'>
+                                  +{detail.images.length - 1} ảnh
+                                </Badge>
+                              )}
+                            </div>
                           ) : (
-                            <div className='w-full h-48 bg-gradient-to-br from-muted to-muted/80 rounded-t-lg flex items-center justify-center'>
-                              <Package className='h-12 w-12 text-muted-foreground' />
+                            <div className='w-full h-56 bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/20 dark:to-purple-900/20 flex items-center justify-center'>
+                              <div className='text-center space-y-2'>
+                                <Package className='h-12 w-12 text-violet-400 mx-auto' />
+                                <p className='text-sm text-violet-500'>Chưa có ảnh</p>
+                              </div>
                             </div>
                           )}
 
-                          <div className='p-4'>
-                            <h4 className='font-semibold text-foreground mb-3 text-lg'>{detail.name}</h4>
+                          <div className='p-6 space-y-4'>
+                            <h4 className='font-bold text-lg text-gray-800 dark:text-gray-200 line-clamp-2 min-h-[3.5rem]'>
+                              {detail.name}
+                            </h4>
 
-                            <div className='space-y-2 mb-4'>
-                              <div className='flex items-center justify-between'>
-                                <span className='text-sm text-muted-foreground'>Màu sắc:</span>
-                                <Badge variant='outline' className='bg-primary/10 text-primary border-primary/20'>
+                            <div className='grid grid-cols-2 gap-3'>
+                              <div className='flex items-center justify-between p-3 bg-violet-50 dark:bg-violet-900/20 rounded-lg'>
+                                <div className='flex items-center gap-2'>
+                                  <Palette className='h-4 w-4 text-violet-500' />
+                                  <span className='text-xs font-medium text-violet-600 dark:text-violet-400'>Màu</span>
+                                </div>
+                                <Badge
+                                  variant='outline'
+                                  className='bg-white dark:bg-gray-800 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-700 text-xs'
+                                >
                                   {detail.color}
                                 </Badge>
                               </div>
-                              <div className='flex items-center justify-between'>
-                                <span className='text-sm text-muted-foreground'>Kích thước:</span>
-                                <Badge variant='outline' className='bg-accent/10 text-accent border-accent/20'>
+
+                              <div className='flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg'>
+                                <div className='flex items-center gap-2'>
+                                  <Ruler className='h-4 w-4 text-blue-500' />
+                                  <span className='text-xs font-medium text-blue-600 dark:text-blue-400'>Size</span>
+                                </div>
+                                <Badge
+                                  variant='outline'
+                                  className='bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 text-xs'
+                                >
                                   {detail.size}
                                 </Badge>
                               </div>
-                              <div className='flex items-center justify-between'>
-                                <span className='text-sm text-muted-foreground'>Số lượng:</span>
+
+                              <div className='flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg'>
+                                <div className='flex items-center gap-2'>
+                                  <ShoppingBag className='h-4 w-4 text-emerald-500' />
+                                  <span className='text-xs font-medium text-emerald-600 dark:text-emerald-400'>
+                                    Tồn
+                                  </span>
+                                </div>
                                 <Badge
                                   variant={detail.quantity > 10 ? 'default' : 'destructive'}
-                                  className='font-semibold'
+                                  className='text-xs font-semibold'
                                 >
                                   {detail.quantity}
                                 </Badge>
                               </div>
-                              <div className='flex items-center justify-between'>
-                                <span className='text-sm text-muted-foreground'>Giá:</span>
-                                <span className='font-semibold text-secondary'>${detail.price}</span>
+
+                              <div className='flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg'>
+                                <div className='flex items-center gap-2'>
+                                  <TrendingUp className='h-4 w-4 text-orange-500' />
+                                  <span className='text-xs font-medium text-orange-600 dark:text-orange-400'>Giá</span>
+                                </div>
+                                <span className='font-bold text-orange-600 dark:text-orange-400 text-sm'>
+                                  {detail.price.toLocaleString()}₫
+                                </span>
                               </div>
                             </div>
 
                             {detail.description && (
-                              <div className='pt-3 border-t border-border'>
-                                <p className='text-xs text-muted-foreground line-clamp-2'>{detail.description}</p>
+                              <div className='pt-4 border-t border-gray-200 dark:border-gray-700'>
+                                <p className='text-xs text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed'>
+                                  {detail.description}
+                                </p>
                               </div>
                             )}
                           </div>
@@ -734,89 +903,153 @@ export default function ExpendMaternityDressDetails() {
             </Card>
           </TabsContent>
 
-          {/* Tab 3: Inventory Management */}
-          <TabsContent value='inventory' className='space-y-6'>
-            <Card className='border-0 shadow-md bg-background'>
-              <CardHeader className='bg-gradient-to-r from-accent to-accent/90 text-accent-foreground rounded-t-lg'>
-                <CardTitle className='flex items-center gap-2'>
-                  <BarChart3 className='h-5 w-5' />
-                  Thống Kê Tồn Kho
+          {/* Tab 3: Enhanced Inventory Management */}
+          <TabsContent value='inventory' className='space-y-8'>
+            <Card className='border-0 shadow-xl bg-white/90 dark:bg-background/90 backdrop-blur-sm overflow-hidden'>
+              <CardHeader className='bg-gradient-to-r from-emerald-500 to-green-600 text-white p-6'>
+                <CardTitle className='flex items-center gap-3 text-xl'>
+                  <div className='p-2 bg-white/20 rounded-lg'>
+                    <BarChart3 className='h-6 w-6' />
+                  </div>
+                  <div>
+                    <h3 className='text-xl font-bold'>Thống Kê Tồn Kho</h3>
+                    <p className='text-emerald-100 text-sm font-normal'>Tổng quan về inventory và giá trị sản phẩm</p>
+                  </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent className='p-6'>
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8'>
-                  <div className='bg-gradient-to-br from-primary/10 to-primary/20 p-6 rounded-xl border border-primary/20'>
+              <CardContent className='p-8'>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-8 mb-10'>
+                  <div className='bg-gradient-to-br from-violet-500 to-purple-600 p-8 rounded-2xl text-white shadow-xl'>
                     <div className='flex items-center justify-between'>
-                      <div>
-                        <span className='text-sm font-medium text-primary'>Tổng chi tiết</span>
-                        <p className='text-3xl font-bold text-primary mt-1'>{maternityDressDetails.length}</p>
+                      <div className='space-y-2'>
+                        <div className='flex items-center gap-2'>
+                          <Settings className='h-5 w-5' />
+                          <span className='text-sm font-semibold opacity-90'>Tổng biến thể</span>
+                        </div>
+                        <p className='text-4xl font-bold'>{maternityDressDetails.length}</p>
+                        <p className='text-sm opacity-75'>Các phiên bản khác nhau</p>
                       </div>
-                      <Package className='h-10 w-10 text-primary' />
+                      <div className='w-16 h-16 bg-white/20 rounded-full flex items-center justify-center'>
+                        <Package className='h-8 w-8' />
+                      </div>
                     </div>
                   </div>
 
-                  <div className='bg-gradient-to-br from-accent/10 to-accent/20 p-6 rounded-xl border border-accent/20'>
+                  <div className='bg-gradient-to-br from-emerald-500 to-green-600 p-8 rounded-2xl text-white shadow-xl'>
                     <div className='flex items-center justify-between'>
-                      <div>
-                        <span className='text-sm font-medium text-accent'>Tổng tồn kho</span>
-                        <p className='text-3xl font-bold text-accent mt-1'>{totalStock}</p>
+                      <div className='space-y-2'>
+                        <div className='flex items-center gap-2'>
+                          <ShoppingBag className='h-5 w-5' />
+                          <span className='text-sm font-semibold opacity-90'>Tổng tồn kho</span>
+                        </div>
+                        <p className='text-4xl font-bold'>{totalStock}</p>
+                        <p className='text-sm opacity-75'>Sản phẩm có sẵn</p>
                       </div>
-                      <BarChart3 className='h-10 w-10 text-accent' />
+                      <div className='w-16 h-16 bg-white/20 rounded-full flex items-center justify-center'>
+                        <BarChart3 className='h-8 w-8' />
+                      </div>
                     </div>
                   </div>
 
-                  <div className='bg-gradient-to-br from-secondary/10 to-secondary/20 p-6 rounded-xl border border-secondary/20'>
+                  <div className='bg-gradient-to-br from-orange-500 to-amber-600 p-8 rounded-2xl text-white shadow-xl'>
                     <div className='flex items-center justify-between'>
-                      <div>
-                        <span className='text-sm font-medium text-secondary-foreground'>Giá trị tồn kho</span>
-                        <p className='text-3xl font-bold text-secondary-foreground mt-1'>
-                          ${totalValue.toLocaleString()}
-                        </p>
+                      <div className='space-y-2'>
+                        <div className='flex items-center gap-2'>
+                          <TrendingUp className='h-5 w-5' />
+                          <span className='text-sm font-semibold opacity-90'>Tổng giá trị</span>
+                        </div>
+                        <p className='text-2xl font-bold'>{totalValue.toLocaleString()}₫</p>
+                        <p className='text-sm opacity-75'>Giá trị inventory</p>
                       </div>
-                      <div className='h-10 w-10 bg-secondary/20 rounded-full flex items-center justify-center'>
-                        <span className='text-secondary-foreground font-bold text-lg'>$</span>
+                      <div className='w-16 h-16 bg-white/20 rounded-full flex items-center justify-center'>
+                        <span className='text-2xl font-bold'>₫</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {maternityDressDetails.length > 0 ? (
-                  <div className='space-y-4'>
-                    <h4 className='text-lg font-semibold text-foreground mb-4'>Chi Tiết Tồn Kho Theo Phiên Bản</h4>
-                    <div className='space-y-3'>
+                  <div className='space-y-6'>
+                    <div className='flex items-center gap-3 mb-6'>
+                      <div className='p-2 bg-violet-100 dark:bg-violet-900/30 rounded-lg'>
+                        <BarChart3 className='h-5 w-5 text-violet-600 dark:text-violet-400' />
+                      </div>
+                      <div>
+                        <h4 className='text-xl font-bold text-gray-800 dark:text-gray-200'>Chi Tiết Tồn Kho</h4>
+                        <p className='text-sm text-gray-500'>Thông tin chi tiết theo từng biến thể</p>
+                      </div>
+                    </div>
+
+                    <div className='grid gap-4'>
                       {maternityDressDetails.map((detail: MaternityDressDetailType) => (
                         <div
                           key={detail.id}
-                          className='flex items-center justify-between p-4 bg-muted rounded-lg border'
+                          className='flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-300'
                         >
-                          <div className='flex items-center gap-4'>
+                          <div className='flex items-center gap-6'>
                             {detail.images && detail.images.length > 0 && (
                               <DetailProductImage
                                 src={detail.images[0]}
                                 alt={detail.name}
-                                className='w-12 h-12 rounded-lg object-cover border'
+                                className='w-16 h-16 rounded-xl object-cover border-2 border-white dark:border-gray-600 shadow-md'
                               />
                             )}
-                            <div>
-                              <p className='font-medium text-foreground'>{detail.name}</p>
-                              <p className='text-sm text-muted-foreground'>
-                                {detail.color} • {detail.size} • ${detail.price}
-                              </p>
+                            <div className='space-y-2'>
+                              <h5 className='font-semibold text-gray-800 dark:text-gray-200 text-lg'>{detail.name}</h5>
+                              <div className='flex items-center gap-4 text-sm'>
+                                <div className='flex items-center gap-2'>
+                                  <Palette className='h-4 w-4 text-violet-500' />
+                                  <span className='text-gray-600 dark:text-gray-400'>{detail.color}</span>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                  <Ruler className='h-4 w-4 text-blue-500' />
+                                  <span className='text-gray-600 dark:text-gray-400'>{detail.size}</span>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                  <TrendingUp className='h-4 w-4 text-green-500' />
+                                  <span className='font-semibold text-green-600 dark:text-green-400'>
+                                    {detail.price.toLocaleString()}₫
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                          <div className='text-right'>
-                            <p className='text-lg font-semibold text-foreground'>{detail.quantity}</p>
-                            <p className='text-sm text-muted-foreground'>đơn vị</p>
+                          <div className='text-right space-y-1'>
+                            <p className='text-3xl font-bold text-gray-800 dark:text-gray-200'>{detail.quantity}</p>
+                            <p className='text-sm text-gray-500'>sản phẩm</p>
+                            <Badge
+                              variant={
+                                detail.quantity > 10 ? 'default' : detail.quantity > 0 ? 'secondary' : 'destructive'
+                              }
+                              className='text-xs'
+                            >
+                              {detail.quantity > 10 ? 'Còn nhiều' : detail.quantity > 0 ? 'Sắp hết' : 'Hết hàng'}
+                            </Badge>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <div className='text-center py-12'>
-                    <BarChart3 className='h-16 w-16 mx-auto mb-4 text-muted-foreground' />
-                    <h4 className='text-lg font-medium text-foreground mb-2'>Chưa có dữ liệu tồn kho</h4>
-                    <p className='text-muted-foreground'>Thêm chi tiết đầm bầu để xem thống kê tồn kho</p>
+                  <div className='text-center py-16'>
+                    <div className='max-w-md mx-auto space-y-6'>
+                      <div className='w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center mx-auto'>
+                        <BarChart3 className='h-16 w-16 text-gray-400' />
+                      </div>
+                      <div className='space-y-3'>
+                        <h4 className='text-2xl font-bold text-gray-600 dark:text-gray-400'>Chưa có dữ liệu tồn kho</h4>
+                        <p className='text-gray-500 leading-relaxed'>
+                          Thêm các biến thể sản phẩm để xem thống kê tồn kho chi tiết
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => setActiveTab('details')}
+                        className='bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl h-12 px-8'
+                      >
+                        <Plus className='h-4 w-4 mr-2' />
+                        Thêm Biến Thể
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -824,6 +1057,26 @@ export default function ExpendMaternityDressDetails() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <style>{`
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: rgba(6, 2, 16, 0.3);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(139, 92, 246, 0.5);
+        }
+      `}</style>
     </div>
   )
 }

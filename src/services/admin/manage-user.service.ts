@@ -1,4 +1,4 @@
-import manageUserAPI, { CreateUserData } from '@/apis/manage-user.api'
+import manageUserAPI, { CreateUserData, CreateSystemAccountData } from '@/apis/manage-user.api'
 import { ManageUserType } from '@/@types/admin.types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -16,7 +16,9 @@ export const manageUserKeys = {
   detail: (id: string) => [...manageUserKeys.all, 'detail', id] as const,
   delete: (id: string) => [...manageUserKeys.all, 'delete', id] as const,
   update: (id: string) => [...manageUserKeys.all, 'update', id] as const,
-  create: () => [...manageUserKeys.all, 'create'] as const
+  create: () => [...manageUserKeys.all, 'create'] as const,
+  createSystemAccount: () => [...manageUserKeys.all, 'create-system-account'] as const,
+  getRoles: () => [...manageUserKeys.all, 'get-roles'] as const
 }
 
 export const useGetListUser = (params?: ManageUserQueryParams) => {
@@ -46,6 +48,37 @@ export const useGetUserById = (id: string) => {
   })
 }
 
+// New hook for creating system account
+export const useCreateSystemAccount = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: CreateSystemAccountData) => {
+      const response = await manageUserAPI.createSystemAccount(data)
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      throw new Error(response.data.message || 'Failed to create system account')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: manageUserKeys.list({}) })
+    }
+  })
+}
+export const useGetRoles = () => {
+  return useQuery({
+    queryKey: manageUserKeys.getRoles(),
+    queryFn: async () => {
+      const response = await manageUserAPI.getRoles()
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      throw new Error(response.data.message || 'Failed to fetch roles')
+    },
+    staleTime: 5 * 60 * 1000 // Cache for 5 minutes
+  })
+}
+
+// Keep old hook for backward compatibility
 export const useCreateUser = () => {
   const queryClient = useQueryClient()
   return useMutation({
@@ -77,6 +110,7 @@ export const useDeleteUser = () => {
     }
   })
 }
+
 export const useUpdateUser = () => {
   const queryClient = useQueryClient()
   return useMutation({

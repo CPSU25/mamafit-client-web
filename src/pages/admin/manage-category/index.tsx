@@ -1,7 +1,12 @@
+// index.tsx - Main Category Page with Enhanced UI
 import { useState } from 'react'
 import { Main } from '@/components/layout/main'
 import { useCategories as useCategoriesAPI } from '@/services/admin/category.service'
 import { transformCategoryTypeToCategory } from './data/schema'
+import { FolderOpen, Package2, TrendingUp, Activity, Sparkles } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 
 import { columns } from './components/categories-columns'
 import { CategoriesDialogs } from './components/categories-dialogs'
@@ -20,13 +25,25 @@ export default function ManageCategoryPage() {
   // Transform API data to component format
   const categoryList = apiResponse?.data?.items?.map(transformCategoryTypeToCategory) || []
 
+  // Calculate statistics
+  const totalCategories = categoryList.length
+  const activeCategories = categoryList.filter((cat) => cat.status === 'ACTIVE').length
+  const categoriesWithImages = categoryList.filter((cat) => cat.images && cat.images.length > 0).length
+  const utilizationRate = totalCategories > 0 ? Math.round((activeCategories / totalCategories) * 100) : 0
+
   if (isLoading) {
     return (
       <Main>
-        <div className='flex items-center justify-center h-96'>
-          <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4'></div>
-            <p className='text-muted-foreground'>Loading categories...</p>
+        <div className='flex items-center justify-center h-[calc(100vh-200px)]'>
+          <div className='text-center space-y-4'>
+            <div className='relative'>
+              <div className='animate-spin rounded-full h-16 w-16 border-4 border-violet-200 border-t-violet-600 mx-auto'></div>
+              <FolderOpen className='h-8 w-8 text-violet-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' />
+            </div>
+            <div>
+              <p className='text-lg font-medium text-foreground'>Đang tải danh mục...</p>
+              <p className='text-sm text-muted-foreground mt-1'>Vui lòng đợi trong giây lát</p>
+            </div>
           </div>
         </div>
       </Main>
@@ -34,14 +51,29 @@ export default function ManageCategoryPage() {
   }
 
   if (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred'
+    const errorMessage = error instanceof Error ? error.message : 'Đã xảy ra lỗi không xác định'
     return (
       <Main>
-        <div className='flex items-center justify-center h-96'>
-          <div className='text-center'>
-            <p className='text-destructive mb-2'>Cannot load categories</p>
-            <p className='text-muted-foreground text-sm'>{errorMessage}</p>
-          </div>
+        <div className='flex items-center justify-center h-[calc(100vh-200px)]'>
+          <Card className='max-w-md w-full border-destructive/20 bg-destructive/5'>
+            <CardContent className='pt-6'>
+              <div className='text-center space-y-4'>
+                <div className='h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto'>
+                  <Package2 className='h-8 w-8 text-destructive' />
+                </div>
+                <div>
+                  <p className='text-lg font-semibold text-destructive'>Không thể tải danh mục</p>
+                  <p className='text-sm text-muted-foreground mt-2'>{errorMessage}</p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className='px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors'
+                >
+                  Thử lại
+                </button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </Main>
     )
@@ -49,17 +81,109 @@ export default function ManageCategoryPage() {
 
   return (
     <CategoriesProvider>
-      <Main>
-        <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
-          <div>
-            <h2 className='text-2xl font-bold tracking-tight'>Manage Categories</h2>
-            <p className='text-muted-foreground'>Manage categories of products</p>
+      <Main className='space-y-6'>
+        {/* Enhanced Header Section */}
+        <div className='space-y-6'>
+          {/* Title and Actions */}
+          <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
+            <div className='space-y-1'>
+              <div className='flex items-center gap-2'>
+                <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg'>
+                  <FolderOpen className='h-6 w-6 text-white' />
+                </div>
+                <div>
+                  <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
+                    Quản Lý Danh Mục
+                  </h1>
+                  <p className='text-sm text-muted-foreground flex items-center gap-1'>
+                    Quản lý danh mục sản phẩm của hệ thống
+                    <Sparkles className='h-3 w-3 text-violet-500' />
+                  </p>
+                </div>
+              </div>
+            </div>
+            <CategoriesPrimaryButtons />
           </div>
-          <CategoriesPrimaryButtons />
+
+          {/* Statistics Cards */}
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+            <Card className='border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/30 dark:to-background hover:shadow-lg transition-all duration-300'>
+              <CardContent className='p-4'>
+                <div className='flex items-center justify-between'>
+                  <div className='space-y-1'>
+                    <p className='text-sm font-medium text-muted-foreground'>Tổng danh mục</p>
+                    <p className='text-2xl font-bold text-violet-600 dark:text-violet-400'>{totalCategories}</p>
+                  </div>
+                  <div className='h-12 w-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center'>
+                    <FolderOpen className='h-6 w-6 text-violet-600 dark:text-violet-400' />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className='border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-white dark:from-green-950/30 dark:to-background hover:shadow-lg transition-all duration-300'>
+              <CardContent className='p-4'>
+                <div className='flex items-center justify-between'>
+                  <div className='space-y-1'>
+                    <p className='text-sm font-medium text-muted-foreground'>Đang hoạt động</p>
+                    <p className='text-2xl font-bold text-green-600 dark:text-green-400'>{activeCategories}</p>
+                    <Badge variant='outline' className='text-xs border-green-300 text-green-700 dark:text-green-400'>
+                      {utilizationRate}% sử dụng
+                    </Badge>
+                  </div>
+                  <div className='h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center'>
+                    <Activity className='h-6 w-6 text-green-600 dark:text-green-400' />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className='border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-background hover:shadow-lg transition-all duration-300'>
+              <CardContent className='p-4'>
+                <div className='flex items-center justify-between'>
+                  <div className='space-y-1'>
+                    <p className='text-sm font-medium text-muted-foreground'>Có hình ảnh</p>
+                    <p className='text-2xl font-bold text-blue-600 dark:text-blue-400'>{categoriesWithImages}</p>
+                    <Progress
+                      value={(categoriesWithImages / Math.max(totalCategories, 1)) * 100}
+                      className='h-1.5 bg-blue-100 dark:bg-blue-900/30 [&_.progress-indicator]:bg-blue-500'
+                    />
+                  </div>
+                  <div className='h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center'>
+                    <Package2 className='h-6 w-6 text-blue-600 dark:text-blue-400' />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className='border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/30 dark:to-background hover:shadow-lg transition-all duration-300'>
+              <CardContent className='p-4'>
+                <div className='flex items-center justify-between'>
+                  <div className='space-y-1'>
+                    <p className='text-sm font-medium text-muted-foreground'>Tỷ lệ tăng trưởng</p>
+                    <div className='flex items-baseline gap-2'>
+                      <p className='text-2xl font-bold text-orange-600 dark:text-orange-400'>+12%</p>
+                      <TrendingUp className='h-4 w-4 text-orange-500' />
+                    </div>
+                    <p className='text-xs text-muted-foreground'>So với tháng trước</p>
+                  </div>
+                  <div className='h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center'>
+                    <TrendingUp className='h-6 w-6 text-orange-600 dark:text-orange-400' />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-        <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
-          <CategoriesTable data={categoryList} columns={columns} />
-        </div>
+
+        {/* Table Section with Enhanced Styling */}
+        <Card className='border-0 shadow-xl bg-gradient-to-br from-background via-background to-violet-50/30 dark:to-violet-950/10'>
+          <CardContent className='p-0'>
+            <div className='p-6 space-y-4'>
+              <CategoriesTable data={categoryList} columns={columns} />
+            </div>
+          </CardContent>
+        </Card>
       </Main>
 
       <CategoriesDialogs />

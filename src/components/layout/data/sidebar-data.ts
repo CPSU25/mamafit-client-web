@@ -30,9 +30,8 @@ import {
   PaintBucket,
   Store,
   Bell
-} from 'lucide-react';
-import { SidebarData } from '../types';
-
+} from 'lucide-react'
+import { SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
@@ -238,4 +237,4 @@ export const sidebarData: SidebarData = {
       ]
     }
   ]
-};
+}

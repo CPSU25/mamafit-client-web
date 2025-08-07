@@ -7,13 +7,9 @@ import { Branch } from '../data/schema'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { BranchTableRowActions } from './branch-table-row-action'
 import LongText from '@/components/long-text'
-import { ManageUserType } from '@/@types/admin.types'
+import { BranchManagerType } from '@/@types/branch.type'
 
-interface BranchColumnsProps {
-  managers?: ManageUserType[]
-}
-
-export const createBranchColumns = ({ managers = [] }: BranchColumnsProps = {}): ColumnDef<Branch>[] => [
+export const createBranchColumns = (): ColumnDef<Branch>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -82,20 +78,15 @@ export const createBranchColumns = ({ managers = [] }: BranchColumnsProps = {}):
     enableSorting: false
   },
   {
-    accessorKey: 'branchManagerId',
+    accessorKey: 'branchManager',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Branch Manager' />,
     cell: ({ row }) => {
-      const branchManager = row.getValue('branchManagerId') as string
-      const manager = managers.find((m) => m.id === branchManager)
-
-      if (!manager) {
-        return <div className='text-sm text-muted-foreground'>Manager not found</div>
-      }
-
+      const branchManager: BranchManagerType = row.getValue('branchManager')
       return (
-        <div className='text-sm'>
-          <div className='font-medium'>{manager.fullName}</div>
-          <div className='text-xs text-muted-foreground'>@{manager.userName || manager.userEmail}</div>
+        <div className='flex flex-col'>
+          <span className='font-medium'>{branchManager.fullName}</span>
+          <span className='text-sm text-muted-foreground'>{branchManager.userEmail}</span>
+          <span className='text-sm text-muted-foreground'>{branchManager.phoneNumber}</span>
         </div>
       )
     },
