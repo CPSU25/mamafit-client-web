@@ -14,12 +14,12 @@ export interface ManageBranchType {
   latitude: number
   longitude: number
 }
-export interface BranchManagerType{
+export interface BranchManagerType {
   id: string
-  fullName: string 
+  fullName: string
   phoneNumber: string
-  userEmail: string 
-  userName: string 
+  userEmail: string
+  userName: string
 }
 // API Request type based on actual API schema
 export interface BranchRequest {

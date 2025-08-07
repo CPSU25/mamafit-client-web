@@ -83,7 +83,7 @@ export interface OrderItemType {
   quantity: number
   maternityDressDetail: MaternityDressDetailType
   designRequest: DesignRequestType
-  milestones: any // Generic milestone reference
+  milestones: string[] // Generic milestone reference
   preset: PresetType
   warrantyDate?: string
   warrantyNumber?: string
@@ -108,7 +108,7 @@ export interface OrderById extends OrderType {
 export interface OrderItemById extends OrderItemType {
   maternityDressDetail: MaternityDressDetailType
   designRequest: DesignRequestType
-  milestones: any // Generic - sẽ được handle ở admin hoặc staff service riêng
+  milestones: string[] // Generic - sẽ được handle ở admin hoặc staff service riêng
   preset: PresetType
 }
 

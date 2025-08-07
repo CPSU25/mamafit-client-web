@@ -9,8 +9,6 @@ import { BranchTableRowActions } from './branch-table-row-action'
 import LongText from '@/components/long-text'
 import { BranchManagerType } from '@/@types/branch.type'
 
-
-
 export const createBranchColumns = (): ColumnDef<Branch>[] => [
   {
     id: 'select',
