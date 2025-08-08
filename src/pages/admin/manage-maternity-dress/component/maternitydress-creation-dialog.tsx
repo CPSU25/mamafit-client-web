@@ -99,7 +99,7 @@ export default function MaternityDressCreationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-5xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-violet-50/50 to-purple-50/30 dark:from-violet-950/20 dark:to-purple-950/10 border-0 shadow-2xl'>
+      <DialogContent className=' sm:max-w-3xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-violet-50/50 to-purple-50/30 dark:from-violet-950/20 dark:to-purple-950/10 border-0 shadow-2xl'>
         {/* Enhanced Dialog Header */}
         <DialogHeader className='pb-8 border-b border-violet-200 dark:border-violet-700'>
           <div className='flex items-center justify-between'>

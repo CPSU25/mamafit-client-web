@@ -83,7 +83,7 @@ export function ImageViewer({
 
       {/* Full-size image dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className='max-w-4xl max-h-[90vh] p-0'>
+        <DialogContent className='sm:max-w-4xl max-h-[90vh] p-0'>
           <DialogHeader className='p-6 pb-0'>
             <div className='flex items-center justify-between'>
               <DialogTitle className='text-lg font-semibold'>{title || alt}</DialogTitle>
