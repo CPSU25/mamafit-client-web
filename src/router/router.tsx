@@ -18,6 +18,8 @@ import { FactoryManagerDashboard } from '@/pages/factory-manager'
 import { DesignerDashboard, ManageTemplatePage, ManageDesignRequestPage } from '@/pages/designer'
 import { BranchDashboard, CashierPage, ManageAppointmentPage } from '@/pages/branch'
 import { OrderItemDetailPage, StaffTasksPage } from '@/pages/staff'
+import OrderUpdatesDemo from '@/examples/order-updates-demo'
+import UnifiedHubTestPage from '@/examples/unified-hub-test'
 
 export const router = createBrowserRouter([
   {
@@ -187,6 +189,16 @@ export const router = createBrowserRouter([
             element: <OrderItemDetailPage />
           }
         ]
+      },
+
+      // Test routes for UnifiedHub
+      {
+        path: '/test/unified-hub',
+        element: <UnifiedHubTestPage />,
+      },
+      {
+        path: '/test/order-updates',
+        element: <OrderUpdatesDemo />,
       },
 
       // System base route - redirect to sign-in
