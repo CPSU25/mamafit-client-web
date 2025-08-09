@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Eye, CheckCircle, XCircle, Factory, Store } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Eye, CheckCircle, XCircle, Factory, Store, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,11 +9,27 @@ import { Label } from '@/components/ui/label';
 import { StatusBadge } from './StatusBadge';
 import { RequestTypeBadge } from './RequestTypeBadge';
 import { WarrantyRequestDetailProps, WarrantyItemStatus, DestinationType } from '../types';
+import { useWarrantyRequestById } from '@/services/global/warranty.service';
 
 export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetailProps) => {
-  const [itemStatuses, setItemStatuses] = useState<Record<string, WarrantyItemStatus>>(
-    request.items.reduce((acc, item) => ({ ...acc, [item.id]: item.status }), {})
-  );
+  const { data: warrantyItem } = useWarrantyRequestById(request.id);
+  const navigate = useNavigate();
+
+  const [itemStatuses, setItemStatuses] = useState<Record<string, WarrantyItemStatus>>({});
+
+  useEffect(() => {
+    if (warrantyItem?.items && Array.isArray(warrantyItem.items)) {
+      const initialStatuses = warrantyItem.items.reduce<Record<string, WarrantyItemStatus>>(
+        (acc, item) => {
+          const status = (item.status as unknown as WarrantyItemStatus) ?? 'PENDING';
+          acc[item.orderItemId] = status;
+          return acc;
+        },
+        {}
+      );
+      setItemStatuses(initialStatuses);
+    }
+  }, [warrantyItem]);
 
   const handleApproveItem = (itemId: string, destinationType: DestinationType) => {
     setItemStatuses(prev => ({ ...prev, [itemId]: 'APPROVED' }));
@@ -46,7 +63,7 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
     <div className="max-w-4xl max-h-[80vh] overflow-y-auto">
       <DialogHeader className="pb-4">
         <DialogTitle className="text-xl font-semibold text-violet-900">
-          Chi tiết yêu cầu bảo hành {request.sku}
+          Chi tiết yêu cầu bảo hành {warrantyItem?.sku ?? request.sku}
         </DialogTitle>
         <DialogDescription>
           Đánh giá và xử lý yêu cầu bảo hành từ khách hàng
@@ -62,15 +79,15 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
           <CardContent className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-sm font-medium text-gray-600">Tên khách hàng</Label>
-              <p className="mt-1 text-gray-900">{request.customer.name}</p>
+              <p className="mt-1 text-gray-900">{request.customer.fullName}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">Số điện thoại</Label>
-              <p className="mt-1 text-gray-900">{request.customer.phone}</p>
+              <p className="mt-1 text-gray-900">{request.customer.phoneNumber}</p>
             </div>
             <div className="col-span-2">
               <Label className="text-sm font-medium text-gray-600">Email</Label>
-              <p className="mt-1 text-gray-900">{request.customer.email}</p>
+              <p className="mt-1 text-gray-900">{warrantyItem?.customer.userEmail}</p>
             </div>
           </CardContent>
         </Card>
@@ -84,32 +101,32 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
             <div>
               <Label className="text-sm font-medium text-gray-600">Loại yêu cầu</Label>
               <div className="mt-1">
-                <RequestTypeBadge type={request.requestType} />
+                <RequestTypeBadge type={(warrantyItem ?? request).requestType} />
               </div>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">Trạng thái</Label>
               <div className="mt-1">
-                <StatusBadge status={request.status} />
+                <StatusBadge status={(warrantyItem ?? request).status} />
               </div>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">Tổng phí</Label>
               <p className="mt-1 text-lg font-semibold text-violet-900">
-                {request.totalFee?.toLocaleString('vi-VN')}₫
+                {warrantyItem?.totalFee ? warrantyItem?.totalFee.toLocaleString('vi-VN') : 'Cần xác định'}
               </p>
             </div>
           </CardContent>
         </Card>
 
         {/* Internal Notes */}
-        {request.noteInternal && (
+        {(warrantyItem?.noteInternal ?? request.noteInternal) && (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Ghi chú nội bộ</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700">{request.noteInternal}</p>
+              <p className="text-gray-700">{warrantyItem?.noteInternal ? warrantyItem?.noteInternal : request.noteInternal}</p>
             </CardContent>
           </Card>
         )}
@@ -123,22 +140,22 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
             </DialogDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {request.items.map((item) => (
-              <div key={item.id} className="border rounded-lg p-4 space-y-4">
+            {warrantyItem?.items?.map((item) => (
+              <div key={item.orderItemId} className="border rounded-lg p-4 space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-900">
-                      {item.productName}
+                      {item.orderItemId}
                     </h4>
                     <p className="text-sm text-gray-600 mt-1">
-                      Đơn hàng: {item.orderCode} • Lần bảo hành: {item.warrantyRound}
+                      Trạng thái: {item.status} • Lần bảo hành: {item.warrantyRound}
                     </p>
                   </div>
                   <Badge 
                     variant="outline" 
-                    className={getItemStatusColor(itemStatuses[item.id])}
+                    className={getItemStatusColor(itemStatuses[item.orderItemId] ?? 'PENDING')}
                   >
-                    {getItemStatusLabel(itemStatuses[item.id])}
+                    {getItemStatusLabel(itemStatuses[item.orderItemId] ?? 'PENDING')}
                   </Badge>
                 </div>
 
@@ -180,7 +197,7 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
                       </p>
                     </div>
 
-                    {itemStatuses[item.id] === 'PENDING' && (
+                    {itemStatuses[item.orderItemId] === 'PENDING' && (
                       <div className="space-y-3">
                         <div>
                           <Label className="text-sm font-medium text-gray-600">Chọn nơi xử lý</Label>
@@ -188,7 +205,7 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleApproveItem(item.id, 'FACTORY')}
+                              onClick={() => handleApproveItem(item.orderItemId, 'FACTORY')}
                               className="text-orange-700 border-orange-200 hover:bg-orange-50"
                             >
                               <Factory className="w-4 h-4 mr-1" />
@@ -197,7 +214,7 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleApproveItem(item.id, 'BRANCH')}
+                              onClick={() => handleApproveItem(item.orderItemId, 'BRANCH')}
                               className="text-blue-700 border-blue-200 hover:bg-blue-50"
                             >
                               <Store className="w-4 h-4 mr-1" />
@@ -208,7 +225,7 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
                       </div>
                     )}
 
-                    {itemStatuses[item.id] === 'APPROVED' && (
+                    {itemStatuses[item.orderItemId] === 'APPROVED' && (
                       <div className="bg-green-50 p-3 rounded-lg">
                         <div className="flex items-center text-green-800">
                           <CheckCircle className="w-4 h-4 mr-2" />
@@ -220,7 +237,7 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
                       </div>
                     )}
 
-                    {itemStatuses[item.id] === 'REJECTED' && (
+                    {itemStatuses[item.orderItemId] === 'REJECTED' && (
                       <div className="bg-red-50 p-3 rounded-lg">
                         <div className="flex items-center text-red-800">
                           <XCircle className="w-4 h-4 mr-2" />
@@ -235,6 +252,58 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
                     )}
                   </div>
                 </div>
+                {/* Original Order Info */}
+                {Array.isArray(item.orders) && item.orders.length > 0 && (
+                  <div className="mt-4 border-t pt-4">
+                    <Label className="text-sm font-medium text-gray-700">Đơn gốc liên quan</Label>
+                    <div className="mt-3 space-y-4">
+                      {item.orders.map((order) => (
+                        <div
+                          key={order.id}
+                          role="button"
+                          aria-label={`Xem đơn ${order.code}`}
+                          onClick={() => navigate(`/system/manager/manage-order/${order.id}`)}
+                          className="rounded-xl border p-4 bg-white hover:shadow-md transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-base font-semibold text-slate-700">
+                              Mã đơn: <span className="text-slate-900">{order.code}</span>
+                            </p>
+                            <p className="text-sm text-slate-500">
+                              Ngày nhận: {order.receivedAt ? new Date(order.receivedAt).toLocaleString('vi-VN') : 'Chưa có'}
+                            </p>
+                          </div>
+                          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {order.orderItems?.map((oi) => (
+                              <div key={oi.id} className="flex gap-3 border rounded-lg p-3 bg-slate-50">
+                                <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0 border">
+                                  {oi.preset?.images?.[0] && (
+                                    <img src={oi.preset.images[0]} alt={oi.preset?.styleName ?? 'Preset'} className="w-full h-full object-cover" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-semibold text-gray-900 truncate">{oi.preset?.styleName ?? 'Sản phẩm'}</div>
+                                  <div className="text-xs text-gray-600 truncate">{oi.preset?.styleName}</div>
+                                  <div className="mt-1 text-xs text-gray-700">
+                                    SL: <span className="font-medium">{oi.quantity}</span> • Giá:
+                                    <span className="font-medium"> {oi.price?.toLocaleString('vi-VN')}₫</span>
+                                  </div>
+                                  {oi.warrantyDate && (
+                                    <div className="text-xs text-gray-500">Ngày Bảo Hành Lần 1: {new Date(oi.warrantyDate).toLocaleString('vi-VN')}</div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-3 flex items-center justify-end text-violet-700 text-sm font-medium">
+                            <span className="mr-1 opacity-0 group-hover:opacity-100 transition-opacity">Xem chi tiết đơn</span>
+                            <ChevronRight className="w-4 h-4" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </CardContent>

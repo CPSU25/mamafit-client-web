@@ -10,8 +10,10 @@ import {
   RejectItemDialog
 } from './components';
 import { mockWarrantyRequests } from './data/mockData';
-import { WarrantyRequest, WarrantyItem } from './types';
+import {  WarrantyItem } from './types';
 import { useWarrantyFilters } from './hooks/useWarrantyFilters';
+import { useWarrantyRequestList } from '@/services/global/warranty.service';
+import { WarrantyRequestList } from '@/@types/warranty-request.types';
 
 
 
@@ -19,7 +21,7 @@ function WarrantyManagementSystem() {
   const [selectedTab, setSelectedTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedRequest, setSelectedRequest] = useState<WarrantyRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<WarrantyRequestList | null>(null);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<WarrantyItem | null>(null);
 
   // Filter requests based on tab, search and status
@@ -29,6 +31,13 @@ function WarrantyManagementSystem() {
     searchQuery,
     statusFilter
   });
+  const { data: warrantyRequests, isLoading } = useWarrantyRequestList({
+    page: 1,
+    limit: 100,
+    search: searchQuery,
+    sortBy: "CREATED_AT_DESC"
+  })
+  console.log(warrantyRequests)
 
   const handleRejectItem = (itemId: string, reason: string) => {
     console.log('Rejecting item:', itemId, 'Reason:', reason);
@@ -54,7 +63,7 @@ function WarrantyManagementSystem() {
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="bg-violet-100 text-violet-800 border-violet-200">
                 <Shield className="w-4 h-4 mr-1" />
-                {filteredRequests.length} yêu cầu
+                {warrantyRequests?.items.length} yêu cầu
               </Badge>
             </div>
           </div>
@@ -82,7 +91,7 @@ function WarrantyManagementSystem() {
 
         {/* Warranty Requests Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredRequests.map((request) => (
+          {warrantyRequests?.items.map((request) => (
             <WarrantyRequestCard 
               key={request.id} 
               request={request} 

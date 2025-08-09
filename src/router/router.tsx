@@ -158,8 +158,9 @@ export const router = createBrowserRouter([
           },
           {
             path: 'manage-order',
-            element: <div>Manage Orders Page</div>
+            element: <ManageOrderPage />
           },
+          { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
           {
             path: 'manage-task',
             element: <div>Manage Tasks Page</div>

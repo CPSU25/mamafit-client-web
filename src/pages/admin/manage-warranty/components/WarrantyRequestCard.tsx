@@ -16,11 +16,11 @@ export const WarrantyRequestCard = ({ request, onViewDetail }: WarrantyRequestCa
             {request.sku}
           </CardTitle>
           <CardDescription className="mt-1">
-            Khách hàng: {request.customer.name} • {request.customer.phone}
+            Khách hàng: {request.customer.fullName} • {request.customer.phoneNumber}
           </CardDescription>
         </div>
         <div className="flex gap-2 flex-col items-end">
-          <StatusBadge status={request.status} />
+          <StatusBadge status={request?.status} />
           <RequestTypeBadge type={request.requestType} />
         </div>
       </div>
@@ -29,7 +29,7 @@ export const WarrantyRequestCard = ({ request, onViewDetail }: WarrantyRequestCa
       <div className="space-y-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600">Số lượng item:</span>
-          <span className="font-medium">{request.items.length} sản phẩm</span>
+          <span className="font-medium">{request.countItem} sản phẩm</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600">Tổng phí:</span>

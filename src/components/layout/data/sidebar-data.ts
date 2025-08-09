@@ -192,7 +192,6 @@ export const sidebarData: SidebarData = {
               icon: Factory,
               items: [
                 { title: 'Dây chuyền sản xuất', url: 'manage-production', icon: Scissors },
-                { title: 'Lịch sản xuất', url: 'manage-production/schedule', icon: CalendarDays },
                 { title: 'Kiểm tra chất lượng', url: 'manage-production/qc', icon: CheckCircle }
               ]
             },

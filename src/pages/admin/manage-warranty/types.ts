@@ -1,3 +1,5 @@
+import { WarrantyRequestById, WarrantyRequestList } from "@/@types/warranty-request.types";
+
 export type WarrantyRequestStatus = 
   | 'PENDING' 
   | 'IN_TRANSIT' 
@@ -57,12 +59,12 @@ export interface RequestTypeConfig {
 }
 
 export interface WarrantyRequestCardProps {
-  request: WarrantyRequest;
-  onViewDetail: (request: WarrantyRequest) => void;
+  request: WarrantyRequestList;
+  onViewDetail: (request: WarrantyRequestList) => void;
 }
 
 export interface WarrantyRequestDetailProps {
-  request: WarrantyRequest;
+  request: WarrantyRequestList;
   onClose: () => void;
 }
 
