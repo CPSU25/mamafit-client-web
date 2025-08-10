@@ -29,7 +29,8 @@ import {
   Scissors,
   PaintBucket,
   Store,
-  Bell
+  Bell,
+  Shield
 } from 'lucide-react'
 import { SidebarData } from '../types'
 
@@ -73,7 +74,8 @@ export const sidebarData: SidebarData = {
             { title: 'Quản lý danh mục', url: 'manage-category', icon: Tags },
             { title: 'Quản lý váy bầu', url: 'manage-maternity-dress', icon: Shirt },
             { title: 'Quản lý linh kiện', url: 'manage-component', icon: Boxes },
-            { title: 'Quản lý mốc thời gian', url: 'manage-milestone', icon: Clock }
+            { title: 'Quản lý mốc thời gian', url: 'manage-milestone', icon: Clock },
+            { title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }
           ]
         },
         {
@@ -190,7 +192,6 @@ export const sidebarData: SidebarData = {
               icon: Factory,
               items: [
                 { title: 'Dây chuyền sản xuất', url: 'manage-production', icon: Scissors },
-                { title: 'Lịch sản xuất', url: 'manage-production/schedule', icon: CalendarDays },
                 { title: 'Kiểm tra chất lượng', url: 'manage-production/qc', icon: CheckCircle }
               ]
             },
@@ -198,6 +199,10 @@ export const sidebarData: SidebarData = {
             { title: 'Yêu cầu thiết kế', url: 'manage-design-request', icon: Award },
             { title: 'Đơn hàng sản xuất', url: 'manage-order', icon: Package, badge: '15' }
           ]
+        },
+        {
+          title: 'Quản lý bảo hành',
+          items: [{ title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }]
         },
         {
           title: 'Quản lý nhân sự',

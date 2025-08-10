@@ -9,6 +9,7 @@ import {
   ManageOrderPage,
   ManageUserPage,
   ManageVoucherPage,
+  WarrantyManagementSystem,
   OrderDetailPage
 } from '@/pages/admin'
 import { HomePage } from '@/pages/guest'
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
           { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
           { path: 'manage-voucher', element: <ManageVoucherPage /> },
           { path: 'manage-transaction', element: <div>Transactions Page</div> },
+          { path: 'manage-warranty', element: <WarrantyManagementSystem /> },
           { path: 'settings', element: <div>System Settings Page</div> }
         ]
       },
@@ -156,11 +158,16 @@ export const router = createBrowserRouter([
           },
           {
             path: 'manage-order',
-            element: <div>Manage Orders Page</div>
+            element: <ManageOrderPage />
           },
+          { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
           {
             path: 'manage-task',
             element: <div>Manage Tasks Page</div>
+          },
+          {
+            path: 'manage-warranty',
+            element: <WarrantyManagementSystem />
           }
         ]
       },
