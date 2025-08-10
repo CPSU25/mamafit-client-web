@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { WarrantyRequest } from '../types';
+import { WarrantyRequestList } from '@/@types/warranty-request.types';
 
 interface UseWarrantyFiltersProps {
-  requests: WarrantyRequest[];
+  requests: WarrantyRequestList[];
   selectedTab: string;
   searchQuery: string;
   statusFilter: string;
@@ -29,7 +29,7 @@ export const useWarrantyFilters = ({
       // Search filter
       if (searchQuery && 
           !request.sku.toLowerCase().includes(searchQuery.toLowerCase()) && 
-          !request.customer.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+          !request.customer.fullName.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       
