@@ -202,9 +202,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: 'Quản lý bảo hành',
-          items: [
-            { title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }
-          ]
+          items: [{ title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }]
         },
         {
           title: 'Quản lý nhân sự',

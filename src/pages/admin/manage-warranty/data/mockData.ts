@@ -27,7 +27,7 @@
 //         orderCode: "ORD-2024001"
 //       },
 //       {
-//         id: "wri-002", 
+//         id: "wri-002",
 //         orderItemId: "oi-002",
 //         description: "Khóa kéo bị hỏng, không kéo được",
 //         images: ["https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&h=300&fit=crop"],
@@ -57,7 +57,7 @@
 //     items: [
 //       {
 //         id: "wri-003",
-//         orderItemId: "oi-003", 
+//         orderItemId: "oi-003",
 //         description: "Sản phẩm không đúng size, cần đổi size lớn hơn",
 //         images: ["https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=300&h=300&fit=crop"],
 //         destinationType: "BRANCH",
@@ -73,7 +73,7 @@
 //   },
 //   {
 //     id: "wr-003",
-//     sku: "WR2024003", 
+//     sku: "WR2024003",
 //     requestType: "REFUND",
 //     status: "PARTIALLY_REJECTED",
 //     totalFee: 75000,
