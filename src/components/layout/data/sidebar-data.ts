@@ -73,8 +73,8 @@ export const sidebarData: SidebarData = {
             },
             { title: 'Quản lý danh mục', url: 'manage-category', icon: Tags },
             { title: 'Quản lý váy bầu', url: 'manage-maternity-dress', icon: Shirt },
-            { title: 'Quản lý linh kiện', url: 'manage-component', icon: Boxes },
-            { title: 'Quản lý mốc thời gian', url: 'manage-milestone', icon: Clock },
+            { title: 'Quản lý thành phần', url: 'manage-component', icon: Boxes },
+            { title: 'Quản lý mốc nhiệm vụ', url: 'manage-milestone', icon: Clock },
             { title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }
           ]
         },

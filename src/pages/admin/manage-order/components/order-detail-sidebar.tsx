@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
 import { getStatusColor, getStatusLabel } from '../data/data'
@@ -21,11 +20,16 @@ import {
   Truck,
   User,
   ShoppingBag,
-  UserCheck
+  UserCheck,
+  Ruler,
+  CheckCircle2,
+  Circle,
+  Target,
+  Palette
 } from 'lucide-react'
 import { useGetUserById } from '@/services/admin/manage-user.service'
 import { useOrder } from '@/services/admin/manage-order.service'
-import { useAdminOrderItemWithTasks } from '@/services/admin/admin-task.service'
+import { useAdminOrderItemsWithTasks } from '@/services/admin/admin-task.service'
 import GoongMap from '@/components/Goong/GoongMap'
 import dayjs from 'dayjs'
 import { useState } from 'react'
@@ -38,13 +42,15 @@ interface OrderDetailSidebarProps {
 }
 
 export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSidebarProps) {
-  const { data: user } = useGetUserById(order?.userId ?? '')
-  const { data: orderDetail } = useOrder(order?.id ?? '')
-  const { data: orderDetailItem } = useAdminOrderItemWithTasks(
-    orderDetail?.data?.items && orderDetail.data.items.length > 0 ? orderDetail.data.items[0].id : ''
-  )
+  const { data: user } = useGetUserById(isOpen ? (order?.userId ?? '') : '')
+  const { data: orderDetail } = useOrder(isOpen ? (order?.id ?? '') : '')
+  const [selectedItemForAssign, setSelectedItemForAssign] = useState<string>('')
   const [assignChargeDialogOpen, setAssignChargeDialogOpen] = useState(false)
-  console.log(orderDetailItem)
+
+  // Auto-load data cho tất cả items khi sidebar mở (dynamic, không hardcode)
+  const orderItems = (isOpen && (orderDetail?.data?.items || order?.items)) || []
+  const orderItemIds = orderItems.map((it) => it.id)
+  const orderItemsData = useAdminOrderItemsWithTasks(orderItemIds, isOpen)
 
   if (!isOpen) return null
 
@@ -97,289 +103,473 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
     console.log('Assign charge success - data will be refetched automatically')
   }
 
+  const getAssignButtonProps = (itemId: string, itemIndex: number) => {
+    const itemQuery = orderItemsData[itemIndex]
+    const itemData = itemQuery?.data
+    const hasMilestones = itemData?.milestones && itemData.milestones.length > 0
+
+    return {
+      text: itemQuery?.isLoading
+        ? 'Đang tải...'
+        : hasMilestones
+          ? 'Giao nhiệm vụ cho nhân viên'
+          : 'Chưa thể giao nhiệm vụ',
+      disabled: itemQuery?.isLoading || !hasMilestones,
+      onClick: () => {
+        if (hasMilestones) {
+          setSelectedItemForAssign(itemId)
+          setAssignChargeDialogOpen(true)
+        }
+      }
+    }
+  }
+
+  const getSelectedItemData = () => {
+    const selectedIndex = orderItems.findIndex((item) => item.id === selectedItemForAssign)
+    return selectedIndex >= 0 ? (orderItemsData[selectedIndex]?.data ?? null) : null
+  }
+
   return (
     <>
+      {/* Backdrop overlay - Enhanced with violet theme */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-gradient-to-br from-violet-950/40 via-black/60 to-violet-950/40 backdrop-blur-sm z-40 lg:hidden transition-all duration-500 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
       />
 
+      {/* Sidebar container - Enhanced violet theme */}
       <div
-        className={`fixed top-0 right-0 w-full sm:w-80 lg:w-96 h-full bg-background border-l shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 w-full sm:w-96 lg:w-[28rem] xl:w-[32rem] h-full bg-gradient-to-br from-background via-violet-50/30 to-background dark:from-background dark:via-violet-950/20 dark:to-background border-l-2 border-violet-200 dark:border-violet-800 shadow-2xl shadow-violet-500/10 dark:shadow-violet-900/20 z-50 transform transition-all duration-500 ease-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
-        } flex flex-col`}
+        } flex flex-col backdrop-blur-xl`}
       >
-        <div className='flex-shrink-0 p-4 border-b bg-background'>
-          <div className='flex items-center justify-between mb-4'>
-            <div>
-              <h2 className='text-xl font-bold text-primary'>#{orderDetail?.data.code}</h2>
-              <p className='text-sm text-muted-foreground'>Order Code</p>
-            </div>
-            <Button variant='ghost' size='sm' onClick={onClose} className='h-8 w-8 p-0'>
-              <X className='h-4 w-4' />
-            </Button>
-          </div>
+        {/* Header section - Enhanced with violet gradient */}
+        <div className='flex-shrink-0 relative overflow-hidden'>
+          {/* Background gradient decoration */}
+          <div className='absolute inset-0 bg-gradient-to-r from-violet-600 via-violet-500 to-purple-600 dark:from-violet-700 dark:via-violet-600 dark:to-purple-700' />
+          <div className='absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-white/20 dark:via-white/5 dark:to-white/10' />
+          
+          {/* Content */}
+          <div className='relative p-6 text-white'>
+            <div className='flex items-start justify-between mb-6'>
+              <div className='space-y-1'>
+                <div className='flex items-center space-x-2 mb-2'>
+                  <div className='w-2 h-2 bg-white rounded-full animate-pulse' />
+                  <span className='text-white/80 text-sm font-medium tracking-wide'>ORDER DETAILS</span>
+                </div>
+                <h2 className='text-2xl font-bold text-white drop-shadow-sm'>
+                  #{orderDetail?.data.code}
+                </h2>
+                <p className='text-violet-100 text-sm'>Order Code</p>
+              </div>
 
-          <div className='flex items-center justify-between'>
-            <Badge variant='outline' className={`${getStatusColor(order.status, 'order')} text-xs font-medium`}>
-              {getStatusLabel(order.status, 'order')}
-            </Badge>
-            <span className='text-xs text-muted-foreground'>{formatDate(order.createdAt)}</span>
+              <Button 
+                variant='ghost' 
+                size='sm' 
+                onClick={onClose} 
+                className='h-10 w-10 p-0 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white transition-all duration-200'
+              >
+                <X className='h-5 w-5' />
+              </Button>
+            </div>
+
+            <div className='flex items-center justify-between'>
+              <div className='space-y-1'>
+                <h3 className='text-xl font-bold text-white drop-shadow-sm'>
+                  {orderDetail?.data.items[0].itemType}
+                </h3>
+                <p className='text-violet-100 text-sm'>Order Type</p>
+              </div>
+              <div className='flex items-center space-x-3'>
+                <Badge 
+                  variant='secondary' 
+                  className={`${getStatusColor(order.status, 'order')} text-xs font-medium px-3 py-1 bg-white/90 dark:bg-white/80 text-violet-800 shadow-sm`}
+                >
+                  {getStatusLabel(order.status, 'order')}
+                </Badge>
+                <span className='text-xs text-violet-100 bg-white/10 px-2 py-1 rounded-full backdrop-blur-sm'>
+                  {formatDate(order.createdAt)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className='flex-1 overflow-y-auto px-4 scroll-smooth'>
-          <div className='space-y-4 py-4'>
+        {/* Scrollable content */}
+        <div className='flex-1 overflow-y-auto px-6 scroll-smooth custom-scrollbar'>
+          <div className='space-y-6 py-6'>
+            {/* Customer Information - Enhanced card design */}
             {user?.data ? (
-              <Card>
-                <CardHeader className='pb-1'>
-                  <CardTitle className='text-sm font-medium flex items-center text-muted-foreground'>
-                    <User className='h-4 w-4 mr-2' />
+              <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card'>
+                <CardHeader className='pb-4'>
+                  <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
+                    <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
+                      <User className='h-4 w-4 text-violet-600 dark:text-violet-400' />
+                    </div>
                     Customer Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='space-y-3'>
-                  <div className='flex items-center space-x-3'>
-                    <Avatar className='h-10 w-10'>
-                      <AvatarFallback className='text-sm'>
+                <CardContent className='space-y-4'>
+                  <div className='flex items-center space-x-4'>
+                    <Avatar className='h-12 w-12 ring-2 ring-violet-200 dark:ring-violet-700'>
+                      <AvatarFallback className='text-sm bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-300 font-semibold'>
                         {user.data.fullName?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
                       <AvatarImage src={user.data.profilePicture} />
                     </Avatar>
                     <div className='flex-1 min-w-0'>
-                      <h3 className='font-medium text-sm truncate'>{user.data.fullName}</h3>
-                      <p className='text-xs text-muted-foreground flex items-center mt-1'>
-                        <Mail className='h-3 w-3 mr-1' />
+                      <h3 className='font-semibold text-base text-foreground truncate'>{user.data.fullName}</h3>
+                      <p className='text-sm text-muted-foreground flex items-center mt-1'>
+                        <Mail className='h-3 w-3 mr-2 text-violet-500' />
                         {user.data.userEmail}
                       </p>
                     </div>
                   </div>
-                  {user.data.phoneNumber && (
-                    <div className='flex items-center text-xs text-muted-foreground'>
-                      <Phone className='h-3 w-3 mr-2' />
-                      {user.data.phoneNumber}
-                    </div>
-                  )}
-                  {user.data.dateOfBirth && (
-                    <div className='flex items-center text-xs text-muted-foreground'>
-                      <Calendar className='h-3 w-3 mr-2' />
-                      {formatDate(user.data.dateOfBirth)}
+                  
+                  <div className='grid grid-cols-1 gap-3 pt-2'>
+                    {user.data.phoneNumber && (
+                      <div className='flex items-center text-sm text-muted-foreground bg-violet-50/50 dark:bg-violet-950/20 p-3 rounded-lg'>
+                        <Phone className='h-4 w-4 mr-3 text-violet-500' />
+                        <span>{user.data.phoneNumber}</span>
+                      </div>
+                    )}
+                    {user.data.dateOfBirth && (
+                      <div className='flex items-center text-sm text-muted-foreground bg-violet-50/50 dark:bg-violet-950/20 p-3 rounded-lg'>
+                        <Calendar className='h-4 w-4 mr-3 text-violet-500' />
+                        <span>{formatDate(user.data.dateOfBirth)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {orderDetail?.data?.measurementDiary && (
+                    <div className='border-t border-violet-200 dark:border-violet-800 pt-4 mt-4'>
+                      <div className='flex items-center text-violet-700 dark:text-violet-300 mb-3'>
+                        <Ruler className='h-4 w-4 mr-2' />
+                        <span className='text-sm font-semibold'>Measurement Diary</span>
+                      </div>
+                      <div className='grid grid-cols-2 gap-3 text-sm'>
+                        <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
+                          <span className='text-muted-foreground block text-xs'>Tuổi</span>
+                          <span className='font-semibold text-violet-700 dark:text-violet-300'>{orderDetail.data.measurementDiary.age}</span>
+                        </div>
+                        <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
+                          <span className='text-muted-foreground block text-xs'>Chiều cao</span>
+                          <span className='font-semibold text-violet-700 dark:text-violet-300'>{orderDetail.data.measurementDiary.height} cm</span>
+                        </div>
+                        <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
+                          <span className='text-muted-foreground block text-xs'>Cân nặng</span>
+                          <span className='font-semibold text-violet-700 dark:text-violet-300'>{orderDetail.data.measurementDiary.weight} kg</span>
+                        </div>
+                        <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
+                          <span className='text-muted-foreground block text-xs'>3 vòng</span>
+                          <span className='font-semibold text-violet-700 dark:text-violet-300'>
+                            {orderDetail.data.measurementDiary.bust}/{orderDetail.data.measurementDiary.waist}/{orderDetail.data.measurementDiary.hip}
+                          </span>
+                        </div>
+                        <div className='col-span-2 bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
+                          <span className='text-muted-foreground block text-xs'>Ngày đầu kỳ kinh cuối</span>
+                          <span className='font-semibold text-violet-700 dark:text-violet-300'>
+                            {formatDate(orderDetail.data.measurementDiary.firstDateOfLastPeriod)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
             ) : (
-              <Card>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='text-sm font-medium flex items-center text-muted-foreground'>
-                    <User className='h-4 w-4 mr-2' />
+              <Card className='border-violet-200 dark:border-violet-800 shadow-lg'>
+                <CardHeader className='pb-4'>
+                  <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
+                    <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
+                      <User className='h-4 w-4 text-violet-600 dark:text-violet-400' />
+                    </div>
                     Customer Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='flex items-center space-x-3'>
-                    <div className='w-10 h-10 bg-muted rounded-full animate-pulse'></div>
-                    <div className='flex-1 space-y-2'>
-                      <div className='h-4 bg-muted rounded animate-pulse'></div>
-                      <div className='h-3 bg-muted rounded w-2/3 animate-pulse'></div>
+                  <div className='flex items-center space-x-4'>
+                    <div className='w-12 h-12 bg-violet-100 dark:bg-violet-900/50 rounded-full animate-pulse'></div>
+                    <div className='flex-1 space-y-3'>
+                      <div className='h-4 bg-violet-100 dark:bg-violet-900/50 rounded animate-pulse'></div>
+                      <div className='h-3 bg-violet-100 dark:bg-violet-900/50 rounded w-2/3 animate-pulse'></div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            <Card>
-              <CardHeader className='pb-3'>
-                <CardTitle className='text-sm font-medium flex items-center justify-between text-muted-foreground'>
+            {/* Measurements List - Enhanced design */}
+            {orderDetail?.data?.measurementDiary?.measurements &&
+              orderDetail.data.measurementDiary.measurements.length > 0 && (
+                <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
+                  <CardHeader className='pb-4'>
+                    <CardTitle className='text-base font-semibold flex items-center justify-between text-violet-700 dark:text-violet-300'>
+                      <div className='flex items-center'>
+                        <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
+                          <Ruler className='h-4 w-4 text-violet-600 dark:text-violet-400' />
+                        </div>
+                        Measurements History
+                      </div>
+                      <Badge variant='secondary' className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'>
+                        {orderDetail.data.measurementDiary.measurements.length} records
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                    {orderDetail.data.measurementDiary.measurements
+                      .slice()
+                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                      .map((m, index) => (
+                        <div 
+                          key={m.id} 
+                          className={`border-2 rounded-xl p-4 transition-all duration-200 ${
+                            index === 0 
+                              ? 'border-violet-300 dark:border-violet-600 bg-gradient-to-br from-violet-50 via-white to-violet-50/50 dark:from-violet-950/30 dark:via-card dark:to-violet-950/20 shadow-md' 
+                              : 'border-violet-100 dark:border-violet-800 bg-card hover:border-violet-200 dark:hover:border-violet-700'
+                          }`}
+                        >
+                          <div className='flex items-center justify-between mb-3'>
+                            <div className='flex items-center space-x-2'>
+                              {index === 0 && (
+                                <div className='w-2 h-2 bg-violet-500 rounded-full animate-pulse' />
+                              )}
+                              <span className='text-xs font-medium text-violet-600 dark:text-violet-400'>
+                                {index === 0 ? 'Latest Update' : 'Previous Record'}
+                              </span>
+                            </div>
+                            <div className='flex items-center space-x-2'>
+                              {m.isLocked && (
+                                <Badge className='text-[10px] bg-violet-500 hover:bg-violet-600'>Locked</Badge>
+                              )}
+                              <span className='text-xs text-muted-foreground'>
+                                {formatDate(m.updatedAt || m.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className='grid grid-cols-3 gap-3 text-xs'>
+                            {[
+                              { label: 'Bust', value: m.bust },
+                              { label: 'Waist', value: m.waist },
+                              { label: 'Hip', value: m.hip },
+                              { label: 'Shoulder', value: m.shoulder },
+                              { label: 'Neck', value: m.neck },
+                              { label: 'Dress', value: m.dressLength },
+                              { label: 'Chest around', value: m.chestAround },
+                              { label: 'Sleeve', value: m.sleeveLength },
+                              { label: 'Shoulder width', value: m.shoulderWidth },
+                              { label: 'Leg length', value: m.legLength },
+                              { label: 'Pants waist', value: m.pantsWaist },
+                              { label: 'Stomach', value: m.stomach },
+                              { label: 'Thigh', value: m.thigh },
+                              { label: 'Tuần thai', value: m.weekOfPregnancy },
+                              { label: 'Weight', value: m.weight }
+                            ].map((item, idx) => (
+                              <div key={idx} className='bg-violet-50/50 dark:bg-violet-950/20 p-2 rounded-lg'>
+                                <div className='text-muted-foreground text-[10px] uppercase tracking-wide mb-1'>
+                                  {item.label}
+                                </div>
+                                <div className='font-semibold text-violet-700 dark:text-violet-300'>
+                                  {item.value}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </CardContent>
+                </Card>
+              )}
+
+            {/* Order Items - Enhanced design */}
+            <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
+              <CardHeader className='pb-4'>
+                <CardTitle className='text-base font-semibold flex items-center justify-between text-violet-700 dark:text-violet-300'>
                   <div className='flex items-center'>
-                    <ShoppingBag className='h-4 w-4 mr-2' />
+                    <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
+                      <ShoppingBag className='h-4 w-4 text-violet-600 dark:text-violet-400' />
+                    </div>
                     Order Items
                   </div>
-                  <div className='flex items-center space-x-2'>
-                    <Badge variant='secondary' className='text-xs'>
-                      {orderDetail?.data?.items?.length || order.items?.length || 0} items
-                    </Badge>
-                    {orderDetail?.data?.items?.[0]?.itemType === 'DESIGN_REQUEST' && orderDetailItem && (
-                      <Button
-                        size='sm'
-                        variant='outline'
-                        onClick={() => setAssignChargeDialogOpen(true)}
-                        className='h-6 px-2 text-xs'
-                      >
-                        <UserCheck className='h-3 w-3 mr-1' />
-                        Assign
-                      </Button>
-                    )}
-                  </div>
+                  <Badge variant='secondary' className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'>
+                    {orderDetail?.data?.items?.length || order.items?.length || 0} items
+                  </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent className='space-y-4'>
+              <CardContent className='space-y-5'>
                 {(orderDetail?.data?.items || order.items || []).length > 0 ? (
                   (orderDetail?.data?.items || order.items || []).map((item, index) => {
                     if (item.itemType === 'DESIGN_REQUEST') {
                       return (
                         <div
                           key={index}
-                          className='border border-primary/20 bg-gradient-to-br from-primary/5 via-primary/3 to-accent/10 rounded-xl overflow-hidden shadow-sm'
+                          className='border-2 border-violet-200 dark:border-violet-700 bg-gradient-to-br from-violet-50 via-white to-purple-50/50 dark:from-violet-950/20 dark:via-card dark:to-purple-950/10 rounded-2xl overflow-hidden shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'
                         >
-                          <div className='px-4 py-3 bg-primary text-primary-foreground'>
+                          {/* Header with gradient */}
+                          <div className='px-5 py-4 bg-gradient-to-r from-violet-600 via-violet-500 to-purple-600 text-white'>
                             <div className='flex items-center justify-between'>
-                              <div className='flex items-center space-x-2'>
-                                <div className='w-6 h-6 bg-white/20 rounded-full flex items-center justify-center'>
-                                  <svg className='w-3 h-3' fill='currentColor' viewBox='0 0 20 20'>
-                                    <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
-                                  </svg>
-                                </div>
-                                <span className='font-medium text-sm'>Design Request</span>
-                              </div>
                               <div className='flex items-center space-x-3'>
-                                <span className='text-lg font-bold'>{formatCurrency(item.price)}</span>
-                                <div className='w-7 h-7 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm'>
-                                  <span className='text-xs font-bold'>{item.quantity}</span>
+                                <div className='w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm'>
+                                  <Palette className='w-4 h-4' />
+                                </div>
+                                <span className='font-semibold text-sm'>Design Request</span>
+                              </div>
+                              <div className='flex items-center space-x-4'>
+                                <span className='text-xl font-bold'>{formatCurrency(item.price)}</span>
+                                <div className='w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm'>
+                                  <span className='text-sm font-bold'>{item.quantity}</span>
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          <div className='p-4 space-y-4'>
+                          {/* Content */}
+                          <div className='p-5 space-y-4'>
                             {item.designRequest?.description && (
-                              <div className='bg-card/80 backdrop-blur-sm border border-border rounded-lg p-3 shadow-sm'>
-                                <div className='flex items-center space-x-2 mb-2'>
-                                  <div className='w-4 h-4 bg-primary rounded-full flex items-center justify-center'>
-                                    <svg
-                                      className='w-2 h-2 text-primary-foreground'
-                                      fill='currentColor'
-                                      viewBox='0 0 20 20'
-                                    >
-                                      <path
-                                        fillRule='evenodd'
-                                        d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
-                                        clipRule='evenodd'
-                                      />
+                              <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
+                                <div className='flex items-center space-x-2 mb-3'>
+                                  <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
+                                    <svg className='w-3 h-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
+                                      <path fillRule='evenodd' d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z' clipRule='evenodd' />
                                     </svg>
                                   </div>
-                                  <span className='text-sm font-medium text-foreground'>Description</span>
+                                  <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>Mô tả thiết kế</span>
                                 </div>
-                                <p className='text-sm text-muted-foreground leading-relaxed pl-6'>
+                                <p className='text-sm text-muted-foreground leading-relaxed pl-7'>
                                   {item.designRequest.description}
                                 </p>
                               </div>
                             )}
 
                             {item.designRequest?.images && item.designRequest.images.length > 0 && (
-                              <div className='bg-card/80 backdrop-blur-sm border border-border rounded-lg p-3 shadow-sm'>
-                                <div className='flex items-center space-x-2 mb-3'>
-                                  <div className='w-4 h-4 bg-primary rounded-full flex items-center justify-center'>
-                                    <svg
-                                      className='w-2 h-2 text-primary-foreground'
-                                      fill='currentColor'
-                                      viewBox='0 0 20 20'
-                                    >
-                                      <path
-                                        fillRule='evenodd'
-                                        d='M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z'
-                                        clipRule='evenodd'
-                                      />
+                              <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
+                                <div className='flex items-center space-x-2 mb-4'>
+                                  <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
+                                    <svg className='w-3 h-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
+                                      <path fillRule='evenodd' d='M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z' clipRule='evenodd' />
                                     </svg>
                                   </div>
-                                  <span className='text-sm font-medium text-foreground'>
+                                  <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
                                     Hình ảnh tham khảo ({item.designRequest.images.length})
                                   </span>
                                 </div>
-                                <div className='grid grid-cols-4 gap-2 pl-6'>
+                                <div className='grid grid-cols-4 gap-3 pl-7'>
                                   {item.designRequest.images.map((imageUrl: string, imgIndex: number) => (
                                     <ProductImageViewer
                                       key={imgIndex}
                                       src={imageUrl}
                                       alt={`Design request image ${imgIndex + 1}`}
-                                      className='aspect-square'
+                                      className='aspect-square rounded-lg border-2 border-violet-200 dark:border-violet-700'
                                     />
                                   ))}
                                 </div>
                               </div>
                             )}
 
-                            {/* Assign Charge Button for Design Request */}
-                            <div className='pt-2 border-t border-border'>
-                              <Button
-                                size='sm'
-                                onClick={() => setAssignChargeDialogOpen(true)}
-                                className='w-full'
-                                disabled={!orderDetailItem}
-                              >
-                                <UserCheck className='h-4 w-4 mr-2' />
-                                Giao việc cho Milestone
-                              </Button>
+                            {/* Assign button */}
+                            <div className='pt-3 border-t border-violet-200 dark:border-violet-700'>
+                              {(() => {
+                                const buttonProps = getAssignButtonProps(item.id, index)
+                                return (
+                                  <Button
+                                    size='sm'
+                                    onClick={buttonProps.onClick}
+                                    className='w-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25'
+                                    disabled={buttonProps.disabled}
+                                  >
+                                    <UserCheck className='h-4 w-4 mr-2' />
+                                    {buttonProps.text}
+                                  </Button>
+                                )
+                              })()}
                             </div>
                           </div>
                         </div>
                       )
                     } else {
                       return (
-                        <div key={index} className='space-y-3'>
-                          <div className='flex items-center space-x-3 p-3 bg-muted/30 rounded-lg'>
+                        <div key={index} className='space-y-4'>
+                          <div className='flex items-center space-x-4 p-4 bg-gradient-to-r from-violet-50 to-purple-50/50 dark:from-violet-950/30 dark:to-purple-950/20 rounded-xl border border-violet-200 dark:border-violet-700'>
                             <ProductImageViewer
                               src={item.preset?.images?.[0] || item.maternityDressDetail?.images?.[0] || ''}
                               alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
+                              className='w-16 h-16 rounded-lg border-2 border-violet-200 dark:border-violet-700'
                             />
-                            <div className='flex-1 min-w-0'>
-                              <h4 className='font-medium text-sm truncate'>{item.itemType}</h4>
+                            <div className='flex-1 min-w-0 space-y-1'>
+                              <h4 className='font-semibold text-sm text-foreground truncate'>{item.preset.name}</h4>
                               {item.preset?.styleName && (
-                                <p className='text-xs text-muted-foreground truncate'>{item.preset.styleName}</p>
+                                <p className='text-xs text-muted-foreground truncate flex items-center'>
+                                  <span className='w-1 h-1 bg-violet-400 rounded-full mr-2'></span>
+                                  Style: {item.preset.styleName}
+                                </p>
                               )}
                               {item.maternityDressDetail?.name && (
-                                <p className='text-xs text-muted-foreground truncate'>
+                                <p className='text-xs text-muted-foreground truncate flex items-center'>
+                                  <span className='w-1 h-1 bg-violet-400 rounded-full mr-2'></span>
                                   {item.maternityDressDetail.name}
                                 </p>
                               )}
-                              <p className='text-sm font-semibold text-primary'>{formatCurrency(item.price)}</p>
+                              <p className='text-sm font-bold text-violet-600 dark:text-violet-400'>
+                                {formatCurrency(item.price)}
+                              </p>
                             </div>
                             <div className='text-center'>
-                              <div className='w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center'>
-                                <span className='text-xs font-bold text-primary'>{item.quantity}</span>
+                              <div className='w-10 h-10 bg-violet-100 dark:bg-violet-900/50 rounded-xl flex items-center justify-center border border-violet-200 dark:border-violet-700'>
+                                <span className='text-sm font-bold text-violet-600 dark:text-violet-400'>{item.quantity}</span>
                               </div>
                             </div>
                           </div>
 
-                          {/* Assign Charge Button for PRESET/READY_TO_BUY items */}
-                          <div className='pt-2 border-t border-border'>
-                            <Button
-                              size='sm'
-                              onClick={() => setAssignChargeDialogOpen(true)}
-                              className='w-full'
-                              disabled={!orderDetailItem}
-                            >
-                              <UserCheck className='h-4 w-4 mr-2' />
-                              Giao việc cho Milestone
-                            </Button>
+                          {/* Assign button */}
+                          <div className='pt-2 border-t border-violet-200 dark:border-violet-700'>
+                            {(() => {
+                              const buttonProps = getAssignButtonProps(item.id, index)
+                              return (
+                                <Button
+                                  size='sm'
+                                  onClick={buttonProps.onClick}
+                                  className='w-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25'
+                                  disabled={buttonProps.disabled}
+                                >
+                                  <UserCheck className='h-4 w-4 mr-2' />
+                                  {buttonProps.text}
+                                </Button>
+                              )
+                            })()}
                           </div>
                         </div>
                       )
                     }
                   })
                 ) : (
-                  <div className='text-center py-8 text-muted-foreground'>
-                    <ShoppingBag className='h-12 w-12 mx-auto mb-4 opacity-20' />
-                    <p className='text-sm'>No items in order</p>
+                  <div className='text-center py-12 text-muted-foreground'>
+                    <div className='w-16 h-16 bg-violet-100 dark:bg-violet-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4'>
+                      <ShoppingBag className='h-8 w-8 text-violet-400' />
+                    </div>
+                    <p className='text-sm font-medium'>No items in order</p>
+                    <p className='text-xs text-muted-foreground/60 mt-1'>Order items will appear here</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
+            {/* Shipping Address - Enhanced with map */}
             {orderDetail?.data?.address && orderDetail?.data?.address !== null && (
-              <Card>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='text-sm font-medium flex items-center text-muted-foreground'>
-                    <MapPin className='h-4 w-4 mr-2' />
+              <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
+                <CardHeader className='pb-4'>
+                  <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
+                    <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
+                      <MapPin className='h-4 w-4 text-violet-600 dark:text-violet-400' />
+                    </div>
                     Shipping Address
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='space-y-3'>
-                  <div className='text-sm space-y-1'>
-                    <p className='font-medium'>{orderDetail?.data?.address.street}</p>
-                    <p className='text-muted-foreground'>
+                <CardContent className='space-y-4'>
+                  <div className='bg-violet-50/50 dark:bg-violet-950/20 p-4 rounded-xl border border-violet-200 dark:border-violet-700'>
+                    <p className='font-semibold text-foreground mb-2'>{orderDetail?.data?.address.street}</p>
+                    <p className='text-sm text-muted-foreground'>
                       {[
                         orderDetail?.data?.address.ward,
                         orderDetail?.data?.address.district,
@@ -390,105 +580,105 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                     </p>
                   </div>
 
-                  <div className='rounded-lg overflow-hidden border'>
+                  <div className='rounded-xl overflow-hidden border-2 border-violet-200 dark:border-violet-700 shadow-md'>
                     <GoongMap
                       center={[orderDetail?.data?.address.longitude, orderDetail?.data?.address.latitude]}
                       zoom={16}
-                      className='h-32'
+                      className='h-40'
                     />
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            <Card>
-              <CardHeader className='pb-3'>
-                <CardTitle className='text-sm font-medium flex items-center text-muted-foreground'>
-                  <CreditCard className='h-4 w-4 mr-2' />
+            {/* Payment Details - Enhanced design */}
+            <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
+              <CardHeader className='pb-4'>
+                <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
+                  <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
+                    <CreditCard className='h-4 w-4 text-violet-600 dark:text-violet-400' />
+                  </div>
                   Payment Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className='space-y-3'>
-                <div className='space-y-2 text-sm'>
+              <CardContent className='space-y-4'>
+                <div className='space-y-3 text-sm'>
                   {order.subTotalAmount && (
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                       <span className='text-muted-foreground'>Product Price</span>
-                      <span>{formatCurrency(order.subTotalAmount)}</span>
+                      <span className='font-semibold'>{formatCurrency(order.subTotalAmount)}</span>
                     </div>
                   )}
                   {order.discountSubtotal !== 0 && order.discountSubtotal !== undefined && (
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg'>
                       <span className='text-muted-foreground'>Discount</span>
-                      <span className='text-green-600'>-{formatCurrency(order.discountSubtotal)}</span>
+                      <span className='text-green-600 font-semibold'>-{formatCurrency(order.discountSubtotal)}</span>
                     </div>
                   )}
-                  <Separator />
+                  
+                  <Separator className='bg-violet-200 dark:bg-violet-700' />
+                  
                   {order.depositSubtotal !== 0 && order.depositSubtotal !== undefined && (
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                       <span className='text-muted-foreground'>Deposit</span>
-                      <span>{formatCurrency(order.depositSubtotal)}</span>
+                      <span className='font-semibold'>{formatCurrency(order.depositSubtotal)}</span>
                     </div>
                   )}
-                  {order.shippingFee !== undefined && order.shippingFee !== 0 ? (
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Shipping Fee</span>
-                      <span>{formatCurrency(order.shippingFee)}</span>
-                    </div>
-                  ) : (
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Shipping Fee</span>
-                      <span>0</span>
-                    </div>
-                  )}
-                  {order.serviceAmount !== 0 && order.serviceAmount !== undefined ? (
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Service Fee</span>
-                      <span>{formatCurrency(order?.serviceAmount)}</span>
-                    </div>
-                  ) : (
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Service Fee</span>
-                      <span>0</span>
-                    </div>
-                  )}
-                  <Separator />
-                  <div className='flex justify-between font-semibold text-base'>
-                    <span>Total</span>
-                    <span className='text-primary'>{formatCurrency(order.totalAmount || 0)}</span>
+                  <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
+                    <span className='text-muted-foreground'>Shipping Fee</span>
+                    <span className='font-semibold'>
+                      {order.shippingFee !== undefined && order.shippingFee !== 0 
+                        ? formatCurrency(order.shippingFee) 
+                        : '0 ₫'}
+                    </span>
                   </div>
-                  {order.totalPaid !== undefined && order.totalPaid !== 0 ? (
-                    <div className='flex justify-between text-sm'>
-                      <span className='text-muted-foreground'>Paid</span>
-                      <span className='text-green-600 font-medium'>{formatCurrency(order.totalPaid)}</span>
+                  <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
+                    <span className='text-muted-foreground'>Service Fee</span>
+                    <span className='font-semibold'>
+                      {order.serviceAmount !== 0 && order.serviceAmount !== undefined 
+                        ? formatCurrency(order?.serviceAmount) 
+                        : '0 ₫'}
+                    </span>
+                  </div>
+                  
+                  <Separator className='bg-violet-200 dark:bg-violet-700' />
+                  
+                  <div className='flex justify-between items-center p-4 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl border border-violet-200 dark:border-violet-700'>
+                    <span className='font-bold text-lg text-violet-700 dark:text-violet-300'>Total</span>
+                    <span className='text-xl font-bold text-violet-600 dark:text-violet-400'>
+                      {formatCurrency(order.totalAmount || 0)}
+                    </span>
+                  </div>
+                  
+                  <div className='grid grid-cols-2 gap-3'>
+                    <div className='p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800'>
+                      <span className='text-xs text-muted-foreground block mb-1'>Paid</span>
+                      <span className='text-green-600 font-bold text-lg'>
+                        {order.totalPaid !== undefined && order.totalPaid !== 0 
+                          ? formatCurrency(order.totalPaid) 
+                          : '0 ₫'}
+                      </span>
                     </div>
-                  ) : (
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Paid</span>
-                      <span>0</span>
+                    <div className='p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800'>
+                      <span className='text-xs text-muted-foreground block mb-1'>Remaining</span>
+                      <span className='text-orange-600 font-bold text-lg'>
+                        {order.remainingBalance !== undefined && order.remainingBalance !== 0 
+                          ? formatCurrency(order.remainingBalance) 
+                          : '0 ₫'}
+                      </span>
                     </div>
-                  )}
-                  {order.remainingBalance !== undefined && order.remainingBalance !== 0 ? (
-                    <div className='flex justify-between text-sm'>
-                      <span className='text-muted-foreground'>Remaining</span>
-                      <span className='text-orange-600 font-medium'>{formatCurrency(order.remainingBalance)}</span>
-                    </div>
-                  ) : (
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Remaining</span>
-                      <span>0</span>
-                    </div>
-                  )}
+                  </div>
                 </div>
 
-                <div className='flex items-center justify-between pt-2'>
+                <div className='flex items-center justify-between pt-3 border-t border-violet-200 dark:border-violet-700'>
                   <Badge
                     variant='outline'
-                    className={`${getStatusColor(order.paymentStatus || '', 'payment')} text-xs`}
+                    className={`${getStatusColor(order.paymentStatus || '', 'payment')} text-xs px-3 py-1`}
                   >
                     {getStatusLabel(order.paymentStatus || '', 'payment')}
                   </Badge>
                   {order.paymentMethod !== undefined && (
-                    <span className='text-xs text-muted-foreground'>
+                    <span className='text-xs text-muted-foreground bg-violet-50 dark:bg-violet-950/30 px-3 py-1 rounded-full'>
                       {order.paymentMethod === 'CASH' ? 'Cash' : 'Bank Transfer'}
                     </span>
                   )}
@@ -496,43 +686,78 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className='pb-3'>
-                <CardTitle className='text-sm font-medium flex items-center text-muted-foreground'>
-                  <Clock className='h-4 w-4 mr-2' />
-                  Order Status
+            {/* Order Status Timeline - Enhanced design */}
+            <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
+              <CardHeader className='pb-4'>
+                <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
+                  <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
+                    <Clock className='h-4 w-4 text-violet-600 dark:text-violet-400' />
+                  </div>
+                  Order Status Timeline
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='space-y-3'>
+                <div className='space-y-4'>
                   {statusTimeline.map((item, index) => {
                     const Icon = item.icon
+                    const isLast = index === statusTimeline.length - 1
                     return (
-                      <div key={index} className='flex items-start space-x-3'>
+                      <div key={index} className='flex items-start space-x-4 relative'>
+                        {/* Timeline line */}
+                        {!isLast && (
+                          <div 
+                            className={`absolute left-4 top-12 w-0.5 h-8 ${
+                              item.active 
+                                ? 'bg-gradient-to-b from-violet-500 to-violet-300' 
+                                : 'bg-violet-200 dark:bg-violet-800'
+                            }`} 
+                          />
+                        )}
+                        
+                        {/* Status icon */}
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center border-2 transition-all duration-300 ${
                             item.current
-                              ? 'bg-primary border-primary text-primary-foreground'
+                              ? 'bg-violet-600 border-violet-600 text-white shadow-lg shadow-violet-500/30 scale-110'
                               : item.active
-                                ? 'bg-primary/10 border-primary text-primary'
-                                : 'bg-muted border-muted-foreground/20 text-muted-foreground'
+                                ? 'bg-violet-100 dark:bg-violet-900/50 border-violet-500 text-violet-600 dark:text-violet-400'
+                                : 'bg-violet-50 dark:bg-violet-950/20 border-violet-200 dark:border-violet-800 text-violet-300 dark:text-violet-600'
                           }`}
                         >
-                          <Icon className='h-3 w-3' />
-                        </div>
-                        <div className='flex-1 pb-3'>
-                          <p
-                            className={`text-sm font-medium ${
-                              item.current ? 'text-primary' : item.active ? 'text-foreground' : 'text-muted-foreground'
-                            }`}
-                          >
-                            {item.label}
-                          </p>
-                          {item.current && (
-                            <p className='text-xs text-muted-foreground mt-1'>
-                              Updated at {formatDate(order.updatedAt)}
-                            </p>
+                          {item.current ? (
+                            <CheckCircle2 className='h-4 w-4' />
+                          ) : item.active ? (
+                            <Circle className='h-3 w-3 fill-current' />
+                          ) : (
+                            <Icon className='h-3 w-3' />
                           )}
+                        </div>
+                        
+                        {/* Status content */}
+                        <div className='flex-1 pb-4'>
+                          <div className={`p-3 rounded-xl border transition-all duration-200 ${
+                            item.current
+                              ? 'bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border-violet-300 dark:border-violet-600'
+                              : item.active
+                                ? 'bg-violet-50/50 dark:bg-violet-950/10 border-violet-200 dark:border-violet-700'
+                                : 'bg-muted/30 border-muted-foreground/10'
+                          }`}>
+                            <p className={`text-sm font-semibold ${
+                              item.current 
+                                ? 'text-violet-700 dark:text-violet-300' 
+                                : item.active 
+                                  ? 'text-foreground' 
+                                  : 'text-muted-foreground'
+                            }`}>
+                              {item.label}
+                            </p>
+                            {item.current && (
+                              <p className='text-xs text-violet-600 dark:text-violet-400 mt-1 flex items-center'>
+                                <Target className='h-3 w-3 mr-1' />
+                                Updated at {formatDate(order.updatedAt)}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )
@@ -543,29 +768,73 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
           </div>
         </div>
 
-        <div className='flex-shrink-0 p-4 border-t bg-background space-y-3'>
-          <Button className='w-full' size='sm'>
-            <Package className='h-4 w-4 mr-2' />
-            Update Status
-          </Button>
-          <div className='flex space-x-2'>
-            <Button variant='outline' size='sm' className='flex-1'>
-              <Edit className='h-4 w-4 mr-2' />
-              Edit
+        {/* Action buttons footer - Enhanced violet theme */}
+        <div className='flex-shrink-0 relative overflow-hidden'>
+          {/* Background gradient */}
+          <div className='absolute inset-0 bg-gradient-to-r from-violet-50 via-white to-violet-50 dark:from-violet-950/30 dark:via-background dark:to-violet-950/30' />
+          
+          {/* Content */}
+          <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800 space-y-4'>
+            <Button className='w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25 transition-all duration-200' size='sm'>
+              <Package className='h-4 w-4 mr-2' />
+              Update Status
             </Button>
-            <Button variant='outline' size='sm' className='flex-1'>
-              <Printer className='h-4 w-4 mr-2' />
-              Print Invoice
-            </Button>
+            <div className='grid grid-cols-2 gap-3'>
+              <Button 
+                variant='outline' 
+                size='sm' 
+                className='border-violet-300 dark:border-violet-600 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
+              >
+                <Edit className='h-4 w-4 mr-2' />
+                Edit
+              </Button>
+              <Button 
+                variant='outline' 
+                size='sm' 
+                className='border-violet-300 dark:border-violet-600 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
+              >
+                <Printer className='h-4 w-4 mr-2' />
+                Print
+              </Button>
+            </div>
           </div>
         </div>
       </div>
+      
       <OrderAssignDialog
         open={assignChargeDialogOpen}
         onOpenChange={setAssignChargeDialogOpen}
-        orderItem={orderDetailItem || null}
+        orderItem={getSelectedItemData() || null}
         onSuccess={handleAssignChargeSuccess}
       />
+      
+      {/* Custom scrollbar styles */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgb(245 243 255 / 0.3);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgb(139 92 246 / 0.4);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgb(139 92 246 / 0.6);
+        }
+        @media (prefers-color-scheme: dark) {
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgb(55 48 163 / 0.1);
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgb(139 92 246 / 0.3);
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgb(139 92 246 / 0.5);
+          }
+        }
+      `}</style>
     </>
   )
 }

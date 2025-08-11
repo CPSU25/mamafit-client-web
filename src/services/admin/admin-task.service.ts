@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useQueries } from '@tanstack/react-query'
 import adminTaskAPI from '@/apis/admin-task.api'
 import {
   AdminOrderItemWithTasks,
@@ -14,20 +14,23 @@ const adminTaskQueryKeys = {
   orderItem: (id: string) => [...adminTaskQueryKeys.orderItems(), id] as const
 }
 
-export const useAdminOrderItemWithTasks = (orderItemId: string) => {
-  return useQuery<AdminOrderItemWithTasks>({
-    queryKey: adminTaskQueryKeys.orderItem(orderItemId),
-    queryFn: async () => {
-      const response = await adminTaskAPI.getOrderItemWithTasks(orderItemId)
-
-      if (response.data.statusCode === 200) {
-        return response.data.data
-      }
-      throw new Error(response.data.message || 'Failed to fetch admin order item tasks')
-    },
-    enabled: !!orderItemId,
-    staleTime: 5 * 60 * 1000 // 5 phút
+export const useAdminOrderItemsWithTasks = (orderItemIds: string[], enabled: boolean) => {
+  const queries = useQueries({
+    queries: orderItemIds.map((id) => ({
+      queryKey: adminTaskQueryKeys.orderItem(id),
+      queryFn: async () => {
+        const response = await adminTaskAPI.getOrderItemWithTasks(id)
+        if (response.data.statusCode === 200) {
+          return response.data.data as AdminOrderItemWithTasks
+        }
+        throw new Error(response.data.message || 'Failed to fetch admin order item tasks')
+      },
+      enabled: enabled && !!id,
+      staleTime: 5 * 60 * 1000
+    }))
   })
+
+  return queries
 }
 
 export const useAdminAssignCharge = () => {

@@ -3,6 +3,7 @@
 // Mô tả: Types cho manage order - đã tách riêng khỏi admin task types
 // =====================================================================
 
+import { MeasurementType } from '@/pages/staff/manage-task/tasks/types'
 import { PresetType } from './designer.types'
 import { AddressType } from './global.types'
 import { MaternityDressDetailType } from './inventory.type'
@@ -100,8 +101,29 @@ export interface OrderItemType {
 export interface OrderById extends OrderType {
   items: Array<OrderItemType>
   address?: AddressType
+  measurementDiary: MeasurementDiaryType
 }
 
+export interface MeasurementDiaryType {
+  id: string 
+  userId: string 
+  name: string 
+  age: number
+  height: number
+  weight: number
+  bust: number
+  waist: number
+  hip: number
+  firstDateOfLastPeriod: string
+  averageMenstrualCycle: number
+  numberOfPregnancy: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
+  measurements: MeasurementType[]
+}
 /**
  * Basic Order Item by ID - không có chi tiết milestone tasks
  */
