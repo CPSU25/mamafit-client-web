@@ -10,7 +10,8 @@ import {
   ManageUserPage,
   ManageVoucherPage,
   WarrantyManagementSystem,
-  OrderDetailPage
+  OrderDetailPage,
+  SystemConfigPage
 } from '@/pages/admin'
 import { HomePage } from '@/pages/guest'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
@@ -63,7 +64,7 @@ export const router = createBrowserRouter([
           { path: 'manage-voucher', element: <ManageVoucherPage /> },
           { path: 'manage-transaction', element: <div>Transactions Page</div> },
           { path: 'manage-warranty', element: <WarrantyManagementSystem /> },
-          { path: 'settings', element: <div>System Settings Page</div> }
+          { path: 'settings', element: <SystemConfigPage /> }
         ]
       },
 
