@@ -1,20 +1,20 @@
 // order-columns.tsx - Enhanced Order Table Columns
 import { ManageUserType } from '@/@types/admin.types'
-import { OrderType } from '@/@types/manage-order.types'
+import { BranchOrderType } from '@/@types/branch-order.types'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ColumnDef } from '@tanstack/react-table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getStatusColor, getStatusLabel } from '../data/data'
-import { OrderTableRowAction } from './order-row-action'
+import { BranchOrderTableRowAction } from './branch-order-row-action'
 import { format } from 'date-fns'
 
-interface OrderColumnsProps {
+interface BranchOrderColumnsProps {
   user?: ManageUserType[]
 }
 
-export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): ColumnDef<OrderType>[] => [
+export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps = {}): ColumnDef<BranchOrderType>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -61,7 +61,7 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
     id: 'customerInfor',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Khách hàng' />,
     cell: ({ row }) => {
-      const userId = row.getValue('customerInfor') as string
+      const userId = row.getValue('userId') as string
       const customer = user.find((u) => u.id === userId)
       return (
         <div className='flex items-center space-x-3'>
@@ -90,7 +90,7 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
     id: 'totalAmount',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Tổng tiền' />,
     cell: ({ row }) => {
-      const totalAmount = row.getValue('totalAmount') as number
+      const totalAmount = (row.getValue('totalAmount') as number) ?? 0
       return (
         <div className='text-right'>
           <div className='font-bold text-violet-700 dark:text-violet-300'>
@@ -141,9 +141,9 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
           className={`text-xs font-medium px-3 py-1 ${getStatusColor(paymentStatus, 'payment')}`}
         >
           <div className={`w-2 h-2 rounded-full mr-2 ${
-            paymentStatus === 'PAID' ? 'bg-green-500' :
-            paymentStatus === 'PARTIAL_PAID' ? 'bg-yellow-500' :
-            'bg-red-500'
+            paymentStatus === 'PAID_FULL' ? 'bg-green-500' :
+            paymentStatus === 'PAID_DEPOSIT' || paymentStatus === 'PAID_DEPOSIT_COMPLETED' ? 'bg-yellow-500' :
+            paymentStatus === 'FAILED' || paymentStatus === 'CANCELED' ? 'bg-red-500' : 'bg-gray-400'
           }`} />
           {getStatusLabel(paymentStatus, 'payment')}
         </Badge>
@@ -212,7 +212,7 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
   {
     id: 'actions',
     header: 'Thao tác',
-    cell: ({ row }) => <OrderTableRowAction row={row} />,
+    cell: ({ row }) => <BranchOrderTableRowAction row={row} />,
     enableSorting: false,
     enableHiding: false
   }

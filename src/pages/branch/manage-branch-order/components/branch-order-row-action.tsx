@@ -1,6 +1,6 @@
 // order-row-action.tsx - Enhanced Row Actions
 import { Row } from '@tanstack/react-table'
-import { OrderType } from '@/@types/manage-order.types'
+import { BranchOrderType } from '@/@types/branch-order.types'
 import { MoreHorizontal, Eye, Edit, Trash2, CheckCircle, ExternalLink, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,17 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { useOrders } from '../contexts/order-context'
-import { useNavigate } from 'react-router-dom'
+import { useBranchOrders } from '../contexts/branch-order-context'
 
-interface OrderTableRowActionProps<TData> {
+interface BranchOrderTableRowActionProps<TData> {
   row: Row<TData>
 }
 
-export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TData>) {
-  const order = row.original as OrderType
-  const { setOpen, setCurrentRow } = useOrders()
-  const navigate = useNavigate()
+export function BranchOrderTableRowAction<TData>({ row }: BranchOrderTableRowActionProps<TData>) {
+  const order = row.original as BranchOrderType
+  const { setOpen, setCurrentRow } = useBranchOrders()
 
   const handleViewDetails = () => {
     setCurrentRow(order)
@@ -29,7 +27,9 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
   }
 
   const handleViewDetailPage = () => {
-    navigate(`/system/admin/manage-order/${order.id}`)
+    // Branch manager detail page route (if available later). For now, open sidebar.
+    setCurrentRow(order)
+    setOpen('view')
   }
 
   const handleEdit = () => {

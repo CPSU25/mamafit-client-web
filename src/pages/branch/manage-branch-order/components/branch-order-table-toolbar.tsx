@@ -14,7 +14,7 @@ interface DataTableToolbarProps<TData> {
   isFiltered?: boolean
 }
 
-export function OrderTableToolbar<TData>({
+export function BranchOrderTableToolbar<TData>({
   table,
   onCreateNew,
   isFiltered: customIsFiltered

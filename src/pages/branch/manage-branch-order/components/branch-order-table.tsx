@@ -17,8 +17,8 @@ import {
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DataTablePagination } from '../../components/data-table-pagination'
-import { OrderTableToolbar } from './order-table-toolbar'
 import { AlertCircle, Search } from 'lucide-react'
+import { BranchOrderTableToolbar } from './branch-order-table-toolbar'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -27,7 +27,7 @@ interface DataTableProps<TData, TValue> {
   error?: string | null
 }
 
-export function OrderTable<TData, TValue>({ columns, data, isLoading, error }: DataTableProps<TData, TValue>) {
+export function BranchOrderTable<TData, TValue>({ columns, data, isLoading, error }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -58,7 +58,7 @@ export function OrderTable<TData, TValue>({ columns, data, isLoading, error }: D
   if (error) {
     return (
       <div className='space-y-6'>
-        <OrderTableToolbar table={table} />
+        <BranchOrderTableToolbar table={table} />
         <div className='rounded-xl border-2 border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-white dark:from-red-950/10 dark:to-card'>
           <div className='flex items-center justify-center h-48'>
             <div className='text-center space-y-4'>
@@ -80,7 +80,7 @@ export function OrderTable<TData, TValue>({ columns, data, isLoading, error }: D
 
   return (
     <div className='space-y-6'>
-      <OrderTableToolbar table={table} />
+      <BranchOrderTableToolbar table={table} />
       
       <div className='rounded-xl border-2 border-violet-200 dark:border-violet-800 overflow-hidden bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card shadow-lg'>
         <Table>
