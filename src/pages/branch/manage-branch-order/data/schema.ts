@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { BranchOrderType } from '@/@types/branch-order.types'
+import { DeliveryMethod, PaymentType, PaymentMethod, PaymentStatus, OrderStatus, TypeOrder } from '@/@types/manage-order.types'
 
 // Validation schema for order filters
 export const orderFiltersSchema = z.object({
@@ -76,16 +77,16 @@ export const transformOrderData = (order: Partial<BranchOrderType>): BranchOrder
     remainingBalance: order.remainingBalance || null,
     totalAmount: order.totalAmount || null,
     shippingFee: order.shippingFee || null,
-    paymentStatus: order.paymentStatus || 'PENDING',
-    paymentMethod: order.paymentMethod || 'CASH',
-    deliveryMethod: order.deliveryMethod || 'DELIVERY',
-    paymentType: order.paymentType || 'FULL',
+    paymentStatus: order.paymentStatus || PaymentStatus.PENDING,
+    paymentMethod: order.paymentMethod || PaymentMethod.CASH,
+    deliveryMethod: order.deliveryMethod || DeliveryMethod.DELIVERY,
+    paymentType: order.paymentType || PaymentType.FULL,
     canceledAt: order.canceledAt || null,
     canceledReason: order.canceledReason || null,
     subTotalAmount: order.subTotalAmount || null,
     warrantyCode: order.warrantyCode || null,
-    type: order.type || 'NORMAL',
-    status: order.status || 'CREATED',
+    type: order.type || TypeOrder.NORMAL,
+    status: order.status || OrderStatus.CREATED,
     addressId: order.addressId || '',
     createdAt: order.createdAt || new Date().toISOString(),
     updatedAt: order.updatedAt || new Date().toISOString(),

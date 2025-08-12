@@ -81,16 +81,19 @@ export function OrderTable<TData, TValue>({ columns, data, isLoading, error }: D
   return (
     <div className='space-y-6'>
       <OrderTableToolbar table={table} />
-      
+
       <div className='rounded-xl border-2 border-violet-200 dark:border-violet-800 overflow-hidden bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card shadow-lg'>
         <Table>
           <TableHeader className='bg-gradient-to-r from-violet-100 via-violet-50 to-purple-100 dark:from-violet-950/30 dark:via-violet-950/20 dark:to-purple-950/30'>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className='border-b border-violet-200 dark:border-violet-800 hover:bg-transparent'>
+              <TableRow
+                key={headerGroup.id}
+                className='border-b border-violet-200 dark:border-violet-800 hover:bg-transparent'
+              >
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead 
-                      key={header.id} 
+                    <TableHead
+                      key={header.id}
                       colSpan={header.colSpan}
                       className='text-violet-700 dark:text-violet-300 font-semibold'
                     >
@@ -107,14 +110,16 @@ export function OrderTable<TData, TValue>({ columns, data, isLoading, error }: D
                 <TableCell colSpan={columns.length} className='h-32 text-center'>
                   <div className='flex items-center justify-center space-x-3'>
                     <div className='animate-spin rounded-full h-6 w-6 border-2 border-violet-600 border-t-transparent'></div>
-                    <span className='text-violet-600 dark:text-violet-400 font-medium'>Đang tải danh sách đơn hàng...</span>
+                    <span className='text-violet-600 dark:text-violet-400 font-medium'>
+                      Đang tải danh sách đơn hàng...
+                    </span>
                   </div>
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row, index) => (
-                <TableRow 
-                  key={row.id} 
+                <TableRow
+                  key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   className={`
                     border-b border-violet-100 dark:border-violet-900 hover:bg-violet-50/50 dark:hover:bg-violet-950/20 transition-colors duration-200
@@ -151,7 +156,7 @@ export function OrderTable<TData, TValue>({ columns, data, isLoading, error }: D
           </TableBody>
         </Table>
       </div>
-      
+
       <DataTablePagination table={table} />
     </div>
   )

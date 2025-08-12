@@ -9,8 +9,6 @@ import { getStatusColor, getStatusLabel } from '../data/data'
 import {
   MapPin,
   Package,
-  Edit,
-  Printer,
   X,
   Phone,
   Mail,
@@ -25,7 +23,8 @@ import {
   CheckCircle2,
   Circle,
   Target,
-  Palette
+  Palette,
+  BarChart3
 } from 'lucide-react'
 import { useGetUserById } from '@/services/admin/manage-user.service'
 import { useOrder } from '@/services/admin/manage-order.service'
@@ -34,6 +33,7 @@ import GoongMap from '@/components/Goong/GoongMap'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { OrderAssignDialog } from './order-assign-dialog'
+import StatusOrderTimeline from './milestone/status-timeline-orderItem'
 
 interface OrderDetailSidebarProps {
   order: OrderById | null
@@ -77,13 +77,14 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
   const getStatusTimeline = () => {
     const allStatuses = [
       { key: 'CREATED', label: 'Đơn hàng đã tạo', icon: ShoppingBag },
-      { key: 'CONFIRMED', label: 'Comfirmed Order', icon: Package },
-      { key: 'IN_DESIGN', label: 'Đang thiết kế', icon: Edit },
-      { key: 'IN_PRODUCTION', label: 'Đang sản xuất', icon: Package },
-      { key: 'IN_QC', label: 'Kiểm tra chất lượng', icon: Package },
+      { key: 'CONFIRMED', label: 'Đã xác nhận', icon: Package },
+      { key: 'IN_PROGRESS', label: 'Đang sản xuất', icon: Package },
+      { key: 'AWAITING_PAID_REST', label: 'Đang chờ thanh toán', icon: Package },
       { key: 'PACKAGING', label: 'Đóng gói', icon: Package },
       { key: 'DELIVERING', label: 'Đang giao hàng', icon: Truck },
-      { key: 'COMPLETED', label: 'Hoàn thành', icon: Package }
+      { key: 'COMPLETED', label: 'Đã hoàn thành', icon: Package },
+      { key: 'CANCELLED', label: 'Đã hủy', icon: Package },
+      { key: 'RETURNED', label: 'Đã trả lại', icon: Package }
     ]
 
     const currentStatusIndex = allStatuses.findIndex((s) => s.key === order.status)
@@ -150,7 +151,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
           {/* Background gradient decoration */}
           <div className='absolute inset-0 bg-gradient-to-r from-violet-600 via-violet-500 to-purple-600 dark:from-violet-700 dark:via-violet-600 dark:to-purple-700' />
           <div className='absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-white/20 dark:via-white/5 dark:to-white/10' />
-          
+
           {/* Content */}
           <div className='relative p-6 text-white'>
             <div className='flex items-start justify-between mb-6'>
@@ -159,16 +160,14 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                   <div className='w-2 h-2 bg-white rounded-full animate-pulse' />
                   <span className='text-white/80 text-sm font-medium tracking-wide'>ORDER DETAILS</span>
                 </div>
-                <h2 className='text-2xl font-bold text-white drop-shadow-sm'>
-                  #{orderDetail?.data.code}
-                </h2>
+                <h2 className='text-2xl font-bold text-white drop-shadow-sm'>#{orderDetail?.data.code}</h2>
                 <p className='text-violet-100 text-sm'>Order Code</p>
               </div>
 
-              <Button 
-                variant='ghost' 
-                size='sm' 
-                onClick={onClose} 
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={onClose}
                 className='h-10 w-10 p-0 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white transition-all duration-200'
               >
                 <X className='h-5 w-5' />
@@ -177,14 +176,12 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
 
             <div className='flex items-center justify-between'>
               <div className='space-y-1'>
-                <h3 className='text-xl font-bold text-white drop-shadow-sm'>
-                  {orderDetail?.data.items[0].itemType}
-                </h3>
+                <h3 className='text-xl font-bold text-white drop-shadow-sm'>{orderDetail?.data.items[0].itemType}</h3>
                 <p className='text-violet-100 text-sm'>Order Type</p>
               </div>
               <div className='flex items-center space-x-3'>
-                <Badge 
-                  variant='secondary' 
+                <Badge
+                  variant='secondary'
                   className={`${getStatusColor(order.status, 'order')} text-xs font-medium px-3 py-1 bg-white/90 dark:bg-white/80 text-violet-800 shadow-sm`}
                 >
                   {getStatusLabel(order.status, 'order')}
@@ -227,7 +224,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className='grid grid-cols-1 gap-3 pt-2'>
                     {user.data.phoneNumber && (
                       <div className='flex items-center text-sm text-muted-foreground bg-violet-50/50 dark:bg-violet-950/20 p-3 rounded-lg'>
@@ -252,20 +249,27 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                       <div className='grid grid-cols-2 gap-3 text-sm'>
                         <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
                           <span className='text-muted-foreground block text-xs'>Tuổi</span>
-                          <span className='font-semibold text-violet-700 dark:text-violet-300'>{orderDetail.data.measurementDiary.age}</span>
+                          <span className='font-semibold text-violet-700 dark:text-violet-300'>
+                            {orderDetail.data.measurementDiary.age}
+                          </span>
                         </div>
                         <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
                           <span className='text-muted-foreground block text-xs'>Chiều cao</span>
-                          <span className='font-semibold text-violet-700 dark:text-violet-300'>{orderDetail.data.measurementDiary.height} cm</span>
+                          <span className='font-semibold text-violet-700 dark:text-violet-300'>
+                            {orderDetail.data.measurementDiary.height} cm
+                          </span>
                         </div>
                         <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
                           <span className='text-muted-foreground block text-xs'>Cân nặng</span>
-                          <span className='font-semibold text-violet-700 dark:text-violet-300'>{orderDetail.data.measurementDiary.weight} kg</span>
+                          <span className='font-semibold text-violet-700 dark:text-violet-300'>
+                            {orderDetail.data.measurementDiary.weight} kg
+                          </span>
                         </div>
                         <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
                           <span className='text-muted-foreground block text-xs'>3 vòng</span>
                           <span className='font-semibold text-violet-700 dark:text-violet-300'>
-                            {orderDetail.data.measurementDiary.bust}/{orderDetail.data.measurementDiary.waist}/{orderDetail.data.measurementDiary.hip}
+                            {orderDetail.data.measurementDiary.bust}/{orderDetail.data.measurementDiary.waist}/
+                            {orderDetail.data.measurementDiary.hip}
                           </span>
                         </div>
                         <div className='col-span-2 bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
@@ -313,7 +317,10 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                         </div>
                         Measurements History
                       </div>
-                      <Badge variant='secondary' className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'>
+                      <Badge
+                        variant='secondary'
+                        className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
+                      >
                         {orderDetail.data.measurementDiary.measurements.length} records
                       </Badge>
                     </CardTitle>
@@ -323,19 +330,17 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                       .slice()
                       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((m, index) => (
-                        <div 
-                          key={m.id} 
+                        <div
+                          key={m.id}
                           className={`border-2 rounded-xl p-4 transition-all duration-200 ${
-                            index === 0 
-                              ? 'border-violet-300 dark:border-violet-600 bg-gradient-to-br from-violet-50 via-white to-violet-50/50 dark:from-violet-950/30 dark:via-card dark:to-violet-950/20 shadow-md' 
+                            index === 0
+                              ? 'border-violet-300 dark:border-violet-600 bg-gradient-to-br from-violet-50 via-white to-violet-50/50 dark:from-violet-950/30 dark:via-card dark:to-violet-950/20 shadow-md'
                               : 'border-violet-100 dark:border-violet-800 bg-card hover:border-violet-200 dark:hover:border-violet-700'
                           }`}
                         >
                           <div className='flex items-center justify-between mb-3'>
                             <div className='flex items-center space-x-2'>
-                              {index === 0 && (
-                                <div className='w-2 h-2 bg-violet-500 rounded-full animate-pulse' />
-                              )}
+                              {index === 0 && <div className='w-2 h-2 bg-violet-500 rounded-full animate-pulse' />}
                               <span className='text-xs font-medium text-violet-600 dark:text-violet-400'>
                                 {index === 0 ? 'Latest Update' : 'Previous Record'}
                               </span>
@@ -371,9 +376,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                 <div className='text-muted-foreground text-[10px] uppercase tracking-wide mb-1'>
                                   {item.label}
                                 </div>
-                                <div className='font-semibold text-violet-700 dark:text-violet-300'>
-                                  {item.value}
-                                </div>
+                                <div className='font-semibold text-violet-700 dark:text-violet-300'>{item.value}</div>
                               </div>
                             ))}
                           </div>
@@ -393,7 +396,10 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                     </div>
                     Order Items
                   </div>
-                  <Badge variant='secondary' className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'>
+                  <Badge
+                    variant='secondary'
+                    className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
+                  >
                     {orderDetail?.data?.items?.length || order.items?.length || 0} items
                   </Badge>
                 </CardTitle>
@@ -432,10 +438,16 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                 <div className='flex items-center space-x-2 mb-3'>
                                   <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
                                     <svg className='w-3 h-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
-                                      <path fillRule='evenodd' d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z' clipRule='evenodd' />
+                                      <path
+                                        fillRule='evenodd'
+                                        d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
+                                        clipRule='evenodd'
+                                      />
                                     </svg>
                                   </div>
-                                  <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>Mô tả thiết kế</span>
+                                  <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
+                                    Mô tả thiết kế
+                                  </span>
                                 </div>
                                 <p className='text-sm text-muted-foreground leading-relaxed pl-7'>
                                   {item.designRequest.description}
@@ -448,7 +460,11 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                 <div className='flex items-center space-x-2 mb-4'>
                                   <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
                                     <svg className='w-3 h-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
-                                      <path fillRule='evenodd' d='M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z' clipRule='evenodd' />
+                                      <path
+                                        fillRule='evenodd'
+                                        d='M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z'
+                                        clipRule='evenodd'
+                                      />
                                     </svg>
                                   </div>
                                   <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
@@ -467,6 +483,21 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                 </div>
                               </div>
                             )}
+
+                            {/* Status Timeline */}
+                            <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
+                              <div className='flex items-center space-x-2 mb-3'>
+                                <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
+                                  <BarChart3 className='w-3 h-3 text-white' />
+                                </div>
+                                <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
+                                  Progress Status
+                                </span>
+                              </div>
+                              <div className='pl-7'>
+                                <StatusOrderTimeline orderItemId={item.id} />
+                              </div>
+                            </div>
 
                             {/* Assign button */}
                             <div className='pt-3 border-t border-violet-200 dark:border-violet-700'>
@@ -517,9 +548,24 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                             </div>
                             <div className='text-center'>
                               <div className='w-10 h-10 bg-violet-100 dark:bg-violet-900/50 rounded-xl flex items-center justify-center border border-violet-200 dark:border-violet-700'>
-                                <span className='text-sm font-bold text-violet-600 dark:text-violet-400'>{item.quantity}</span>
+                                <span className='text-sm font-bold text-violet-600 dark:text-violet-400'>
+                                  {item.quantity}
+                                </span>
                               </div>
                             </div>
+                          </div>
+
+                          {/* Status Timeline */}
+                          <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
+                            <div className='flex items-center space-x-2 mb-3'>
+                              <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
+                                <BarChart3 className='w-3 h-3 text-white' />
+                              </div>
+                              <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
+                                Progress Status
+                              </span>
+                            </div>
+                            <StatusOrderTimeline orderItemId={item.id} />
                           </div>
 
                           {/* Assign button */}
@@ -615,9 +661,9 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                       <span className='text-green-600 font-semibold'>-{formatCurrency(order.discountSubtotal)}</span>
                     </div>
                   )}
-                  
+
                   <Separator className='bg-violet-200 dark:bg-violet-700' />
-                  
+
                   {order.depositSubtotal !== 0 && order.depositSubtotal !== undefined && (
                     <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                       <span className='text-muted-foreground'>Deposit</span>
@@ -627,43 +673,43 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                   <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                     <span className='text-muted-foreground'>Shipping Fee</span>
                     <span className='font-semibold'>
-                      {order.shippingFee !== undefined && order.shippingFee !== 0 
-                        ? formatCurrency(order.shippingFee) 
+                      {order.shippingFee !== undefined && order.shippingFee !== 0
+                        ? formatCurrency(order.shippingFee)
                         : '0 ₫'}
                     </span>
                   </div>
                   <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                     <span className='text-muted-foreground'>Service Fee</span>
                     <span className='font-semibold'>
-                      {order.serviceAmount !== 0 && order.serviceAmount !== undefined 
-                        ? formatCurrency(order?.serviceAmount) 
+                      {order.serviceAmount !== 0 && order.serviceAmount !== undefined
+                        ? formatCurrency(order?.serviceAmount)
                         : '0 ₫'}
                     </span>
                   </div>
-                  
+
                   <Separator className='bg-violet-200 dark:bg-violet-700' />
-                  
+
                   <div className='flex justify-between items-center p-4 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl border border-violet-200 dark:border-violet-700'>
                     <span className='font-bold text-lg text-violet-700 dark:text-violet-300'>Total</span>
                     <span className='text-xl font-bold text-violet-600 dark:text-violet-400'>
                       {formatCurrency(order.totalAmount || 0)}
                     </span>
                   </div>
-                  
+
                   <div className='grid grid-cols-2 gap-3'>
                     <div className='p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800'>
                       <span className='text-xs text-muted-foreground block mb-1'>Paid</span>
                       <span className='text-green-600 font-bold text-lg'>
-                        {order.totalPaid !== undefined && order.totalPaid !== 0 
-                          ? formatCurrency(order.totalPaid) 
+                        {order.totalPaid !== undefined && order.totalPaid !== 0
+                          ? formatCurrency(order.totalPaid)
                           : '0 ₫'}
                       </span>
                     </div>
                     <div className='p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800'>
                       <span className='text-xs text-muted-foreground block mb-1'>Remaining</span>
                       <span className='text-orange-600 font-bold text-lg'>
-                        {order.remainingBalance !== undefined && order.remainingBalance !== 0 
-                          ? formatCurrency(order.remainingBalance) 
+                        {order.remainingBalance !== undefined && order.remainingBalance !== 0
+                          ? formatCurrency(order.remainingBalance)
                           : '0 ₫'}
                       </span>
                     </div>
@@ -705,15 +751,15 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                       <div key={index} className='flex items-start space-x-4 relative'>
                         {/* Timeline line */}
                         {!isLast && (
-                          <div 
+                          <div
                             className={`absolute left-4 top-12 w-0.5 h-8 ${
-                              item.active 
-                                ? 'bg-gradient-to-b from-violet-500 to-violet-300' 
+                              item.active
+                                ? 'bg-gradient-to-b from-violet-500 to-violet-300'
                                 : 'bg-violet-200 dark:bg-violet-800'
-                            }`} 
+                            }`}
                           />
                         )}
-                        
+
                         {/* Status icon */}
                         <div
                           className={`w-8 h-8 rounded-xl flex items-center justify-center border-2 transition-all duration-300 ${
@@ -732,23 +778,27 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                             <Icon className='h-3 w-3' />
                           )}
                         </div>
-                        
+
                         {/* Status content */}
                         <div className='flex-1 pb-4'>
-                          <div className={`p-3 rounded-xl border transition-all duration-200 ${
-                            item.current
-                              ? 'bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border-violet-300 dark:border-violet-600'
-                              : item.active
-                                ? 'bg-violet-50/50 dark:bg-violet-950/10 border-violet-200 dark:border-violet-700'
-                                : 'bg-muted/30 border-muted-foreground/10'
-                          }`}>
-                            <p className={`text-sm font-semibold ${
-                              item.current 
-                                ? 'text-violet-700 dark:text-violet-300' 
-                                : item.active 
-                                  ? 'text-foreground' 
-                                  : 'text-muted-foreground'
-                            }`}>
+                          <div
+                            className={`p-3 rounded-xl border transition-all duration-200 ${
+                              item.current
+                                ? 'bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border-violet-300 dark:border-violet-600'
+                                : item.active
+                                  ? 'bg-violet-50/50 dark:bg-violet-950/10 border-violet-200 dark:border-violet-700'
+                                  : 'bg-muted/30 border-muted-foreground/10'
+                            }`}
+                          >
+                            <p
+                              className={`text-sm font-semibold ${
+                                item.current
+                                  ? 'text-violet-700 dark:text-violet-300'
+                                  : item.active
+                                    ? 'text-foreground'
+                                    : 'text-muted-foreground'
+                              }`}
+                            >
                               {item.label}
                             </p>
                             {item.current && (
@@ -772,9 +822,9 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
         <div className='flex-shrink-0 relative overflow-hidden'>
           {/* Background gradient */}
           <div className='absolute inset-0 bg-gradient-to-r from-violet-50 via-white to-violet-50 dark:from-violet-950/30 dark:via-background dark:to-violet-950/30' />
-          
+
           {/* Content */}
-          <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800 space-y-4'>
+          {/* <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800 space-y-4'>
             <Button className='w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25 transition-all duration-200' size='sm'>
               <Package className='h-4 w-4 mr-2' />
               Update Status
@@ -797,17 +847,17 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                 Print
               </Button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
-      
+
       <OrderAssignDialog
         open={assignChargeDialogOpen}
         onOpenChange={setAssignChargeDialogOpen}
         orderItem={getSelectedItemData() || null}
         onSuccess={handleAssignChargeSuccess}
       />
-      
+
       {/* Custom scrollbar styles */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {

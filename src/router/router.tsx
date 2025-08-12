@@ -13,6 +13,9 @@ import {
   OrderDetailPage,
   SystemConfigPage
 } from '@/pages/admin'
+// Import các trang manage order mới
+import WarrantyOrderPage from '@/pages/admin/manage-order/warranty'
+import DesignRequestPage from '@/pages/admin/manage-order/design-request'
 import { HomePage } from '@/pages/guest'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
@@ -60,6 +63,8 @@ export const router = createBrowserRouter([
           { path: 'manage-component', element: <ManageComponentPage /> },
           { path: 'manage-milestone', element: <ManageMilestonePage /> },
           { path: 'manage-order', element: <ManageOrderPage /> },
+          { path: 'manage-order/design-request', element: <DesignRequestPage /> },
+          { path: 'manage-order/warranty', element: <WarrantyOrderPage /> },
           { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
           { path: 'manage-voucher', element: <ManageVoucherPage /> },
           { path: 'manage-transaction', element: <div>Transactions Page</div> },
@@ -165,6 +170,8 @@ export const router = createBrowserRouter([
             path: 'manage-order',
             element: <ManageOrderPage />
           },
+          { path: 'manage-order/design-request', element: <DesignRequestPage /> },
+          { path: 'manage-order/warranty', element: <WarrantyOrderPage /> },
           { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
           {
             path: 'manage-task',

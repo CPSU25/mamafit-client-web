@@ -6,5 +6,7 @@ export function OrderDialogs() {
 
   const handleClose = () => setOpen(null)
 
-  return <>{open === 'delete' && <BranchOrderDeleteDialog open={true} onOpenChange={handleClose} order={currentRow} />}</>
+  return (
+    <>{open === 'delete' && <BranchOrderDeleteDialog open={true} onOpenChange={handleClose} order={currentRow} />}</>
+  )
 }

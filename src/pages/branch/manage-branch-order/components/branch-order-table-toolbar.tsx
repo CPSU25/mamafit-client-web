@@ -40,8 +40,8 @@ export function BranchOrderTableToolbar<TData>({
 
           {/* Quick filters indicator */}
           {activeFiltersCount > 0 && (
-            <Badge 
-              variant='secondary' 
+            <Badge
+              variant='secondary'
               className='bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300 border-violet-200 dark:border-violet-700'
             >
               <Filter className='h-3 w-3 mr-1' />
@@ -52,18 +52,18 @@ export function BranchOrderTableToolbar<TData>({
 
         {/* Primary Actions */}
         <div className='flex items-center space-x-2'>
-          <Button 
-            variant='outline' 
-            size='sm' 
+          <Button
+            variant='outline'
+            size='sm'
             className='h-10 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
           >
             <RefreshCw className='mr-2 h-4 w-4' />
             Làm mới
           </Button>
-          
-          <Button 
-            variant='outline' 
-            size='sm' 
+
+          <Button
+            variant='outline'
+            size='sm'
             className='h-10 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
           >
             <Download className='mr-2 h-4 w-4' />
@@ -71,16 +71,16 @@ export function BranchOrderTableToolbar<TData>({
           </Button>
 
           {onCreateNew && (
-            <Button 
-              onClick={onCreateNew} 
-              size='sm' 
+            <Button
+              onClick={onCreateNew}
+              size='sm'
               className='h-10 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25'
             >
               <Plus className='mr-2 h-4 w-4' />
               Tạo đơn hàng
             </Button>
           )}
-          
+
           <DataTableViewOptions table={table} />
         </div>
       </div>
@@ -91,9 +91,9 @@ export function BranchOrderTableToolbar<TData>({
         {table.getColumn('status') && (
           <div className='flex items-center space-x-2'>
             <span className='text-sm font-medium text-muted-foreground'>Trạng thái:</span>
-            <DataTableFacetedFilter 
-              column={table.getColumn('status')} 
-              title='Trạng thái' 
+            <DataTableFacetedFilter
+              column={table.getColumn('status')}
+              title='Trạng thái'
               options={orderStatusOptions}
             />
           </div>
@@ -126,9 +126,9 @@ export function BranchOrderTableToolbar<TData>({
         {/* Date Filter */}
         <div className='flex items-center space-x-2'>
           <span className='text-sm font-medium text-muted-foreground'>Ngày tạo:</span>
-          <Button 
-            variant='outline' 
-            size='sm' 
+          <Button
+            variant='outline'
+            size='sm'
             className='h-8 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
           >
             <Calendar className='mr-2 h-4 w-4' />
@@ -138,9 +138,9 @@ export function BranchOrderTableToolbar<TData>({
 
         {/* Clear filters */}
         {isFiltered && (
-          <Button 
-            variant='ghost' 
-            onClick={() => table.resetColumnFilters()} 
+          <Button
+            variant='ghost'
+            onClick={() => table.resetColumnFilters()}
             className='h-8 px-3 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/20'
           >
             Xóa bộ lọc
@@ -159,9 +159,9 @@ export function BranchOrderTableToolbar<TData>({
                 Đang hiển thị kết quả với {activeFiltersCount} bộ lọc đang áp dụng
               </span>
             </div>
-            <Button 
-              variant='ghost' 
-              size='sm' 
+            <Button
+              variant='ghost'
+              size='sm'
               onClick={() => table.resetColumnFilters()}
               className='text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/30 h-7'
             >

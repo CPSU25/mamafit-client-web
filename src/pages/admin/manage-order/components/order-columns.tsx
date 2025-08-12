@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ColumnDef } from '@tanstack/react-table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { getStatusColor, getStatusLabel } from '../data/data'
+import { getDeliveryMethodLabel, getStatusColor, getStatusLabel, getTypeOrderLabel } from '../data/data'
 import { OrderTableRowAction } from './order-row-action'
 import { format } from 'date-fns'
 
@@ -44,8 +44,8 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
       const code = row.getValue('code') as string
       return (
         <div className='flex items-center'>
-          <Badge 
-            variant='outline' 
+          <Badge
+            variant='outline'
             className='text-sm font-mono bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-800 px-3 py-1'
           >
             #{code}
@@ -72,12 +72,8 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
             <AvatarImage src={customer?.profilePicture} />
           </Avatar>
           <div className='min-w-0 flex-1'>
-            <p className='font-semibold text-sm text-foreground truncate'>
-              {customer?.fullName || 'N/A'}
-            </p>
-            <p className='text-xs text-muted-foreground truncate'>
-              {customer?.userEmail || 'N/A'}
-            </p>
+            <p className='font-semibold text-sm text-foreground truncate'>{customer?.fullName || 'N/A'}</p>
+            <p className='text-xs text-muted-foreground truncate'>{customer?.userEmail || 'N/A'}</p>
           </div>
         </div>
       )
@@ -93,7 +89,7 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
       const totalAmount = row.getValue('totalAmount') as number
       return (
         <div className='text-right'>
-          <div className='font-bold text-violet-700 dark:text-violet-300'>
+          <div className='font-bold text-violet-700 dark:text-violet-300 text-center'>
             {new Intl.NumberFormat('vi-VN', {
               style: 'currency',
               currency: 'VND'
@@ -112,17 +108,66 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       return (
-        <Badge 
-          variant='secondary' 
-          className={`text-xs font-medium px-3 py-1 ${getStatusColor(status, 'order')}`}
-        >
-          <div className={`w-2 h-2 rounded-full mr-2 ${
-            status === 'COMPLETED' ? 'bg-green-500' :
-            status === 'IN_PRODUCTION' ? 'bg-blue-500' :
-            status === 'CONFIRMED' ? 'bg-yellow-500' :
-            'bg-gray-400'
-          }`} />
+        <Badge variant='secondary' className={`text-xs font-medium px-3 py-1 ${getStatusColor(status, 'order')}`}>
+          <div
+            className={`w-2 h-2 rounded-full mr-2 ${
+              status === 'COMPLETED'
+                ? 'bg-green-500'
+                : status === 'IN_PRODUCTION'
+                  ? 'bg-blue-500'
+                  : status === 'CONFIRMED'
+                    ? 'bg-yellow-500'
+                    : 'bg-gray-400'
+            }`}
+          />
           {getStatusLabel(status, 'order')}
+        </Badge>
+      )
+    },
+    enableSorting: true,
+    enableHiding: true
+  },
+  {
+    accessorKey: 'deliveryMethod',
+    id: 'deliveryMethod',
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Giao hàng' />,
+    cell: ({ row }) => {
+      const deliveryMethod = row.getValue('deliveryMethod') as string
+      return (
+        <Badge
+          variant='secondary'
+          className={`text-xs font-medium px-3 py-1 ${getStatusColor(deliveryMethod, 'order')}`}
+        >
+          <div
+            className={`w-2 h-2 rounded-full mr-2 ${
+              deliveryMethod === 'DELIVERY'
+                ? 'bg-green-500'
+                : deliveryMethod === 'PICK_UP'
+                  ? 'bg-blue-500'
+                  : 'bg-gray-400'
+            }`}
+          />
+          {getDeliveryMethodLabel(deliveryMethod)}
+        </Badge>
+      )
+    },
+    enableSorting: true,
+    enableHiding: true
+  },
+  {
+    accessorKey: 'type',
+    id: 'type',
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Loại đơn hàng' />,
+    cell: ({ row }) => {
+      const type = row.getValue('type') as string
+      return (
+        <Badge variant='secondary' className={`text-xs font-medium px-3 py-1 ${getStatusColor(type, 'order')}`}>
+          <div
+            className={`w-2 h-2 rounded-full mr-2 ${
+              type === 'NORMAL' ? 'bg-green-500' : type === 'WARRANTY' ? 'bg-blue-500' : 'bg-gray-400'
+            }`}
+          />
+          {getTypeOrderLabel(type)}
         </Badge>
       )
     },
@@ -136,15 +181,19 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
     cell: ({ row }) => {
       const paymentStatus = row.getValue('paymentStatus') as string
       return (
-        <Badge 
-          variant='secondary' 
+        <Badge
+          variant='secondary'
           className={`text-xs font-medium px-3 py-1 ${getStatusColor(paymentStatus, 'payment')}`}
         >
-          <div className={`w-2 h-2 rounded-full mr-2 ${
-            paymentStatus === 'PAID' ? 'bg-green-500' :
-            paymentStatus === 'PARTIAL_PAID' ? 'bg-yellow-500' :
-            'bg-red-500'
-          }`} />
+          <div
+            className={`w-2 h-2 rounded-full mr-2 ${
+              paymentStatus === 'PAID'
+                ? 'bg-green-500'
+                : paymentStatus === 'PARTIAL_PAID'
+                  ? 'bg-yellow-500'
+                  : 'bg-red-500'
+            }`}
+          />
           {getStatusLabel(paymentStatus, 'payment')}
         </Badge>
       )
@@ -160,8 +209,8 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
       const paymentMethod = row.getValue('paymentMethod') as string
       return (
         <div className='text-sm'>
-          <Badge 
-            variant='outline' 
+          <Badge
+            variant='outline'
             className='bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-700'
           >
             {paymentMethod === 'CASH' ? '💵 Tiền mặt' : '🏦 Chuyển khoản'}
@@ -182,14 +231,16 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
         if (!createdAt) return <div className='text-sm text-muted-foreground'>-</div>
         const date = new Date(createdAt)
         if (isNaN(date.getTime())) return <div className='text-sm text-muted-foreground'>-</div>
-        
+
         const now = new Date()
         const diffInHours = Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60)
         const isRecent = diffInHours < 24
-        
+
         return (
           <div className='text-sm'>
-            <div className={`font-medium ${isRecent ? 'text-violet-600 dark:text-violet-400' : 'text-muted-foreground'}`}>
+            <div
+              className={`font-medium ${isRecent ? 'text-violet-600 dark:text-violet-400' : 'text-muted-foreground'}`}
+            >
               {format(date, 'dd/MM/yyyy')}
             </div>
             <div className='text-xs text-muted-foreground'>

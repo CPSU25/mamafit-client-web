@@ -48,7 +48,13 @@ export const paymentMethodOptions = [
 
 export const deliveryMethodOptions = [
   { value: 'DELIVERY', label: 'Giao hàng' },
-  { value: 'PICKUP', label: 'Lấy tại cửa hàng' }
+  { value: 'PICK_UP', label: 'Lấy tại cửa hàng' }
+]
+
+export const typeOrderOptions = [
+  { value: 'NORMAL', label: 'Đơn hàng thường' },
+  { value: 'WARRANTY', label: 'Đơn hàng bảo hành' },
+  { value: 'DESIGN', label: 'Yêu cầu thiết kế' }
 ]
 
 // Helper function to get status color
@@ -61,4 +67,11 @@ export const getStatusColor = (status: string, type: 'order' | 'payment' = 'orde
 export const getStatusLabel = (status: string, type: 'order' | 'payment' = 'order') => {
   const options = type === 'order' ? orderStatusOptions : paymentStatusOptions
   return options.find((option) => option.value === status)?.label || status
+}
+
+export const getDeliveryMethodLabel = (deliveryMethod: string) => {
+  return deliveryMethodOptions.find((option) => option.value === deliveryMethod)?.label || deliveryMethod
+}
+export const getTypeOrderLabel = (type: string) => {
+  return typeOrderOptions.find((option) => option.value === type)?.label || type
 }

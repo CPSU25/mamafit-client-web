@@ -67,10 +67,9 @@ export interface BranchOrderItemType {
   warrantyDate: string | null
 }
 
-
-export interface BranchResponse<T>{
-    data: T[]
-    message: string 
-    statusCode: HttpStatusCode
-    code: string 
+export interface BranchResponse<T> {
+  data: T[]
+  message: string
+  statusCode: HttpStatusCode
+  code: string
 }

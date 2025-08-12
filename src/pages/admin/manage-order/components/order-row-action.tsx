@@ -59,16 +59,16 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant='ghost' 
+        <Button
+          variant='ghost'
           className='flex h-9 w-9 p-0 data-[state=open]:bg-violet-100 dark:data-[state=open]:bg-violet-950/30 hover:bg-violet-50 dark:hover:bg-violet-950/20 transition-colors duration-200'
         >
           <MoreHorizontal className='h-4 w-4 text-violet-600 dark:text-violet-400' />
           <span className='sr-only'>Mở menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align='end' 
+      <DropdownMenuContent
+        align='end'
         className='w-[220px] border-violet-200 dark:border-violet-800 shadow-lg bg-white/95 dark:bg-card/95 backdrop-blur-sm'
       >
         <DropdownMenuLabel className='text-violet-700 dark:text-violet-300 font-semibold'>
@@ -76,7 +76,7 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
         </DropdownMenuLabel>
         <DropdownMenuSeparator className='bg-violet-200 dark:bg-violet-800' />
 
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={handleViewDetails}
           className='hover:bg-violet-50 dark:hover:bg-violet-950/30 focus:bg-violet-50 dark:focus:bg-violet-950/30 cursor-pointer'
         >
@@ -87,7 +87,7 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
           </div>
         </DropdownMenuItem>
 
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={handleViewDetailPage}
           className='hover:bg-violet-50 dark:hover:bg-violet-950/30 focus:bg-violet-50 dark:focus:bg-violet-950/30 cursor-pointer'
         >
@@ -99,7 +99,7 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
         </DropdownMenuItem>
 
         {canEdit && (
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={handleEdit}
             className='hover:bg-violet-50 dark:hover:bg-violet-950/30 focus:bg-violet-50 dark:focus:bg-violet-950/30 cursor-pointer'
           >
@@ -111,7 +111,7 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
           </DropdownMenuItem>
         )}
 
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={handleUpdateStatus}
           className='hover:bg-violet-50 dark:hover:bg-violet-950/30 focus:bg-violet-50 dark:focus:bg-violet-950/30 cursor-pointer'
         >
@@ -123,7 +123,7 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
         </DropdownMenuItem>
 
         {canAssignTask && (
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={handleAssignTask}
             className='hover:bg-violet-50 dark:hover:bg-violet-950/30 focus:bg-violet-50 dark:focus:bg-violet-950/30 cursor-pointer'
           >
@@ -138,8 +138,8 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
         <DropdownMenuSeparator className='bg-violet-200 dark:bg-violet-800' />
 
         {canDelete && (
-          <DropdownMenuItem 
-            onClick={handleDelete} 
+          <DropdownMenuItem
+            onClick={handleDelete}
             className='text-red-600 focus:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 focus:bg-red-50 dark:focus:bg-red-950/30 cursor-pointer'
           >
             <Trash2 className='mr-3 h-4 w-4' />

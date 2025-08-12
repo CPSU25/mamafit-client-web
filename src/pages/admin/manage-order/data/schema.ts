@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { OrderType } from '@/@types/manage-order.types'
+import { DeliveryMethod, OrderType, PaymentType, PaymentMethod, PaymentStatus, OrderStatus, TypeOrder } from '@/@types/manage-order.types'
 
 // Validation schema for order filters
 export const orderFiltersSchema = z.object({
@@ -77,16 +77,16 @@ export const transformOrderData = (order: Partial<OrderType>): OrderType => {
     remainingBalance: order.remainingBalance || 0,
     totalAmount: order.totalAmount || 0,
     shippingFee: order.shippingFee || 0,
-    paymentStatus: order.paymentStatus || 'PENDING',
-    paymentMethod: order.paymentMethod || 'CASH',
-    deliveryMethod: order.deliveryMethod || 'DELIVERY',
-    paymentType: order.paymentType || 'FULL',
+    paymentStatus: order.paymentStatus || PaymentStatus.PENDING,
+    paymentMethod: order.paymentMethod || PaymentMethod.CASH,
+    deliveryMethod: order.deliveryMethod || DeliveryMethod.DELIVERY,
+    paymentType: order.paymentType || PaymentType.FULL,
     canceledAt: order.canceledAt,
     canceledReason: order.canceledReason,
     subTotalAmount: order.subTotalAmount,
     warrantyCode: order.warrantyCode,
-    type: order.type || 'NORMAL',
-    status: order.status || 'CREATED',
+    type: order.type || TypeOrder.NORMAL,
+    status: order.status || OrderStatus.CREATED,
     addressId: order.addressId || '',
     createdAt: order.createdAt || new Date().toISOString(),
     updatedAt: order.updatedAt || new Date().toISOString(),

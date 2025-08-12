@@ -44,8 +44,8 @@ export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps 
       const code = row.getValue('code') as string
       return (
         <div className='flex items-center'>
-          <Badge 
-            variant='outline' 
+          <Badge
+            variant='outline'
             className='text-sm font-mono bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-800 px-3 py-1'
           >
             #{code}
@@ -72,12 +72,8 @@ export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps 
             <AvatarImage src={customer?.profilePicture} />
           </Avatar>
           <div className='min-w-0 flex-1'>
-            <p className='font-semibold text-sm text-foreground truncate'>
-              {customer?.fullName || 'N/A'}
-            </p>
-            <p className='text-xs text-muted-foreground truncate'>
-              {customer?.userEmail || 'N/A'}
-            </p>
+            <p className='font-semibold text-sm text-foreground truncate'>{customer?.fullName || 'N/A'}</p>
+            <p className='text-xs text-muted-foreground truncate'>{customer?.userEmail || 'N/A'}</p>
           </div>
         </div>
       )
@@ -112,16 +108,18 @@ export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps 
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       return (
-        <Badge 
-          variant='secondary' 
-          className={`text-xs font-medium px-3 py-1 ${getStatusColor(status, 'order')}`}
-        >
-          <div className={`w-2 h-2 rounded-full mr-2 ${
-            status === 'COMPLETED' ? 'bg-green-500' :
-            status === 'IN_PRODUCTION' ? 'bg-blue-500' :
-            status === 'CONFIRMED' ? 'bg-yellow-500' :
-            'bg-gray-400'
-          }`} />
+        <Badge variant='secondary' className={`text-xs font-medium px-3 py-1 ${getStatusColor(status, 'order')}`}>
+          <div
+            className={`w-2 h-2 rounded-full mr-2 ${
+              status === 'COMPLETED'
+                ? 'bg-green-500'
+                : status === 'IN_PRODUCTION'
+                  ? 'bg-blue-500'
+                  : status === 'CONFIRMED'
+                    ? 'bg-yellow-500'
+                    : 'bg-gray-400'
+            }`}
+          />
           {getStatusLabel(status, 'order')}
         </Badge>
       )
@@ -136,15 +134,21 @@ export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps 
     cell: ({ row }) => {
       const paymentStatus = row.getValue('paymentStatus') as string
       return (
-        <Badge 
-          variant='secondary' 
+        <Badge
+          variant='secondary'
           className={`text-xs font-medium px-3 py-1 ${getStatusColor(paymentStatus, 'payment')}`}
         >
-          <div className={`w-2 h-2 rounded-full mr-2 ${
-            paymentStatus === 'PAID_FULL' ? 'bg-green-500' :
-            paymentStatus === 'PAID_DEPOSIT' || paymentStatus === 'PAID_DEPOSIT_COMPLETED' ? 'bg-yellow-500' :
-            paymentStatus === 'FAILED' || paymentStatus === 'CANCELED' ? 'bg-red-500' : 'bg-gray-400'
-          }`} />
+          <div
+            className={`w-2 h-2 rounded-full mr-2 ${
+              paymentStatus === 'PAID_FULL'
+                ? 'bg-green-500'
+                : paymentStatus === 'PAID_DEPOSIT' || paymentStatus === 'PAID_DEPOSIT_COMPLETED'
+                  ? 'bg-yellow-500'
+                  : paymentStatus === 'FAILED' || paymentStatus === 'CANCELED'
+                    ? 'bg-red-500'
+                    : 'bg-gray-400'
+            }`}
+          />
           {getStatusLabel(paymentStatus, 'payment')}
         </Badge>
       )
@@ -160,8 +164,8 @@ export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps 
       const paymentMethod = row.getValue('paymentMethod') as string
       return (
         <div className='text-sm'>
-          <Badge 
-            variant='outline' 
+          <Badge
+            variant='outline'
             className='bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-700'
           >
             {paymentMethod === 'CASH' ? '💵 Tiền mặt' : '🏦 Chuyển khoản'}
@@ -182,14 +186,16 @@ export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps 
         if (!createdAt) return <div className='text-sm text-muted-foreground'>-</div>
         const date = new Date(createdAt)
         if (isNaN(date.getTime())) return <div className='text-sm text-muted-foreground'>-</div>
-        
+
         const now = new Date()
         const diffInHours = Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60)
         const isRecent = diffInHours < 24
-        
+
         return (
           <div className='text-sm'>
-            <div className={`font-medium ${isRecent ? 'text-violet-600 dark:text-violet-400' : 'text-muted-foreground'}`}>
+            <div
+              className={`font-medium ${isRecent ? 'text-violet-600 dark:text-violet-400' : 'text-muted-foreground'}`}
+            >
               {format(date, 'dd/MM/yyyy')}
             </div>
             <div className='text-xs text-muted-foreground'>

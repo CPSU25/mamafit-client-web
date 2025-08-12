@@ -7,36 +7,53 @@ import { MeasurementType } from '@/pages/staff/manage-task/tasks/types'
 import { PresetType } from './designer.types'
 import { AddressType } from './global.types'
 import { MaternityDressDetailType } from './inventory.type'
+import { MilestoneType } from './admin.types'
+import HttpStatusCode from '@/lib/utils/httpStatusCode.enum'
 
 //Manage Order Type
-export type OrderStatus =
-  | 'CREATED'
-  | 'CONFIRMED'
-  | 'IN_DESIGN'
-  | 'IN_PRODUCTION'
-  | 'AWAITING_PAID_REST'
-  | 'IN_QC'
-  | 'IN_WARRANTY'
-  | 'PACKAGING'
-  | 'DELIVERING'
-  | 'COMPLETED'
-  | 'WARRANTY_CHECK'
-  | 'CANCELLED'
-  | 'RETURNED'
-  | 'EXPIRED'
-export type PaymentStatus =
-  | 'PENDING'
-  | 'PAID_FULL'
-  | 'FAILED'
-  | 'PAID_DEPOSIT'
-  | 'PAID_DEPOSIT_COMPLETED'
-  | 'CANCELED'
-  | 'EXPIRED'
-export type PaymentMethod = 'CASH' | 'ONLINE_BANKING'
-export type DeliveryMethod = 'DELIVERY' | 'PICKUP'
-export type PaymentType = 'DEPOSIT' | 'FULL'
-export type TypeOrder = 'NORMAL' | 'WARRANTY'
+export enum OrderStatus {
+  CREATED = 'CREATED',
+  CONFIRMED = 'CONFIRMED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  AWAITING_PAID_REST = 'AWAITING_PAID_REST',
+  PACKAGING = 'PACKAGING',
+  DELIVERING = 'DELIVERING',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  RETURNED = 'RETURNED'
+}
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  PAID_FULL = 'PAID_FULL',
+  FAILED = 'FAILED',
+  PAID_DEPOSIT = 'PAID_DEPOSIT',
+  PAID_DEPOSIT_COMPLETED = 'PAID_DEPOSIT_COMPLETED',
+  CANCELED = 'CANCELED',
+  EXPIRED = 'EXPIRED'
+}
+export enum PaymentMethod {
+  CASH = 'CASH',
+  ONLINE_BANKING = 'ONLINE_BANKING'
+}
+export enum DeliveryMethod {
+  DELIVERY = 'DELIVERY',
+  PICKUP = 'PICKUP'
+}
+export enum TypeOrder {
+  NORMAL = 'NORMAL',
+  WARRANTY = 'WARRANTY',
+  DESIGN = 'DESIGN'
+}
+export enum PaymentType {
+  DEPOSIT = 'DEPOSIT',
+  FULL = 'FULL'
+}
 
+export enum ItemType {
+  READY_TO_BUY = 'READY_TO_BUY',
+  PRESET = 'PRESET',
+  DESIGN_REQUEST = 'DESIGN_REQUEST'
+}
 /**
  * Basic Order Type - không có milestone details
  */
@@ -71,8 +88,6 @@ export interface OrderType {
   updateBy: string
 }
 
-export type ItemType = 'READY_TO_BUY' | 'PRESET' | 'DESIGN_REQUEST'
-
 /**
  * Basic Order Item Type - không có milestone details phức tạp
  */
@@ -105,9 +120,9 @@ export interface OrderById extends OrderType {
 }
 
 export interface MeasurementDiaryType {
-  id: string 
-  userId: string 
-  name: string 
+  id: string
+  userId: string
+  name: string
   age: number
   height: number
   weight: number
@@ -172,4 +187,21 @@ export interface DesignRequestType {
   updatedAt: string
   createdBy: string
   updatedBy: string | null
+}
+
+//Status Timeline of OrderItem
+export interface StatusOrderItemTimeline {
+  progress: number
+  isDone: boolean
+  currentTask: {
+    id: string
+    name: string
+  }
+  milestone: MilestoneType
+}
+export interface StatusOrderItemResponse<T> {
+  data: T[]
+  message: string
+  statusCode: HttpStatusCode
+  code: string
 }

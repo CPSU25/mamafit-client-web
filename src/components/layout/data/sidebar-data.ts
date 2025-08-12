@@ -81,7 +81,15 @@ export const sidebarData: SidebarData = {
         {
           title: 'Quản lý giao dịch',
           items: [
-            { title: 'Quản lý đơn hàng', url: 'manage-order', icon: Package, badge: 'New' },
+            {
+              title: 'Quản lý đơn hàng',
+              icon: Package,
+              items: [
+                { title: 'Tất cả đơn hàng', url: 'manage-order', icon: AlertCircle },
+                { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: Clock },
+                { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: CheckCircle }
+              ]
+            },
             { title: 'Quản lý voucher', url: 'manage-voucher', icon: Ticket },
             { title: 'Quản lý thanh toán', url: 'manage-transaction', icon: DollarSign }
           ]

@@ -58,7 +58,10 @@ const OrderPageSkeleton = () => (
       <CardContent className='p-6'>
         <div className='space-y-4'>
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className='h-16 bg-gradient-to-r from-violet-50 to-transparent dark:from-violet-950/20 dark:to-transparent animate-pulse rounded-lg' />
+            <div
+              key={i}
+              className='h-16 bg-gradient-to-r from-violet-50 to-transparent dark:from-violet-950/20 dark:to-transparent animate-pulse rounded-lg'
+            />
           ))}
         </div>
       </CardContent>
@@ -90,8 +93,6 @@ const OrderPageError = ({ error }: { error: unknown }) => {
 }
 
 function ManageOrderContent() {
-  
-
   const { open, setOpen, currentRow } = useBranchOrders()
 
   // Fetch orders data
@@ -102,10 +103,7 @@ function ManageOrderContent() {
   })
 
   // Memoized data transformations for performance
-  const orderList = useMemo(
-    () => ordersResponse?.data?.map(transformOrderData) || [],
-    [ordersResponse?.data]
-  )
+  const orderList = useMemo(() => ordersResponse?.data?.map(transformOrderData) || [], [ordersResponse?.data])
 
   const userList = useMemo(() => usersResponse?.data?.items || [], [usersResponse?.data?.items])
 

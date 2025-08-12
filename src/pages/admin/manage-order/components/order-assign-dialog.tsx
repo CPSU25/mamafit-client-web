@@ -123,7 +123,8 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
             <div>
               <div className='text-violet-700 dark:text-violet-300'>Giao việc theo Milestone</div>
               <p className='text-sm text-muted-foreground font-normal mt-1'>
-                Giao từng milestone cho Designer hoặc Staff. Tất cả tasks trong milestone sẽ được giao cho cùng một người.
+                Giao từng milestone cho Designer hoặc Staff. Tất cả tasks trong milestone sẽ được giao cho cùng một
+                người.
               </p>
             </div>
           </DialogTitle>
@@ -139,7 +140,10 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
             <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
               <div className='bg-white/80 dark:bg-card/80 p-4 rounded-lg border border-violet-200 dark:border-violet-700'>
                 <span className='text-sm text-muted-foreground block mb-2'>Loại sản phẩm:</span>
-                <Badge variant='secondary' className='bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'>
+                <Badge
+                  variant='secondary'
+                  className='bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
+                >
                   {orderItem.itemType}
                 </Badge>
               </div>
@@ -178,8 +182,8 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                 const isAssigned = milestone.tasks?.some((task) => task.detail?.chargeId && task.detail?.chargeName)
 
                 return (
-                  <div 
-                    key={milestone.id} 
+                  <div
+                    key={milestone.id}
                     className='border-2 border-violet-200 dark:border-violet-700 rounded-2xl overflow-hidden bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card shadow-lg'
                   >
                     <div className='border-l-4 border-l-violet-500'>
@@ -196,7 +200,10 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                               </h4>
                               <p className='text-sm text-muted-foreground mb-3'>{milestone.description}</p>
                               <div className='flex items-center gap-3'>
-                                <Badge variant='outline' className='bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-700'>
+                                <Badge
+                                  variant='outline'
+                                  className='bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-700'
+                                >
                                   <Clock className='h-3 w-3 mr-1' />
                                   {milestone.tasks?.length || 0} tasks
                                 </Badge>
@@ -224,7 +231,10 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                               {milestone.tasks
                                 .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
                                 .map((task, taskIndex) => (
-                                  <div key={task.id} className='bg-gradient-to-r from-violet-50 to-purple-50/50 dark:from-violet-950/20 dark:to-purple-950/10 rounded-lg p-4 border border-violet-200 dark:border-violet-700'>
+                                  <div
+                                    key={task.id}
+                                    className='bg-gradient-to-r from-violet-50 to-purple-50/50 dark:from-violet-950/20 dark:to-purple-950/10 rounded-lg p-4 border border-violet-200 dark:border-violet-700'
+                                  >
                                     <div className='flex items-start justify-between'>
                                       <div className='flex items-start gap-3 flex-1'>
                                         <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center'>
@@ -245,15 +255,18 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                                         <Badge
                                           variant={task.detail?.status === 'PENDING' ? 'secondary' : 'default'}
                                           className={`text-xs ${
-                                            task.detail?.status === 'PENDING' 
-                                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' 
+                                            task.detail?.status === 'PENDING'
+                                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                                               : 'bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
                                           }`}
                                         >
                                           {task.detail?.status || 'PENDING'}
                                         </Badge>
                                         {task.detail?.chargeName && (
-                                          <Badge variant='outline' className='text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700'>
+                                          <Badge
+                                            variant='outline'
+                                            className='text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700'
+                                          >
                                             <User className='h-3 w-3 mr-1' />
                                             {task.detail.chargeName}
                                           </Badge>
@@ -276,7 +289,10 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                                 <div>
                                   <div className='font-semibold'>Đã giao việc thành công</div>
                                   <div className='text-sm'>
-                                    Người thực hiện: <strong>{milestone.tasks?.find((t) => t.detail?.chargeName)?.detail?.chargeName}</strong>
+                                    Người thực hiện:{' '}
+                                    <strong>
+                                      {milestone.tasks?.find((t) => t.detail?.chargeName)?.detail?.chargeName}
+                                    </strong>
                                   </div>
                                 </div>
                               </div>
@@ -303,7 +319,10 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                                         </div>
                                         <div>
                                           <div className='font-medium'>{user.fullName}</div>
-                                          <Badge variant='outline' className='text-xs bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-700'>
+                                          <Badge
+                                            variant='outline'
+                                            className='text-xs bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-700'
+                                          >
                                             {user.roleName}
                                           </Badge>
                                         </div>
@@ -321,10 +340,12 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                                     </div>
                                     <div>
                                       <div className='font-semibold'>
-                                        Sẽ giao cho: {getUserName(selectedCharges[milestone.id])} ({getUserRole(selectedCharges[milestone.id])})
+                                        Sẽ giao cho: {getUserName(selectedCharges[milestone.id])} (
+                                        {getUserRole(selectedCharges[milestone.id])})
                                       </div>
                                       <div className='text-sm text-violet-600 dark:text-violet-400 mt-1'>
-                                        Người này sẽ thực hiện tất cả {milestone.tasks?.length || 0} tasks trong milestone.
+                                        Người này sẽ thực hiện tất cả {milestone.tasks?.length || 0} tasks trong
+                                        milestone.
                                       </div>
                                     </div>
                                   </div>
@@ -359,7 +380,10 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                     {Object.entries(selectedCharges).map(([milestoneId, userId]) => {
                       const milestone = groupedMilestones.find((m) => m.id === milestoneId)
                       return (
-                        <div key={milestoneId} className='bg-white/80 dark:bg-card/80 border border-violet-200 dark:border-violet-700 rounded-lg p-3'>
+                        <div
+                          key={milestoneId}
+                          className='bg-white/80 dark:bg-card/80 border border-violet-200 dark:border-violet-700 rounded-lg p-3'
+                        >
                           <div className='flex justify-between items-center'>
                             <div className='flex items-center gap-2'>
                               <Palette className='h-4 w-4 text-violet-500' />
@@ -384,17 +408,17 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
 
         {/* Enhanced Footer */}
         <DialogFooter className='border-t border-violet-200 dark:border-violet-800 pt-6 gap-3'>
-          <Button 
-            variant='outline' 
-            onClick={handleCancel} 
+          <Button
+            variant='outline'
+            onClick={handleCancel}
             disabled={isSubmitting}
             className='border-violet-200 dark:border-violet-700 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/20'
           >
             Hủy bỏ
           </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={isSubmitting || selectedCount === 0} 
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || selectedCount === 0}
             className='min-w-[140px] bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25'
           >
             {isSubmitting ? (
