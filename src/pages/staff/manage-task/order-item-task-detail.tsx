@@ -14,7 +14,6 @@ export default function OrderItemDetailPage() {
   const navigate = useNavigate()
 
   const { data: orderItemData, isLoading, isError } = useStaffGetOrderTaskByOrderItemId(orderItemId!)
-
   // Hook để lấy thông tin địa chỉ - sử dụng conditional query
   const { data: addressData, isLoading: isLoadingAddress } = useQuery({
     queryKey: ['address', orderItemData?.addressId],
@@ -140,6 +139,11 @@ export default function OrderItemDetailPage() {
                     <Package className='h-4 w-4 text-muted-foreground' />
                     <span>Mã đơn hàng:</span>
                     <code className='text-xs bg-muted px-1 rounded'>{orderCode}</code>
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <Package className='h-4 w-4 text-muted-foreground' />
+                    <span>Status</span>
+                    <code className='text-xs bg-muted px-1 rounded'>{orderItemData?.orderStatus}</code>
                   </div>
 
                   <div className='flex items-center gap-2'>
@@ -316,7 +320,12 @@ export default function OrderItemDetailPage() {
 
         {/* Bottom Row: Milestone Tracker */}
         <div className='w-full'>
-          <OrderItemMilestoneTracker milestones={milestones} orderItemId={orderItemId} orderId={orderId} />
+          <OrderItemMilestoneTracker
+            milestones={milestones}
+            orderItemId={orderItemId}
+            orderId={orderId}
+            orderStatus={orderItemData?.orderStatus}
+          />
         </div>
       </div>
     </div>

@@ -1,27 +1,25 @@
 // index.tsx - Enhanced Manage Order Page
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { AlertCircle, Package2 } from 'lucide-react'
 
 import { Main } from '@/components/layout/main'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { useOrders } from '@/services/admin/manage-order.service'
 import { useGetListUser } from '@/services/admin/manage-user.service'
 
 import { transformOrderData } from './data/schema'
-import { createOrderColumns } from './components/order-columns'
-import { OrderTable } from './components/order-table'
-import { OrderStatistics } from './components/order-statistics'
-import { OrderDialogs } from './components/order-dialogs'
-import { OrderDetailSidebar } from './components/order-detail-sidebar'
-import OrderProvider from './contexts/order-context'
-import { useOrders as useOrdersContext } from './contexts/order-context'
+import { createBranchOrderColumns } from './components/branch-order-columns'
+import { BranchOrderTable } from './components/branch-order-table'
+import { OrderStatistics } from './components/branch-order-statistics'
+import { OrderDialogs } from './components/branch-order-dialogs'
+import { BranchOrderDetailSidebar } from './components/branch-order-detail-sidebar'
+import BranchOrderProvider, { useBranchOrders } from './contexts/branch-order-context'
 
-import type { OrderById } from '@/@types/manage-order.types'
+import type { BranchOrderType } from '@/@types/branch-order.types'
+import { useGetBranchOrders } from '@/services/branch/branch-order.service'
 
 // Constants
-const DEFAULT_PAGE_SIZE = 20
 const USERS_FETCH_SIZE = 1000
 
 // Enhanced Loading skeleton component
@@ -95,35 +93,26 @@ const OrderPageError = ({ error }: { error: unknown }) => {
 }
 
 function ManageOrderContent() {
-  const [queryParams] = useState({
-    index: 0,
-    pageSize: DEFAULT_PAGE_SIZE
-  })
-
-  const { open, setOpen, currentRow } = useOrdersContext()
+  const { open, setOpen, currentRow } = useBranchOrders()
 
   // Fetch orders data
-  const { data: ordersResponse, isLoading: ordersLoading, error: ordersError } = useOrders(queryParams)
-
+  const { data: ordersResponse, isLoading: ordersLoading, error: ordersError } = useGetBranchOrders()
   // Fetch users data for customer information lookup
   const { data: usersResponse, isLoading: usersLoading } = useGetListUser({
     pageSize: USERS_FETCH_SIZE
   })
 
   // Memoized data transformations for performance
-  const orderList = useMemo(
-    () => ordersResponse?.data?.items?.map(transformOrderData) || [],
-    [ordersResponse?.data?.items]
-  )
+  const orderList = useMemo(() => ordersResponse?.data?.map(transformOrderData) || [], [ordersResponse?.data])
 
   const userList = useMemo(() => usersResponse?.data?.items || [], [usersResponse?.data?.items])
 
   // Memoized columns creation
-  const columns = useMemo(() => createOrderColumns({ user: userList }), [userList])
+  const columns = useMemo(() => createBranchOrderColumns({ user: userList }), [userList])
 
   // Memoized statistics calculations
   const statistics = useMemo(() => {
-    const totalOrders = ordersResponse?.data?.totalCount || 0
+    const totalOrders = ordersResponse?.data.length || 0
     const processedOrders = orderList.filter((order) =>
       ['CONFIRMED', 'IN_DESIGN', 'IN_PRODUCTION'].includes(order.status)
     ).length
@@ -138,7 +127,7 @@ function ManageOrderContent() {
       deliveredOrders,
       returnAmount
     }
-  }, [ordersResponse?.data?.totalCount, orderList])
+  }, [ordersResponse?.data.length, orderList])
 
   // Loading state
   if (ordersLoading || usersLoading) {
@@ -189,11 +178,11 @@ function ManageOrderContent() {
               </div>
             </CardHeader>
             <CardContent className='pt-0'>
-              <OrderTable
+              <BranchOrderTable
                 columns={columns}
                 data={orderList}
                 isLoading={ordersLoading}
-                error={ordersError instanceof Error ? ordersError.message : null}
+                error={ordersError ? String((ordersError as Error)?.message ?? ordersError) : null}
               />
             </CardContent>
           </Card>
@@ -204,17 +193,21 @@ function ManageOrderContent() {
       </div>
 
       {/* Order Detail Sidebar */}
-      <OrderDetailSidebar order={currentRow as OrderById} isOpen={isDetailOpen} onClose={handleCloseSidebar} />
+      <BranchOrderDetailSidebar
+        order={currentRow as BranchOrderType}
+        isOpen={isDetailOpen}
+        onClose={handleCloseSidebar}
+      />
     </div>
   )
 }
 
-export default function ManageOrderPage() {
+export default function ManageBranchOrderPage() {
   return (
-    <OrderProvider>
+    <BranchOrderProvider>
       <Main className='min-h-screen p-0 bg-gradient-to-br from-violet-50/30 via-white to-purple-50/20 dark:from-violet-950/10 dark:via-background dark:to-purple-950/10'>
         <ManageOrderContent />
       </Main>
-    </OrderProvider>
+    </BranchOrderProvider>
   )
 }

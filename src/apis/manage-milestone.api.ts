@@ -1,4 +1,5 @@
 import { MilestoneByIdType, MilestoneFormData, MilestoneType, TaskFormData, TaskType } from '@/@types/admin.types'
+import { StatusOrderItemResponse, StatusOrderItemTimeline } from '@/@types/manage-order.types'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { api } from '@/lib/axios/axios'
 
@@ -39,7 +40,11 @@ const ManageMilestoneAPI = {
   getTaskById: (id: string) => api.get<ItemBaseResponse<TaskType>>(`/task/${id}`),
   createTask: (body: TaskFormData) => api.post<ItemBaseResponse<[]>>(`/task`, body),
   updateTask: (id: string, body: TaskFormData) => api.put<ItemBaseResponse<[]>>(`/task/${id}`, body),
-  deleteTask: (id: string) => api.delete<ItemBaseResponse<[]>>(`/task/${id}`)
+  deleteTask: (id: string) => api.delete<ItemBaseResponse<[]>>(`/task/${id}`),
+
+  //get status timeline of order item
+  getStatusTimelineOfOrderItem: (orderItemId: string) =>
+    api.get<StatusOrderItemResponse<StatusOrderItemTimeline>>(`/milestone/order-item/${orderItemId}`)
 }
 
 export default ManageMilestoneAPI

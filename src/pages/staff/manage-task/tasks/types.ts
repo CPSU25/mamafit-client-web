@@ -3,6 +3,7 @@
 // Mô tả: Định nghĩa các kiểu dữ liệu đã được map, dành riêng cho UI.
 // =====================================================================
 import { PresetType } from '@/@types/designer.types' // Đảm bảo import đúng đường dẫn
+import { OrderStatus } from '@/@types/manage-order.types'
 
 export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED' | 'PASS' | 'FAIL' | 'LOCKED'
 export type QualityCheckStatus = 'PASS' | 'FAIL'
@@ -40,6 +41,7 @@ export interface StaffTaskUI {
 export interface ProductTaskGroup {
   measurement: MeasurementType
   orderCode: string
+  orderStatus: OrderStatus
   preset: PresetType
   milestones: MilestoneUI[]
   orderItemId: string // ID của order item để update task status

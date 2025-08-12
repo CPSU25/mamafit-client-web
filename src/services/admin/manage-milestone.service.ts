@@ -285,3 +285,17 @@ export const useDeleteTask = () => {
     }
   })
 }
+
+export const useGetStatusTimelineOfOrderItem = (orderItemId: string) => {
+  return useQuery({
+    queryKey: ['status-timeline-of-order-item', orderItemId],
+    queryFn: async () => {
+      const response = await ManageMilestoneAPI.getStatusTimelineOfOrderItem(orderItemId)
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      throw new Error(response.data.message || 'Failed to fetch status timeline of order item')
+    },
+    enabled: !!orderItemId
+  })
+}
