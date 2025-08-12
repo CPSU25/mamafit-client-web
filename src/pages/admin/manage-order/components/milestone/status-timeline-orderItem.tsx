@@ -48,21 +48,26 @@ function StatusOrderTimeline({ orderItemId }: StatusOrderTimelineProps) {
     )
 
     if (qualityCheckFailed) {
-      // Nếu đã có Quality Check Failed, hiển thị nó (hoặc milestone tiếp theo nếu nó đã xong)
-      if (qualityCheckFailed.progress === 100) {
-        // Quality Check Failed đã xong, tìm milestone tiếp theo
+      // Nếu QC Failed đang thực hiện (chưa xong) -> hiển thị QC Failed
+      if (!(qualityCheckFailed.progress === 100 && qualityCheckFailed.isDone)) {
+        displayMilestone = qualityCheckFailed
+      } else {
+        // QC Failed đã hoàn thành -> chọn milestone kế tiếp CHƯA hoàn thành
         const nextAfterQCFailed = sortedMilestones.find(
           (milestone) =>
-            milestone.milestone.sequenceOrder > qualityCheckFailed.milestone.sequenceOrder && milestone.progress === 0
+            milestone.milestone.sequenceOrder > qualityCheckFailed.milestone.sequenceOrder &&
+            !(milestone.progress === 100 && milestone.isDone)
         )
-        displayMilestone = nextAfterQCFailed || qualityCheckFailed
-      } else {
-        // Quality Check Failed chưa xong
-        displayMilestone = qualityCheckFailed
+        displayMilestone = nextAfterQCFailed || null
       }
     } else {
-      // Chưa có Quality Check Failed, hiển thị Quality Check pending
-      displayMilestone = qualityCheckPending
+      // Chưa có QC Failed -> chọn milestone ngay sau Quality Check nhưng CHƯA hoàn thành
+      const nextAfterQCMilestone = sortedMilestones.find(
+        (milestone) =>
+          milestone.milestone.sequenceOrder > qualityCheckPending.milestone.sequenceOrder &&
+          !(milestone.progress === 100 && milestone.isDone)
+      )
+      displayMilestone = nextAfterQCMilestone || null
     }
   } else {
     // 2. Tìm milestone hiện tại đang có progress (chưa hoàn thành)
