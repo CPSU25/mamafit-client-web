@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle, ChevronRight, Factory, Store, XCircle } from 'lucide-react'
+import { CheckCircle, ChevronRight, Factory, XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,22 +16,17 @@ import { StatusWarrantyRequestItem, WarrantyRequestItemForm } from '@/@types/war
 import warrantyAPI from '@/apis/warranty-request.api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { useGetBranches } from '@/services/admin/manage-branch.service'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ImageViewer } from '@/components/ui/image-viewer'
 
 type ItemDecision = {
   status: StatusWarrantyRequestItem
-  destinationType?: 'FACTORY' | 'BRANCH'
   fee?: number
   rejectedReason?: string
   estimateTime?: string
-  destinationBranchId?: string
 }
 
 export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetailProps) => {
   const { data: warrantyItem } = useWarrantyRequestById(request.id)
-  const { data: branchesData } = useGetBranches({ pageSize: 100 }) // Get all branches
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   console.log('images', warrantyItem?.items[0].images)
@@ -43,11 +38,9 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
       const initialDecisions = warrantyItem.items.reduce<Record<string, ItemDecision>>((acc, item) => {
         acc[item.orderItemId] = {
           status: item.status ?? StatusWarrantyRequestItem.PENDING,
-          destinationType: item.destinationType,
           fee: item.fee ?? undefined,
           rejectedReason: item.rejectedReason ?? undefined,
-          estimateTime: item.estimateTime ?? undefined,
-          destinationBranchId: item.destinationBranchId ?? undefined
+          estimateTime: item.estimateTime ?? undefined
         }
         return acc
       }, {})
@@ -58,21 +51,13 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
     }
   }, [warrantyItem])
 
-  const handleItemDecision = (
-    itemId: string,
-    status: StatusWarrantyRequestItem,
-    destinationType?: 'FACTORY' | 'BRANCH'
-  ) => {
+  const handleItemDecision = (itemId: string, status: StatusWarrantyRequestItem) => {
     setItemDecisions((prev) => {
       const currentDecision = prev[itemId] || {}
 
-      // Reset destinationBranchId when switching to FACTORY or REJECTED
       const newDecision = {
         ...currentDecision,
-        status,
-        destinationType,
-        // Clear branch selection when not going to branch
-        destinationBranchId: destinationType === 'BRANCH' ? currentDecision.destinationBranchId : undefined
+        status
       }
 
       return {
@@ -112,16 +97,6 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
     for (const [orderItemId, decision] of Object.entries(itemDecisions)) {
       if (decision.status === StatusWarrantyRequestItem.REJECTED && !decision.rejectedReason?.trim()) {
         return `Vui lòng nhập lý do từ chối cho sản phẩm ${orderItemId}`
-      }
-      if (decision.status === StatusWarrantyRequestItem.APPROVED && !decision.destinationType) {
-        return `Vui lòng chọn nơi xử lý cho sản phẩm ${orderItemId}`
-      }
-      if (
-        decision.status === StatusWarrantyRequestItem.APPROVED &&
-        decision.destinationType === 'BRANCH' &&
-        !decision.destinationBranchId
-      ) {
-        return `Vui lòng chọn chi nhánh xử lý cho sản phẩm ${orderItemId}`
       }
     }
     return null
@@ -166,11 +141,11 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
             estimateTime: null
           }
         } else {
-          // For approved items: include all relevant fields except rejectedReason
+          // For approved items: always go to factory
           return {
             ...baseItem,
-            destinationType: decision.destinationType || 'FACTORY',
-            destinationBranchId: decision.destinationType === 'BRANCH' ? decision.destinationBranchId || null : null,
+            destinationType: 'FACTORY' as const,
+            destinationBranchId: null,
             fee: decision.fee || null,
             rejectedReason: null, // Not applicable for approved items
             estimateTime: decision.estimateTime || new Date().toISOString()
@@ -350,9 +325,7 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                           <div>
                             <Label className='text-sm font-medium text-blue-800'>Nơi xử lý</Label>
-                            <p className='text-sm text-blue-900 font-semibold mt-1'>
-                              {item.destinationType === 'FACTORY' ? '🏭 Nhà xưởng' : '🏪 Chi nhánh'}
-                            </p>
+                            <p className='text-sm text-blue-900 font-semibold mt-1'>🏭 Nhà xưởng</p>
                           </div>
                           {item.trackingCode && (
                             <div>
@@ -413,38 +386,13 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
                           <Button
                             size='sm'
                             variant={
-                              itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.APPROVED &&
-                              itemDecisions[item.orderItemId]?.destinationType === 'BRANCH'
+                              itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.APPROVED
                                 ? 'default'
                                 : 'outline'
                             }
-                            onClick={() =>
-                              handleItemDecision(item.orderItemId, StatusWarrantyRequestItem.APPROVED, 'BRANCH')
-                            }
+                            onClick={() => handleItemDecision(item.orderItemId, StatusWarrantyRequestItem.APPROVED)}
                             className={
-                              itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.APPROVED &&
-                              itemDecisions[item.orderItemId]?.destinationType === 'BRANCH'
-                                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                                : 'text-blue-700 border-blue-200 hover:bg-blue-50'
-                            }
-                          >
-                            <Store className='w-4 h-4 mr-1' />
-                            Chuyển chi nhánh
-                          </Button>
-                          <Button
-                            size='sm'
-                            variant={
-                              itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.APPROVED &&
-                              itemDecisions[item.orderItemId]?.destinationType === 'FACTORY'
-                                ? 'default'
-                                : 'outline'
-                            }
-                            onClick={() =>
-                              handleItemDecision(item.orderItemId, StatusWarrantyRequestItem.APPROVED, 'FACTORY')
-                            }
-                            className={
-                              itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.APPROVED &&
-                              itemDecisions[item.orderItemId]?.destinationType === 'FACTORY'
+                              itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.APPROVED
                                 ? 'bg-orange-600 hover:bg-orange-700 text-white'
                                 : 'text-orange-700 border-orange-200 hover:bg-orange-50'
                             }
@@ -516,54 +464,9 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
                               </div>
                             </div>
 
-                            {/* Branch Selection when destinationType is BRANCH */}
-                            {itemDecisions[item.orderItemId]?.destinationType === 'BRANCH' && (
-                              <div>
-                                <Label className='text-sm font-medium text-green-800'>Chọn chi nhánh *</Label>
-                                <Select
-                                  value={itemDecisions[item.orderItemId]?.destinationBranchId || ''}
-                                  onValueChange={(value) =>
-                                    handleItemDetailChange(item.orderItemId, 'destinationBranchId', value)
-                                  }
-                                >
-                                  <SelectTrigger className='mt-1'>
-                                    <SelectValue placeholder='Chọn chi nhánh xử lý...' />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {branchesData?.data?.items?.map((branch) => (
-                                      <SelectItem key={branch.id} value={branch.id}>
-                                        <div className='flex flex-col'>
-                                          <span className='font-medium'>{branch.name}</span>
-                                          <span className='text-sm text-gray-500'>
-                                            {branch.street}, {branch.ward}, {branch.district}, {branch.province}
-                                          </span>
-                                        </div>
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            )}
-
                             <div className='text-sm text-green-700'>
                               <CheckCircle className='w-4 h-4 inline mr-1' />
-                              Được chấp nhận xử lý tại:{' '}
-                              <strong>
-                                {itemDecisions[item.orderItemId]?.destinationType === 'FACTORY'
-                                  ? 'Nhà xưởng'
-                                  : 'Chi nhánh'}
-                              </strong>
-                              {itemDecisions[item.orderItemId]?.destinationType === 'BRANCH' &&
-                                itemDecisions[item.orderItemId]?.destinationBranchId && (
-                                  <>
-                                    {' - '}
-                                    <strong>
-                                      {branchesData?.data?.items?.find(
-                                        (b) => b.id === itemDecisions[item.orderItemId]?.destinationBranchId
-                                      )?.name || 'Chi nhánh đã chọn'}
-                                    </strong>
-                                  </>
-                                )}
+                              Được chấp nhận xử lý tại: <strong>Nhà xưởng</strong>
                             </div>
                           </div>
                         )}

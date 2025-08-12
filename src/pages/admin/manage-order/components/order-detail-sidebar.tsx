@@ -34,6 +34,10 @@ import dayjs from 'dayjs'
 import { useState } from 'react'
 import { OrderAssignDialog } from './order-assign-dialog'
 import StatusOrderTimeline from './milestone/status-timeline-orderItem'
+import { useCreateShipping } from '@/services/global/ghtk.service'
+import { toast } from 'sonner'
+import { GHTKOrder } from '@/@types/ghtk.types'
+import { DeliveryOrderSuccessDialog } from '@/pages/staff/components/delivery-order-success-dialog'
 
 interface OrderDetailSidebarProps {
   order: OrderById | null
@@ -46,6 +50,11 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
   const { data: orderDetail } = useOrder(isOpen ? (order?.id ?? '') : '')
   const [selectedItemForAssign, setSelectedItemForAssign] = useState<string>('')
   const [assignChargeDialogOpen, setAssignChargeDialogOpen] = useState(false)
+  const [shippingOrder, setShippingOrder] = useState<GHTKOrder | null>(null)
+  const [showShippingDialog, setShowShippingDialog] = useState(false)
+
+  // Sử dụng mutation hook để tạo shipping
+  const createShippingMutation = useCreateShipping()
 
   // Auto-load data cho tất cả items khi sidebar mở (dynamic, không hardcode)
   const orderItems = (isOpen && (orderDetail?.data?.items || order?.items)) || []
@@ -129,6 +138,49 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
     const selectedIndex = orderItems.findIndex((item) => item.id === selectedItemForAssign)
     return selectedIndex >= 0 ? (orderItemsData[selectedIndex]?.data ?? null) : null
   }
+
+  // Kiểm tra xem tất cả milestone của tất cả items đã hoàn thành chưa
+  const areAllMilestonesCompleted = () => {
+    if (orderItemsData.length === 0) return false
+    
+    return orderItemsData.every((itemQuery) => {
+      if (itemQuery.isLoading || !itemQuery.data || !itemQuery.data.milestones) {
+        return false
+      }
+      
+      // Kiểm tra tất cả milestone của item này đã hoàn thành
+      return itemQuery.data.milestones.every((milestone) => {
+        // Kiểm tra tất cả task trong milestone đã hoàn thành (AdminMilestone dùng tasks thay vì maternityDressTasks)
+        return milestone.tasks.every((task) => 
+          task.detail.status === 'DONE' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
+        )
+      })
+    })
+  }
+
+  // Xử lý tạo đơn shipping
+  const handleCreateShipping = () => {
+    if (!order?.id) return
+    
+    createShippingMutation.mutate(order.id, {
+      onSuccess: (response) => {
+        if (response.data.success) {
+          setShippingOrder(response.data.order)
+          setShowShippingDialog(true)
+          toast.success('Tạo đơn giao hàng thành công!')
+        } else {
+          toast.error(response.data.message || 'Không thể tạo đơn giao hàng')
+        }
+      },
+      onError: (error) => {
+        console.error('Error creating shipping:', error)
+        toast.error('Có lỗi xảy ra khi tạo đơn giao hàng')
+      }
+    })
+  }
+
+  const allMilestonesCompleted = areAllMilestonesCompleted()
+  const canCreateShipping = allMilestonesCompleted && (order?.status === 'IN_PROGRESS' || order?.status === 'PACKAGING')
 
   return (
     <>
@@ -824,30 +876,22 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
           <div className='absolute inset-0 bg-gradient-to-r from-violet-50 via-white to-violet-50 dark:from-violet-950/30 dark:via-background dark:to-violet-950/30' />
 
           {/* Content */}
-          {/* <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800 space-y-4'>
-            <Button className='w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25 transition-all duration-200' size='sm'>
-              <Package className='h-4 w-4 mr-2' />
-              Update Status
-            </Button>
-            <div className='grid grid-cols-2 gap-3'>
+          {canCreateShipping && (
+            <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800'>
               <Button 
-                variant='outline' 
-                size='sm' 
-                className='border-violet-300 dark:border-violet-600 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
+                onClick={handleCreateShipping}
+                disabled={createShippingMutation.isPending}
+                className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200' 
+                size='sm'
               >
-                <Edit className='h-4 w-4 mr-2' />
-                Edit
+                <Truck className='h-4 w-4 mr-2' />
+                {createShippingMutation.isPending ? 'Đang tạo đơn...' : 'Tạo đơn shipping'}
               </Button>
-              <Button 
-                variant='outline' 
-                size='sm' 
-                className='border-violet-300 dark:border-violet-600 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
-              >
-                <Printer className='h-4 w-4 mr-2' />
-                Print
-              </Button>
+              <p className='text-xs text-center text-muted-foreground mt-2'>
+                Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng
+              </p>
             </div>
-          </div> */}
+          )}
         </div>
       </div>
 
@@ -856,6 +900,12 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
         onOpenChange={setAssignChargeDialogOpen}
         orderItem={getSelectedItemData() || null}
         onSuccess={handleAssignChargeSuccess}
+      />
+
+      <DeliveryOrderSuccessDialog
+        open={showShippingDialog}
+        onOpenChange={setShowShippingDialog}
+        order={shippingOrder}
       />
 
       {/* Custom scrollbar styles */}

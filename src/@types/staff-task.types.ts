@@ -6,6 +6,7 @@
 
 import { MeasurementType } from '@/pages/staff/manage-task/tasks/types'
 import { PresetType } from './designer.types'
+import { OrderStatus } from './manage-order.types'
 
 /**
  * Staff Task Status - Staff chỉ quản lý các status cơ bản
@@ -67,6 +68,7 @@ export interface StaffOrderItem {
  */
 export interface StaffOrderTaskItem {
   orderCode: string
+  orderStatus: OrderStatus
   measurement: MeasurementType
   orderItem: StaffOrderItem
   milestones: StaffMilestone[]

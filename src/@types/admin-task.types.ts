@@ -11,7 +11,7 @@ import { DesignRequestType } from './manage-order.types'
 /**
  * Admin Task Status - Admin có thể quản lý nhiều status hơn staff
  */
-export type AdminTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PASS' | 'FAIL'
+export type AdminTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PASS' | 'FAIL' | 'DONE'
 
 /**
  * Admin Task Detail - Chứa thông tin chi tiết của task khi được thực hiện
