@@ -1,5 +1,13 @@
 import { z } from 'zod'
-import { DeliveryMethod, OrderType, PaymentType, PaymentMethod, PaymentStatus, OrderStatus, TypeOrder } from '@/@types/manage-order.types'
+import {
+  DeliveryMethod,
+  OrderType,
+  PaymentType,
+  PaymentMethod,
+  PaymentStatus,
+  OrderStatus,
+  TypeOrder
+} from '@/@types/manage-order.types'
 
 // Validation schema for order filters
 export const orderFiltersSchema = z.object({
