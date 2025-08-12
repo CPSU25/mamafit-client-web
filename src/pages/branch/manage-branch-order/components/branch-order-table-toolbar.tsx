@@ -5,8 +5,8 @@ import { DataTableFacetedFilter } from '../../components/data-table-faceted-filt
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { X, Search, Calendar, Filter } from 'lucide-react'
-import { orderStatusOptions, paymentStatusOptions, paymentMethodOptions, typeOrderOptions } from '../data/data'
+import { X, Search, Calendar, Plus, Filter, Download, RefreshCw } from 'lucide-react'
+import { orderStatusOptions, paymentStatusOptions, paymentMethodOptions } from '../data/data'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -14,7 +14,11 @@ interface DataTableToolbarProps<TData> {
   isFiltered?: boolean
 }
 
-export function OrderTableToolbar<TData>({ table, isFiltered: customIsFiltered }: DataTableToolbarProps<TData>) {
+export function BranchOrderTableToolbar<TData>({
+  table,
+  onCreateNew,
+  isFiltered: customIsFiltered
+}: DataTableToolbarProps<TData>) {
   const isFiltered = customIsFiltered ?? table.getState().columnFilters.length > 0
   const activeFiltersCount = table.getState().columnFilters.length
 
@@ -48,6 +52,35 @@ export function OrderTableToolbar<TData>({ table, isFiltered: customIsFiltered }
 
         {/* Primary Actions */}
         <div className='flex items-center space-x-2'>
+          <Button
+            variant='outline'
+            size='sm'
+            className='h-10 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
+          >
+            <RefreshCw className='mr-2 h-4 w-4' />
+            Làm mới
+          </Button>
+
+          <Button
+            variant='outline'
+            size='sm'
+            className='h-10 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
+          >
+            <Download className='mr-2 h-4 w-4' />
+            Xuất Excel
+          </Button>
+
+          {onCreateNew && (
+            <Button
+              onClick={onCreateNew}
+              size='sm'
+              className='h-10 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25'
+            >
+              <Plus className='mr-2 h-4 w-4' />
+              Tạo đơn hàng
+            </Button>
+          )}
+
           <DataTableViewOptions table={table} />
         </div>
       </div>
@@ -90,12 +123,6 @@ export function OrderTableToolbar<TData>({ table, isFiltered: customIsFiltered }
           </div>
         )}
 
-        {table.getColumn('type') && (
-          <div className='flex items-center space-x-2'>
-            <span className='text-sm font-medium text-muted-foreground'>Loại đơn hàng:</span>
-            <DataTableFacetedFilter column={table.getColumn('type')} title='Loại đơn hàng' options={typeOrderOptions} />
-          </div>
-        )}
         {/* Date Filter */}
         <div className='flex items-center space-x-2'>
           <span className='text-sm font-medium text-muted-foreground'>Ngày tạo:</span>

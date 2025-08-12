@@ -1,20 +1,20 @@
 // order-columns.tsx - Enhanced Order Table Columns
 import { ManageUserType } from '@/@types/admin.types'
-import { OrderType } from '@/@types/manage-order.types'
+import { BranchOrderType } from '@/@types/branch-order.types'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ColumnDef } from '@tanstack/react-table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { getDeliveryMethodLabel, getStatusColor, getStatusLabel, getTypeOrderLabel } from '../data/data'
-import { OrderTableRowAction } from './order-row-action'
+import { getStatusColor, getStatusLabel } from '../data/data'
+import { BranchOrderTableRowAction } from './branch-order-row-action'
 import { format } from 'date-fns'
 
-interface OrderColumnsProps {
+interface BranchOrderColumnsProps {
   user?: ManageUserType[]
 }
 
-export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): ColumnDef<OrderType>[] => [
+export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps = {}): ColumnDef<BranchOrderType>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -61,7 +61,7 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
     id: 'customerInfor',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Khách hàng' />,
     cell: ({ row }) => {
-      const userId = row.getValue('customerInfor') as string
+      const userId = row.getValue('userId') as string
       const customer = user.find((u) => u.id === userId)
       return (
         <div className='flex items-center space-x-3'>
@@ -86,10 +86,10 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
     id: 'totalAmount',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Tổng tiền' />,
     cell: ({ row }) => {
-      const totalAmount = row.getValue('totalAmount') as number
+      const totalAmount = (row.getValue('totalAmount') as number) ?? 0
       return (
         <div className='text-right'>
-          <div className='font-bold text-violet-700 dark:text-violet-300 text-center'>
+          <div className='font-bold text-violet-700 dark:text-violet-300'>
             {new Intl.NumberFormat('vi-VN', {
               style: 'currency',
               currency: 'VND'
@@ -128,53 +128,6 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
     enableHiding: true
   },
   {
-    accessorKey: 'deliveryMethod',
-    id: 'deliveryMethod',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Giao hàng' />,
-    cell: ({ row }) => {
-      const deliveryMethod = row.getValue('deliveryMethod') as string
-      return (
-        <Badge
-          variant='secondary'
-          className={`text-xs font-medium px-3 py-1 ${getStatusColor(deliveryMethod, 'order')}`}
-        >
-          <div
-            className={`w-2 h-2 rounded-full mr-2 ${
-              deliveryMethod === 'DELIVERY'
-                ? 'bg-green-500'
-                : deliveryMethod === 'PICK_UP'
-                  ? 'bg-blue-500'
-                  : 'bg-gray-400'
-            }`}
-          />
-          {getDeliveryMethodLabel(deliveryMethod)}
-        </Badge>
-      )
-    },
-    enableSorting: true,
-    enableHiding: true
-  },
-  {
-    accessorKey: 'type',
-    id: 'type',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Loại đơn hàng' />,
-    cell: ({ row }) => {
-      const type = row.getValue('type') as string
-      return (
-        <Badge variant='secondary' className={`text-xs font-medium px-3 py-1 ${getStatusColor(type, 'order')}`}>
-          <div
-            className={`w-2 h-2 rounded-full mr-2 ${
-              type === 'NORMAL' ? 'bg-green-500' : type === 'WARRANTY' ? 'bg-blue-500' : 'bg-gray-400'
-            }`}
-          />
-          {getTypeOrderLabel(type)}
-        </Badge>
-      )
-    },
-    enableSorting: true,
-    enableHiding: true
-  },
-  {
     accessorKey: 'paymentStatus',
     id: 'paymentStatus',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Thanh toán' />,
@@ -187,11 +140,13 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
         >
           <div
             className={`w-2 h-2 rounded-full mr-2 ${
-              paymentStatus === 'PAID'
+              paymentStatus === 'PAID_FULL'
                 ? 'bg-green-500'
-                : paymentStatus === 'PARTIAL_PAID'
+                : paymentStatus === 'PAID_DEPOSIT' || paymentStatus === 'PAID_DEPOSIT_COMPLETED'
                   ? 'bg-yellow-500'
-                  : 'bg-red-500'
+                  : paymentStatus === 'FAILED' || paymentStatus === 'CANCELED'
+                    ? 'bg-red-500'
+                    : 'bg-gray-400'
             }`}
           />
           {getStatusLabel(paymentStatus, 'payment')}
@@ -263,7 +218,7 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
   {
     id: 'actions',
     header: 'Thao tác',
-    cell: ({ row }) => <OrderTableRowAction row={row} />,
+    cell: ({ row }) => <BranchOrderTableRowAction row={row} />,
     enableSorting: false,
     enableHiding: false
   }

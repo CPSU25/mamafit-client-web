@@ -1,7 +1,7 @@
 import { z } from 'zod'
+import { BranchOrderType } from '@/@types/branch-order.types'
 import {
   DeliveryMethod,
-  OrderType,
   PaymentType,
   PaymentMethod,
   PaymentStatus,
@@ -71,35 +71,39 @@ export const orderStatusUpdateSchema = z.object({
 })
 
 // Transform function to ensure data consistency
-export const transformOrderData = (order: Partial<OrderType>): OrderType => {
+export const transformOrderData = (order: Partial<BranchOrderType>): BranchOrderType => {
   return {
     id: order.id || '',
-    parentOrderId: order.parentOrderId,
-    branchId: order.branchId,
+    branchId: order.branchId || '',
     userId: order.userId || '',
     totalPaid: order.totalPaid || 0,
-    voucherDiscountId: order.voucherDiscountId,
+    voucherDiscountId: order.voucherDiscountId || '',
     code: order.code || '',
     discountSubtotal: order.discountSubtotal || 0,
-    depositSubtotal: order.depositSubtotal || 0,
-    remainingBalance: order.remainingBalance || 0,
-    totalAmount: order.totalAmount || 0,
-    shippingFee: order.shippingFee || 0,
+    depositSubtotal: order.depositSubtotal || null,
+    remainingBalance: order.remainingBalance || null,
+    totalAmount: order.totalAmount || null,
+    shippingFee: order.shippingFee || null,
     paymentStatus: order.paymentStatus || PaymentStatus.PENDING,
     paymentMethod: order.paymentMethod || PaymentMethod.CASH,
     deliveryMethod: order.deliveryMethod || DeliveryMethod.DELIVERY,
     paymentType: order.paymentType || PaymentType.FULL,
-    canceledAt: order.canceledAt,
-    canceledReason: order.canceledReason,
-    subTotalAmount: order.subTotalAmount,
-    warrantyCode: order.warrantyCode,
+    canceledAt: order.canceledAt || null,
+    canceledReason: order.canceledReason || null,
+    subTotalAmount: order.subTotalAmount || null,
+    warrantyCode: order.warrantyCode || null,
     type: order.type || TypeOrder.NORMAL,
     status: order.status || OrderStatus.CREATED,
     addressId: order.addressId || '',
     createdAt: order.createdAt || new Date().toISOString(),
     updatedAt: order.updatedAt || new Date().toISOString(),
     createdBy: order.createdBy || '',
-    updateBy: order.updateBy || ''
+    updatedBy: order.updatedBy || '',
+    trackingOrderCode: order.trackingOrderCode || null,
+    receivedAt: order.receivedAt || null,
+    measurementDiary: order.measurementDiary || null,
+    items: order.items || [],
+    serviceAmount: order.serviceAmount || null
   }
 }
 

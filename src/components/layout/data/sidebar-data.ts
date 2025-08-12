@@ -73,15 +73,23 @@ export const sidebarData: SidebarData = {
             },
             { title: 'Quản lý danh mục', url: 'manage-category', icon: Tags },
             { title: 'Quản lý váy bầu', url: 'manage-maternity-dress', icon: Shirt },
-            { title: 'Quản lý linh kiện', url: 'manage-component', icon: Boxes },
-            { title: 'Quản lý mốc thời gian', url: 'manage-milestone', icon: Clock },
+            { title: 'Quản lý thành phần', url: 'manage-component', icon: Boxes },
+            { title: 'Quản lý mốc nhiệm vụ', url: 'manage-milestone', icon: Clock },
             { title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }
           ]
         },
         {
           title: 'Quản lý giao dịch',
           items: [
-            { title: 'Quản lý đơn hàng', url: 'manage-order', icon: Package, badge: 'New' },
+            {
+              title: 'Quản lý đơn hàng',
+              icon: Package,
+              items: [
+                { title: 'Tất cả đơn hàng', url: 'manage-order', icon: AlertCircle },
+                { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: Clock },
+                { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: CheckCircle }
+              ]
+            },
             { title: 'Quản lý voucher', url: 'manage-voucher', icon: Ticket },
             { title: 'Quản lý thanh toán', url: 'manage-transaction', icon: DollarSign }
           ]

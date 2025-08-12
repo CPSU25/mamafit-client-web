@@ -4,10 +4,14 @@
 // API: /order-items/:id - structure có tasks trong milestone, detail trong task
 // =====================================================================
 
+import { PresetType } from './designer.types'
+import { MaternityDressDetailType } from './inventory.type'
+import { DesignRequestType } from './manage-order.types'
+
 /**
  * Admin Task Status - Admin có thể quản lý nhiều status hơn staff
  */
-export type AdminTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PASS' | 'FAIL'
+export type AdminTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PASS' | 'FAIL' | 'DONE'
 
 /**
  * Admin Task Detail - Chứa thông tin chi tiết của task khi được thực hiện
@@ -65,9 +69,9 @@ export interface AdminOrderItemWithTasks {
   updatedBy: string
   createdAt: string
   updatedAt: string
-  maternityDressDetail?: unknown
-  preset?: unknown
-  designRequest?: unknown
+  maternityDressDetail?: MaternityDressDetailType
+  preset?: PresetType
+  designRequest?: DesignRequestType
   orderId: string
   maternityDressDetailId?: string
   presetId?: string

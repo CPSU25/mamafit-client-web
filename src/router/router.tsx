@@ -10,14 +10,18 @@ import {
   ManageUserPage,
   ManageVoucherPage,
   WarrantyManagementSystem,
-  OrderDetailPage
+  OrderDetailPage,
+  SystemConfigPage
 } from '@/pages/admin'
+// Import các trang manage order mới
+import WarrantyOrderPage from '@/pages/admin/manage-order/warranty'
+import DesignRequestPage from '@/pages/admin/manage-order/design-request'
 import { HomePage } from '@/pages/guest'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
 import { FactoryManagerDashboard } from '@/pages/factory-manager'
 import { DesignerDashboard, ManageTemplatePage, ManageDesignRequestPage } from '@/pages/designer'
-import { BranchDashboard, CashierPage, ManageAppointmentPage } from '@/pages/branch'
+import { BranchDashboard, CashierPage, ManageAppointmentPage, ManageBranchOrderPage } from '@/pages/branch'
 import { OrderItemDetailPage, StaffTasksPage } from '@/pages/staff'
 
 export const router = createBrowserRouter([
@@ -59,11 +63,13 @@ export const router = createBrowserRouter([
           { path: 'manage-component', element: <ManageComponentPage /> },
           { path: 'manage-milestone', element: <ManageMilestonePage /> },
           { path: 'manage-order', element: <ManageOrderPage /> },
+          { path: 'manage-order/design-request', element: <DesignRequestPage /> },
+          { path: 'manage-order/warranty', element: <WarrantyOrderPage /> },
           { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
           { path: 'manage-voucher', element: <ManageVoucherPage /> },
           { path: 'manage-transaction', element: <div>Transactions Page</div> },
           { path: 'manage-warranty', element: <WarrantyManagementSystem /> },
-          { path: 'settings', element: <div>System Settings Page</div> }
+          { path: 'settings', element: <SystemConfigPage /> }
         ]
       },
 
@@ -91,6 +97,10 @@ export const router = createBrowserRouter([
           {
             path: 'manage-appointment',
             element: <ManageAppointmentPage />
+          },
+          {
+            path: 'manage-order',
+            element: <ManageBranchOrderPage />
           }
         ]
       },
@@ -160,6 +170,8 @@ export const router = createBrowserRouter([
             path: 'manage-order',
             element: <ManageOrderPage />
           },
+          { path: 'manage-order/design-request', element: <DesignRequestPage /> },
+          { path: 'manage-order/warranty', element: <WarrantyOrderPage /> },
           { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
           {
             path: 'manage-task',

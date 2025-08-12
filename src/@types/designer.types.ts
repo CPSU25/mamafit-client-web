@@ -1,6 +1,7 @@
 //Manage Preset
 
 export interface PresetType {
+  name: string | null
   id: string
   styleName: string
   styleId: string

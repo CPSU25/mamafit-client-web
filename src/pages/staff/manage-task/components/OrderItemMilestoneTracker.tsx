@@ -29,6 +29,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import ghtkAPI from '@/apis/ghtk.api'
 import { GHTKOrder } from '@/@types/ghtk.types'
 import { DeliveryOrderSuccessDialog } from '../../components/delivery-order-success-dialog'
+import { OrderStatus } from '@/@types/manage-order.types'
 
 // Helper functions for task status display
 const getStatusText = (status: TaskStatus): string => {
@@ -96,6 +97,7 @@ interface OrderItemMilestoneTrackerProps {
   milestones: MilestoneUI[]
   orderItemId: string
   orderId: string
+  orderStatus: OrderStatus
 }
 
 interface TaskCompletionDialogProps {
@@ -170,7 +172,8 @@ const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({ taskId, tas
 export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps> = ({
   milestones,
   orderItemId,
-  orderId
+  orderId,
+  orderStatus
 }) => {
   const updateTaskStatusMutation = useStaffUpdateTaskStatus()
   const { handlePostSubmit } = useQualityCheckPostSubmitHandler()
@@ -287,7 +290,6 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
     if (currentSequence === 0) {
       return false
     }
-
     // Milestone bị khóa nếu sequenceOrder > currentSequence
     return milestone.sequenceOrder > currentSequence
   }
@@ -382,11 +384,18 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
     // Sử dụng logic mới để kiểm tra milestone có bị khóa không
     const isLockedBySequence = isMilestoneLocked(milestone)
+    // Khóa milestone hiện tại nếu đang chờ khách thanh toán phần còn lại
+    const paymentLocked =
+      orderStatus === OrderStatus.AWAITING_PAID_REST &&
+      typeof currentSequence === 'number' &&
+      milestone.sequenceOrder === currentSequence
+
+    const resolvedLocked = isLockedBySequence || paymentLocked
 
     // Bỏ sequential locking vì đã được xử lý trong logic currentSequence
     const hasInProgress = milestone.maternityDressTasks.some((task) => task.status === 'IN_PROGRESS')
 
-    if (isLockedBySequence) {
+    if (resolvedLocked) {
       return { status: 'locked', label: 'Bị khóa', variant: 'secondary' as const }
     } else if (isCompleted) {
       return { status: 'completed', label: 'Hoàn thành', variant: 'default' as const }
@@ -423,6 +432,12 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
               const isWarrantyValidation = isWarrantyValidationMilestone(milestone.name)
               const isQualityCheckWarranty = isQualityCheckWarrantyMilestone(milestone.name)
               const isQualityCheckFailed = isQualityCheckFailedMilestone(milestone.name)
+
+              // Khóa milestone tiếp theo nếu đang chờ khách thanh toán phần còn lại
+              const isPaymentLocked =
+                orderStatus === OrderStatus.AWAITING_PAID_REST &&
+                typeof currentSequence === 'number' &&
+                milestone.sequenceOrder === currentSequence
 
               const completedTasks = milestone.maternityDressTasks.filter(
                 (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
@@ -602,7 +617,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                           </Badge>
                           <p className='text-sm text-yellow-700'>{milestone.description}</p>
                           <p className='text-xs text-yellow-700 bg-yellow-100 p-2 rounded mt-2'>
-                            ⚠️ Cần hoàn thành milestone trước để mở khóa.
+                            {isPaymentLocked
+                              ? 'Chờ khách hàng thanh toán số tiền còn lại'
+                              : '⚠️ Cần hoàn thành milestone trước để mở khóa.'}
                           </p>
                         </CardHeader>
                       </Card>
@@ -850,10 +867,13 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                               <p className='text-gray-600 leading-relaxed'>{milestone.description}</p>
                               {isLocked && (
                                 <p className='text-xs text-yellow-700 bg-yellow-100 p-2 rounded mt-2'>
-                                  ⚠️{' '}
-                                  {milestoneStatus.label.includes('Quality Check')
-                                    ? 'Milestone này bị khóa do Quality Check có lỗi không nghiêm trọng. Chờ admin assign người khác xử lý.'
-                                    : 'Cần hoàn thành milestone trước để mở khóa.'}
+                                  {isPaymentLocked
+                                    ? 'Chờ khách hàng thanh toán số tiền còn lại'
+                                    : `⚠️ ${
+                                        milestoneStatus.label.includes('Quality Check')
+                                          ? 'Milestone này bị khóa do Quality Check có lỗi không nghiêm trọng. Chờ admin assign người khác xử lý.'
+                                          : 'Cần hoàn thành milestone trước để mở khóa.'
+                                      }`}
                                 </p>
                               )}
                             </div>

@@ -1,4 +1,4 @@
-import { OrderById } from '@/@types/manage-order.types'
+import { BranchOrderType } from '@/@types/branch-order.types'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
 import { getStatusColor, getStatusLabel } from '../data/data'
 import {
-  MapPin,
   Package,
+  Edit,
+  Printer,
   X,
   Phone,
   Mail,
@@ -18,48 +19,30 @@ import {
   Truck,
   User,
   ShoppingBag,
-  UserCheck,
+  // UserCheck,
   Ruler,
   CheckCircle2,
   Circle,
   Target,
-  Palette,
-  BarChart3
+  Palette
 } from 'lucide-react'
 import { useGetUserById } from '@/services/admin/manage-user.service'
-import { useOrder } from '@/services/admin/manage-order.service'
-import { useAdminOrderItemsWithTasks } from '@/services/admin/admin-task.service'
-import GoongMap from '@/components/Goong/GoongMap'
+// import { useAdminOrderItemsWithTasks } from '@/services/admin/admin-task.service'
 import dayjs from 'dayjs'
-import { useState } from 'react'
-import { OrderAssignDialog } from './order-assign-dialog'
-import StatusOrderTimeline from './milestone/status-timeline-orderItem'
-import { useCreateShipping } from '@/services/global/ghtk.service'
-import { toast } from 'sonner'
-import { GHTKOrder } from '@/@types/ghtk.types'
-import { DeliveryOrderSuccessDialog } from '@/pages/staff/components/delivery-order-success-dialog'
 
-interface OrderDetailSidebarProps {
-  order: OrderById | null
+interface BranchOrderDetailSidebarProps {
+  order: BranchOrderType | null
   isOpen: boolean
   onClose: () => void
 }
 
-export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSidebarProps) {
+export function BranchOrderDetailSidebar({ order, isOpen, onClose }: BranchOrderDetailSidebarProps) {
   const { data: user } = useGetUserById(isOpen ? (order?.userId ?? '') : '')
-  const { data: orderDetail } = useOrder(isOpen ? (order?.id ?? '') : '')
-  const [selectedItemForAssign, setSelectedItemForAssign] = useState<string>('')
-  const [assignChargeDialogOpen, setAssignChargeDialogOpen] = useState(false)
-  const [shippingOrder, setShippingOrder] = useState<GHTKOrder | null>(null)
-  const [showShippingDialog, setShowShippingDialog] = useState(false)
-
-  // Sử dụng mutation hook để tạo shipping
-  const createShippingMutation = useCreateShipping()
 
   // Auto-load data cho tất cả items khi sidebar mở (dynamic, không hardcode)
-  const orderItems = (isOpen && (orderDetail?.data?.items || order?.items)) || []
-  const orderItemIds = orderItems.map((it) => it.id)
-  const orderItemsData = useAdminOrderItemsWithTasks(orderItemIds, isOpen)
+  // const orderItems = (isOpen && (order?.items || [])) || []
+  // const orderItemIds = orderItems.map((it) => it.id)
+  // const orderItemsData = useAdminOrderItemsWithTasks(orderItemIds, isOpen)
 
   if (!isOpen) return null
 
@@ -86,14 +69,13 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
   const getStatusTimeline = () => {
     const allStatuses = [
       { key: 'CREATED', label: 'Đơn hàng đã tạo', icon: ShoppingBag },
-      { key: 'CONFIRMED', label: 'Đã xác nhận', icon: Package },
-      { key: 'IN_PROGRESS', label: 'Đang sản xuất', icon: Package },
-      { key: 'AWAITING_PAID_REST', label: 'Đang chờ thanh toán', icon: Package },
+      { key: 'CONFIRMED', label: 'Comfirmed Order', icon: Package },
+      { key: 'IN_DESIGN', label: 'Đang thiết kế', icon: Edit },
+      { key: 'IN_PRODUCTION', label: 'Đang sản xuất', icon: Package },
+      { key: 'IN_QC', label: 'Kiểm tra chất lượng', icon: Package },
       { key: 'PACKAGING', label: 'Đóng gói', icon: Package },
       { key: 'DELIVERING', label: 'Đang giao hàng', icon: Truck },
-      { key: 'COMPLETED', label: 'Đã hoàn thành', icon: Package },
-      { key: 'CANCELLED', label: 'Đã hủy', icon: Package },
-      { key: 'RETURNED', label: 'Đã trả lại', icon: Package }
+      { key: 'COMPLETED', label: 'Hoàn thành', icon: Package }
     ]
 
     const currentStatusIndex = allStatuses.findIndex((s) => s.key === order.status)
@@ -107,80 +89,26 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
 
   const statusTimeline = getStatusTimeline()
 
-  const handleAssignChargeSuccess = () => {
-    // Refetch order detail data without page reload
-    // The order detail query will automatically refetch when needed
-    console.log('Assign charge success - data will be refetched automatically')
-  }
+  // const getAssignButtonProps = (itemId: string, itemIndex: number) => {
+  //   const itemQuery = orderItemsData[itemIndex]
+  //   const itemData = itemQuery?.data
+  //   const hasMilestones = itemData?.milestones && itemData.milestones.length > 0
 
-  const getAssignButtonProps = (itemId: string, itemIndex: number) => {
-    const itemQuery = orderItemsData[itemIndex]
-    const itemData = itemQuery?.data
-    const hasMilestones = itemData?.milestones && itemData.milestones.length > 0
-
-    return {
-      text: itemQuery?.isLoading
-        ? 'Đang tải...'
-        : hasMilestones
-          ? 'Giao nhiệm vụ cho nhân viên'
-          : 'Chưa thể giao nhiệm vụ',
-      disabled: itemQuery?.isLoading || !hasMilestones,
-      onClick: () => {
-        if (hasMilestones) {
-          setSelectedItemForAssign(itemId)
-          setAssignChargeDialogOpen(true)
-        }
-      }
-    }
-  }
-
-  const getSelectedItemData = () => {
-    const selectedIndex = orderItems.findIndex((item) => item.id === selectedItemForAssign)
-    return selectedIndex >= 0 ? (orderItemsData[selectedIndex]?.data ?? null) : null
-  }
-
-  // Kiểm tra xem tất cả milestone của tất cả items đã hoàn thành chưa
-  const areAllMilestonesCompleted = () => {
-    if (orderItemsData.length === 0) return false
-    
-    return orderItemsData.every((itemQuery) => {
-      if (itemQuery.isLoading || !itemQuery.data || !itemQuery.data.milestones) {
-        return false
-      }
-      
-      // Kiểm tra tất cả milestone của item này đã hoàn thành
-      return itemQuery.data.milestones.every((milestone) => {
-        // Kiểm tra tất cả task trong milestone đã hoàn thành (AdminMilestone dùng tasks thay vì maternityDressTasks)
-        return milestone.tasks.every((task) => 
-          task.detail.status === 'DONE' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
-        )
-      })
-    })
-  }
-
-  // Xử lý tạo đơn shipping
-  const handleCreateShipping = () => {
-    if (!order?.id) return
-    
-    createShippingMutation.mutate(order.id, {
-      onSuccess: (response) => {
-        if (response.data.success) {
-          setShippingOrder(response.data.order)
-          setShowShippingDialog(true)
-          toast.success('Tạo đơn giao hàng thành công!')
-        } else {
-          toast.error(response.data.message || 'Không thể tạo đơn giao hàng')
-        }
-      },
-      onError: (error) => {
-        console.error('Error creating shipping:', error)
-        toast.error('Có lỗi xảy ra khi tạo đơn giao hàng')
-      }
-    })
-  }
-
-  const allMilestonesCompleted = areAllMilestonesCompleted()
-  const canCreateShipping = allMilestonesCompleted && (order?.status === 'IN_PROGRESS' || order?.status === 'PACKAGING')
+  //   return {
+  //     text: itemQuery?.isLoading
+  //       ? 'Đang tải...'
+  //       : hasMilestones
+  //         ? 'Giao nhiệm vụ cho nhân viên'
+  //         : 'Chưa thể giao nhiệm vụ',
+  //     disabled: itemQuery?.isLoading || !hasMilestones,
+  //     onClick: () => {
+  //       if (hasMilestones) {
+  //         setSelectedItemForAssign(itemId)
+  //         setAssignChargeDialogOpen(true)
+  //       }
+  //     }
+  //   }
+  // }
 
   return (
     <>
@@ -212,7 +140,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                   <div className='w-2 h-2 bg-white rounded-full animate-pulse' />
                   <span className='text-white/80 text-sm font-medium tracking-wide'>ORDER DETAILS</span>
                 </div>
-                <h2 className='text-2xl font-bold text-white drop-shadow-sm'>#{orderDetail?.data.code}</h2>
+                <h2 className='text-2xl font-bold text-white drop-shadow-sm'>#{order?.code}</h2>
                 <p className='text-violet-100 text-sm'>Order Code</p>
               </div>
 
@@ -228,7 +156,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
 
             <div className='flex items-center justify-between'>
               <div className='space-y-1'>
-                <h3 className='text-xl font-bold text-white drop-shadow-sm'>{orderDetail?.data.items[0].itemType}</h3>
+                <h3 className='text-xl font-bold text-white drop-shadow-sm'>{order?.items?.[0]?.itemType}</h3>
                 <p className='text-violet-100 text-sm'>Order Type</p>
               </div>
               <div className='flex items-center space-x-3'>
@@ -292,7 +220,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                     )}
                   </div>
 
-                  {orderDetail?.data?.measurementDiary && (
+                  {order?.measurementDiary && (
                     <div className='border-t border-violet-200 dark:border-violet-800 pt-4 mt-4'>
                       <div className='flex items-center text-violet-700 dark:text-violet-300 mb-3'>
                         <Ruler className='h-4 w-4 mr-2' />
@@ -302,32 +230,31 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                         <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
                           <span className='text-muted-foreground block text-xs'>Tuổi</span>
                           <span className='font-semibold text-violet-700 dark:text-violet-300'>
-                            {orderDetail.data.measurementDiary.age}
+                            {order.measurementDiary.age}
                           </span>
                         </div>
                         <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
                           <span className='text-muted-foreground block text-xs'>Chiều cao</span>
                           <span className='font-semibold text-violet-700 dark:text-violet-300'>
-                            {orderDetail.data.measurementDiary.height} cm
+                            {order.measurementDiary.height} cm
                           </span>
                         </div>
                         <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
                           <span className='text-muted-foreground block text-xs'>Cân nặng</span>
                           <span className='font-semibold text-violet-700 dark:text-violet-300'>
-                            {orderDetail.data.measurementDiary.weight} kg
+                            {order.measurementDiary.weight} kg
                           </span>
                         </div>
                         <div className='bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
                           <span className='text-muted-foreground block text-xs'>3 vòng</span>
                           <span className='font-semibold text-violet-700 dark:text-violet-300'>
-                            {orderDetail.data.measurementDiary.bust}/{orderDetail.data.measurementDiary.waist}/
-                            {orderDetail.data.measurementDiary.hip}
+                            {order.measurementDiary.bust}/{order.measurementDiary.waist}/{order.measurementDiary.hip}
                           </span>
                         </div>
                         <div className='col-span-2 bg-violet-50 dark:bg-violet-950/30 p-3 rounded-lg'>
                           <span className='text-muted-foreground block text-xs'>Ngày đầu kỳ kinh cuối</span>
                           <span className='font-semibold text-violet-700 dark:text-violet-300'>
-                            {formatDate(orderDetail.data.measurementDiary.firstDateOfLastPeriod)}
+                            {formatDate(order.measurementDiary.firstDateOfLastPeriod)}
                           </span>
                         </div>
                       </div>
@@ -358,85 +285,84 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
             )}
 
             {/* Measurements List - Enhanced design */}
-            {orderDetail?.data?.measurementDiary?.measurements &&
-              orderDetail.data.measurementDiary.measurements.length > 0 && (
-                <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
-                  <CardHeader className='pb-4'>
-                    <CardTitle className='text-base font-semibold flex items-center justify-between text-violet-700 dark:text-violet-300'>
-                      <div className='flex items-center'>
-                        <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
-                          <Ruler className='h-4 w-4 text-violet-600 dark:text-violet-400' />
-                        </div>
-                        Measurements History
+            {order?.measurementDiary?.measurements && order.measurementDiary.measurements.length > 0 && (
+              <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
+                <CardHeader className='pb-4'>
+                  <CardTitle className='text-base font-semibold flex items-center justify-between text-violet-700 dark:text-violet-300'>
+                    <div className='flex items-center'>
+                      <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
+                        <Ruler className='h-4 w-4 text-violet-600 dark:text-violet-400' />
                       </div>
-                      <Badge
-                        variant='secondary'
-                        className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
+                      Measurements History
+                    </div>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
+                    >
+                      {order.measurementDiary.measurements.length} records
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  {order.measurementDiary.measurements
+                    .slice()
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .map((m, index) => (
+                      <div
+                        key={m.id}
+                        className={`border-2 rounded-xl p-4 transition-all duration-200 ${
+                          index === 0
+                            ? 'border-violet-300 dark:border-violet-600 bg-gradient-to-br from-violet-50 via-white to-violet-50/50 dark:from-violet-950/30 dark:via-card dark:to-violet-950/20 shadow-md'
+                            : 'border-violet-100 dark:border-violet-800 bg-card hover:border-violet-200 dark:hover:border-violet-700'
+                        }`}
                       >
-                        {orderDetail.data.measurementDiary.measurements.length} records
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className='space-y-4'>
-                    {orderDetail.data.measurementDiary.measurements
-                      .slice()
-                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                      .map((m, index) => (
-                        <div
-                          key={m.id}
-                          className={`border-2 rounded-xl p-4 transition-all duration-200 ${
-                            index === 0
-                              ? 'border-violet-300 dark:border-violet-600 bg-gradient-to-br from-violet-50 via-white to-violet-50/50 dark:from-violet-950/30 dark:via-card dark:to-violet-950/20 shadow-md'
-                              : 'border-violet-100 dark:border-violet-800 bg-card hover:border-violet-200 dark:hover:border-violet-700'
-                          }`}
-                        >
-                          <div className='flex items-center justify-between mb-3'>
-                            <div className='flex items-center space-x-2'>
-                              {index === 0 && <div className='w-2 h-2 bg-violet-500 rounded-full animate-pulse' />}
-                              <span className='text-xs font-medium text-violet-600 dark:text-violet-400'>
-                                {index === 0 ? 'Latest Update' : 'Previous Record'}
-                              </span>
-                            </div>
-                            <div className='flex items-center space-x-2'>
-                              {m.isLocked && (
-                                <Badge className='text-[10px] bg-violet-500 hover:bg-violet-600'>Locked</Badge>
-                              )}
-                              <span className='text-xs text-muted-foreground'>
-                                {formatDate(m.updatedAt || m.createdAt)}
-                              </span>
-                            </div>
+                        <div className='flex items-center justify-between mb-3'>
+                          <div className='flex items-center space-x-2'>
+                            {index === 0 && <div className='w-2 h-2 bg-violet-500 rounded-full animate-pulse' />}
+                            <span className='text-xs font-medium text-violet-600 dark:text-violet-400'>
+                              {index === 0 ? 'Latest Update' : 'Previous Record'}
+                            </span>
                           </div>
-                          <div className='grid grid-cols-3 gap-3 text-xs'>
-                            {[
-                              { label: 'Bust', value: m.bust },
-                              { label: 'Waist', value: m.waist },
-                              { label: 'Hip', value: m.hip },
-                              { label: 'Shoulder', value: m.shoulder },
-                              { label: 'Neck', value: m.neck },
-                              { label: 'Dress', value: m.dressLength },
-                              { label: 'Chest around', value: m.chestAround },
-                              { label: 'Sleeve', value: m.sleeveLength },
-                              { label: 'Shoulder width', value: m.shoulderWidth },
-                              { label: 'Leg length', value: m.legLength },
-                              { label: 'Pants waist', value: m.pantsWaist },
-                              { label: 'Stomach', value: m.stomach },
-                              { label: 'Thigh', value: m.thigh },
-                              { label: 'Tuần thai', value: m.weekOfPregnancy },
-                              { label: 'Weight', value: m.weight }
-                            ].map((item, idx) => (
-                              <div key={idx} className='bg-violet-50/50 dark:bg-violet-950/20 p-2 rounded-lg'>
-                                <div className='text-muted-foreground text-[10px] uppercase tracking-wide mb-1'>
-                                  {item.label}
-                                </div>
-                                <div className='font-semibold text-violet-700 dark:text-violet-300'>{item.value}</div>
-                              </div>
-                            ))}
+                          <div className='flex items-center space-x-2'>
+                            {m.isLocked && (
+                              <Badge className='text-[10px] bg-violet-500 hover:bg-violet-600'>Locked</Badge>
+                            )}
+                            <span className='text-xs text-muted-foreground'>
+                              {formatDate(m.updatedAt || m.createdAt)}
+                            </span>
                           </div>
                         </div>
-                      ))}
-                  </CardContent>
-                </Card>
-              )}
+                        <div className='grid grid-cols-3 gap-3 text-xs'>
+                          {[
+                            { label: 'Bust', value: m.bust },
+                            { label: 'Waist', value: m.waist },
+                            { label: 'Hip', value: m.hip },
+                            { label: 'Shoulder', value: m.shoulder },
+                            { label: 'Neck', value: m.neck },
+                            { label: 'Dress', value: m.dressLength },
+                            { label: 'Chest around', value: m.chestAround },
+                            { label: 'Sleeve', value: m.sleeveLength },
+                            { label: 'Shoulder width', value: m.shoulderWidth },
+                            { label: 'Leg length', value: m.legLength },
+                            { label: 'Pants waist', value: m.pantsWaist },
+                            { label: 'Stomach', value: m.stomach },
+                            { label: 'Thigh', value: m.thigh },
+                            { label: 'Tuần thai', value: m.weekOfPregnancy },
+                            { label: 'Weight', value: m.weight }
+                          ].map((item, idx) => (
+                            <div key={idx} className='bg-violet-50/50 dark:bg-violet-950/20 p-2 rounded-lg'>
+                              <div className='text-muted-foreground text-[10px] uppercase tracking-wide mb-1'>
+                                {item.label}
+                              </div>
+                              <div className='font-semibold text-violet-700 dark:text-violet-300'>{item.value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Order Items - Enhanced design */}
             <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
@@ -452,13 +378,13 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                     variant='secondary'
                     className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
                   >
-                    {orderDetail?.data?.items?.length || order.items?.length || 0} items
+                    {order?.items?.length || 0} items
                   </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-5'>
-                {(orderDetail?.data?.items || order.items || []).length > 0 ? (
-                  (orderDetail?.data?.items || order.items || []).map((item, index) => {
+                {(order?.items || []).length > 0 ? (
+                  (order?.items || []).map((item, index) => {
                     if (item.itemType === 'DESIGN_REQUEST') {
                       return (
                         <div
@@ -536,23 +462,8 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                               </div>
                             )}
 
-                            {/* Status Timeline */}
-                            <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
-                              <div className='flex items-center space-x-2 mb-3'>
-                                <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
-                                  <BarChart3 className='w-3 h-3 text-white' />
-                                </div>
-                                <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
-                                  Progress Status
-                                </span>
-                              </div>
-                              <div className='pl-7'>
-                                <StatusOrderTimeline orderItemId={item.id} />
-                              </div>
-                            </div>
-
                             {/* Assign button */}
-                            <div className='pt-3 border-t border-violet-200 dark:border-violet-700'>
+                            {/* <div className='pt-3 border-t border-violet-200 dark:border-violet-700'>
                               {(() => {
                                 const buttonProps = getAssignButtonProps(item.id, index)
                                 return (
@@ -567,7 +478,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                   </Button>
                                 )
                               })()}
-                            </div>
+                            </div> */}
                           </div>
                         </div>
                       )
@@ -581,7 +492,9 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                               className='w-16 h-16 rounded-lg border-2 border-violet-200 dark:border-violet-700'
                             />
                             <div className='flex-1 min-w-0 space-y-1'>
-                              <h4 className='font-semibold text-sm text-foreground truncate'>{item.preset.name}</h4>
+                              <h4 className='font-semibold text-sm text-foreground truncate'>
+                                {item.preset?.name || item.maternityDressDetail?.name || ''}
+                              </h4>
                               {item.preset?.styleName && (
                                 <p className='text-xs text-muted-foreground truncate flex items-center'>
                                   <span className='w-1 h-1 bg-violet-400 rounded-full mr-2'></span>
@@ -607,21 +520,8 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                             </div>
                           </div>
 
-                          {/* Status Timeline */}
-                          <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
-                            <div className='flex items-center space-x-2 mb-3'>
-                              <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
-                                <BarChart3 className='w-3 h-3 text-white' />
-                              </div>
-                              <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
-                                Progress Status
-                              </span>
-                            </div>
-                            <StatusOrderTimeline orderItemId={item.id} />
-                          </div>
-
                           {/* Assign button */}
-                          <div className='pt-2 border-t border-violet-200 dark:border-violet-700'>
+                          {/* <div className='pt-2 border-t border-violet-200 dark:border-violet-700'>
                             {(() => {
                               const buttonProps = getAssignButtonProps(item.id, index)
                               return (
@@ -636,7 +536,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                 </Button>
                               )
                             })()}
-                          </div>
+                          </div> */}
                         </div>
                       )
                     }
@@ -653,41 +553,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
               </CardContent>
             </Card>
 
-            {/* Shipping Address - Enhanced with map */}
-            {orderDetail?.data?.address && orderDetail?.data?.address !== null && (
-              <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
-                <CardHeader className='pb-4'>
-                  <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
-                    <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
-                      <MapPin className='h-4 w-4 text-violet-600 dark:text-violet-400' />
-                    </div>
-                    Shipping Address
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                  <div className='bg-violet-50/50 dark:bg-violet-950/20 p-4 rounded-xl border border-violet-200 dark:border-violet-700'>
-                    <p className='font-semibold text-foreground mb-2'>{orderDetail?.data?.address.street}</p>
-                    <p className='text-sm text-muted-foreground'>
-                      {[
-                        orderDetail?.data?.address.ward,
-                        orderDetail?.data?.address.district,
-                        orderDetail?.data?.address.province
-                      ]
-                        .filter(Boolean)
-                        .join(', ')}
-                    </p>
-                  </div>
-
-                  <div className='rounded-xl overflow-hidden border-2 border-violet-200 dark:border-violet-700 shadow-md'>
-                    <GoongMap
-                      center={[orderDetail?.data?.address.longitude, orderDetail?.data?.address.latitude]}
-                      zoom={16}
-                      className='h-40'
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Shipping Address omitted in Branch Manager context */}
 
             {/* Payment Details - Enhanced design */}
             <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
@@ -719,14 +585,14 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                   {order.depositSubtotal !== 0 && order.depositSubtotal !== undefined && (
                     <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                       <span className='text-muted-foreground'>Deposit</span>
-                      <span className='font-semibold'>{formatCurrency(order.depositSubtotal)}</span>
+                      <span className='font-semibold'>{formatCurrency(order.depositSubtotal ?? 0)}</span>
                     </div>
                   )}
                   <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                     <span className='text-muted-foreground'>Shipping Fee</span>
                     <span className='font-semibold'>
                       {order.shippingFee !== undefined && order.shippingFee !== 0
-                        ? formatCurrency(order.shippingFee)
+                        ? formatCurrency(order.shippingFee ?? 0)
                         : '0 ₫'}
                     </span>
                   </div>
@@ -734,7 +600,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                     <span className='text-muted-foreground'>Service Fee</span>
                     <span className='font-semibold'>
                       {order.serviceAmount !== 0 && order.serviceAmount !== undefined
-                        ? formatCurrency(order?.serviceAmount)
+                        ? formatCurrency(order?.serviceAmount ?? 0)
                         : '0 ₫'}
                     </span>
                   </div>
@@ -753,7 +619,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                       <span className='text-xs text-muted-foreground block mb-1'>Paid</span>
                       <span className='text-green-600 font-bold text-lg'>
                         {order.totalPaid !== undefined && order.totalPaid !== 0
-                          ? formatCurrency(order.totalPaid)
+                          ? formatCurrency(order.totalPaid ?? 0)
                           : '0 ₫'}
                       </span>
                     </div>
@@ -761,7 +627,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                       <span className='text-xs text-muted-foreground block mb-1'>Remaining</span>
                       <span className='text-orange-600 font-bold text-lg'>
                         {order.remainingBalance !== undefined && order.remainingBalance !== 0
-                          ? formatCurrency(order.remainingBalance)
+                          ? formatCurrency(order.remainingBalance ?? 0)
                           : '0 ₫'}
                       </span>
                     </div>
@@ -876,37 +742,35 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
           <div className='absolute inset-0 bg-gradient-to-r from-violet-50 via-white to-violet-50 dark:from-violet-950/30 dark:via-background dark:to-violet-950/30' />
 
           {/* Content */}
-          {canCreateShipping && (
-            <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800'>
-              <Button 
-                onClick={handleCreateShipping}
-                disabled={createShippingMutation.isPending}
-                className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200' 
+          <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800 space-y-4'>
+            <Button
+              className='w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25 transition-all duration-200'
+              size='sm'
+            >
+              <Package className='h-4 w-4 mr-2' />
+              Update Status
+            </Button>
+            <div className='grid grid-cols-2 gap-3'>
+              <Button
+                variant='outline'
                 size='sm'
+                className='border-violet-300 dark:border-violet-600 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
               >
-                <Truck className='h-4 w-4 mr-2' />
-                {createShippingMutation.isPending ? 'Đang tạo đơn...' : 'Tạo đơn shipping'}
+                <Edit className='h-4 w-4 mr-2' />
+                Edit
               </Button>
-              <p className='text-xs text-center text-muted-foreground mt-2'>
-                Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng
-              </p>
+              <Button
+                variant='outline'
+                size='sm'
+                className='border-violet-300 dark:border-violet-600 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
+              >
+                <Printer className='h-4 w-4 mr-2' />
+                Print
+              </Button>
             </div>
-          )}
+          </div>
         </div>
       </div>
-
-      <OrderAssignDialog
-        open={assignChargeDialogOpen}
-        onOpenChange={setAssignChargeDialogOpen}
-        orderItem={getSelectedItemData() || null}
-        onSuccess={handleAssignChargeSuccess}
-      />
-
-      <DeliveryOrderSuccessDialog
-        open={showShippingDialog}
-        onOpenChange={setShowShippingDialog}
-        order={shippingOrder}
-      />
 
       {/* Custom scrollbar styles */}
       <style>{`
