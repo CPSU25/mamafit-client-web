@@ -1,6 +1,7 @@
 import { BranchRequest } from '@/@types/branch.type'
 import manageBranchAPI, { BranchQueryParams } from '@/apis/manage-branch.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 export const branchKeys = {
   all: ['branches'] as const,
@@ -45,11 +46,13 @@ export const useCreateBranch = () => {
       throw new Error(response.data.message || 'Failed to create branch')
     },
     onSuccess: () => {
-      // Only invalidate queries, let React Query handle the refetch automatically
-      queryClient.invalidateQueries({ queryKey: branchKeys.lists() })
+      // Invalidate all branch queries
+      queryClient.invalidateQueries({ queryKey: branchKeys.all })
+      toast.success('Tạo chi nhánh thành công!')
     },
     onError: (error) => {
       console.error('❌ Create branch error:', error)
+      toast.error('Tạo chi nhánh thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -74,11 +77,13 @@ export const useUpdateBranch = () => {
       throw new Error(response.data.message || 'Failed to update branch')
     },
     onSuccess: () => {
-      // Only invalidate queries, let React Query handle the refetch automatically
-      queryClient.invalidateQueries({ queryKey: branchKeys.lists() })
+      // Invalidate all branch queries
+      queryClient.invalidateQueries({ queryKey: branchKeys.all })
+      toast.success('Cập nhật chi nhánh thành công!')
     },
     onError: (error) => {
       console.error('Update branch error:', error)
+      toast.error('Cập nhật chi nhánh thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -102,11 +107,13 @@ export const useDeleteBranch = () => {
       throw new Error(response.data.message || 'Failed to delete branch')
     },
     onSuccess: () => {
-      // Only invalidate queries, let React Query handle the refetch automatically
-      queryClient.invalidateQueries({ queryKey: branchKeys.lists() })
+      // Invalidate all branch queries
+      queryClient.invalidateQueries({ queryKey: branchKeys.all })
+      toast.success('Xóa chi nhánh thành công!')
     },
     onError: (error) => {
       console.error('Delete branch error:', error)
+      toast.error('Xóa chi nhánh thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status

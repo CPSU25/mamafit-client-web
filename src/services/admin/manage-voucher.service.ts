@@ -2,6 +2,7 @@ import { AssignVoucher, VoucherBatchFormData } from '@/@types/admin.types'
 import { VoucherQueryParams } from '@/apis/manage-voucher.api'
 import manageVoucherApi from '@/apis/manage-voucher.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 export const voucherBatchKeys = {
   all: ['voucher-batch'] as const,
@@ -56,11 +57,12 @@ export const useCreateVoucherBatch = () => {
       throw new Error(response.data.message || 'Failed to create voucher batch')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: voucherBatchKeys.lists() })
-      queryClient.refetchQueries({ queryKey: voucherBatchKeys.list({}) })
+      queryClient.invalidateQueries({ queryKey: voucherBatchKeys.all })
+      toast.success('Tạo batch voucher thành công!')
     },
     onError: (error) => {
       console.error('Create voucher batch error:', error)
+      toast.error('Tạo batch voucher thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -82,13 +84,15 @@ export const useDeleteVoucherBatch = () => {
       }
       throw new Error(response.data.message || 'Failed to delete voucher batch')
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: voucherBatchKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: voucherDiscountKeys.lists() })
-      queryClient.refetchQueries({ queryKey: voucherBatchKeys.list({}) })
+    onSuccess: (_, deletedId) => {
+      queryClient.invalidateQueries({ queryKey: voucherBatchKeys.all })
+      queryClient.invalidateQueries({ queryKey: voucherDiscountKeys.all })
+      queryClient.removeQueries({ queryKey: voucherBatchKeys.detail(deletedId) })
+      toast.success('Xóa batch voucher thành công!')
     },
     onError: (error) => {
       console.error('Delete voucher batch error:', error)
+      toast.error('Xóa batch voucher thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -111,8 +115,12 @@ export const useAssignVoucher = () => {
       throw new Error(response.data.message || 'Failed to assign voucher')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: voucherDiscountKeys.lists() })
-      queryClient.refetchQueries({ queryKey: voucherDiscountKeys.list({}) })
+      queryClient.invalidateQueries({ queryKey: voucherDiscountKeys.all })
+      toast.success('Phân phối voucher thành công!')
+    },
+    onError: (error) => {
+      console.error('Assign voucher error:', error)
+      toast.error('Phân phối voucher thất bại!')
     }
   })
 }

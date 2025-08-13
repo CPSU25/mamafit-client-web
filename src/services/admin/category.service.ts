@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CategoryFormData, StyleFormData } from '@/@types/inventory.type'
 import categoryAPI from '@/apis/category.api'
 import { styleAPI } from '@/apis'
+import { toast } from 'sonner'
 
 interface CategoryQueryParams {
   index?: number
@@ -87,12 +88,11 @@ export const useCreateCategory = () => {
     onSuccess: () => {
       // Comprehensive cache invalidation
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
-
-      // Force refetch for better UX
-      queryClient.refetchQueries({ queryKey: categoryKeys.lists() })
+      toast.success('Tạo danh mục thành công!')
     },
     onError: (error) => {
       console.error('Create category error:', error)
+      toast.error('Tạo danh mục thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -122,12 +122,12 @@ export const useUpdateCategory = () => {
 
       // Update specific category detail if exists
       queryClient.setQueryData(categoryKeys.detail(variables.id), data)
-
-      // Force refetch for better UX
-      queryClient.refetchQueries({ queryKey: categoryKeys.lists() })
+      
+      toast.success('Cập nhật danh mục thành công!')
     },
     onError: (error) => {
       console.error('Update category error:', error)
+      toast.error('Cập nhật danh mục thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -171,12 +171,12 @@ export const useDeleteCategory = () => {
       // Remove deleted category from cache
       queryClient.removeQueries({ queryKey: categoryKeys.detail(deletedId) })
       queryClient.removeQueries({ queryKey: categoryKeys.styles(deletedId) })
-
-      // Force refetch for immediate UI update
-      queryClient.refetchQueries({ queryKey: categoryKeys.lists() })
+      
+      toast.success('Xóa danh mục thành công!')
     },
     onError: (error) => {
       console.error('Delete category error:', error)
+      toast.error('Xóa danh mục thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -208,13 +208,12 @@ export const useCreateStyle = () => {
 
       // Also invalidate category lists in case style count affects display
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
-      // Refetch styles for the specific category
-      queryClient.refetchQueries({
-        queryKey: categoryKeys.stylesList(variables.categoryId, { index: 1, pageSize: 10 })
-      })
+      
+      toast.success('Tạo kiểu dáng thành công!')
     },
     onError: (error) => {
       console.error('Create style error:', error)
+      toast.error('Tạo kiểu dáng thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -241,12 +240,12 @@ export const useDeleteStyle = () => {
     onSuccess: () => {
       // Comprehensive invalidation since we don't know which category the style belonged to
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
-
-      // Force refetch for immediate UI update
-      queryClient.refetchQueries({ queryKey: categoryKeys.lists() })
+      
+      toast.success('Xóa kiểu dáng thành công!')
     },
     onError: (error) => {
       console.error('Delete style error:', error)
+      toast.error('Xóa kiểu dáng thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status

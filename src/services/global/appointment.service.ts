@@ -91,7 +91,7 @@ export const useCreateAppointment = () => {
   return useMutation({
     mutationFn: (data: CreateAppointmentData) => appointmentApi.createAppointment(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
       toast.success('Tạo lịch hẹn thành công!')
     },
     onError: (error: ErrorType) => {
@@ -175,8 +175,9 @@ export const useDeleteAppointment = () => {
 
   return useMutation({
     mutationFn: (id: string) => appointmentApi.deleteAppointment(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.lists() })
+    onSuccess: (_, deletedId) => {
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.removeQueries({ queryKey: appointmentKeys.detail(deletedId) })
       toast.success('Xóa lịch hẹn thành công!')
     },
     onError: (error: ErrorType) => {

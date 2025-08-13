@@ -35,7 +35,6 @@ import { useState } from 'react'
 import { OrderAssignDialog } from './order-assign-dialog'
 import StatusOrderTimeline from './milestone/status-timeline-orderItem'
 import { useCreateShipping } from '@/services/global/ghtk.service'
-import { toast } from 'sonner'
 import { GHTKOrder } from '@/@types/ghtk.types'
 import { DeliveryOrderSuccessDialog } from '@/pages/staff/components/delivery-order-success-dialog'
 
@@ -53,7 +52,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
   const [shippingOrder, setShippingOrder] = useState<GHTKOrder | null>(null)
   const [showShippingDialog, setShowShippingDialog] = useState(false)
 
-  // Sử dụng mutation hook để tạo shipping
+  // Sử dụng mutation hook để tạo shipping với React Query pattern
   const createShippingMutation = useCreateShipping()
 
   // Auto-load data cho tất cả items khi sidebar mở (dynamic, không hardcode)
@@ -158,7 +157,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
     })
   }
 
-  // Xử lý tạo đơn shipping
+  // Xử lý tạo đơn shipping với React Query pattern
   const handleCreateShipping = () => {
     if (!order?.id) return
     
@@ -167,14 +166,9 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
         if (response.data.success) {
           setShippingOrder(response.data.order)
           setShowShippingDialog(true)
-          toast.success('Tạo đơn giao hàng thành công!')
-        } else {
-          toast.error(response.data.message || 'Không thể tạo đơn giao hàng')
+          // Toast và cache invalidation đã được xử lý trong service
         }
-      },
-      onError: (error) => {
-        console.error('Error creating shipping:', error)
-        toast.error('Có lỗi xảy ra khi tạo đơn giao hàng')
+        // Error handling cũng đã được xử lý trong service
       }
     })
   }
@@ -881,15 +875,23 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
               <Button 
                 onClick={handleCreateShipping}
                 disabled={createShippingMutation.isPending}
-                className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200' 
+                className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed' 
                 size='sm'
               >
                 <Truck className='h-4 w-4 mr-2' />
                 {createShippingMutation.isPending ? 'Đang tạo đơn...' : 'Tạo đơn shipping'}
               </Button>
               <p className='text-xs text-center text-muted-foreground mt-2'>
-                Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng
+                {createShippingMutation.isPending 
+                  ? 'Đang xử lý yêu cầu tạo đơn giao hàng...'
+                  : 'Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng'
+                }
               </p>
+              {createShippingMutation.isError && (
+                <p className='text-xs text-center text-red-500 mt-1'>
+                  Có lỗi xảy ra, vui lòng thử lại
+                </p>
+              )}
             </div>
           )}
         </div>

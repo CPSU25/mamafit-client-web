@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ComponentTypeFormData, ComponentOptionType, ComponentOptionFormData } from '@/@types/admin.types'
 import ManageComponentAPI from '@/apis/manage-component.api'
+import { toast } from 'sonner'
 
 interface ComponentQueryParams {
   index?: number
@@ -75,11 +76,12 @@ export const useCreateComponent = () => {
       throw new Error(response.data.message || 'Failed to create component')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: componentKeys.lists() })
-      queryClient.refetchQueries({ queryKey: componentKeys.list({}) })
+      queryClient.invalidateQueries({ queryKey: componentKeys.all })
+      toast.success('Tạo thành phần thành công!')
     },
     onError: (error) => {
       console.error('Create component error:', error)
+      toast.error('Tạo thành phần thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -106,10 +108,11 @@ export const useUpdateComponent = () => {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: componentKeys.all })
       queryClient.setQueryData(componentKeys.detail(variables.id), data)
-      queryClient.refetchQueries({ queryKey: componentKeys.lists() })
+      toast.success('Cập nhật thành phần thành công!')
     },
     onError: (error) => {
       console.error('Update component error:', error)
+      toast.error('Cập nhật thành phần thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -136,10 +139,11 @@ export const useDeleteComponent = () => {
     onSuccess: (_, deletedId) => {
       queryClient.invalidateQueries({ queryKey: componentKeys.all })
       queryClient.removeQueries({ queryKey: componentKeys.detail(deletedId) })
-      queryClient.refetchQueries({ queryKey: componentKeys.lists() })
+      toast.success('Xóa thành phần thành công!')
     },
     onError: (error) => {
       console.error('Delete component error:', error)
+      toast.error('Xóa thành phần thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -165,10 +169,12 @@ export const useCreateComponentOption = () => {
     },
     onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: componentKeys.detail(data.componentId) })
-      queryClient.refetchQueries({ queryKey: componentKeys.details() })
+      queryClient.invalidateQueries({ queryKey: componentKeys.all })
+      toast.success('Tạo tùy chọn thành phần thành công!')
     },
     onError: (error) => {
       console.error('Create component option error:', error)
+      toast.error('Tạo tùy chọn thành phần thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -193,11 +199,12 @@ export const useUpdateComponentOption = () => {
       throw new Error(response.data.message || 'Failed to update component option')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: componentKeys.lists() })
-      queryClient.refetchQueries({ queryKey: componentKeys.list({}) })
+      queryClient.invalidateQueries({ queryKey: componentKeys.all })
+      toast.success('Cập nhật tùy chọn thành phần thành công!')
     },
     onError: (error) => {
       console.error('Update component option error:', error)
+      toast.error('Cập nhật tùy chọn thành phần thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -221,12 +228,13 @@ export const useDeleteComponentOption = () => {
       }
       throw new Error(response.data.message || 'Failed to delete component option')
     },
-    onSuccess: (_, componentOptionId) => {
-      queryClient.invalidateQueries({ queryKey: componentKeys.detail(componentOptionId) })
-      queryClient.refetchQueries({ queryKey: componentKeys.details() })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: componentKeys.all })
+      toast.success('Xóa tùy chọn thành phần thành công!')
     },
     onError: (error) => {
       console.error('Delete component option error:', error)
+      toast.error('Xóa tùy chọn thành phần thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
