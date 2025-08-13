@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MilestoneFormData, TaskFormData } from '@/@types/admin.types'
 import ManageMilestoneAPI, { MilestoneQueryParams } from '@/apis/manage-milestone.api'
+import { toast } from 'sonner'
 
 // Query Keys
 export const milestoneKeys = {
@@ -76,11 +77,12 @@ export const useCreateMilestone = () => {
       throw new Error(response.data.message || 'Failed to create milestone')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: milestoneKeys.lists() })
-      queryClient.refetchQueries({ queryKey: milestoneKeys.list({}) })
+      queryClient.invalidateQueries({ queryKey: milestoneKeys.all })
+      toast.success('Tạo mốc thời gian thành công!')
     },
     onError: (error) => {
       console.error('Create milestone error:', error)
+      toast.error('Tạo mốc thời gian thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -107,10 +109,11 @@ export const useUpdateMilestone = () => {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: milestoneKeys.all })
       queryClient.setQueryData(milestoneKeys.detail(variables.id), data)
-      queryClient.refetchQueries({ queryKey: milestoneKeys.lists() })
+      toast.success('Cập nhật mốc thời gian thành công!')
     },
     onError: (error) => {
       console.error('Update milestone error:', error)
+      toast.error('Cập nhật mốc thời gian thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -137,10 +140,11 @@ export const useDeleteMilestone = () => {
     onSuccess: (_, deletedId) => {
       queryClient.invalidateQueries({ queryKey: milestoneKeys.all })
       queryClient.removeQueries({ queryKey: milestoneKeys.detail(deletedId) })
-      queryClient.refetchQueries({ queryKey: milestoneKeys.lists() })
+      toast.success('Xóa mốc thời gian thành công!')
     },
     onError: (error) => {
       console.error('Delete milestone error:', error)
+      toast.error('Xóa mốc thời gian thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -209,10 +213,12 @@ export const useCreateTask = () => {
     },
     onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: milestoneKeys.detail(data.milestoneId) })
-      queryClient.refetchQueries({ queryKey: taskKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
+      toast.success('Tạo nhiệm vụ thành công!')
     },
     onError: (error) => {
       console.error('Create task error:', error)
+      toast.error('Tạo nhiệm vụ thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -238,12 +244,13 @@ export const useUpdateTask = () => {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all })
-      queryClient.invalidateQueries({ queryKey: milestoneKeys.details() })
+      queryClient.invalidateQueries({ queryKey: milestoneKeys.all })
       queryClient.setQueryData(taskKeys.detail(variables.id), data)
-      queryClient.refetchQueries({ queryKey: taskKeys.lists() })
+      toast.success('Cập nhật nhiệm vụ thành công!')
     },
     onError: (error) => {
       console.error('Update task error:', error)
+      toast.error('Cập nhật nhiệm vụ thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -269,12 +276,13 @@ export const useDeleteTask = () => {
     },
     onSuccess: (_, deletedId) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all })
-      queryClient.invalidateQueries({ queryKey: milestoneKeys.details() })
+      queryClient.invalidateQueries({ queryKey: milestoneKeys.all })
       queryClient.removeQueries({ queryKey: taskKeys.detail(deletedId) })
-      queryClient.refetchQueries({ queryKey: taskKeys.lists() })
+      toast.success('Xóa nhiệm vụ thành công!')
     },
     onError: (error) => {
       console.error('Delete task error:', error)
+      toast.error('Xóa nhiệm vụ thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status

@@ -39,6 +39,9 @@ import { getStatusColor, getStatusLabel } from './data/data'
 import StatusOrderTimeline from './components/milestone/status-timeline-orderItem'
 import { useAdminOrderItemsWithTasks } from '@/services/admin/admin-task.service'
 import { OrderAssignDialog } from './components/order-assign-dialog'
+import { useCreateShipping } from '@/services/global/ghtk.service'
+import { GHTKOrder } from '@/@types/ghtk.types'
+import { DeliveryOrderSuccessDialog } from '@/pages/staff/components/delivery-order-success-dialog'
 
 // Constants
 const CURRENCY_LOCALE = 'vi-VN'
@@ -118,6 +121,12 @@ export default function OrderDetailPage() {
   const { data: orderDetail } = useOrder(orderId ?? '')
   const [selectedItemForAssign, setSelectedItemForAssign] = useState<string>('')
   const [assignChargeDialogOpen, setAssignChargeDialogOpen] = useState(false)
+  const [shippingOrder, setShippingOrder] = useState<GHTKOrder | null>(null)
+  const [showShippingDialog, setShowShippingDialog] = useState(false)
+  
+  // Sử dụng mutation hook để tạo shipping với React Query pattern
+  const createShippingMutation = useCreateShipping()
+  
   const orderItems = orderDetail?.data?.items || []
   const orderItemIds = orderItems.map((it) => it.id)
   const orderItemsData = useAdminOrderItemsWithTasks(orderItemIds, true)
@@ -150,6 +159,42 @@ export default function OrderDetailPage() {
     const selectedIndex = orderItems.findIndex((item) => item.id === selectedItemForAssign)
     return selectedIndex >= 0 ? (orderItemsData[selectedIndex]?.data ?? null) : null
   }
+
+  // Kiểm tra xem tất cả milestone của tất cả items đã hoàn thành chưa
+  const areAllMilestonesCompleted = () => {
+    if (orderItemsData.length === 0) return false
+    
+    return orderItemsData.every((itemQuery) => {
+      if (itemQuery.isLoading || !itemQuery.data || !itemQuery.data.milestones) {
+        return false
+      }
+      
+      // Kiểm tra tất cả milestone của item này đã hoàn thành
+      return itemQuery.data.milestones.every((milestone) => {
+        // Kiểm tra tất cả task trong milestone đã hoàn thành (AdminMilestone dùng tasks thay vì maternityDressTasks)
+        return milestone.tasks.every((task) => 
+          task.detail.status === 'DONE' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
+        )
+      })
+    })
+  }
+
+  // Xử lý tạo đơn shipping với React Query pattern
+  const handleCreateShipping = () => {
+    if (!order?.data?.id) return
+    
+    createShippingMutation.mutate(order.data.id, {
+      onSuccess: (response) => {
+        if (response.data.success) {
+          setShippingOrder(response.data.order)
+          setShowShippingDialog(true)
+          // Toast và cache invalidation đã được xử lý trong service
+        }
+        // Error handling cũng đã được xử lý trong service
+      }
+    })
+  }
+
   const navigate = useNavigate()
   const [chatMessage, setChatMessage] = useState('')
 
@@ -159,6 +204,10 @@ export default function OrderDetailPage() {
 
   // Memoized computations
   const statusTimeline = useMemo(() => getStatusTimeline(order?.data?.status), [order?.data?.status])
+  
+  // Kiểm tra điều kiện tạo shipping
+  const allMilestonesCompleted = areAllMilestonesCompleted()
+  const canCreateShipping = allMilestonesCompleted && (order?.data?.status === 'IN_PROGRESS' || order?.data?.status === 'PACKAGING')
 
   // Event handlers
   const handleSendMessage = useCallback(() => {
@@ -909,6 +958,32 @@ export default function OrderDetailPage() {
                     </span>
                   )}
                 </div>
+
+                {/* Shipping Button */}
+                {canCreateShipping && (
+                  <div className='pt-4 border-t border-violet-200 dark:border-violet-700'>
+                    <Button 
+                      onClick={handleCreateShipping}
+                      disabled={createShippingMutation.isPending}
+                      className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed' 
+                      size='sm'
+                    >
+                      <Truck className='h-4 w-4 mr-2' />
+                      {createShippingMutation.isPending ? 'Đang tạo đơn...' : 'Tạo đơn shipping'}
+                    </Button>
+                    <p className='text-xs text-center text-muted-foreground mt-2'>
+                      {createShippingMutation.isPending 
+                        ? 'Đang xử lý yêu cầu tạo đơn giao hàng...'
+                        : 'Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng'
+                      }
+                    </p>
+                    {createShippingMutation.isError && (
+                      <p className='text-xs text-center text-red-500 mt-1'>
+                        Có lỗi xảy ra, vui lòng thử lại
+                      </p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -994,6 +1069,13 @@ export default function OrderDetailPage() {
           }
         }
       `}</style>
+
+      {/* Delivery Order Success Dialog */}
+      <DeliveryOrderSuccessDialog
+        open={showShippingDialog}
+        onOpenChange={setShowShippingDialog}
+        order={shippingOrder}
+      />
     </Main>
   )
 }

@@ -1,6 +1,7 @@
 import { AssignCharge, AssignTask } from '@/@types/manage-order.types'
 import ManageOrderAPI, { OrderQueryParams, OrderStatusUpdate } from '@/apis/manage-order.api'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 export const orderKeys = {
   all: ['orders'] as const,
@@ -52,6 +53,8 @@ export const useOrder = (id: string) => {
 }
 
 export const useUpdateOrderStatus = () => {
+  const queryClient = useQueryClient()
+  
   return useMutation({
     mutationFn: async (params: { id: string; body: OrderStatusUpdate }) => {
       const response = await ManageOrderAPI.updateOrderStatus(params.id, params.body)
@@ -59,6 +62,17 @@ export const useUpdateOrderStatus = () => {
         return response.data
       }
       throw new Error(response.data.message || 'Failed to update order status')
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate và refetch orders list
+      queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+      // Invalidate order detail
+      queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.id) })
+      
+      toast.success('Cập nhật trạng thái đơn hàng thành công!')
+    },
+    onError: () => {
+      toast.error('Cập nhật trạng thái đơn hàng thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -90,6 +104,8 @@ export const useOrderDetail = (id: string) => {
 }
 
 export const useAssignTask = () => {
+  const queryClient = useQueryClient()
+  
   return useMutation({
     mutationFn: async (params: { orderItemId: string; body: AssignTask }) => {
       const response = await ManageOrderAPI.assignTask(params.orderItemId, params.body)
@@ -97,6 +113,17 @@ export const useAssignTask = () => {
         return response.data
       }
       throw new Error(response.data.message || 'Failed to assign task')
+    },
+    onSuccess: () => {
+      // Invalidate orders và related tasks
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['designer-tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['staff-tasks'] })
+      
+      toast.success('Giao nhiệm vụ thành công!')
+    },
+    onError: () => {
+      toast.error('Giao nhiệm vụ thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
@@ -109,6 +136,8 @@ export const useAssignTask = () => {
 }
 
 export const useAssignCharge = () => {
+  const queryClient = useQueryClient()
+  
   return useMutation({
     mutationFn: async (body: AssignCharge[]) => {
       const response = await ManageOrderAPI.assignCharge(body)
@@ -116,6 +145,17 @@ export const useAssignCharge = () => {
         return response.data
       }
       throw new Error(response.data.message || 'Failed to assign charge')
+    },
+    onSuccess: () => {
+      // Invalidate orders và related tasks
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['designer-tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['staff-tasks'] })
+      
+      toast.success('Phân công nhiệm vụ thành công!')
+    },
+    onError: () => {
+      toast.error('Phân công nhiệm vụ thất bại!')
     },
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
