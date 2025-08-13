@@ -99,45 +99,37 @@ export default function MaternityDressCreationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className=' sm:max-w-3xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-violet-50/50 to-purple-50/30 dark:from-violet-950/20 dark:to-purple-950/10 border-0 shadow-2xl'>
+  <DialogContent className='sm:max-w-3xl max-h-[95vh] overflow-hidden border shadow-xl'>
         {/* Enhanced Dialog Header */}
-        <DialogHeader className='pb-8 border-b border-violet-200 dark:border-violet-700'>
+        <DialogHeader className='pb-6 border-b'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-4'>
-              <div className='p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl'>
-                <Sparkles className='h-8 w-8 text-white' />
+              <div className='p-3 rounded-2xl bg-muted'>
+                <Sparkles className='h-6 w-6 text-muted-foreground' />
               </div>
               <div>
-                <DialogTitle className='text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent'>
-                  Tạo Đầm Bầu Mới
-                </DialogTitle>
-                <p className='text-violet-600 dark:text-violet-400 mt-2'>
-                  Tạo sản phẩm đầm bầu cơ bản, sau đó thêm các biến thể chi tiết
-                </p>
+                <DialogTitle className='text-2xl font-semibold'>Tạo Đầm Bầu Mới</DialogTitle>
+                <p className='text-sm text-muted-foreground mt-1'>Tạo sản phẩm cơ bản, sau đó thêm các biến thể</p>
               </div>
             </div>
             <Button
               variant='ghost'
               size='sm'
               onClick={() => onOpenChange(false)}
-              className='rounded-full h-10 w-10 p-0 hover:bg-violet-100 dark:hover:bg-violet-900/30'
+              className='rounded-full h-10 w-10 p-0'
             >
-              <X className='h-5 w-5 text-violet-500' />
+              <X className='h-5 w-5 text-muted-foreground' />
             </Button>
           </div>
 
           {/* Error Alert */}
           {stylesError && (
-            <div className='mt-4 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl'>
+            <div className='mt-4 p-4 bg-destructive/10 border rounded-xl'>
               <div className='flex items-center gap-3'>
-                <div className='p-2 bg-red-100 dark:bg-red-900/30 rounded-lg'>
-                  <AlertCircle className='h-5 w-5 text-red-500' />
-                </div>
+                <AlertCircle className='h-5 w-5 text-destructive' />
                 <div>
-                  <h4 className='font-semibold text-red-700 dark:text-red-400'>Lỗi tải dữ liệu</h4>
-                  <p className='text-sm text-red-600 dark:text-red-500'>
-                    Không thể tải danh sách kiểu dáng. Vui lòng thử lại sau hoặc liên hệ support.
-                  </p>
+                  <h4 className='font-semibold'>Lỗi tải dữ liệu</h4>
+                  <p className='text-sm text-muted-foreground'>Không thể tải danh sách kiểu dáng. Vui lòng thử lại.</p>
                 </div>
               </div>
             </div>
@@ -149,15 +141,13 @@ export default function MaternityDressCreationDialog({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8 py-2'>
               {/* Basic Information Section */}
-              <Card className='border-0 shadow-lg bg-white/80 dark:bg-background/80 backdrop-blur-sm'>
+              <Card className='shadow-sm'>
                 <CardContent className='p-6'>
                   <div className='flex items-center gap-3 mb-6'>
-                    <div className='p-2 bg-violet-100 dark:bg-violet-900/30 rounded-lg'>
-                      <Heart className='h-5 w-5 text-violet-600 dark:text-violet-400' />
-                    </div>
+                    <Heart className='h-5 w-5 text-muted-foreground' />
                     <div>
-                      <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>Thông Tin Cơ Bản</h3>
-                      <p className='text-sm text-gray-500'>Tên sản phẩm và kiểu dáng</p>
+                      <h3 className='text-base font-semibold'>Thông Tin Cơ Bản</h3>
+                      <p className='text-sm text-muted-foreground'>Tên sản phẩm và kiểu dáng</p>
                     </div>
                   </div>
 
@@ -167,20 +157,14 @@ export default function MaternityDressCreationDialog({
                       name='name'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-violet-700 dark:text-violet-300 font-semibold flex items-center gap-2'>
+                          <FormLabel className='font-medium flex items-center gap-2'>
                             <Sparkles className='h-4 w-4' />
                             Tên Đầm Bầu *
                           </FormLabel>
                           <FormControl>
-                            <Input
-                              placeholder='VD: Đầm bầu dạ tiệc sang trọng'
-                              className='h-12 border-violet-200 dark:border-violet-700 focus:border-violet-400 focus:ring-violet-400 rounded-xl bg-white dark:bg-gray-800'
-                              {...field}
-                            />
+                            <Input placeholder='VD: Đầm bầu dạ tiệc sang trọng' className='h-10' {...field} />
                           </FormControl>
-                          <p className='text-xs text-violet-600 dark:text-violet-400'>
-                            Tên sẽ tự động tạo slug URL thân thiện
-                          </p>
+                          <p className='text-xs text-muted-foreground'>Tên sẽ tự động tạo slug URL thân thiện</p>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -191,13 +175,13 @@ export default function MaternityDressCreationDialog({
                       name='styleId'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-violet-700 dark:text-violet-300 font-semibold flex items-center gap-2'>
+                          <FormLabel className='font-medium flex items-center gap-2'>
                             <Palette className='h-4 w-4' />
                             Kiểu Dáng *
                           </FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger className='h-12 border-violet-200 dark:border-violet-700 focus:border-violet-400 rounded-xl bg-white dark:bg-gray-800'>
+                              <SelectTrigger className='h-10'>
                                 <SelectValue placeholder='Chọn kiểu dáng phù hợp' />
                               </SelectTrigger>
                             </FormControl>
@@ -205,31 +189,28 @@ export default function MaternityDressCreationDialog({
                               {stylesLoading ? (
                                 <div className='flex items-center justify-center py-8'>
                                   <div className='text-center space-y-3'>
-                                    <Loader2 className='h-8 w-8 animate-spin text-violet-500 mx-auto' />
-                                    <p className='text-sm text-violet-600'>Đang tải kiểu dáng...</p>
+                                    <Loader2 className='h-6 w-6 animate-spin text-muted-foreground mx-auto' />
+                                    <p className='text-sm text-muted-foreground'>Đang tải kiểu dáng...</p>
                                   </div>
                                 </div>
                               ) : stylesError ? (
                                 <div className='flex items-center justify-center py-8'>
                                   <div className='text-center space-y-3'>
-                                    <AlertCircle className='h-8 w-8 text-red-500 mx-auto' />
-                                    <p className='text-sm text-red-600'>Lỗi tải dữ liệu</p>
+                                    <AlertCircle className='h-6 w-6 text-destructive mx-auto' />
+                                    <p className='text-sm text-muted-foreground'>Lỗi tải dữ liệu</p>
                                   </div>
                                 </div>
                               ) : stylesData?.data.items && stylesData.data.items.length > 0 ? (
                                 stylesData.data.items.map((style) => (
                                   <SelectItem key={style.id} value={style.id} className='py-3'>
-                                    <div className='flex items-center gap-2'>
-                                      <div className='w-3 h-3 bg-violet-400 rounded-full'></div>
-                                      {style.name}
-                                    </div>
+                                    {style.name}
                                   </SelectItem>
                                 ))
                               ) : (
                                 <div className='flex items-center justify-center py-8'>
                                   <div className='text-center space-y-3'>
-                                    <Package className='h-8 w-8 text-gray-400 mx-auto' />
-                                    <p className='text-sm text-gray-500'>Không có kiểu dáng nào</p>
+                                    <Package className='h-6 w-6 text-muted-foreground mx-auto' />
+                                    <p className='text-sm text-muted-foreground'>Không có kiểu dáng nào</p>
                                   </div>
                                 </div>
                               )}
@@ -244,15 +225,13 @@ export default function MaternityDressCreationDialog({
               </Card>
 
               {/* Description Section */}
-              <Card className='border-0 shadow-lg bg-white/80 dark:bg-background/80 backdrop-blur-sm'>
+              <Card className='shadow-sm'>
                 <CardContent className='p-6'>
                   <div className='flex items-center gap-3 mb-6'>
-                    <div className='p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg'>
-                      <FileText className='h-5 w-5 text-blue-600 dark:text-blue-400' />
-                    </div>
+                    <FileText className='h-5 w-5 text-muted-foreground' />
                     <div>
-                      <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>Mô Tả Sản Phẩm</h3>
-                      <p className='text-sm text-gray-500'>Chi tiết về chất liệu, thiết kế và đặc điểm</p>
+                      <h3 className='text-base font-semibold'>Mô Tả Sản Phẩm</h3>
+                      <p className='text-sm text-muted-foreground'>Chi tiết chất liệu, thiết kế và đặc điểm</p>
                     </div>
                   </div>
 
@@ -261,21 +240,14 @@ export default function MaternityDressCreationDialog({
                     name='description'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className='text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-2'>
+                        <FormLabel className='font-medium flex items-center gap-2'>
                           <FileText className='h-4 w-4' />
                           Mô Tả Chi Tiết *
                         </FormLabel>
                         <FormControl>
-                          <Textarea
-                            placeholder='Mô tả chi tiết về đầm bầu: chất liệu, thiết kế, form dáng, phù hợp cho dịp nào, đặc điểm nổi bật...'
-                            rows={6}
-                            className='border-blue-200 dark:border-blue-700 focus:border-blue-400 focus:ring-blue-400 rounded-xl bg-white dark:bg-gray-800 resize-none'
-                            {...field}
-                          />
+                          <Textarea placeholder='Mô tả chi tiết...' rows={6} className='resize-none' {...field} />
                         </FormControl>
-                        <p className='text-xs text-blue-600 dark:text-blue-400'>
-                          Mô tả chi tiết giúp khách hàng hiểu rõ hơn về sản phẩm
-                        </p>
+                        <p className='text-xs text-muted-foreground'>Mô tả chi tiết giúp khách hàng hiểu rõ sản phẩm</p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -284,15 +256,13 @@ export default function MaternityDressCreationDialog({
               </Card>
 
               {/* URL Slug Section */}
-              <Card className='border-0 shadow-lg bg-white/80 dark:bg-background/80 backdrop-blur-sm'>
+              <Card className='shadow-sm'>
                 <CardContent className='p-6'>
                   <div className='flex items-center gap-3 mb-6'>
-                    <div className='p-2 bg-green-100 dark:bg-green-900/30 rounded-lg'>
-                      <Link className='h-5 w-5 text-green-600 dark:text-green-400' />
-                    </div>
+                    <Link className='h-5 w-5 text-muted-foreground' />
                     <div>
-                      <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>URL Thân Thiện</h3>
-                      <p className='text-sm text-gray-500'>Đường dẫn hiển thị trên website</p>
+                      <h3 className='text-base font-semibold'>URL Thân Thiện</h3>
+                      <p className='text-sm text-muted-foreground'>Đường dẫn hiển thị trên website</p>
                     </div>
                   </div>
 
@@ -301,28 +271,24 @@ export default function MaternityDressCreationDialog({
                     name='slug'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className='text-green-700 dark:text-green-300 font-semibold flex items-center gap-2'>
+                        <FormLabel className='font-medium flex items-center gap-2'>
                           <Link className='h-4 w-4' />
                           URL Slug *
                         </FormLabel>
                         <FormControl>
                           <div className='relative'>
-                            <Input
-                              placeholder='dam-bau-da-tiec-sang-trong'
-                              className='h-12 border-green-200 dark:border-green-700 focus:border-green-400 focus:ring-green-400 rounded-xl bg-white dark:bg-gray-800 pl-12'
-                              {...field}
-                            />
-                            <div className='absolute left-4 top-1/2 -translate-y-1/2 text-green-500'>
+                            <Input placeholder='dam-bau-da-tiec-sang-trong' className='h-10 pl-9' {...field} />
+                            <div className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
                               <Link className='h-4 w-4' />
                             </div>
                           </div>
                         </FormControl>
                         <div className='flex items-start gap-2 mt-2'>
-                          <Info className='h-4 w-4 text-green-500 mt-0.5 flex-shrink-0' />
-                          <div className='text-xs text-green-600 dark:text-green-400 space-y-1'>
+                          <Info className='h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0' />
+                          <div className='text-xs text-muted-foreground space-y-1'>
                             <p>
                               URL preview:{' '}
-                              <code className='bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded'>
+                              <code className='bg-muted px-2 py-1 rounded'>
                                 mamafit.studio/products/{field.value || 'your-slug'}
                               </code>
                             </p>
@@ -337,15 +303,13 @@ export default function MaternityDressCreationDialog({
               </Card>
 
               {/* Images Section */}
-              <Card className='border-0 shadow-lg bg-white/80 dark:bg-background/80 backdrop-blur-sm'>
+              <Card className='shadow-sm'>
                 <CardContent className='p-6'>
                   <div className='flex items-center gap-3 mb-6'>
-                    <div className='p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg'>
-                      <ImageIcon className='h-5 w-5 text-purple-600 dark:text-purple-400' />
-                    </div>
+                    <ImageIcon className='h-5 w-5 text-muted-foreground' />
                     <div>
-                      <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>Hình Ảnh Sản Phẩm</h3>
-                      <p className='text-sm text-gray-500'>Upload ảnh chất lượng cao để thu hút khách hàng</p>
+                      <h3 className='text-base font-semibold'>Hình Ảnh Sản Phẩm</h3>
+                      <p className='text-sm text-muted-foreground'>Upload ảnh chất lượng cao để thu hút khách hàng</p>
                     </div>
                   </div>
 
@@ -354,7 +318,7 @@ export default function MaternityDressCreationDialog({
                     name='images'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className='text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-2'>
+                        <FormLabel className='font-medium flex items-center gap-2'>
                           <ImageIcon className='h-4 w-4' />
                           Hình Ảnh Đầm Bầu *
                         </FormLabel>
@@ -376,11 +340,11 @@ export default function MaternityDressCreationDialog({
                             }}
                           />
                         </FormControl>
-                        <div className='bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-700'>
+                        <div className='bg-muted p-4 rounded-xl border'>
                           <div className='flex items-start gap-3'>
-                            <ImageIcon className='h-5 w-5 text-purple-500 mt-0.5' />
-                            <div className='space-y-2 text-sm text-purple-700 dark:text-purple-300'>
-                              <p className='font-semibold'>💡 Lưu ý về hình ảnh:</p>
+                            <ImageIcon className='h-5 w-5 text-muted-foreground mt-0.5' />
+                            <div className='space-y-2 text-sm text-muted-foreground'>
+                              <p className='font-semibold'>Lưu ý về hình ảnh</p>
                               <ul className='space-y-1 text-xs'>
                                 <li>• Tối đa 10 hình ảnh, khuyến khích 5-8 ảnh từ nhiều góc độ</li>
                                 <li>• Độ phân giải tối thiểu 800x800px để đảm bảo chất lượng</li>
@@ -398,43 +362,39 @@ export default function MaternityDressCreationDialog({
               </Card>
 
               {/* Next Steps Info */}
-              <Card className='border-0 shadow-lg bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border border-violet-200 dark:border-violet-700'>
+              <Card className='shadow-sm'>
                 <CardContent className='p-6'>
                   <div className='flex items-start gap-4'>
-                    <div className='p-2 bg-violet-500 rounded-lg'>
-                      <CheckCircle className='h-6 w-6 text-white' />
-                    </div>
+                    <CheckCircle className='h-5 w-5 text-muted-foreground mt-1' />
                     <div className='flex-1'>
-                      <h4 className='text-lg font-bold text-violet-700 dark:text-violet-300 mb-3'>
-                        🎉 Bước tiếp theo sau khi tạo sản phẩm
-                      </h4>
+                      <h4 className='text-base font-semibold mb-2'>Bước tiếp theo sau khi tạo sản phẩm</h4>
                       <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                        <div className='bg-white dark:bg-gray-800 p-4 rounded-xl border border-violet-200 dark:border-violet-700'>
+                        <div className='bg-background p-4 rounded-xl border'>
                           <div className='flex items-center gap-2 mb-2'>
-                            <Badge className='bg-violet-100 text-violet-700 text-xs'>Bước 1</Badge>
+                            <Badge className='text-xs' variant='secondary'>Bước 1</Badge>
                           </div>
-                          <h5 className='font-semibold text-gray-800 dark:text-gray-200'>Thêm biến thể</h5>
-                          <p className='text-xs text-gray-600 dark:text-gray-400 mt-1'>
+                          <h5 className='font-semibold'>Thêm biến thể</h5>
+                          <p className='text-xs text-muted-foreground mt-1'>
                             Click vào sản phẩm → tab "Chi tiết" để thêm màu sắc, size, giá
                           </p>
                         </div>
 
-                        <div className='bg-white dark:bg-gray-800 p-4 rounded-xl border border-violet-200 dark:border-violet-700'>
+                        <div className='bg-background p-4 rounded-xl border'>
                           <div className='flex items-center gap-2 mb-2'>
-                            <Badge className='bg-blue-100 text-blue-700 text-xs'>Bước 2</Badge>
+                            <Badge className='text-xs' variant='secondary'>Bước 2</Badge>
                           </div>
-                          <h5 className='font-semibold text-gray-800 dark:text-gray-200'>Quản lý tồn kho</h5>
-                          <p className='text-xs text-gray-600 dark:text-gray-400 mt-1'>
+                          <h5 className='font-semibold'>Quản lý tồn kho</h5>
+                          <p className='text-xs text-muted-foreground mt-1'>
                             Theo dõi số lượng và giá trị tồn kho qua tab "Tồn kho"
                           </p>
                         </div>
 
-                        <div className='bg-white dark:bg-gray-800 p-4 rounded-xl border border-violet-200 dark:border-violet-700'>
+                        <div className='bg-background p-4 rounded-xl border'>
                           <div className='flex items-center gap-2 mb-2'>
-                            <Badge className='bg-green-100 text-green-700 text-xs'>Bước 3</Badge>
+                            <Badge className='text-xs' variant='secondary'>Bước 3</Badge>
                           </div>
-                          <h5 className='font-semibold text-gray-800 dark:text-gray-200'>Bán hàng</h5>
-                          <p className='text-xs text-gray-600 dark:text-gray-400 mt-1'>
+                          <h5 className='font-semibold'>Bán hàng</h5>
+                          <p className='text-xs text-muted-foreground mt-1'>
                             Sản phẩm sẽ hiển thị trên website sau khi hoàn tất
                           </p>
                         </div>
@@ -445,13 +405,13 @@ export default function MaternityDressCreationDialog({
               </Card>
 
               {/* Form Actions */}
-              <div className='flex justify-end gap-4 pt-6 border-t border-violet-200 dark:border-violet-700'>
+        <div className='flex justify-end gap-4 pt-6 border-t'>
                 <Button
                   type='button'
                   variant='outline'
                   onClick={() => onOpenChange(false)}
                   disabled={isLoading}
-                  className='border-violet-200 dark:border-violet-700 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl h-12 px-8'
+          className='h-10'
                 >
                   <X className='h-4 w-4 mr-2' />
                   Hủy bỏ
@@ -459,7 +419,7 @@ export default function MaternityDressCreationDialog({
                 <Button
                   type='submit'
                   disabled={isLoading}
-                  className='bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl h-12 px-8'
+          className='h-10'
                 >
                   {isLoading ? (
                     <>
@@ -478,26 +438,6 @@ export default function MaternityDressCreationDialog({
           </Form>
         </div>
 
-        {/* Custom Scrollbar Styles */}
-        <style>{`
-          .custom-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
-          }
-          .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: rgba(139, 92, 246, 0.3);
-            border-radius: 3px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(139, 92, 246, 0.5);
-          }
-        `}</style>
       </DialogContent>
     </Dialog>
   )

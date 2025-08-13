@@ -2,7 +2,7 @@ import { api } from '@/lib/axios/axios'
 import { Appointment, CreateAppointmentData, UpdateAppointmentData } from '@/@types/apointment.type'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 
-export const appointmentApi = {
+ const appointmentApi = {
   // Lấy danh sách lịch hẹn với phân trang và bộ lọc
   getAppointments: async (params?: {
     pageNumber?: number
@@ -68,3 +68,4 @@ export const appointmentApi = {
     return response.data
   }
 }
+export default appointmentApi

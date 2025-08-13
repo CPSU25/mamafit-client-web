@@ -1,7 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { maternityDressAPI } from '@/apis'
-import { MaternityDressDetailFormData, MaternityDressFormData } from '@/@types/inventory.type'
+import type { QueryKey } from '@tanstack/react-query'
+import {
+  MaternityDressDetail,
+  MaternityDressDetailFormData,
+  MaternityDressFormData,
+  MaternityDressList,
+  MaternityDressDetailType
+} from '@/@types/inventory.type'
+import type { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { toast } from 'sonner'
 
 interface MaternityDressQueryParams {
@@ -115,14 +123,51 @@ export const useDeleteMaternityDress = () => {
       }
       throw new Error(response.data.message || 'Failed to delete product')
     },
-    onSuccess: (_, deletedId) => {
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: maternityDressKeys.all })
+
+      // Snapshot of affected lists to rollback if needed
+      const affectedLists = queryClient.getQueriesData<ListBaseResponse<MaternityDressList>>({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) &&
+          query.queryKey[0] === 'maternity-dress' &&
+          query.queryKey[1] === 'maternityDresses' &&
+          query.queryKey[2] === 'list'
+      })
+      const previous: { key: QueryKey; data: ListBaseResponse<MaternityDressList> | undefined }[] =
+        affectedLists.map(([key, data]) => ({ key: key as QueryKey, data }))
+
+      // Optimistically remove item from lists
+      affectedLists.forEach(([key, data]) => {
+        if (!data || !data.data?.items) return
+        const items = (data.data.items as MaternityDressList[]).filter((it) => it.id !== deletedId)
+        const next = {
+          ...data,
+          data: {
+            ...data.data,
+            items,
+            totalCount: Math.max((data.data.totalCount ?? items.length) - 1, 0)
+          }
+        }
+        queryClient.setQueryData(key as QueryKey, next)
+      })
+
+      // Drop the detail cache immediately
       queryClient.removeQueries({ queryKey: maternityDressKeys.maternityDressDetail(deletedId) })
-      toast.success('Xóa sản phẩm thành công!')
+
+      return { previous }
     },
-    onError: (error) => {
+    onError: (error, _deletedId, context) => {
+      // Rollback lists
+      context?.previous?.forEach((entry) => queryClient.setQueryData(entry.key, entry.data))
       console.error('Delete maternity dress error:', error)
       toast.error('Xóa sản phẩm thất bại!')
+    },
+    onSuccess: () => {
+      toast.success('Xóa sản phẩm thành công!')
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
     }
   })
 }
@@ -172,16 +217,41 @@ export const useCreateMaternityDressDetail = () => {
       }
       throw new Error(response.data.message || 'Failed to create maternity dress')
     },
-    onSuccess: (_, variables) => {
-      // Invalidate the detail query for the specific maternity dress
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDressDetail(variables.maternityDressId) })
-      // Also invalidate the list
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
-      toast.success('Tạo chi tiết sản phẩm thành công!')
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({
+        queryKey: maternityDressKeys.maternityDressDetail(variables.maternityDressId)
+      })
+      const key = maternityDressKeys.maternityDressDetail(variables.maternityDressId)
+      const previous = queryClient.getQueryData<ItemBaseResponse<MaternityDressDetail>>(key)
+
+      if (previous?.data) {
+        const optimistic = {
+          id: `temp-${Date.now()}`,
+          name: variables.name,
+          description: variables.description,
+          images: variables.images,
+          color: variables.color,
+          size: variables.size,
+          quantity: variables.quantity,
+          price: variables.price
+        }
+        const next = {
+          ...previous,
+          data: { ...previous.data, details: [...(previous.data.details || []), optimistic] }
+        }
+        queryClient.setQueryData(key, next)
+      }
+      return { key, previous }
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
+      if (context?.key) queryClient.setQueryData(context.key, context.previous)
       console.error('Create maternity dress detail error:', error)
       toast.error('Tạo chi tiết sản phẩm thất bại!')
+    },
+    onSuccess: (_, variables) => {
+      toast.success('Tạo chi tiết sản phẩm thành công!')
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDressDetail(variables.maternityDressId) })
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
     }
   })
 }
@@ -226,19 +296,41 @@ export const useDeleteMaternityDressDetail = () => {
       }
       throw new Error(response.data.message || 'Failed to delete maternity dress')
     },
-    onSuccess: () => {
-      // Since we don't know which maternity dress this detail belonged to,
-      // we'll invalidate all detail queries and lists
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
-      // Invalidate all detail queries
-      queryClient.invalidateQueries({
-        predicate: (query) => query.queryKey[0] === 'maternity-dress' && query.queryKey[2] === 'detail'
+    onMutate: async (detailId) => {
+      await queryClient.cancelQueries({ queryKey: maternityDressKeys.all })
+
+      const affected = queryClient.getQueriesData<ItemBaseResponse<MaternityDressDetail>>({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) &&
+          query.queryKey[0] === 'maternity-dress' &&
+          query.queryKey[1] === 'maternityDresses' &&
+          query.queryKey[2] === 'detail'
       })
-      toast.success('Xóa chi tiết sản phẩm thành công!')
+      const previous: { key: QueryKey; data: ItemBaseResponse<MaternityDressDetail> | undefined }[] =
+        affected.map(([key, data]) => ({ key: key as QueryKey, data }))
+
+      affected.forEach(([key, data]) => {
+        if (!data || !data.data?.details) return
+  const nextDetails = (data.data.details as MaternityDressDetailType[]).filter((d) => d.id !== detailId)
+        const next = { ...data, data: { ...data.data, details: nextDetails } }
+        queryClient.setQueryData(key as QueryKey, next)
+      })
+
+      return { previous }
     },
-    onError: (error) => {
+    onError: (error, _id, context) => {
+      context?.previous?.forEach((entry) => queryClient.setQueryData(entry.key, entry.data))
       console.error('Delete maternity dress detail error:', error)
       toast.error('Xóa chi tiết sản phẩm thất bại!')
+    },
+    onSuccess: () => {
+      toast.success('Xóa chi tiết sản phẩm thành công!')
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
+      queryClient.invalidateQueries({
+        predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === 'maternity-dress'
+      })
     }
   })
 }
