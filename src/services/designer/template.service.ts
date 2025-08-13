@@ -50,7 +50,7 @@ export const useCreateTemplate = () => {
   return useMutation({
     mutationFn: presetApi.createPreset,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: templateKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: templateKeys.all })
       toast.success('Tạo mẫu thiết kế thành công!')
     },
     onError: (error: Error) => {
@@ -80,8 +80,9 @@ export const useDeleteTemplate = () => {
 
   return useMutation({
     mutationFn: presetApi.deletePreset,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: templateKeys.lists() })
+    onSuccess: (_, deletedId) => {
+      queryClient.invalidateQueries({ queryKey: templateKeys.all })
+      queryClient.removeQueries({ queryKey: templateKeys.detail(deletedId) })
       toast.success('Xóa mẫu thiết kế thành công!')
     },
     onError: (error: Error) => {

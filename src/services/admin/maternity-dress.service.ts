@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { maternityDressAPI } from '@/apis'
 import { MaternityDressDetailFormData, MaternityDressFormData } from '@/@types/inventory.type'
+import { toast } from 'sonner'
 
 interface MaternityDressQueryParams {
   index?: number
@@ -68,8 +69,12 @@ export const useCreateMaternityDress = () => {
       throw new Error(response.data.message || 'Failed to create product')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDresses() })
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDressesList({}) })
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
+      toast.success('Tạo sản phẩm thành công!')
+    },
+    onError: (error) => {
+      console.error('Create maternity dress error:', error)
+      toast.error('Tạo sản phẩm thất bại!')
     }
   })
 }
@@ -86,9 +91,14 @@ export const useUpdateMaternityDress = () => {
       }
       throw new Error(response.data.message || 'Failed to update product')
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDresses() })
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDressesList({}) })
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
+      queryClient.setQueryData(maternityDressKeys.maternityDressDetail(variables.id), data)
+      toast.success('Cập nhật sản phẩm thành công!')
+    },
+    onError: (error) => {
+      console.error('Update maternity dress error:', error)
+      toast.error('Cập nhật sản phẩm thất bại!')
     }
   })
 }
@@ -105,9 +115,14 @@ export const useDeleteMaternityDress = () => {
       }
       throw new Error(response.data.message || 'Failed to delete product')
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDresses() })
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDressesList({}) })
+    onSuccess: (_, deletedId) => {
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
+      queryClient.removeQueries({ queryKey: maternityDressKeys.maternityDressDetail(deletedId) })
+      toast.success('Xóa sản phẩm thành công!')
+    },
+    onError: (error) => {
+      console.error('Delete maternity dress error:', error)
+      toast.error('Xóa sản phẩm thất bại!')
     }
   })
 }
@@ -161,8 +176,12 @@ export const useCreateMaternityDressDetail = () => {
       // Invalidate the detail query for the specific maternity dress
       queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDressDetail(variables.maternityDressId) })
       // Also invalidate the list
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDresses() })
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDressesList({}) })
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
+      toast.success('Tạo chi tiết sản phẩm thành công!')
+    },
+    onError: (error) => {
+      console.error('Create maternity dress detail error:', error)
+      toast.error('Tạo chi tiết sản phẩm thất bại!')
     }
   })
 }
@@ -185,8 +204,12 @@ export const useUpdateMaternityDressDetail = () => {
         queryKey: maternityDressKeys.maternityDressDetail(variables.data.maternityDressId)
       })
       // Also invalidate the list
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDresses() })
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDressesList({}) })
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
+      toast.success('Cập nhật chi tiết sản phẩm thành công!')
+    },
+    onError: (error) => {
+      console.error('Update maternity dress detail error:', error)
+      toast.error('Cập nhật chi tiết sản phẩm thất bại!')
     }
   })
 }
@@ -206,12 +229,16 @@ export const useDeleteMaternityDressDetail = () => {
     onSuccess: () => {
       // Since we don't know which maternity dress this detail belonged to,
       // we'll invalidate all detail queries and lists
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDresses() })
-      queryClient.invalidateQueries({ queryKey: maternityDressKeys.maternityDressesList({}) })
+      queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
       // Invalidate all detail queries
       queryClient.invalidateQueries({
         predicate: (query) => query.queryKey[0] === 'maternity-dress' && query.queryKey[2] === 'detail'
       })
+      toast.success('Xóa chi tiết sản phẩm thành công!')
+    },
+    onError: (error) => {
+      console.error('Delete maternity dress detail error:', error)
+      toast.error('Xóa chi tiết sản phẩm thất bại!')
     }
   })
 }

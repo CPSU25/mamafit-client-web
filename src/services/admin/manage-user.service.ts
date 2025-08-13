@@ -1,6 +1,7 @@
 import manageUserAPI, { CreateUserData, CreateSystemAccountData } from '@/apis/manage-user.api'
 import { ManageUserType } from '@/@types/admin.types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 interface ManageUserQueryParams {
   index?: number
@@ -60,7 +61,11 @@ export const useCreateSystemAccount = () => {
       throw new Error(response.data.message || 'Failed to create system account')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: manageUserKeys.list({}) })
+      queryClient.invalidateQueries({ queryKey: manageUserKeys.all })
+      toast.success('Tạo tài khoản hệ thống thành công!')
+    },
+    onError: () => {
+      toast.error('Tạo tài khoản hệ thống thất bại!')
     }
   })
 }
@@ -90,7 +95,11 @@ export const useCreateUser = () => {
       throw new Error(response.data.message || 'Failed to create user')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: manageUserKeys.list({}) })
+      queryClient.invalidateQueries({ queryKey: manageUserKeys.all })
+      toast.success('Tạo người dùng thành công!')
+    },
+    onError: () => {
+      toast.error('Tạo người dùng thất bại!')
     }
   })
 }
@@ -106,7 +115,11 @@ export const useDeleteUser = () => {
       throw new Error(response.data.message || 'Failed to delete user')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: manageUserKeys.list({}) })
+      queryClient.invalidateQueries({ queryKey: manageUserKeys.all })
+      toast.success('Xóa người dùng thành công!')
+    },
+    onError: () => {
+      toast.error('Xóa người dùng thất bại!')
     }
   })
 }
@@ -122,7 +135,11 @@ export const useUpdateUser = () => {
       throw new Error(response.data.message || 'Failed to update user')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: manageUserKeys.list({}) })
+      queryClient.invalidateQueries({ queryKey: manageUserKeys.all })
+      toast.success('Cập nhật người dùng thành công!')
+    },
+    onError: () => {
+      toast.error('Cập nhật người dùng thất bại!')
     }
   })
 }
