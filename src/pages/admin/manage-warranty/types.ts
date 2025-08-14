@@ -69,7 +69,7 @@ export interface WarrantyRequestDetailProps {
 }
 
 export interface RejectItemDialogProps {
-  item: WarrantyItem | null
+  item: WarrantyItem
   onClose: () => void
   onReject: (itemId: string, reason: string) => void
 }

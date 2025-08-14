@@ -28,14 +28,14 @@ const getCardBorderColor = (status: StatusWarrantyRequest) => {
     case StatusWarrantyRequest.PENDING:
       return 'border-l-amber-400'
     case StatusWarrantyRequest.APPROVED:
+      return 'border-l-emerald-400'
+    case StatusWarrantyRequest.REPAIRING:
+      return 'border-l-orange-400'
     case StatusWarrantyRequest.COMPLETED:
       return 'border-l-green-400'
     case StatusWarrantyRequest.REJECTED:
-      return 'border-l-red-400'
     case StatusWarrantyRequest.PARTIALLY_REJECTED:
-      return 'border-l-orange-400'
-    case StatusWarrantyRequest.REPAIRING:
-      return 'border-l-blue-400'
+      return 'border-l-red-400'
     default:
       return 'border-l-gray-400'
   }
@@ -136,7 +136,7 @@ export const WarrantyRequestCard = ({ request, onViewDetail }: WarrantyRequestCa
               className='flex-1 text-violet-700 border-violet-200 hover:bg-violet-50 font-medium'
             >
               <Eye className='w-4 h-4 mr-2' />
-              Xem chi tiết
+              {canQuickAction ? 'Xử lý' : 'Xem chi tiết'}
             </Button>
           </div>
         </div>

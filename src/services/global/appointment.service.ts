@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { appointmentApi } from '@/apis/appointment.api'
 import {
   AppointmentFilters,
   CreateAppointmentData,
@@ -10,6 +9,7 @@ import {
 } from '@/@types/apointment.type'
 import { ErrorType } from '@/@types/response'
 import { toast } from 'sonner'
+import appointmentApi from '@/apis/appointment.api'
 
 // Query keys
 export const appointmentKeys = {

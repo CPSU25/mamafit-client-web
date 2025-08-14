@@ -1,21 +1,20 @@
 import { useState } from 'react'
-import { Shield, RefreshCw, Plus, TrendingUp } from 'lucide-react'
+import { Shield, RefreshCw, Plus, TrendingUp, Clock } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { WarrantyFilters, WarrantyRequestCard, WarrantyRequestDetail, RejectItemDialog } from './components'
-import { WarrantyItem } from './types'
+import { WarrantyFilters, WarrantyRequestCard, WarrantyDecisionForm } from './components'
 import { useWarrantyFilters } from './hooks/useWarrantyFilters'
-import { useWarrantyRequestList } from '@/services/global/warranty.service'
+import { useWarrantyRequestList, useWarrantyRequestById } from '@/services/global/warranty.service'
 import { WarrantyRequestList, StatusWarrantyRequest } from '@/@types/warranty-request.types'
 
 function WarrantyManagementSystem() {
   const [selectedTab, setSelectedTab] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [selectedRequest, setSelectedRequest] = useState<WarrantyRequestList | null>(null)
-  const [selectedItemForEdit, setSelectedItemForEdit] = useState<WarrantyItem | null>(null)
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
+  const [selectedItemForEdit, setSelectedItemForEdit] = useState<WarrantyRequestList | null>(null)
 
   const {
     data: warrantyRequests,
@@ -28,6 +27,13 @@ function WarrantyManagementSystem() {
     sortBy: 'CREATED_AT_DESC'
   })
 
+  const { data: selectedWarrantyRequest, isLoading: isLoadingDetail } = useWarrantyRequestById(
+    selectedRequestId || '',
+    {
+      enabled: !!selectedRequestId
+    }
+  )
+
   // Filter requests based on tab, search and status
   const { filteredRequests } = useWarrantyFilters({
     requests: warrantyRequests?.items ?? [],
@@ -36,22 +42,30 @@ function WarrantyManagementSystem() {
     statusFilter
   })
 
-  // Calculate stats
+  // Calculate stats với các status mới
   const stats = {
     total: warrantyRequests?.items.length ?? 0,
     pending: warrantyRequests?.items.filter((r) => r.status === StatusWarrantyRequest.PENDING).length ?? 0,
-    inTransit: warrantyRequests?.items.filter((r) => r.status === StatusWarrantyRequest.REPAIRING).length ?? 0,
+    approved: warrantyRequests?.items.filter((r) => r.status === StatusWarrantyRequest.APPROVED).length ?? 0,
     completed: warrantyRequests?.items.filter((r) => r.status === StatusWarrantyRequest.COMPLETED).length ?? 0
   }
 
-  const handleRejectItem = (itemId: string, reason: string) => {
-    console.log('Rejecting item:', itemId, 'Reason:', reason)
-    // API call to update item status with rejection reason
+  const handleViewDetail = (request: WarrantyRequestList) => {
+    setSelectedRequestId(request.id)
   }
 
+  const handleCloseDetail = () => {
+    setSelectedRequestId(null)
+  }
+
+  // const handleRejectItem = (itemId: string, reason: string) => {
+  //   console.log('Rejecting item:', itemId, 'Reason:', reason)
+  //   // API call to update item status with rejection reason
+  // }
+
   return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6'>
-      <div className='max-w-7xl mx-auto'>
+    <div className='min-h-screen p-6'>
+      <div className='container mx-auto py-6 space-y-6'>
         {/* Header */}
         <div className='mb-8'>
           <div className='flex flex-col lg:flex-row lg:items-center justify-between gap-4'>
@@ -74,23 +88,23 @@ function WarrantyManagementSystem() {
 
         {/* Stats Cards */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-          <Card className='border-l-4 border-l-blue-400 bg-gradient-to-br from-blue-50 to-white'>
+          <Card className='border-l-4 border-l-violet-400 bg-gradient-to-br from-violet-50 to-white'>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-blue-700 flex items-center gap-2'>
+              <CardTitle className='text-sm font-medium text-violet-700 flex items-center gap-2'>
                 <Shield className='w-4 h-4' />
                 Tổng yêu cầu
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='text-3xl font-bold text-blue-900'>{stats.total}</div>
-              <p className='text-blue-600 text-sm'>Tất cả yêu cầu</p>
+              <div className='text-3xl font-bold text-violet-900'>{stats.total}</div>
+              <p className='text-violet-600 text-sm'>Tất cả yêu cầu</p>
             </CardContent>
           </Card>
 
           <Card className='border-l-4 border-l-amber-400 bg-gradient-to-br from-amber-50 to-white'>
             <CardHeader className='pb-3'>
               <CardTitle className='text-sm font-medium text-amber-700 flex items-center gap-2'>
-                <TrendingUp className='w-4 h-4' />
+                <Clock className='w-4 h-4' />
                 Chờ xử lý
               </CardTitle>
             </CardHeader>
@@ -100,31 +114,31 @@ function WarrantyManagementSystem() {
             </CardContent>
           </Card>
 
-          <Card className='border-l-4 border-l-orange-400 bg-gradient-to-br from-orange-50 to-white'>
+          <Card className='border-l-4 border-l-emerald-400 bg-gradient-to-br from-emerald-50 to-white'>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-orange-700 flex items-center gap-2'>
-                <RefreshCw className='w-4 h-4' />
-                Đang xử lý
+              <CardTitle className='text-sm font-medium text-emerald-700 flex items-center gap-2'>
+                <TrendingUp className='w-4 h-4' />
+                Đã duyệt
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='text-3xl font-bold text-orange-900'>{stats.inTransit}</div>
-              <p className='text-orange-600 text-sm'>Đang sửa chữa</p>
+              <div className='text-3xl font-bold text-emerald-900'>{stats.approved}</div>
+              <p className='text-emerald-600 text-sm'>Đã chấp nhận</p>
             </CardContent>
           </Card>
 
-          <Card className='border-l-4 border-l-green-400 bg-gradient-to-br from-green-50 to-white'>
+          {/* <Card className='border-l-4 border-l-indigo-400 bg-gradient-to-br from-indigo-50 to-white'>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-green-700 flex items-center gap-2'>
-                <Shield className='w-4 h-4' />
-                Hoàn thành
+              <CardTitle className='text-sm font-medium text-indigo-700 flex items-center gap-2'>
+                <CreditCard className='w-4 h-4' />
+                Chờ thanh toán
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='text-3xl font-bold text-green-900'>{stats.completed}</div>
-              <p className='text-green-600 text-sm'>Đã xử lý xong</p>
+              <div className='text-3xl font-bold text-indigo-900'>{stats.awaitingPayment}</div>
+              <p className='text-indigo-600 text-sm'>Yêu cầu có phí</p>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Filters */}
@@ -137,11 +151,12 @@ function WarrantyManagementSystem() {
 
         {/* Tabs */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className='mb-6'>
-          <TabsList className='grid w-full grid-cols-6'>
+          <TabsList className='grid w-full grid-cols-7'>
             <TabsTrigger value='all'>Tất cả</TabsTrigger>
             <TabsTrigger value='pending'>Chờ xử lý</TabsTrigger>
-            <TabsTrigger value='in_transit'>Vận chuyển</TabsTrigger>
+            <TabsTrigger value='approved'>Đã duyệt</TabsTrigger>
             <TabsTrigger value='repairing'>Sửa chữa</TabsTrigger>
+            <TabsTrigger value='awaiting_payment'>Chờ TT</TabsTrigger>
             <TabsTrigger value='completed'>Hoàn thành</TabsTrigger>
             <TabsTrigger value='rejected'>Từ chối</TabsTrigger>
           </TabsList>
@@ -194,7 +209,7 @@ function WarrantyManagementSystem() {
         {!isLoading && filteredRequests.length > 0 && (
           <div className='grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6'>
             {filteredRequests.map((request) => (
-              <WarrantyRequestCard key={request.id} request={request} onViewDetail={setSelectedRequest} />
+              <WarrantyRequestCard key={request.id} request={request} onViewDetail={handleViewDetail} />
             ))}
           </div>
         )}
@@ -232,24 +247,38 @@ function WarrantyManagementSystem() {
       </div>
 
       {/* Warranty Request Detail Dialog */}
-      <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
-        <DialogContent className='sm:max-w-4xl max-h-[90vh] overflow-hidden'>
-          {selectedRequest && (
-            <WarrantyRequestDetail request={selectedRequest} onClose={() => setSelectedRequest(null)} />
-          )}
+      <Dialog open={!!selectedRequestId} onOpenChange={() => setSelectedRequestId(null)}>
+        <DialogContent className='sm:max-w-5xl max-h-[95vh] overflow-hidden flex flex-col'>
+          <div className='flex-shrink-0'>
+            <div className='mb-4'>
+              <h2 className='text-xl font-semibold text-violet-900'>Chi tiết yêu cầu bảo hành</h2>
+              <p className='text-sm text-gray-600'>Đánh giá và xử lý yêu cầu bảo hành từ khách hàng</p>
+            </div>
+          </div>
+          <div className='flex-1 overflow-hidden'>
+            {selectedWarrantyRequest && !isLoadingDetail && (
+              <WarrantyDecisionForm warrantyRequest={selectedWarrantyRequest} onClose={handleCloseDetail} />
+            )}
+            {isLoadingDetail && (
+              <div className='flex items-center justify-center p-8'>
+                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600'></div>
+                <span className='ml-3 text-gray-600'>Đang tải...</span>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Reject Item Dialog */}
       <Dialog open={!!selectedItemForEdit} onOpenChange={() => setSelectedItemForEdit(null)}>
         <DialogContent className='max-w-2xl'>
-          {selectedItemForEdit && (
+          {/* {selectedItemForEdit && (
             <RejectItemDialog
               item={selectedItemForEdit}
               onClose={() => setSelectedItemForEdit(null)}
               onReject={handleRejectItem}
             />
-          )}
+          )} */}
         </DialogContent>
       </Dialog>
     </div>

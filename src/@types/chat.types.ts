@@ -4,6 +4,7 @@ export interface ChatRoom {
   name?: string
   memberCount?: number
   lastMessage?: string // Direct string from API, not ChatMessage object
+  lastMessageType?: MessageType | number // Type của tin nhắn cuối cùng
   description?: string
   lastTimestamp?: string // ISO string from API, not Date object
   lastUserId?: string
@@ -34,9 +35,31 @@ export interface ChatMessage {
 }
 
 export enum MessageType {
-  Text = 'Text',
-  Image = 'Image',
-  File = 'File'
+  Text = 0,
+  Image = 1,
+  File = 2,
+  Design_Request = 3,
+  Preset = 4
+}
+
+// Helper function để convert MessageType thành display text và icon
+export function getMessageTypeDisplay(type: MessageType | number) {
+  const messageType = typeof type === 'number' ? type : Number(type)
+
+  switch (messageType) {
+    case MessageType.Text:
+      return { label: 'Tin nhắn văn bản', icon: '💬', isSpecial: false }
+    case MessageType.Image:
+      return { label: 'Hình ảnh', icon: '🖼️', isSpecial: false }
+    case MessageType.File:
+      return { label: 'Tệp đính kèm', icon: '📎', isSpecial: false }
+    case MessageType.Design_Request:
+      return { label: 'Yêu cầu thiết kế', icon: '🎨', isSpecial: true }
+    case MessageType.Preset:
+      return { label: 'Preset thiết kế', icon: '✨', isSpecial: true }
+    default:
+      return { label: 'Tin nhắn', icon: '💬', isSpecial: false }
+  }
 }
 
 // API Request/Response Types

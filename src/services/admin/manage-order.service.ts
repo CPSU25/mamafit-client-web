@@ -54,7 +54,7 @@ export const useOrder = (id: string) => {
 
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (params: { id: string; body: OrderStatusUpdate }) => {
       const response = await ManageOrderAPI.updateOrderStatus(params.id, params.body)
@@ -68,7 +68,7 @@ export const useUpdateOrderStatus = () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
       // Invalidate order detail
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.id) })
-      
+
       toast.success('Cập nhật trạng thái đơn hàng thành công!')
     },
     onError: () => {
@@ -105,7 +105,7 @@ export const useOrderDetail = (id: string) => {
 
 export const useAssignTask = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (params: { orderItemId: string; body: AssignTask }) => {
       const response = await ManageOrderAPI.assignTask(params.orderItemId, params.body)
@@ -119,7 +119,7 @@ export const useAssignTask = () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all })
       queryClient.invalidateQueries({ queryKey: ['designer-tasks'] })
       queryClient.invalidateQueries({ queryKey: ['staff-tasks'] })
-      
+
       toast.success('Giao nhiệm vụ thành công!')
     },
     onError: () => {
@@ -137,7 +137,7 @@ export const useAssignTask = () => {
 
 export const useAssignCharge = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (body: AssignCharge[]) => {
       const response = await ManageOrderAPI.assignCharge(body)
@@ -151,7 +151,7 @@ export const useAssignCharge = () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all })
       queryClient.invalidateQueries({ queryKey: ['designer-tasks'] })
       queryClient.invalidateQueries({ queryKey: ['staff-tasks'] })
-      
+
       toast.success('Phân công nhiệm vụ thành công!')
     },
     onError: () => {
