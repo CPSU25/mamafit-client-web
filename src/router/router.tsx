@@ -16,10 +16,9 @@ import {
 // Import các trang manage order mới
 import WarrantyOrderPage from '@/pages/admin/manage-order/warranty'
 import DesignRequestPage from '@/pages/admin/manage-order/design-request'
-import { HomePage } from '@/pages/guest'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
-import { FactoryManagerDashboard } from '@/pages/factory-manager'
+// import { FactoryManagerDashboard } from '@/pages/factory-manager'
 import { DesignerDashboard, ManageTemplatePage, ManageDesignRequestPage } from '@/pages/designer'
 import { BranchDashboard, CashierPage, ManageAppointmentPage, ManageBranchOrderPage } from '@/pages/branch'
 import { OrderItemDetailPage, StaffTasksPage } from '@/pages/staff'
@@ -28,10 +27,10 @@ export const router = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
-      // Root route - Customer area (will be implemented later)
+      // Root route - redirect to system
       {
         path: '/',
-        element: <HomePage />
+        element: <Navigate to='/system' replace />
       },
 
       // System sign-in route - OUTSIDE of /system to avoid guard loop
@@ -152,7 +151,7 @@ export const router = createBrowserRouter([
         children: [
           {
             path: 'dashboard',
-            element: <FactoryManagerDashboard />
+            element: <AdminDashboardPage />
           },
           {
             path: 'manage-production',
@@ -175,7 +174,7 @@ export const router = createBrowserRouter([
           { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
           {
             path: 'manage-task',
-            element: <div>Manage Tasks Page</div>
+            element: <ManageMilestonePage />
           },
           {
             path: 'manage-warranty',
