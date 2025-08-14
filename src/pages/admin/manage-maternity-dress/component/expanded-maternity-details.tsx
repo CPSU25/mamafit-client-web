@@ -94,12 +94,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
               <p className='text-sm text-muted-foreground'>Hiển thị {images.length} ảnh</p>
             </div>
           </div>
-          <Button
-            size='sm'
-            variant='outline'
-            onClick={() => setShowAllImages(false)}
-            className='rounded-lg'
-          >
+          <Button size='sm' variant='outline' onClick={() => setShowAllImages(false)} className='rounded-lg'>
             <ChevronLeft className='h-4 w-4 mr-1' />
             Thu gọn
           </Button>
@@ -379,9 +374,7 @@ export default function ExpendMaternityDressDetails() {
                               Kiểu dáng
                             </span>
                           </div>
-                          <p className='text-sm font-medium'>
-                            {maternityDress.styleName}
-                          </p>
+                          <p className='text-sm font-medium'>{maternityDress.styleName}</p>
                         </div>
                       </div>
 
@@ -393,9 +386,7 @@ export default function ExpendMaternityDressDetails() {
                               Biến thể
                             </span>
                           </div>
-                          <p className='text-2xl font-bold'>
-                            {maternityDressDetails.length}
-                          </p>
+                          <p className='text-2xl font-bold'>{maternityDressDetails.length}</p>
                         </div>
 
                         <div className='p-4 rounded-xl border bg-muted/30'>
@@ -405,9 +396,7 @@ export default function ExpendMaternityDressDetails() {
                               Tổng giá trị
                             </span>
                           </div>
-                          <p className='text-lg font-bold'>
-                            {totalValue.toLocaleString()} VNĐ
-                          </p>
+                          <p className='text-lg font-bold'>{totalValue.toLocaleString()} VNĐ</p>
                         </div>
                       </div>
                     </div>
@@ -433,7 +422,9 @@ export default function ExpendMaternityDressDetails() {
                   <CardTitle className='flex items-center gap-2 text-base'>
                     <ImageIcon className='h-5 w-5 text-muted-foreground' />
                     Hình Ảnh Sản Phẩm
-                    <Badge variant='secondary' className='ml-auto'>{maternityDress.images?.length || 0} ảnh</Badge>
+                    <Badge variant='secondary' className='ml-auto'>
+                      {maternityDress.images?.length || 0} ảnh
+                    </Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className='p-6'>
@@ -591,7 +582,7 @@ export default function ExpendMaternityDressDetails() {
                               name='quantity'
                               render={({ field }) => (
                                 <FormItem>
-                  <FormLabel className='font-medium flex items:center gap-2'>
+                                  <FormLabel className='font-medium flex items:center gap-2'>
                                     <ShoppingBag className='h-4 w-4' />
                                     Số Lượng *
                                   </FormLabel>
@@ -600,7 +591,7 @@ export default function ExpendMaternityDressDetails() {
                                       type='number'
                                       min='0'
                                       placeholder='10'
-                    className='h-10'
+                                      className='h-10'
                                       {...field}
                                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                                     />
@@ -615,7 +606,7 @@ export default function ExpendMaternityDressDetails() {
                               name='price'
                               render={({ field }) => (
                                 <FormItem>
-                  <FormLabel className='font-medium flex items-center gap-2'>
+                                  <FormLabel className='font-medium flex items-center gap-2'>
                                     <TrendingUp className='h-4 w-4' />
                                     Giá (VNĐ) *
                                   </FormLabel>
@@ -625,7 +616,7 @@ export default function ExpendMaternityDressDetails() {
                                       min='0'
                                       step='1000'
                                       placeholder='299000'
-                    className='h-10'
+                                      className='h-10'
                                       {...field}
                                       onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                                     />
@@ -646,7 +637,12 @@ export default function ExpendMaternityDressDetails() {
                                   Mô Tả Chi Tiết
                                 </FormLabel>
                                 <FormControl>
-                                  <Textarea placeholder='Mô tả chi tiết...' rows={4} className='resize-none' {...field} />
+                                  <Textarea
+                                    placeholder='Mô tả chi tiết...'
+                                    rows={4}
+                                    className='resize-none'
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -689,12 +685,8 @@ export default function ExpendMaternityDressDetails() {
                             )}
                           />
 
-              <div className='flex gap-4 pt-6 border-t'>
-                            <Button
-                              type='submit'
-                              disabled={createDetailMutation.isPending}
-                className='h-10'
-                            >
+                          <div className='flex gap-4 pt-6 border-t'>
+                            <Button type='submit' disabled={createDetailMutation.isPending} className='h-10'>
                               {createDetailMutation.isPending ? (
                                 <>
                                   <Loader2 className='h-4 w-4 mr-2 animate-spin' />
@@ -711,7 +703,7 @@ export default function ExpendMaternityDressDetails() {
                               type='button'
                               variant='outline'
                               onClick={() => setShowAddForm(false)}
-                className='h-10'
+                              className='h-10'
                             >
                               <X className='h-4 w-4 mr-2' />
                               Hủy bỏ
@@ -812,9 +804,7 @@ export default function ExpendMaternityDressDetails() {
                               <div className='flex items-center justify-between p-3 bg-muted rounded-lg'>
                                 <div className='flex items-center gap-2'>
                                   <ShoppingBag className='h-4 w-4 text-muted-foreground' />
-                                  <span className='text-xs font-medium'>
-                                    Tồn
-                                  </span>
+                                  <span className='text-xs font-medium'>Tồn</span>
                                 </div>
                                 <Badge
                                   variant={detail.quantity > 10 ? 'default' : 'destructive'}
@@ -829,9 +819,7 @@ export default function ExpendMaternityDressDetails() {
                                   <TrendingUp className='h-4 w-4 text-muted-foreground' />
                                   <span className='text-xs font-medium'>Giá</span>
                                 </div>
-                                <span className='font-bold text-sm'>
-                                  {detail.price.toLocaleString()}₫
-                                </span>
+                                <span className='font-bold text-sm'>{detail.price.toLocaleString()}₫</span>
                               </div>
                             </div>
 
@@ -917,7 +905,7 @@ export default function ExpendMaternityDressDetails() {
 
                 {maternityDressDetails.length > 0 ? (
                   <div className='space-y-6'>
-                        <div className='flex items-center gap-3 mb-6'>
+                    <div className='flex items-center gap-3 mb-6'>
                       <BarChart3 className='h-5 w-5 text-muted-foreground' />
                       <div>
                         <h4 className='text-base font-semibold'>Chi Tiết Tồn Kho</h4>
@@ -952,9 +940,7 @@ export default function ExpendMaternityDressDetails() {
                                 </div>
                                 <div className='flex items-center gap-2'>
                                   <TrendingUp className='h-4 w-4 text-muted-foreground' />
-                                  <span className='font-semibold'>
-                                    {detail.price.toLocaleString()}₫
-                                  </span>
+                                  <span className='font-semibold'>{detail.price.toLocaleString()}₫</span>
                                 </div>
                               </div>
                             </div>
@@ -999,7 +985,6 @@ export default function ExpendMaternityDressDetails() {
           </TabsContent>
         </Tabs>
       </div>
-
     </div>
   )
 }

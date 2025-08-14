@@ -160,7 +160,17 @@ export const WarrantyRequestDetail = ({ request, onClose }: WarrantyRequestDetai
 
     submitDecisionMutation.mutate({
       noteInternal,
-      items: itemsToSubmit
+      items: itemsToSubmit.map((item) => {
+        return {
+          orderItemId: item.orderItemId,
+          status: item.status,
+          destinationType: item.destinationType, // giữ nguyên kiểu string 'FACTORY' hoặc 'BRANCH'
+          shippingFee: null, // hoặc tính toán phí vận chuyển nếu có, mặc định là null
+          fee: item.fee ?? null,
+          rejectedReason: item.rejectedReason ?? null,
+          estimateTime: item.estimateTime ?? null
+        }
+      })
     })
   }
 

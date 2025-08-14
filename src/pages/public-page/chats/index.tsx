@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { format, isToday, isYesterday, isThisWeek } from 'date-fns'
 import { cn } from '@/lib/utils/utils'
@@ -13,11 +13,12 @@ import { Main } from '@/components/layout/main'
 import { NewChat } from './components/new-chat'
 import { NotificationSettings } from './components/notification-settings'
 import { SendPresetInChat } from './components/send-preset-in-chat'
+import { MessageContent } from '@/components/ui/message-content'
 import { type Convo } from './data/chat-types'
 import { useChat } from './hooks/use-chat'
 import { useRoomMessagesData } from './hooks/use-room-messages'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
-import { ChatRoom, Member } from '@/@types/chat.types'
+import { ChatRoom, Member, getMessageTypeDisplay, MessageType } from '@/@types/chat.types'
 import { useSearchParams } from 'react-router-dom'
 import {
   ArrowLeftIcon,
@@ -47,6 +48,20 @@ export default function Chats() {
 
   const { user } = useAuthStore()
   const [searchParams] = useSearchParams()
+
+  // Ref for auto-scrolling to bottom of messages
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Function to scroll to bottom of messages
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      })
+    }
+  }, [])
 
   // Get design request context from URL params
   const designRequestContext = useMemo(() => {
@@ -115,6 +130,37 @@ export default function Chats() {
     page: 1
   })
 
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (selectedRoomMessages.length > 0 && selectedRoomId) {
+      // Small delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        scrollToBottom()
+      }, 100)
+
+      return () => clearTimeout(timer)
+    }
+  }, [selectedRoomMessages.length, selectedRoomId, scrollToBottom])
+
+  // Auto-scroll when realtime messages arrive for current room
+  useEffect(() => {
+    if (selectedRoomId && realTimeMessages[selectedRoomId]) {
+      const timer = setTimeout(() => {
+        scrollToBottom()
+      }, 100)
+
+      return () => clearTimeout(timer)
+    }
+  }, [realTimeMessages, selectedRoomId, scrollToBottom])
+
+  // Initial scroll to bottom when room is first selected and has messages
+  useEffect(() => {
+    if (selectedRoomId && selectedRoomMessages.length > 0) {
+      // Scroll immediately for better UX
+      scrollToBottom()
+    }
+  }, [selectedRoomId, selectedRoomMessages.length, scrollToBottom])
+
   // Function to handle room selection
   const handleSelectRoom = useCallback(
     async (roomId: string) => {
@@ -129,11 +175,15 @@ export default function Chats() {
         await joinRoom(roomId)
 
         // Messages will be loaded automatically by React Query hook
+        // Auto-scroll to bottom after selecting room
+        setTimeout(() => {
+          scrollToBottom()
+        }, 200)
       } catch (err) {
         console.error('Failed to select room:', err)
       }
     },
-    [joinRoom]
+    [joinRoom, scrollToBottom]
   )
 
   // Auto-load room after connecting
@@ -282,6 +332,11 @@ export default function Chats() {
     try {
       await sendMessage(selectedRoomId, newMessage.trim())
       setNewMessage('')
+
+      // Auto-scroll to bottom after sending message
+      setTimeout(() => {
+        scrollToBottom()
+      }, 100)
     } catch (err) {
       console.error('Failed to send message:', err)
     }
@@ -310,6 +365,13 @@ export default function Chats() {
 
       const isCurrentUser = room.lastUserId === user?.userId
       const senderName = isCurrentUser ? 'You' : room.lastUserName || 'Someone'
+
+      // Kiểm tra xem có lastMessageType không (nếu API trả về)
+      const messageType = room.lastMessageType
+      if (messageType !== undefined && messageType !== MessageType.Text) {
+        const typeDisplay = getMessageTypeDisplay(messageType)
+        return `${senderName}: ${typeDisplay.icon} ${typeDisplay.label}`
+      }
 
       return `${senderName}: ${room.lastMessage}`
     }
@@ -719,6 +781,9 @@ export default function Chats() {
               <CardContent className='flex-1 p-0'>
                 <ScrollArea className='h-[400px] p-4'>
                   <div className='flex flex-col-reverse gap-4'>
+                    {/* Invisible div at the top for auto-scrolling to newest messages */}
+                    <div ref={messagesEndRef} />
+
                     {isLoadingMessages && selectedRoomMessages.length === 0 ? (
                       <div className='flex items-center justify-center py-8'>
                         <div className='text-sm text-muted-foreground text-center'>
@@ -745,7 +810,35 @@ export default function Chats() {
                                   : 'bg-muted self-start mr-auto'
                               )}
                             >
-                              <p className='text-sm'>{msg.message}</p>
+                              {/* Message Type Header (nếu không phải Text) */}
+                              {msg.type !== undefined && msg.type !== MessageType.Text && (
+                                <div
+                                  className={cn(
+                                    'flex items-center gap-2 mb-2 text-xs',
+                                    msg.sender === 'You' ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                                  )}
+                                >
+                                  <span>{getMessageTypeDisplay(msg.type).icon}</span>
+                                  <span className='font-medium'>{getMessageTypeDisplay(msg.type).label}</span>
+                                  {getMessageTypeDisplay(msg.type).isSpecial && (
+                                    <Badge
+                                      variant={msg.sender === 'You' ? 'secondary' : 'default'}
+                                      className='text-xs px-2 py-0'
+                                    >
+                                      Đặc biệt
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Message Content using new component */}
+                              <MessageContent
+                                message={msg.message}
+                                type={msg.type}
+                                isCurrentUser={msg.sender === 'You'}
+                                className={cn(msg.type !== undefined && msg.type !== MessageType.Text && 'mt-2')}
+                              />
+
                               <span
                                 className={cn(
                                   'text-xs opacity-70 mt-1 block',

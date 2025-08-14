@@ -99,7 +99,7 @@ export default function MaternityDressCreationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-  <DialogContent className='sm:max-w-3xl max-h-[95vh] overflow-hidden border shadow-xl'>
+      <DialogContent className='sm:max-w-3xl max-h-[95vh] overflow-hidden border shadow-xl'>
         {/* Enhanced Dialog Header */}
         <DialogHeader className='pb-6 border-b'>
           <div className='flex items-center justify-between'>
@@ -371,7 +371,9 @@ export default function MaternityDressCreationDialog({
                       <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                         <div className='bg-background p-4 rounded-xl border'>
                           <div className='flex items-center gap-2 mb-2'>
-                            <Badge className='text-xs' variant='secondary'>Bước 1</Badge>
+                            <Badge className='text-xs' variant='secondary'>
+                              Bước 1
+                            </Badge>
                           </div>
                           <h5 className='font-semibold'>Thêm biến thể</h5>
                           <p className='text-xs text-muted-foreground mt-1'>
@@ -381,7 +383,9 @@ export default function MaternityDressCreationDialog({
 
                         <div className='bg-background p-4 rounded-xl border'>
                           <div className='flex items-center gap-2 mb-2'>
-                            <Badge className='text-xs' variant='secondary'>Bước 2</Badge>
+                            <Badge className='text-xs' variant='secondary'>
+                              Bước 2
+                            </Badge>
                           </div>
                           <h5 className='font-semibold'>Quản lý tồn kho</h5>
                           <p className='text-xs text-muted-foreground mt-1'>
@@ -391,7 +395,9 @@ export default function MaternityDressCreationDialog({
 
                         <div className='bg-background p-4 rounded-xl border'>
                           <div className='flex items-center gap-2 mb-2'>
-                            <Badge className='text-xs' variant='secondary'>Bước 3</Badge>
+                            <Badge className='text-xs' variant='secondary'>
+                              Bước 3
+                            </Badge>
                           </div>
                           <h5 className='font-semibold'>Bán hàng</h5>
                           <p className='text-xs text-muted-foreground mt-1'>
@@ -405,22 +411,18 @@ export default function MaternityDressCreationDialog({
               </Card>
 
               {/* Form Actions */}
-        <div className='flex justify-end gap-4 pt-6 border-t'>
+              <div className='flex justify-end gap-4 pt-6 border-t'>
                 <Button
                   type='button'
                   variant='outline'
                   onClick={() => onOpenChange(false)}
                   disabled={isLoading}
-          className='h-10'
+                  className='h-10'
                 >
                   <X className='h-4 w-4 mr-2' />
                   Hủy bỏ
                 </Button>
-                <Button
-                  type='submit'
-                  disabled={isLoading}
-          className='h-10'
-                >
+                <Button type='submit' disabled={isLoading} className='h-10'>
                   {isLoading ? (
                     <>
                       <Loader2 className='h-4 w-4 mr-2 animate-spin' />
@@ -437,7 +439,6 @@ export default function MaternityDressCreationDialog({
             </form>
           </Form>
         </div>
-
       </DialogContent>
     </Dialog>
   )

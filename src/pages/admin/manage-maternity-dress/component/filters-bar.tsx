@@ -74,7 +74,8 @@ export default function FiltersBar(props: FiltersBarProps) {
           </div>
 
           <Button variant='outline' className='h-9' onClick={onReset}>
-            <RotateCcw className='h-4 w-4 mr-2' />Đặt lại
+            <RotateCcw className='h-4 w-4 mr-2' />
+            Đặt lại
           </Button>
         </div>
       </CardContent>

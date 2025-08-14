@@ -134,8 +134,9 @@ export const useDeleteMaternityDress = () => {
           query.queryKey[1] === 'maternityDresses' &&
           query.queryKey[2] === 'list'
       })
-      const previous: { key: QueryKey; data: ListBaseResponse<MaternityDressList> | undefined }[] =
-        affectedLists.map(([key, data]) => ({ key: key as QueryKey, data }))
+      const previous: { key: QueryKey; data: ListBaseResponse<MaternityDressList> | undefined }[] = affectedLists.map(
+        ([key, data]) => ({ key: key as QueryKey, data })
+      )
 
       // Optimistically remove item from lists
       affectedLists.forEach(([key, data]) => {
@@ -306,12 +307,13 @@ export const useDeleteMaternityDressDetail = () => {
           query.queryKey[1] === 'maternityDresses' &&
           query.queryKey[2] === 'detail'
       })
-      const previous: { key: QueryKey; data: ItemBaseResponse<MaternityDressDetail> | undefined }[] =
-        affected.map(([key, data]) => ({ key: key as QueryKey, data }))
+      const previous: { key: QueryKey; data: ItemBaseResponse<MaternityDressDetail> | undefined }[] = affected.map(
+        ([key, data]) => ({ key: key as QueryKey, data })
+      )
 
       affected.forEach(([key, data]) => {
         if (!data || !data.data?.details) return
-  const nextDetails = (data.data.details as MaternityDressDetailType[]).filter((d) => d.id !== detailId)
+        const nextDetails = (data.data.details as MaternityDressDetailType[]).filter((d) => d.id !== detailId)
         const next = { ...data, data: { ...data.data, details: nextDetails } }
         queryClient.setQueryData(key as QueryKey, next)
       })

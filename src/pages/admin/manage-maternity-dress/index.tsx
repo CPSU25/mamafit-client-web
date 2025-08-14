@@ -68,12 +68,7 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
   }
 
   return (
-    <img
-      src={imgSrc}
-      alt={alt}
-  className='w-14 h-14 rounded-xl object-cover border shadow-sm'
-      onError={handleError}
-    />
+    <img src={imgSrc} alt={alt} className='w-14 h-14 rounded-xl object-cover border shadow-sm' onError={handleError} />
   )
 }
 
@@ -212,7 +207,8 @@ export default function MaternityDressPage() {
         </div>
         <div className='flex flex-col items-end gap-2'>
           <Button onClick={() => setCreateMaternityDressDialogOpen(true)} className='h-9'>
-            <Plus className='h-4 w-4 mr-2' />Tạo Đầm Bầu
+            <Plus className='h-4 w-4 mr-2' />
+            Tạo Đầm Bầu
           </Button>
           <div className='flex items-center gap-2 text-xs text-muted-foreground'>
             <Calendar className='h-3.5 w-3.5' />
@@ -232,7 +228,7 @@ export default function MaternityDressPage() {
         onReset={handleResetFilters}
       />
 
-  {/* Error Alert */}
+      {/* Error Alert */}
       {error && (
         <Card className='border-destructive/20 bg-destructive/5'>
           <CardContent className='p-4'>
@@ -262,38 +258,38 @@ export default function MaternityDressPage() {
 
       {/* Table */}
       <Card className='border-0 shadow-sm'>
-          <Table>
-            <TableHeader>
+        <Table>
+          <TableHeader>
             <TableRow>
-                <TableHead className='w-8 pl-6'></TableHead>
-                <TableHead className='w-12'>
-                  <Checkbox
-                    checked={allSelected}
-                    onCheckedChange={(checked) => {
-                      const dressIds = filteredDresses.map((d) => d.id)
-                      selectAllMaternityDresses(dressIds, !!checked)
-                    }}
+              <TableHead className='w-8 pl-6'></TableHead>
+              <TableHead className='w-12'>
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={(checked) => {
+                    const dressIds = filteredDresses.map((d) => d.id)
+                    selectAllMaternityDresses(dressIds, !!checked)
+                  }}
                   className=''
-                  />
-                </TableHead>
+                />
+              </TableHead>
               <TableHead className='font-semibold'>Đầm Bầu</TableHead>
               <TableHead className='font-semibold'>Mô Tả</TableHead>
               <TableHead className='font-semibold'>Giá</TableHead>
               <TableHead className='font-semibold'>Trạng Thái</TableHead>
               <TableHead className='font-semibold'>Ngày Tạo</TableHead>
-                <TableHead className='w-12 pr-6'></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className='text-center py-16'>
+              <TableHead className='w-12 pr-6'></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={8} className='text-center py-16'>
                   <div className='text-sm text-muted-foreground'>Đang tải dữ liệu...</div>
-                  </TableCell>
-                </TableRow>
-              ) : maternityDresses.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className='text-center py-16'>
+                </TableCell>
+              </TableRow>
+            ) : maternityDresses.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className='text-center py-16'>
                   <div className='text-center space-y-3'>
                     <div className='mx-auto h-12 w-12 rounded-full bg-muted flex items-center justify-center'>
                       <Package2 className='h-6 w-6 text-muted-foreground' />
@@ -302,128 +298,123 @@ export default function MaternityDressPage() {
                       {filters.search ? 'Không tìm thấy đầm bầu phù hợp' : 'Chưa có đầm bầu nào'}
                     </div>
                     <Button onClick={() => setCreateMaternityDressDialogOpen(true)} size='sm'>
-                      <Plus className='h-4 w-4 mr-2' />Tạo đầm bầu
+                      <Plus className='h-4 w-4 mr-2' />
+                      Tạo đầm bầu
                     </Button>
                   </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                maternityDresses
-                  .map((dress) => [
-                    /* Enhanced Main Dress Row */
-                    <TableRow
+                </TableCell>
+              </TableRow>
+            ) : (
+              maternityDresses
+                .map((dress) => [
+                  /* Enhanced Main Dress Row */
+                  <TableRow
                     key={`dress-${dress.id}`}
                     className='cursor-pointer group'
-                      onClick={() => toggleMaternityDressExpansion(dress.id)}
-                    >
-                      <TableCell onClick={(e) => e.stopPropagation()} className='pl-6'>
-                        <div className='flex items-center justify-center p-1'>
-                          {expandedMaternityDressId === dress.id ? (
-                            <ChevronDown className='h-4 w-4 text-muted-foreground' />
-                          ) : (
-                            <ChevronRight className='h-4 w-4 text-muted-foreground' />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={selectedMaternityDresses.includes(dress.id)}
-                          onCheckedChange={() => selectMaternityDress(dress.id)}
-                          className=''
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className='flex items-center gap-4'>
-                          {dress.images && dress.images.length > 0 ? (
-                            <ProductImage src={dress.images[0]} alt={dress.name} />
-                          ) : (
-                            <div className='w-14 h-14 rounded-xl bg-muted flex items-center justify-center border'>
-                              <Package2 className='h-7 w-7 text-muted-foreground' />
-                            </div>
-                          )}
-                          <div className='space-y-1'>
-                            <div className='font-medium text-foreground'>
-                              {dress.name}
-                            </div>
-                            <div className='flex items-center gap-2 text-sm'>
-                              <Badge variant='secondary' className=''>
-                                {dress.styleName}
-                              </Badge>
-                            </div>
+                    onClick={() => toggleMaternityDressExpansion(dress.id)}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()} className='pl-6'>
+                      <div className='flex items-center justify-center p-1'>
+                        {expandedMaternityDressId === dress.id ? (
+                          <ChevronDown className='h-4 w-4 text-muted-foreground' />
+                        ) : (
+                          <ChevronRight className='h-4 w-4 text-muted-foreground' />
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedMaternityDresses.includes(dress.id)}
+                        onCheckedChange={() => selectMaternityDress(dress.id)}
+                        className=''
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className='flex items-center gap-4'>
+                        {dress.images && dress.images.length > 0 ? (
+                          <ProductImage src={dress.images[0]} alt={dress.name} />
+                        ) : (
+                          <div className='w-14 h-14 rounded-xl bg-muted flex items-center justify-center border'>
+                            <Package2 className='h-7 w-7 text-muted-foreground' />
+                          </div>
+                        )}
+                        <div className='space-y-1'>
+                          <div className='font-medium text-foreground'>{dress.name}</div>
+                          <div className='flex items-center gap-2 text-sm'>
+                            <Badge variant='secondary' className=''>
+                              {dress.styleName}
+                            </Badge>
                           </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className='max-w-xs'>
-                          <p className='text-muted-foreground line-clamp-2 text-sm leading-relaxed' title={dress.description}>
-                            {dress.description}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className='flex flex-col gap-1'>
-                          <span className='font-semibold text-sm'>
-                            {formatCurrency(calculateTotalPrice(dress.price))}
-                          </span>
-                          <span className='text-xs text-gray-500'>Giá cơ bản</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className='flex items-center gap-2'>
-                          {getStatusBadge('Complete')}
-                          <div className='w-2 h-2 rounded-full bg-emerald-500'></div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                          <Calendar className='h-4 w-4' />
-                          <span>{dayjs(dress.createdAt).format('DD/MM/YYYY')}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()} className='pr-6'>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant='ghost'
-                              size='sm'
-                              className='h-9 w-9 p-0'
-                            >
-                              <MoreHorizontal className='h-4 w-4' />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align='end' className='w-48'>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteDress(dress.id)}
-                              disabled={deleteMaternityDressMutation.isPending}
-                            >
-                              <Trash className='h-4 w-4 mr-2' />
-                              {deleteMaternityDressMutation.isPending ? 'Đang xóa...' : 'Xóa đầm bầu'}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>,
-
-                    /* Enhanced Expanded Dress Details */
-                    ...(expandedMaternityDressId === dress.id
-                      ? [
-                          <TableRow
-                            key={`expanded-${dress.id}`}
-                            className='bg-muted/20'
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className='max-w-xs'>
+                        <p
+                          className='text-muted-foreground line-clamp-2 text-sm leading-relaxed'
+                          title={dress.description}
+                        >
+                          {dress.description}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className='flex flex-col gap-1'>
+                        <span className='font-semibold text-sm'>
+                          {formatCurrency(calculateTotalPrice(dress.price))}
+                        </span>
+                        <span className='text-xs text-gray-500'>Giá cơ bản</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className='flex items-center gap-2'>
+                        {getStatusBadge('Complete')}
+                        <div className='w-2 h-2 rounded-full bg-emerald-500'></div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                        <Calendar className='h-4 w-4' />
+                        <span>{dayjs(dress.createdAt).format('DD/MM/YYYY')}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()} className='pr-6'>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant='ghost' size='sm' className='h-9 w-9 p-0'>
+                            <MoreHorizontal className='h-4 w-4' />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align='end' className='w-48'>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteDress(dress.id)}
+                            disabled={deleteMaternityDressMutation.isPending}
                           >
-                            <TableCell colSpan={8} className='p-0'>
-                              <div className='border-t'>
-                                <ExpandedProductDetails />
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ]
-                      : [])
-                  ])
-                  .flat()
-              )}
-            </TableBody>
-          </Table>
+                            <Trash className='h-4 w-4 mr-2' />
+                            {deleteMaternityDressMutation.isPending ? 'Đang xóa...' : 'Xóa đầm bầu'}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>,
+
+                  /* Enhanced Expanded Dress Details */
+                  ...(expandedMaternityDressId === dress.id
+                    ? [
+                        <TableRow key={`expanded-${dress.id}`} className='bg-muted/20'>
+                          <TableCell colSpan={8} className='p-0'>
+                            <div className='border-t'>
+                              <ExpandedProductDetails />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ]
+                    : [])
+                ])
+                .flat()
+            )}
+          </TableBody>
+        </Table>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
@@ -434,17 +425,27 @@ export default function MaternityDressPage() {
                 {` ${Math.min(pagination.pageNumber * pagination.pageSize, pagination.totalCount)} trong tổng số ${pagination.totalCount}`}
               </div>
               <div className='flex items-center gap-2'>
-                <Button variant='outline' size='sm' onClick={() => handlePageChange(pagination.pageNumber - 1)} disabled={!pagination.hasPreviousPage}>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => handlePageChange(pagination.pageNumber - 1)}
+                  disabled={!pagination.hasPreviousPage}
+                >
                   Trước
                 </Button>
-                <Button variant='outline' size='sm' onClick={() => handlePageChange(pagination.pageNumber + 1)} disabled={!pagination.hasNextPage}>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => handlePageChange(pagination.pageNumber + 1)}
+                  disabled={!pagination.hasNextPage}
+                >
                   Sau
                 </Button>
               </div>
             </div>
           </div>
         )}
-        </Card>
+      </Card>
       {/* Footer quick stats */}
       <Card className='border-0'>
         <CardContent className='p-4 text-sm text-muted-foreground flex flex-wrap items-center gap-4'>
@@ -455,14 +456,19 @@ export default function MaternityDressPage() {
             <>
               <span>•</span>
               <span>Đã chọn {selectedMaternityDresses.length}</span>
-              <Button variant='ghost' size='sm' onClick={clearSelection} className='h-8'>Bỏ chọn</Button>
+              <Button variant='ghost' size='sm' onClick={clearSelection} className='h-8'>
+                Bỏ chọn
+              </Button>
             </>
           )}
         </CardContent>
       </Card>
 
       {/* Dialogs */}
-      <MaternityDressCreationDialog open={isCreateMaternityDressDialogOpen} onOpenChange={setCreateMaternityDressDialogOpen} />
+      <MaternityDressCreationDialog
+        open={isCreateMaternityDressDialogOpen}
+        onOpenChange={setCreateMaternityDressDialogOpen}
+      />
     </Main>
   )
 }

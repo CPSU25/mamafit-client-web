@@ -141,17 +141,17 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
   // Kiểm tra xem tất cả milestone của tất cả items đã hoàn thành chưa
   const areAllMilestonesCompleted = () => {
     if (orderItemsData.length === 0) return false
-    
+
     return orderItemsData.every((itemQuery) => {
       if (itemQuery.isLoading || !itemQuery.data || !itemQuery.data.milestones) {
         return false
       }
-      
+
       // Kiểm tra tất cả milestone của item này đã hoàn thành
       return itemQuery.data.milestones.every((milestone) => {
         // Kiểm tra tất cả task trong milestone đã hoàn thành (AdminMilestone dùng tasks thay vì maternityDressTasks)
-        return milestone.tasks.every((task) => 
-          task.detail.status === 'DONE' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
+        return milestone.tasks.every(
+          (task) => task.detail.status === 'DONE' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
         )
       })
     })
@@ -160,7 +160,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
   // Xử lý tạo đơn shipping với React Query pattern
   const handleCreateShipping = () => {
     if (!order?.id) return
-    
+
     createShippingMutation.mutate(order.id, {
       onSuccess: (response) => {
         if (response.data.success) {
@@ -872,25 +872,22 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
           {/* Content */}
           {canCreateShipping && (
             <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800'>
-              <Button 
+              <Button
                 onClick={handleCreateShipping}
                 disabled={createShippingMutation.isPending}
-                className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed' 
+                className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
                 size='sm'
               >
                 <Truck className='h-4 w-4 mr-2' />
                 {createShippingMutation.isPending ? 'Đang tạo đơn...' : 'Tạo đơn shipping'}
               </Button>
               <p className='text-xs text-center text-muted-foreground mt-2'>
-                {createShippingMutation.isPending 
+                {createShippingMutation.isPending
                   ? 'Đang xử lý yêu cầu tạo đơn giao hàng...'
-                  : 'Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng'
-                }
+                  : 'Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng'}
               </p>
               {createShippingMutation.isError && (
-                <p className='text-xs text-center text-red-500 mt-1'>
-                  Có lỗi xảy ra, vui lòng thử lại
-                </p>
+                <p className='text-xs text-center text-red-500 mt-1'>Có lỗi xảy ra, vui lòng thử lại</p>
               )}
             </div>
           )}

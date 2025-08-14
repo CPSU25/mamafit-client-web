@@ -1,3 +1,5 @@
+import { MessageType } from '@/@types/chat.types'
+
 export interface ChatUser {
   id: string
   username: string
@@ -11,4 +13,5 @@ export interface Convo {
   message: string
   timestamp: Date
   sender: string
+  type?: MessageType | number
 }

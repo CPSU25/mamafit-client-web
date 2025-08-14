@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
@@ -31,6 +31,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCreateRoom } from '@/services/chat/chat.service'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { toast } from 'sonner'
+import { getItemTypeColor, getItemTypeLabel } from '@/pages/admin/manage-order/data/data'
 
 // Interface mở rộng từ DesignerOrderTaskItemList để handle API response mới
 interface ExtendedOrderTaskItem extends Omit<DesignerOrderTaskItemList, 'orderItem'> {
@@ -228,16 +229,29 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                   </div>
                   <div className='grid grid-cols-2 gap-3'>
                     <div>
-                      <label className='text-sm font-medium'>Loại sản phẩm:</label>
-                      <p className='text-sm text-muted-foreground'>{orderItem.itemType}</p>
+                      {/* <label className='text-sm font-medium'>Loại sản phẩm:</label>
+                      <p className={`text-sm text-muted-foreground ${getItemTypeColor(orderItem.itemType)}`}>
+                        {getItemTypeLabel(orderItem.itemType)}
+                      </p> */}
+                      <Badge
+                        variant='secondary'
+                        className={`text-xs font-medium px-3 py-1 ${getItemTypeColor(orderItem.itemType)}`}
+                      >
+                        <div
+                          className={`w-2 h-2 rounded-full mr-2 ${
+                            orderItem.itemType === 'DESIGN_REQUEST' ? 'bg-purple-500' : 'bg-gray-400'
+                          }`}
+                        />
+                        {getItemTypeLabel(orderItem.itemType)}
+                      </Badge>
                     </div>
-                    <div>
+                    {/* <div>
                       <label className='text-sm font-medium'>Số lượng:</label>
                       <p className='text-sm text-muted-foreground'>{orderItem.quantity}</p>
-                    </div>
+                    </div> */}
                   </div>
                   <div>
-                    <label className='text-sm font-medium'>Giá trị:</label>
+                    <label className='text-sm font-medium'>Phí dịch vụ đã thanh toán:</label>
                     <p className='text-sm text-muted-foreground'>{formatCurrency(orderItem.price)}</p>
                   </div>
                 </CardContent>
@@ -256,15 +270,11 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                     <label className='text-sm font-medium'>Mã đơn hàng:</label>
                     <p className='text-sm text-muted-foreground'>{designRequest.orderCode || 'N/A'}</p>
                   </div>
-                  <div>
-                    <label className='text-sm font-medium'>ID khách hàng:</label>
-                    <p className='text-sm text-muted-foreground'>{orderItem.designRequest.userId || 'N/A'}</p>
-                  </div>
                   <div className='grid grid-cols-2 gap-3'>
-                    <div>
+                    {/* <div>
                       <label className='text-sm font-medium'>Tạo bởi:</label>
                       <p className='text-sm text-muted-foreground'>{orderItem.designRequest.createdBy || 'N/A'}</p>
-                    </div>
+                    </div> */}
                     <div>
                       <label className='text-sm font-medium'>Ngày tạo:</label>
                       <p className='text-sm text-muted-foreground'>
@@ -388,43 +398,55 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                               </div>
                               <p className='text-sm text-muted-foreground'>{task.description}</p>
 
-                              {/* Status Select */}
+                              {/* Status Buttons */}
                               <div className='space-y-2'>
                                 <Label htmlFor={`status-${task.id}`}>Trạng thái:</Label>
-                                <Select value={taskStatus} onValueChange={setTaskStatus}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder='Chọn trạng thái' />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value='PENDING'>Chờ xử lý</SelectItem>
-                                    <SelectItem value='IN_PROGRESS'>Đang thực hiện</SelectItem>
-                                    <SelectItem value='DONE'>Hoàn thành</SelectItem>
-                                    <SelectItem value='CANCELLED'>Đã hủy</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                <div className='flex gap-2'>
+                                  <Button
+                                    type='button'
+                                    variant={taskStatus === 'IN_PROGRESS' ? 'default' : 'outline'}
+                                    onClick={() => setTaskStatus('IN_PROGRESS')}
+                                    size='sm'
+                                  >
+                                    <Clock className='h-4 w-4 mr-2' />
+                                    Bắt đầu thiết kế
+                                  </Button>
+                                  <Button
+                                    type='button'
+                                    variant={taskStatus === 'DONE' ? 'default' : 'outline'}
+                                    onClick={() => setTaskStatus('DONE')}
+                                    size='sm'
+                                  >
+                                    <CheckCircle className='h-4 w-4 mr-2' />
+                                    Hoàn thành
+                                  </Button>
+                                </div>
                               </div>
 
-                              {/* Note */}
-                              <div className='space-y-2'>
-                                <Label htmlFor={`note-${task.id}`}>Ghi chú:</Label>
-                                <Textarea
-                                  id={`note-${task.id}`}
-                                  value={taskNote}
-                                  onChange={(e) => setTaskNote(e.target.value)}
-                                  placeholder='Thêm ghi chú cho task...'
-                                  rows={3}
-                                />
-                              </div>
+                              {/* Note & Image only when DONE */}
+                              {taskStatus === 'DONE' && (
+                                <>
+                                  <div className='space-y-2'>
+                                    <Label htmlFor={`note-${task.id}`}>Ghi chú:</Label>
+                                    <Textarea
+                                      id={`note-${task.id}`}
+                                      value={taskNote}
+                                      onChange={(e) => setTaskNote(e.target.value)}
+                                      placeholder='Thêm ghi chú cho task...'
+                                      rows={3}
+                                    />
+                                  </div>
 
-                              {/* Image Upload */}
-                              <div className='space-y-2'>
-                                <Label>Hình ảnh kết quả:</Label>
-                                <CloudinarySingleImageUpload
-                                  value={taskImage}
-                                  onChange={(url: string) => setTaskImage(url)}
-                                  placeholder='Upload hình ảnh kết quả task...'
-                                />
-                              </div>
+                                  <div className='space-y-2'>
+                                    <Label>Hình ảnh kết quả:</Label>
+                                    <CloudinarySingleImageUpload
+                                      value={taskImage}
+                                      onChange={(url: string) => setTaskImage(url)}
+                                      placeholder='Upload hình ảnh kết quả task...'
+                                    />
+                                  </div>
+                                </>
+                              )}
 
                               {/* Action Buttons */}
                               <div className='flex gap-2'>
