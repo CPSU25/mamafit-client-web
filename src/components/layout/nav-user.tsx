@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom'
 import {
   Bell,
   ChevronsUpDown,
-  CreditCard,
+  // CreditCard,
   LogOut,
-  Sparkles,
+  // Sparkles,
   User,
   Heart,
   Settings,
@@ -131,7 +131,7 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
-            <DropdownMenuGroup>
+            {/* <DropdownMenuGroup>
               <DropdownMenuItem className='cursor-pointer group/item'>
                 <div className='flex items-center gap-2 w-full'>
                   <Sparkles className='size-4 text-yellow-500 group-hover/item:animate-pulse' />
@@ -141,7 +141,7 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
                   </span>
                 </div>
               </DropdownMenuItem>
-            </DropdownMenuGroup>
+            </DropdownMenuGroup> */}
             <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild className='cursor-pointer'>
@@ -156,12 +156,12 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
                   <span>Tùy chỉnh</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className='cursor-pointer'>
+              {/* <DropdownMenuItem asChild className='cursor-pointer'>
                 <Link to='/settings/billing' className='flex items-center gap-2'>
                   <CreditCard className='size-4' />
                   <span>Thanh toán</span>
                 </Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem asChild className='cursor-pointer'>
                 <Link to='/settings/notifications' className='flex items-center gap-2'>
                   <Bell className='size-4' />
