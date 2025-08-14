@@ -27,16 +27,16 @@ export function QuickActions({ role }: QuickActionsProps) {
           {
             icon: Plus,
             label: 'Thêm người dùng',
-            action: () => navigate('manage-user/new'),
+            action: () => navigate('manage-user'),
             color: 'text-violet-500'
           },
           { icon: Package, label: 'Đơn hàng mới', action: () => navigate('manage-order'), color: 'text-blue-500' },
-          {
-            icon: MessageCircle,
-            label: 'Thông báo',
-            action: () => navigate('system-notifications'),
-            color: 'text-green-500'
-          },
+          // {
+          //   icon: MessageCircle,
+          //   label: 'Thông báo',
+          //   action: () => navigate('system-notifications'),
+          //   color: 'text-green-500'
+          // },
           {
             icon: ShoppingBag,
             label: 'Voucher mới',
@@ -61,8 +61,8 @@ export function QuickActions({ role }: QuickActionsProps) {
         ]
       case 'Manager':
         return [
-          { icon: Package, label: 'Sản xuất', action: () => navigate('manage-production'), color: 'text-green-500' },
-          { icon: Plus, label: 'Tạo task', action: () => navigate('manage-task/new'), color: 'text-orange-500' }
+          { icon: Package, label: 'Đơn Hàng Sản Xuất', action: () => navigate('manage-order'), color: 'text-green-500' },
+          { icon: Plus, label: 'Tạo task', action: () => navigate('manage-task'), color: 'text-orange-500' }
         ]
       default:
         return []
