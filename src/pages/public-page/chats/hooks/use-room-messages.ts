@@ -28,10 +28,12 @@ export function useRoomMessagesData({ roomId, realtimeMessages, pageSize = 20, p
       messageTimestamp: Date | string
       senderId: string
       senderName: string
+      type?: string | number
     }): Convo => ({
       message: msg.message,
       timestamp: new Date(msg.messageTimestamp),
-      sender: msg.senderId === user?.userId ? 'You' : msg.senderName
+      sender: msg.senderId === user?.userId ? 'You' : msg.senderName,
+      type: typeof msg.type === 'string' ? parseInt(msg.type) : msg.type
     })
   }, [user?.userId])
 

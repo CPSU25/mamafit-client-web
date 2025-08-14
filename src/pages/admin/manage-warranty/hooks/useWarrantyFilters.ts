@@ -15,7 +15,7 @@ export const useWarrantyFilters = ({ requests, selectedTab, searchQuery, statusF
       const tabStatusMap: Record<string, string[]> = {
         all: [],
         pending: ['PENDING'],
-        in_transit: ['IN_TRANSIT'],
+        approved: ['APPROVED'],
         repairing: ['REPAIRING'],
         completed: ['COMPLETED'],
         rejected: ['REJECTED', 'PARTIALLY_REJECTED']
@@ -33,7 +33,7 @@ export const useWarrantyFilters = ({ requests, selectedTab, searchQuery, statusF
       const statusMap: Record<string, string[]> = {
         all: [],
         pending: ['PENDING'],
-        in_transit: ['IN_TRANSIT'],
+        approved: ['APPROVED'],
         repairing: ['REPAIRING'],
         completed: ['COMPLETED'],
         partially_rejected: ['PARTIALLY_REJECTED'],

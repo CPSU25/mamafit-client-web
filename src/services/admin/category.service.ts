@@ -122,7 +122,7 @@ export const useUpdateCategory = () => {
 
       // Update specific category detail if exists
       queryClient.setQueryData(categoryKeys.detail(variables.id), data)
-      
+
       toast.success('Cập nhật danh mục thành công!')
     },
     onError: (error) => {
@@ -171,7 +171,7 @@ export const useDeleteCategory = () => {
       // Remove deleted category from cache
       queryClient.removeQueries({ queryKey: categoryKeys.detail(deletedId) })
       queryClient.removeQueries({ queryKey: categoryKeys.styles(deletedId) })
-      
+
       toast.success('Xóa danh mục thành công!')
     },
     onError: (error) => {
@@ -208,7 +208,7 @@ export const useCreateStyle = () => {
 
       // Also invalidate category lists in case style count affects display
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
-      
+
       toast.success('Tạo kiểu dáng thành công!')
     },
     onError: (error) => {
@@ -240,7 +240,7 @@ export const useDeleteStyle = () => {
     onSuccess: () => {
       // Comprehensive invalidation since we don't know which category the style belonged to
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
-      
+
       toast.success('Xóa kiểu dáng thành công!')
     },
     onError: (error) => {

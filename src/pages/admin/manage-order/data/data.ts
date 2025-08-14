@@ -17,14 +17,13 @@ export const pageSizeOptions = [
 export const orderStatusOptions = [
   { value: 'CREATED', label: 'Đã tạo', color: 'bg-gray-100 text-gray-800' },
   { value: 'CONFIRMED', label: 'Đã xác nhận', color: 'bg-blue-100 text-blue-800' },
-  { value: 'IN_DESIGN', label: 'Đang thiết kế', color: 'bg-purple-100 text-purple-800' },
-  { value: 'IN_PRODUCTION', label: 'Đang sản xuất', color: 'bg-orange-100 text-orange-800' },
+  { value: 'IN_PROGRESS', label: 'Đang sản xuất', color: 'bg-purple-100 text-purple-800' },
   { value: 'AWAITING_PAID_REST', label: 'Chờ thanh toán', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'IN_QC', label: 'Kiểm tra chất lượng', color: 'bg-indigo-100 text-indigo-800' },
-  { value: 'IN_WARRANTY', label: 'Bảo hành', color: 'bg-cyan-100 text-cyan-800' },
   { value: 'PACKAGING', label: 'Đóng gói', color: 'bg-pink-100 text-pink-800' },
   { value: 'DELIVERING', label: 'Đang giao', color: 'bg-green-100 text-green-800' },
   { value: 'COMPLETED', label: 'Hoàn thành', color: 'bg-green-100 text-green-800' },
+  { value: 'PICKUP_IN_PROGRESS', label: 'Đang lấy hàng', color: 'bg-cyan-100 text-cyan-800' },
+  { value: 'AWAITING_PAID_WARRANTY', label: 'Chờ thanh toán bảo hành', color: 'bg-yellow-100 text-yellow-800' },
   { value: 'WARRANTY_CHECK', label: 'Kiểm tra bảo hành', color: 'bg-teal-100 text-teal-800' },
   { value: 'CANCELLED', label: 'Đã hủy', color: 'bg-red-100 text-red-800' },
   { value: 'RETURNED', label: 'Đã trả lại', color: 'bg-red-100 text-red-800' },
@@ -74,4 +73,18 @@ export const getDeliveryMethodLabel = (deliveryMethod: string) => {
 }
 export const getTypeOrderLabel = (type: string) => {
   return typeOrderOptions.find((option) => option.value === type)?.label || type
+}
+
+export const itemTypeOptions = [
+  { value: 'PRESET', label: 'Sản phẩm template', color: 'bg-gray-100 text-gray-800' },
+  { value: 'DESIGN_REQUEST', label: 'Yêu cầu thiết kế', color: 'bg-purple-100 text-purple-800' },
+  { value: 'READY_TO_BUY', label: 'Sản phẩm sẵn có', color: 'bg-green-100 text-green-800' }
+]
+
+export const getItemTypeLabel = (itemType: string) => {
+  return itemTypeOptions.find((option) => option.value === itemType)?.label || itemType
+}
+
+export const getItemTypeColor = (itemType: string) => {
+  return itemTypeOptions.find((option) => option.value === itemType)?.color || 'bg-gray-100 text-gray-800'
 }

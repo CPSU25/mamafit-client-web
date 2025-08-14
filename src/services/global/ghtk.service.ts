@@ -11,7 +11,7 @@ export const ghtkKeys = {
 
 export const useCreateShipping = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: ghtkAPI.createShipping,
     mutationKey: ['create-shipping'],
