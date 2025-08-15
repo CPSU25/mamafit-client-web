@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mamafit.app",
+      "sha256_cert_fingerprints": [
+        "B8:CA:E7:35:AD:9B:88:28:83:8C:06:57:05:2B:FE:84:8B:14:BB:FE:50:72:A0:C6:15:8C:55:DC:7F:83:3D:B7"
+      ]
+    }
+  }
+]
