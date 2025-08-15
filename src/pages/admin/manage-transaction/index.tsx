@@ -1,128 +1,31 @@
-// src/pages/admin/manage-transaction.tsx
-// Yêu cầu: tailwindcss + shadcn/ui + lucide-react + recharts
-// pnpm add recharts lucide-react
-import { useMemo, useState } from "react";
+// src/pages/admin/manage-transaction/index.tsx
+// Refactored to follow manage-category pattern
+import { useState, useMemo } from 'react'
+import clsx from 'clsx'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CreditCard, TrendingUp, Activity, Sparkles, DollarSign, BarChart3, Package2 } from 'lucide-react'
 import {
-  Card, CardContent, CardHeader, CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
-} from "@/components/ui/select";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Eye, Pencil, Trash2, Download } from "lucide-react";
-import {
-  ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip,
-  BarChart, Bar,
-} from "recharts";
-import clsx from "clsx";
+  ResponsiveContainer,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Bar,
+  LineChart,
+  Line
+} from 'recharts'
+import { Main } from '@/components/layout/main'
+import { DateRange } from 'react-day-picker'
+import dayjs from 'dayjs'
 
-type TxStatus = "Success" | "Failed";
-type PayMode =
-  | "Gift Card"
-  | "Coupon"
-  | "COD"
-  | "UPI"
-  | "Debit Card"
-  | "Cash";
+// Import pattern components
+import { columns } from './components/transaction-columns'
+import { TransactionTable } from './components/transaction-table'
+import { mockTransactionData, transformTransactionTypeToTransaction } from './data/schema'
+import { useTransactions } from '@/services/admin/transaction.service'
 
-type Transaction = {
-  id: string;
-  date: string; // ISO
-  invoiceId: string;
-  price: number; // gross price
-  discount?: number; // absolute
-  customer: { name: string; email: string; initials: string };
-  payMode: PayMode;
-  payChannel: string;
-  status: TxStatus;
-};
-
-const txData: Transaction[] = [
-  {
-    id: "1",
-    date: "2025-03-02T16:30:00Z",
-    invoiceId: "#ODR115352",
-    price: 65,
-    discount: 0,
-    customer: { name: "Bella Leach", email: "bella@testgmail.com", initials: "BL" },
-    payMode: "Gift Card",
-    payChannel: "In-App",
-    status: "Failed",
-  },
-  {
-    id: "2",
-    date: "2025-02-08T18:33:00Z",
-    invoiceId: "#ODR115753",
-    price: 65,
-    discount: 8,
-    customer: { name: "Alexandra Guzman", email: "alexandra@testgmail.com", initials: "AG" },
-    payMode: "Coupon",
-    payChannel: "In-App",
-    status: "Success",
-  },
-  {
-    id: "3",
-    date: "2025-03-12T05:13:00Z",
-    invoiceId: "#ODR115463",
-    price: 75,
-    discount: 12,
-    customer: { name: "Grace Washington", email: "grace@testgmail.com", initials: "GW" },
-    payMode: "COD",
-    payChannel: "Cash on Delivery",
-    status: "Success",
-  },
-  {
-    id: "4",
-    date: "2025-03-04T04:30:00Z",
-    invoiceId: "#ODR115324",
-    price: 65,
-    discount: 0,
-    customer: { name: "Audrey Hardin", email: "audrey@testgmail.com", initials: "AH" },
-    payMode: "UPI",
-    payChannel: "Prepaid",
-    status: "Success",
-  },
-  {
-    id: "5",
-    date: "2025-03-06T04:30:00Z",
-    invoiceId: "#ODR115743",
-    price: 65,
-    discount: 0,
-    customer: { name: "Caroline Murphy", email: "caroline@testgmail.com", initials: "CM" },
-    payMode: "Debit Card",
-    payChannel: "Prepaid",
-    status: "Success",
-  },
-  {
-    id: "6",
-    date: "2025-03-15T04:30:00Z",
-    invoiceId: "#ODR1151231",
-    price: 65,
-    discount: 10,
-    customer: { name: "Jan Franklin", email: "jan1579@testgmail.com", initials: "JF" },
-    payMode: "Cash",
-    payChannel: "Offline - Store",
-    status: "Failed",
-  },
-  {
-    id: "7",
-    date: "2025-03-22T04:30:00Z",
-    invoiceId: "#ODR115990",
-    price: 65,
-    discount: 0,
-    customer: { name: "David Long", email: "david@testgmail.com", initials: "DL" },
-    payMode: "UPI",
-    payChannel: "Prepaid",
-    status: "Success",
-  },
-];
-
+// Mock data cho charts (giữ nguyên từ file cũ)
 const barSeries = [
   { name: "Jan", value: 8 },
   { name: "Feb", value: 6 },
@@ -132,7 +35,7 @@ const barSeries = [
   { name: "Jun", value: 9 },
   { name: "Jul", value: 5 },
   { name: "Aug", value: 10 },
-];
+]
 
 const lineSeries = [
   { name: "Jan", income: 1200, expense: 250 },
@@ -143,74 +46,198 @@ const lineSeries = [
   { name: "Jun", income: 1300, expense: 310 },
   { name: "Jul", income: 1500, expense: 320 },
   { name: "Aug", income: 1600, expense: 330 },
-];
+]
 
 function currency(v: number) {
-  return v.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+  return v.toLocaleString("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 })
 }
 
-function StatusBadge({ s }: { s: TxStatus }) {
+function KpiCard({ title, value, delta, icon: Icon }: { 
+  title: string; 
+  value: string; 
+  delta: string; 
+  icon: React.ElementType 
+}) {
   return (
-    <Badge
-      className={clsx(
-        "px-2 py-1 rounded-full text-xs",
-        s === "Success"
-          ? "bg-violet-600/10 text-violet-700 dark:text-violet-300"
-          : "bg-rose-600/10 text-rose-700 dark:text-rose-300"
-      )}
-      variant="secondary"
-    >
-      {s}
-    </Badge>
-  );
+    <Card className="border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/30 dark:to-background hover:shadow-lg transition-all duration-300">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold text-violet-700 dark:text-violet-300">{value}</p>
+            <div className={clsx("text-xs", delta.startsWith("-") ? "text-rose-600" : "text-emerald-600")}>
+              {delta}
+            </div>
+          </div>
+          <div className="h-12 w-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+            <Icon className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function ManageTransactionPage() {
-  const [q, setQ] = useState("");
-  const [payFilter, setPayFilter] = useState<string>("all");
+  const [queryParams, setQueryParams] = useState({
+  // API expects index starting at 1 per docs screenshot
+  index: 1,
+    pageSize: 10
+  })
 
-  const filtered = useMemo(() => {
-    return txData.filter((t) => {
-      const matchQ =
-        q.length === 0 ||
-        t.invoiceId.toLowerCase().includes(q.toLowerCase()) ||
-        t.customer.name.toLowerCase().includes(q.toLowerCase()) ||
-        t.customer.email.toLowerCase().includes(q.toLowerCase());
-      const matchPay = payFilter === "all" || t.payMode === payFilter;
-      return matchQ && matchPay;
-    });
-  }, [q, payFilter]);
+  // Handle date range change
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    // Update query params with date range
+    const newParams = {
+      ...queryParams,
+  // API shows string($date-time); use ISO 8601
+  startDate: range?.from ? dayjs(range.from).toDate().toISOString() : undefined,
+  endDate: range?.to ? dayjs(range.to).toDate().toISOString() : undefined
+    }
+    
+    // Remove undefined values
+    Object.keys(newParams).forEach(key => {
+      if (newParams[key as keyof typeof newParams] === undefined) {
+        delete newParams[key as keyof typeof newParams]
+      }
+    })
+    
+    setQueryParams(newParams)
+  }
 
+  // Sử dụng service để lấy data từ API với date filters
+  const { data: apiResponse, isLoading, error } = useTransactions(queryParams)
+
+  // Transform API data hoặc sử dụng mock data
+  const transactionList = apiResponse?.data?.items 
+    ? apiResponse.data.items.map(transformTransactionTypeToTransaction)
+    : mockTransactionData
+
+  // Calculate statistics từ data
+  const totalTransactions = transactionList.length
+  const successfulTransactions = transactionList.filter(t => t.transferAmount > 0).length
+  const utilizationRate = totalTransactions > 0 ? Math.round((successfulTransactions / totalTransactions) * 100) : 0
+
+  // Tính toán các totals cho charts
   const totals = useMemo(() => {
-    const income = filtered
-      .filter((t) => t.status === "Success")
-      .reduce((s, t) => s + (t.price - (t.discount || 0)), 0);
-    const expense = 3134.5; // mock
-    const returnCost = 134;
-    const shippingCost = 3000;
-    return { income, expense, returnCost, shippingCost };
-  }, [filtered]);
+    const income = transactionList.reduce((sum, t) => sum + t.transferAmount, 0)
+    const expense = 3134500 // mock expense
+    const returnCost = 134000
+    const shippingCost = 3000000
+    return { income, expense, returnCost, shippingCost }
+  }, [transactionList])
+
+  if (isLoading) {
+    return (
+      <Main>
+        <div className='flex items-center justify-center h-[calc(100vh-200px)]'>
+          <div className='text-center space-y-4'>
+            <div className='relative'>
+              <div className='animate-spin rounded-full h-16 w-16 border-4 border-violet-200 border-t-violet-600 mx-auto'></div>
+              <CreditCard className='h-8 w-8 text-violet-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' />
+            </div>
+            <div>
+              <p className='text-lg font-medium text-foreground'>Đang tải giao dịch...</p>
+              <p className='text-sm text-muted-foreground mt-1'>Vui lòng đợi trong giây lát</p>
+            </div>
+          </div>
+        </div>
+      </Main>
+    )
+  }
+
+  if (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Đã xảy ra lỗi không xác định'
+    return (
+      <Main>
+        <div className='flex items-center justify-center h-[calc(100vh-200px)]'>
+          <Card className='max-w-md w-full border-destructive/20 bg-destructive/5'>
+            <CardContent className='pt-6'>
+              <div className='text-center space-y-4'>
+                <div className='h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto'>
+                  <Package2 className='h-8 w-8 text-destructive' />
+                </div>
+                <div>
+                  <p className='text-lg font-semibold text-destructive'>Không thể tải giao dịch</p>
+                  <p className='text-sm text-muted-foreground mt-2'>{errorMessage}</p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className='px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors'
+                >
+                  Thử lại
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Main>
+    )
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Top stats */}
-      <div className="grid gap-4 md:grid-cols-5">
-        <KpiCard title="Ready" value="85% Ready" delta="+2.75%" />
-        <KpiCard title="Revenue" value={currency(12501)} delta="+2.75%" />
-        <KpiCard title="Expense" value={currency(3134)} delta="+1.50%" />
-        <KpiCard title="Return Cost" value={currency(134)} delta="-1.50%" />
-        <KpiCard title="Shipping Cost" value={currency(3000)} delta="-2.65%" />
+    <Main className="space-y-6">
+      {/* Enhanced Header Section */}
+      <div className='space-y-6'>
+        {/* Title and Actions */}
+        <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
+          <div className='space-y-1'>
+            <div className='flex items-center gap-2'>
+              <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg'>
+                <CreditCard className='h-6 w-6 text-white' />
+              </div>
+              <div>
+                <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
+                  Quản Lý Giao Dịch
+                </h1>
+                <p className='text-sm text-muted-foreground flex items-center gap-1'>
+                  Theo dõi và quản lý tất cả giao dịch thanh toán
+                  <Sparkles className='h-3 w-3 text-violet-500' />
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <KpiCard 
+            title="Tổng giao dịch" 
+            value={totalTransactions.toString()} 
+            delta="+2.75%" 
+            icon={BarChart3} 
+          />
+          <KpiCard 
+            title="Doanh thu" 
+            value={currency(totals.income)} 
+            delta="+2.75%" 
+            icon={DollarSign} 
+          />
+          <KpiCard 
+            title="Chi phí" 
+            value={currency(totals.expense)} 
+            delta="+1.50%" 
+            icon={TrendingUp} 
+          />
+          <KpiCard 
+            title="Tỷ lệ thành công" 
+            value={`${utilizationRate}%`} 
+            delta="-2.65%" 
+            icon={Activity} 
+          />
+        </div>
       </div>
 
+      {/* Charts Section */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Summary bar */}
-        <Card className="lg:col-span-1 border-violet-200">
+        <Card className="lg:col-span-1 border-violet-200 dark:border-violet-800">
           <CardHeader>
-            <CardTitle className="text-violet-700 dark:text-violet-300">Summary</CardTitle>
-            <p className="text-xs text-muted-foreground">Open order amount</p>
-            <div className="text-2xl font-semibold mt-1">{currency(2501)}</div>
+            <CardTitle className="text-violet-700 dark:text-violet-300">Tổng quan</CardTitle>
+            <p className="text-xs text-muted-foreground">Số tiền đơn hàng mở</p>
+            <div className="text-2xl font-semibold mt-1">{currency(2501000)}</div>
             <p className="text-xs text-muted-foreground">
-              $1500.50 received • 65% prepaid orders
+              {currency(1500500)} đã nhận • 65% đơn trả trước
             </p>
           </CardHeader>
           <CardContent>
@@ -221,7 +248,7 @@ export default function ManageTransactionPage() {
                   <XAxis dataKey="name" tickLine={false} axisLine={false} />
                   <YAxis hide />
                   <Tooltip />
-                  <Bar dataKey="value" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#8b5cf6" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -229,18 +256,18 @@ export default function ManageTransactionPage() {
         </Card>
 
         {/* Revenue generated line */}
-        <Card className="lg:col-span-2 border-violet-200">
+        <Card className="lg:col-span-2 border-violet-200 dark:border-violet-800">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="text-violet-700 dark:text-violet-300">
-              Revenue Generated
+              Doanh thu tạo ra
             </CardTitle>
             <div className="flex items-baseline gap-6">
               <div>
-                <div className="text-xs text-muted-foreground">Income</div>
+                <div className="text-xs text-muted-foreground">Thu nhập</div>
                 <div className="text-xl font-semibold">{currency(totals.income)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Expense</div>
+                <div className="text-xs text-muted-foreground">Chi phí</div>
                 <div className="text-xl font-semibold">{currency(totals.expense)}</div>
               </div>
             </div>
@@ -253,8 +280,8 @@ export default function ManageTransactionPage() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="income" strokeWidth={2} />
-                  <Line type="monotone" dataKey="expense" strokeWidth={2} />
+                  <Line type="monotone" dataKey="income" strokeWidth={2} stroke="#8b5cf6" />
+                  <Line type="monotone" dataKey="expense" strokeWidth={2} stroke="#ef4444" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -262,156 +289,24 @@ export default function ManageTransactionPage() {
         </Card>
       </div>
 
-      {/* Toolbar */}
-      <Card className="border-violet-200">
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-violet-700 dark:text-violet-300">Transactions</CardTitle>
-          <div className="flex gap-2">
-            <Button variant="outline" className="border-violet-300 text-violet-700">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-          </div>
+      {/* Table Section with Enhanced Styling */}
+      <Card className='border-0 shadow-xl bg-gradient-to-br from-background via-background to-violet-50/30 dark:to-violet-950/10'>
+        <CardHeader className="flex-row items-center justify-between space-y-0 p-6">
+          <CardTitle className="text-violet-700 dark:text-violet-300 flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Danh Sách Giao Dịch
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-3 md:items-center">
-            <div className="flex-1">
-              <Input
-                placeholder="Search invoice, name, email..."
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                className="focus-visible:ring-violet-500"
-              />
-            </div>
-            <Select value={payFilter} onValueChange={setPayFilter}>
-              <SelectTrigger className="w-52 focus:ring-violet-500">
-                <SelectValue placeholder="All payments" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All payments</SelectItem>
-                {["Gift Card", "Coupon", "COD", "UPI", "Debit Card", "Cash"].map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Table */}
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Invoice ID</TableHead>
-                  <TableHead className="text-right">Price/Discount</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Pay mode</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((t) => {
-                  const d = new Date(t.date);
-                  return (
-                    <TableRow key={t.id}>
-                      <TableCell>
-                        <div className="font-medium">
-                          {d.toLocaleDateString(undefined, {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-violet-500" />
-                          <span className="font-medium">{t.invoiceId}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div>{currency(t.price)}</div>
-                        {t.discount ? (
-                          <div className="text-xs text-muted-foreground">
-                            - {currency(t.discount)}
-                          </div>
-                        ) : null}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full bg-violet-600/10 flex items-center justify-center">
-                            <span className="text-xs font-semibold text-violet-700 dark:text-violet-300">
-                              {t.customer.initials}
-                            </span>
-                          </div>
-                          <div>
-                            <div className="font-medium">{t.customer.name}</div>
-                            <div className="text-xs text-muted-foreground">{t.customer.email}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">{t.payMode}</div>
-                        <div className="text-xs text-muted-foreground">{t.payChannel}</div>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge s={t.status} />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button variant="ghost" size="icon" className="text-violet-600">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-violet-600">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-rose-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-            <div className="p-3">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious href="#" />
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationNext href="#" />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
+        <CardContent className='p-0'>
+          <div className='p-6 space-y-4'>
+            <TransactionTable 
+              data={transactionList} 
+              columns={columns} 
+              onDateRangeChange={handleDateRangeChange}
+            />
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function KpiCard({ title, value, delta }: { title: string; value: string; delta: string }) {
-  return (
-    <Card className="border-violet-200">
-      <CardHeader>
-        <CardTitle className="text-sm text-muted-foreground">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <div className="text-2xl font-semibold text-violet-700 dark:text-violet-300">{value}</div>
-        <div className={clsx("text-xs", delta.startsWith("-") ? "text-rose-600" : "text-emerald-600")}>
-          {delta}
-        </div>
-      </CardContent>
-    </Card>
-  );
+    </Main>
+  )
 }
