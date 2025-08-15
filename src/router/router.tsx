@@ -11,7 +11,8 @@ import {
   ManageVoucherPage,
   WarrantyManagementSystem,
   OrderDetailPage,
-  SystemConfigPage
+  SystemConfigPage,
+  ManageTransactionPage
 } from '@/pages/admin'
 // Import các trang manage order mới
 import WarrantyOrderPage from '@/pages/admin/manage-order/warranty'
@@ -66,7 +67,7 @@ export const router = createBrowserRouter([
           { path: 'manage-order/warranty', element: <WarrantyOrderPage /> },
           { path: 'manage-order/:orderId', element: <OrderDetailPage /> },
           { path: 'manage-voucher', element: <ManageVoucherPage /> },
-          { path: 'manage-transaction', element: <div>Transactions Page</div> },
+          { path: 'manage-transaction', element: <ManageTransactionPage /> },
           { path: 'manage-warranty', element: <WarrantyManagementSystem /> },
           { path: 'settings', element: <SystemConfigPage /> }
         ]
