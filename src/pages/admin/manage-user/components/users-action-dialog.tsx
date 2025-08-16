@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useEffect } from 'react'
 import { useUpdateUser, useCreateSystemAccount, useGetRoles } from '@/services/admin/manage-user.service'
+import { useGetConfigs } from '@/services/global/system-config.service'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -28,11 +29,12 @@ const formSchema = z
     phoneNumber: z.string().min(1, { message: 'Số điện thoại là bắt buộc.' }),
     userEmail: z.string().min(1, { message: 'Email là bắt buộc.' }).email({ message: 'Email không hợp lệ.' }),
     password: z.string().transform((pwd) => pwd.trim()),
+    jobTitle: z.string().optional(),
     roleId: z.string().min(1, { message: 'Vai trò là bắt buộc.' }),
     confirmPassword: z.string().transform((pwd) => pwd.trim()),
     isEdit: z.boolean()
   })
-  .superRefine(({ isEdit, password, confirmPassword }, ctx) => {
+  .superRefine(({ isEdit, password, confirmPassword, jobTitle }, ctx) => {
     if (!isEdit || (isEdit && password !== '')) {
       if (password === '') {
         ctx.addIssue({
@@ -74,6 +76,15 @@ const formSchema = z
         })
       }
     }
+
+    // Khi tạo mới (không phải edit), bắt buộc chọn chức danh
+    if (!isEdit && (!jobTitle || jobTitle.trim() === '')) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Chức danh là bắt buộc.',
+        path: ['jobTitle']
+      })
+    }
   })
 type SystemAccountForm = z.infer<typeof formSchema>
 
@@ -90,6 +101,8 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
 
   // Fetch roles from API
   const { data: rolesData, isLoading: rolesLoading } = useGetRoles()
+  // Fetch configs (job titles)
+  const { data: configsData, isLoading: configsLoading } = useGetConfigs()
 
   const form = useForm<SystemAccountForm>({
     resolver: zodResolver(formSchema),
@@ -100,6 +113,7 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           userEmail: currentRow.userEmail || '',
           roleId: '', // Will be set when roles data is loaded
           phoneNumber: currentRow.phoneNumber || '',
+          jobTitle: currentRow.jobTitle || '',
           password: '',
           confirmPassword: '',
           isEdit
@@ -110,6 +124,7 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           userEmail: '',
           roleId: '',
           phoneNumber: '',
+          jobTitle: '',
           password: '',
           confirmPassword: '',
           isEdit
@@ -143,6 +158,7 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           userEmail: values.userEmail,
           fullName: values.fullName,
           phoneNumber: values.phoneNumber,
+          jobTitle: values.jobTitle || '',
           roleName: selectedRole?.roleName || '',
           dateOfBirth: currentRow.dateOfBirth || '',
           profilePicture: currentRow.profilePicture || '',
@@ -164,6 +180,7 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           fullName: values.fullName,
           password: values.password,
           userEmail: values.userEmail,
+          jobTitle: values.jobTitle || '',
           phoneNumber: values.phoneNumber,
           roleId: values.roleId
         }
@@ -189,6 +206,9 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
       label: role.roleName,
       value: role.id
     })) || []
+
+  // Prepare job title options from configs
+  const jobTitleOptions = configsData?.data?.fields?.jobTitles?.map((jt) => ({ label: jt, value: jt })) || []
 
   return (
     <Dialog
@@ -274,6 +294,24 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
                       className='col-span-4'
                       disabled={rolesLoading}
                       items={roleOptions}
+                    />
+                    <FormMessage className='col-span-4 col-start-3' />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='jobTitle'
+                render={({ field }) => (
+                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                    <FormLabel className='col-span-2 text-right'>Chức danh</FormLabel>
+                    <SelectDropdown
+                      defaultValue={field.value}
+                      onValueChange={field.onChange}
+                      placeholder={configsLoading ? 'Đang tải...' : 'Chọn chức danh'}
+                      className='col-span-4'
+                      disabled={configsLoading}
+                      items={jobTitleOptions}
                     />
                     <FormMessage className='col-span-4 col-start-3' />
                   </FormItem>

@@ -135,6 +135,7 @@ export type ManageUserType = {
   profilePicture: string
   phoneNumber: string
   roleName: string
+  jobTitle: string
   fullName: string
   createdAt: string
   updatedAt: string
