@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 export default function ManageUserPage() {
   const [queryParams] = useState({
     index: 0,
-    pageSize: 10,
+    pageSize: 100,
     nameSearch: '',
     roleName: ''
   })
@@ -185,7 +185,7 @@ export default function ManageUserPage() {
                     value='customers'
                     className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg'
                   >
-                    Người dùng (Customers)
+                    Tài khoản khách hàng
                   </TabsTrigger>
                   <TabsTrigger
                     value='system'

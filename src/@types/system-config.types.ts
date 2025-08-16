@@ -1,6 +1,6 @@
 import HttpStatusCode from '@/lib/utils/httpStatusCode.enum'
-
-export interface ConfigType {
+import type { ConfigPatch } from '@/pages/admin/system-config/schema'  
+export interface ConfigFields {
   name: string
   designRequestServiceFee: number //phi yeu cau thiet ke rieng voi designer
   depositRate: number //ti le dat coc
@@ -10,20 +10,12 @@ export interface ConfigType {
   maxAppointmentPerDay: number //so luong toi da appointment trong 1 ngay
   maxAppointmentPerUser: number //so luong toi da user co the dat appointment
   warrantyPeriod: number //thoi gian bao hanh
+  colors: string[];
+  sizes: string[];
+  jobTitles: string[];
 }
 
-export interface ConfigFormData {
-  name: string
-  designRequestServiceFee: number
-  depositRate: number
-  presetVersions: number
-  warrantyTime: number
-  appointmentSlotInterval: number
-  maxAppointmentPerDay: number
-  maxAppointmentPerUser: number
-  warrantyPeriod: number
-}
-
+export type ConfigFormData = ConfigPatch;
 export interface ConfigResponse<T> {
   data: {
     fields: T

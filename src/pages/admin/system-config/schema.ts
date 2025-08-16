@@ -1,7 +1,11 @@
 import { z } from 'zod'
-
-const configSchema = z.object({
-  name: z.string(),
+const uniqueStrings = z.array(z.string().trim().min(1)).transform((arr) => {
+  const set = new Set<string>()
+  for (const s of arr) set.add(s)
+  return Array.from(set)
+})
+const configSchemaFull = z.object({
+  name: z.string().nullable(),
   designRequestServiceFee: z
     .number()
     .min(0, 'Phí dịch vụ thiết kế không được âm')
@@ -36,7 +40,13 @@ const configSchema = z.object({
     .number()
     .int('Thời gian bảo hành phải là số nguyên')
     .min(1, 'Thời gian bảo hành tối thiểu là 1 ngày')
-    .max(365, 'Thời gian bảo hành tối đa là 365 ngày')
+    .max(365, 'Thời gian bảo hành tối đa là 365 ngày'),
+  colors: uniqueStrings.optional(),
+  sizes: uniqueStrings.optional(),
+  jobTitles: uniqueStrings.optional()
 })
 
-export default configSchema
+export const configPatchSchema = configSchemaFull.partial()
+
+export type ConfigFull = z.infer<typeof configSchemaFull>
+export type ConfigPatch = z.infer<typeof configPatchSchema>

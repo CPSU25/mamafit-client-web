@@ -58,14 +58,13 @@ export const useCreateSystemAccount = () => {
       if (response.data.statusCode === 200) {
         return response.data
       }
-      throw new Error(response.data.message || 'Failed to create system account')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: manageUserKeys.all })
       toast.success('Tạo tài khoản hệ thống thành công!')
     },
-    onError: () => {
-      toast.error('Tạo tài khoản hệ thống thất bại!')
+    onError: (error) => {
+      toast.error(error.message || 'Tạo tài khoản hệ thống thất bại!')
     }
   })
 }

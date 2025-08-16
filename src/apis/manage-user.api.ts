@@ -16,6 +16,7 @@ interface CreateSystemAccountData {
   fullName: string
   password: string
   userEmail: string
+  jobTitle: string 
   phoneNumber: string
   roleId: string
 }
@@ -25,6 +26,7 @@ interface CreateUserData {
   userName: string
   userEmail: string
   fullName: string
+  jobTitle: string 
   phoneNumber: string
   roleName: string
   dateOfBirth?: string
@@ -49,7 +51,7 @@ const manageUserAPI = {
 
   // New API for creating system account
   createSystemAccount: (data: CreateSystemAccountData) =>
-    api.post<ItemBaseResponse<ManageUserType>>('/api/auth/create-system-account', data),
+    api.post<ItemBaseResponse<ManageUserType>>('/auth/create-system-account', data),
 
   // Keep old method for backward compatibility
   createUser: (data: CreateUserData) => api.post<ItemBaseResponse<ManageUserType>>('/user', data),

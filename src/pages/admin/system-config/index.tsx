@@ -9,56 +9,120 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertTriangle, Settings, Save, RefreshCw } from 'lucide-react'
+import { AlertTriangle, Settings, Save, RefreshCw, X } from 'lucide-react'
 import { useGetConfigs, useUpdateConfig } from '@/services/global/system-config.service'
 import { ConfigFormData } from '@/@types/system-config.types'
-import configSchema from './schema'
+import { configPatchSchema, type ConfigPatch } from './schema'
+
+// -------- TagEditor component (lightweight) ----------
+type TagEditorProps = {
+  value: string[] | undefined
+  onChange: (next: string[]) => void
+  placeholder?: string
+}
+function TagEditor({ value = [], onChange, placeholder }: TagEditorProps) {
+  const [text, setText] = React.useState('')
+  const add = () => {
+    const v = text.trim()
+    if (!v) return
+    const next = Array.from(new Set([...value, v]))
+    onChange(next)
+    setText('')
+  }
+  const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      add()
+    }
+    if (e.key === 'Backspace' && text === '' && value.length > 0) {
+      const next = value.slice(0, -1)
+      onChange(next)
+    }
+  }
+  const remove = (idx: number) => {
+    const next = value.filter((_, i) => i !== idx)
+    onChange(next)
+  }
+
+  return (
+    <div className='flex flex-wrap items-center gap-2 rounded-md border p-2'>
+      {value.map((tag, i) => (
+        <Badge key={`${tag}-${i}`} variant='secondary' className='flex items-center gap-1'>
+          {tag}
+          <button type='button' onClick={() => remove(i)} className='hover:opacity-70'>
+            <X className='h-3 w-3' />
+          </button>
+        </Badge>
+      ))}
+      <input
+        className='flex-1 min-w-[160px] outline-none bg-transparent px-1 py-1 text-sm'
+        placeholder={placeholder ?? 'Nhập và nhấn Enter'}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={onKeyDown}
+      />
+      <Button type='button' variant='secondary' size='sm' onClick={add}>
+        Thêm
+      </Button>
+    </div>
+  )
+}
+// -----------------------------------------------------
 
 const SystemConfig = () => {
-  // Fetch config data
   const { data: configResponse, isLoading, error, refetch } = useGetConfigs()
-  // Update mutation
   const updateConfigMutation = useUpdateConfig()
 
-  // Form setup
-  const form = useForm<ConfigFormData>({
-    resolver: zodResolver(configSchema),
+  const form = useForm<ConfigPatch>({
+    resolver: zodResolver(configPatchSchema),
     defaultValues: {
-      name: 'MamaFit',
-      designRequestServiceFee: 0,
-      depositRate: 0,
-      presetVersions: 1,
-      warrantyTime: 0,
-      appointmentSlotInterval: 30,
-      maxAppointmentPerDay: 10,
-      maxAppointmentPerUser: 3,
-      warrantyPeriod: 30
+      // để trống -> PATCH chỉ gửi khi user đổi giá trị (react-hook-form đánh dấu dirty)
+      // bạn vẫn có thể set default để hiển thị, nhưng khi submit mình sẽ chỉ pick dirty fields
     }
   })
 
-  // Update form when data is loaded
+  // Fill form from API (hiển thị giá trị), nhưng khi submit sẽ chỉ gửi field dirty
   React.useEffect(() => {
     if (configResponse?.data.fields) {
-      form.reset({
-        name: configResponse.data.fields.name,
-        designRequestServiceFee: configResponse.data.fields.designRequestServiceFee,
-        depositRate: configResponse.data.fields.depositRate,
-        presetVersions: configResponse.data.fields.presetVersions,
-        warrantyTime: configResponse.data.fields.warrantyTime,
-        appointmentSlotInterval: configResponse.data.fields.appointmentSlotInterval,
-        maxAppointmentPerDay: configResponse.data.fields.maxAppointmentPerDay,
-        maxAppointmentPerUser: configResponse.data.fields.maxAppointmentPerUser,
-        warrantyPeriod: configResponse.data.fields.warrantyPeriod
-      })
+      const f = configResponse.data.fields
+      form.reset(
+        {
+          name: f.name ?? 'MamaFit',
+          designRequestServiceFee: f.designRequestServiceFee,
+          depositRate: f.depositRate,
+          presetVersions: f.presetVersions,
+          warrantyTime: f.warrantyTime,
+          appointmentSlotInterval: f.appointmentSlotInterval,
+          maxAppointmentPerDay: f.maxAppointmentPerDay,
+          maxAppointmentPerUser: f.maxAppointmentPerUser,
+          warrantyPeriod: f.warrantyPeriod,
+          colors: f.colors ?? [],
+          sizes: f.sizes ?? [],
+          jobTitles: f.jobTitles ?? []
+        },
+        { keepDefaultValues: false }
+      )
     }
-  }, [configResponse, form])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [configResponse])
 
   const onSubmit = async (data: ConfigFormData) => {
+    // chỉ gửi các field dirty để đúng tinh thần PATCH
+    const dirty = form.formState.dirtyFields
+    const payload: ConfigFormData = {}
+
+    for (const key in dirty) {
+      // @ts-expect-error index type ok
+      payload[key] = (data as ConfigFormData)[key]
+    }
+
     try {
-      await updateConfigMutation.mutateAsync(data)
+      await updateConfigMutation.mutateAsync(payload)
       toast.success('Cập nhật cấu hình hệ thống thành công!')
+      form.reset(data) // reset dirty state
     } catch (err) {
       toast.error('Cập nhật cấu hình thất bại. Vui lòng thử lại!')
       console.error('Update config error:', err)
@@ -154,8 +218,8 @@ const SystemConfig = () => {
                           <Input
                             type='number'
                             {...field}
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
                           />
                         </FormControl>
                         <FormDescription>Phí dịch vụ cho yêu cầu thiết kế riêng với designer (VNĐ)</FormDescription>
@@ -177,8 +241,8 @@ const SystemConfig = () => {
                             min='0'
                             max='1'
                             {...field}
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
                           />
                         </FormControl>
                         <FormDescription>Tỷ lệ tiền cọc từ 0-1 (0.3 = 30%)</FormDescription>
@@ -206,8 +270,8 @@ const SystemConfig = () => {
                           <Input
                             type='number'
                             {...field}
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
                           />
                         </FormControl>
                         <FormDescription>Số lượng version mặc định cho mỗi thiết kế</FormDescription>
@@ -235,8 +299,8 @@ const SystemConfig = () => {
                           <Input
                             type='number'
                             {...field}
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
                           />
                         </FormControl>
                         <FormDescription>Số lần khách hàng được bảo hành miễn phí</FormDescription>
@@ -255,8 +319,8 @@ const SystemConfig = () => {
                           <Input
                             type='number'
                             {...field}
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
                           />
                         </FormControl>
                         <FormDescription>Thời gian bảo hành tính bằng ngày</FormDescription>
@@ -284,8 +348,8 @@ const SystemConfig = () => {
                           <Input
                             type='number'
                             {...field}
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
                           />
                         </FormControl>
                         <FormDescription>Thời gian giữa các slot đặt lịch (phút)</FormDescription>
@@ -304,8 +368,8 @@ const SystemConfig = () => {
                           <Input
                             type='number'
                             {...field}
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
                           />
                         </FormControl>
                         <FormDescription>Số lượng tối đa appointment trong 1 ngày</FormDescription>
@@ -324,11 +388,76 @@ const SystemConfig = () => {
                           <Input
                             type='number'
                             {...field}
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
                           />
                         </FormControl>
                         <FormDescription>Số lượng tối đa user có thể đặt appointment</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Từ điển thuộc tính */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Thuộc tính mặc định khi tạo váy</CardTitle>
+                  <CardDescription>Quản lý danh sách Colors, Sizes và Job Titles</CardDescription>
+                </CardHeader>
+                <CardContent className='grid gap-6 md:grid-cols-2'>
+                  <FormField
+                    control={form.control}
+                    name='colors'
+                    render={({ field }) => (
+                      <FormItem >
+                        <FormLabel>Colors</FormLabel>
+                        <FormControl>
+                          <TagEditor value={field.value} onChange={field.onChange} placeholder='Nhập màu và Enter' />
+                        </FormControl>
+                        <FormDescription>Ví dụ: red, yellow, black…</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name='sizes'
+                    render={({ field }) => (
+                      <FormItem >
+                        <FormLabel>Sizes</FormLabel>
+                        <FormControl>
+                          <TagEditor value={field.value} onChange={field.onChange} placeholder='Nhập size và Enter' />
+                        </FormControl>
+                        <FormDescription>Ví dụ: M, L, XL…</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+              {/* Cấu hình chức vụ nhân viên */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cấu hình chức vụ nhân viên</CardTitle>
+                  <CardDescription>Thiết lập chức vụ nhân viên trong hệ thống </CardDescription>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  <FormField
+                    control={form.control}
+                    name='jobTitles'
+                    render={({ field }) => (
+                      <FormItem className='space-y-2'>
+                        <FormLabel>Job Titles</FormLabel>
+                        <FormControl>
+                          <TagEditor
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder='Nhập chức danh và Enter'
+                          />
+                        </FormControl>
+                        <FormDescription>Ví dụ: Designer, Branch Manager…</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
