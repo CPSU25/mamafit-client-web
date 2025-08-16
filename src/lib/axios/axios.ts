@@ -23,6 +23,74 @@ export const api = axios.create({
   timeout: 30000 // 30s timeouta
 })
 
+// Helper: Chuẩn hóa message lỗi trả về từ server
+type NormalizedAxiosError = AxiosError & {
+  userMessage?: string
+  errorCode?: string
+  validationErrors?: string[]
+}
+
+const extractServerErrorMessage = (error: AxiosError): {
+  message: string
+  errorCode?: string
+  validationMessages?: string[]
+} => {
+  const fallback = 'Đã xảy ra lỗi, vui lòng thử lại sau.'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = (error.response?.data ?? {}) as any
+
+  // Một số backend trả về string thuần
+  if (typeof data === 'string') {
+    return { message: data }
+  }
+
+  // Ưu tiên theo chuẩn của hệ thống hiện tại
+  if (typeof data?.errorMessage === 'string' && data.errorMessage.trim()) {
+    return { message: data.errorMessage, errorCode: data?.errorCode || data?.code }
+  }
+
+  // Chuẩn Item/ListBaseResponse: message
+  const msg = data?.message
+  if (Array.isArray(msg) && msg.length) {
+    return { message: msg.join(', ') }
+  }
+  if (typeof msg === 'string' && msg.trim()) {
+    return { message: msg, errorCode: data?.code }
+  }
+
+  // Validation errors phổ biến (ASP.NET/FluentValidation)
+  const errors = data?.errors
+  if (errors) {
+    const messages: string[] = []
+    if (Array.isArray(errors)) {
+      messages.push(...errors.filter((x: unknown) => typeof x === 'string'))
+    } else if (typeof errors === 'object') {
+      for (const key of Object.keys(errors)) {
+        const val = (errors as Record<string, unknown>)[key]
+        if (Array.isArray(val)) {
+          messages.push(...(val as unknown[]).filter((x) => typeof x === 'string') as string[])
+        } else if (typeof val === 'string') {
+          messages.push(val)
+        }
+      }
+    }
+    if (messages.length) {
+      return { message: messages[0], validationMessages: messages }
+    }
+  }
+
+  // Một số dạng khác
+  if (typeof data?.title === 'string' && data.title.trim()) {
+    return { message: data.title }
+  }
+  if (typeof data?.error?.message === 'string' && data.error.message.trim()) {
+    return { message: data.error.message }
+  }
+
+  // Fallback
+  return { message: error.message || fallback }
+}
+
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const { accessToken } = useAuthStore.getState()
@@ -98,8 +166,6 @@ api.interceptors.response.use(
             return api(originalRequest)
           } catch (refreshError) {
             isRefreshing = false
-
-            // Reject tất cả requests đang chờ
             failedRequestsQueue.forEach(({ reject }) => reject(refreshError as AxiosError))
             failedRequestsQueue = []
 
@@ -127,7 +193,15 @@ api.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error)
+  // Chuẩn hóa message lỗi cho tất cả case còn lại (bao gồm 400/422 validation)
+  const enriched = error as NormalizedAxiosError
+  const { message, errorCode, validationMessages } = extractServerErrorMessage(error)
+  enriched.userMessage = message
+  if (message && enriched.message !== message) enriched.message = message
+  if (errorCode) enriched.errorCode = errorCode
+  if (validationMessages && validationMessages.length) enriched.validationErrors = validationMessages
+
+  return Promise.reject(enriched)
   }
 )
 

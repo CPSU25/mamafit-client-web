@@ -82,7 +82,7 @@ export function UsersPrimaryButtons() {
       >
         <span className='relative flex items-center gap-2'>
           <UserPlus className='h-4 w-4' />
-          Thêm User
+          Thêm tài khoản hệ thống
           <span className='absolute -top-1 -right-1 h-2 w-2'>
             <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75'></span>
             <span className='relative inline-flex rounded-full h-2 w-2 bg-white'></span>

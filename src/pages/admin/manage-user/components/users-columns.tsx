@@ -66,6 +66,11 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => <div className='w-fit text-nowrap'>{row.getValue('userEmail')}</div>
   },
   {
+    accessorKey: 'jobTitle',
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Job Title' />,
+    cell: ({ row }) => <div className='w-fit text-nowrap'>{row.getValue('jobTitle')}</div>
+  },
+  {
     accessorKey: 'phoneNumber',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Phone Number' />,
     cell: ({ row }) => <div>{row.getValue('phoneNumber')}</div>,
