@@ -54,34 +54,32 @@ export function TransactionTableRowActions({ row }: TransactionTableRowActionsPr
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-[200px]'>
-        <DropdownMenuLabel className='text-violet-700 dark:text-violet-300 font-semibold'>
-          Thao tác
-        </DropdownMenuLabel>
-        
+        <DropdownMenuLabel className='text-violet-700 dark:text-violet-300 font-semibold'>Thao tác</DropdownMenuLabel>
+
         <DropdownMenuItem onClick={handleViewDetails} className='cursor-pointer'>
           <Eye className='mr-2 h-4 w-4' />
           Xem chi tiết
         </DropdownMenuItem>
-        
+
         <DropdownMenuItem onClick={handleDownloadReceipt} className='cursor-pointer'>
           <Download className='mr-2 h-4 w-4' />
           Tải hóa đơn
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
+
         <DropdownMenuItem onClick={handleCopyTransactionId} className='cursor-pointer'>
           <Copy className='mr-2 h-4 w-4' />
           Sao chép ID giao dịch
         </DropdownMenuItem>
-        
+
         <DropdownMenuItem onClick={handleCopyOrderId} className='cursor-pointer'>
           <Copy className='mr-2 h-4 w-4' />
           Sao chép mã đơn hàng
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
+
         <DropdownMenuItem onClick={handleRefresh} className='cursor-pointer'>
           <RefreshCw className='mr-2 h-4 w-4' />
           Làm mới trạng thái

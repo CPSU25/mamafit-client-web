@@ -1,5 +1,5 @@
 import HttpStatusCode from '@/lib/utils/httpStatusCode.enum'
-import type { ConfigPatch } from '@/pages/admin/system-config/schema'  
+import type { ConfigPatch } from '@/pages/admin/system-config/schema'
 export interface ConfigFields {
   name: string
   designRequestServiceFee: number //phi yeu cau thiet ke rieng voi designer
@@ -10,12 +10,12 @@ export interface ConfigFields {
   maxAppointmentPerDay: number //so luong toi da appointment trong 1 ngay
   maxAppointmentPerUser: number //so luong toi da user co the dat appointment
   warrantyPeriod: number //thoi gian bao hanh
-  colors: string[];
-  sizes: string[];
-  jobTitles: string[];
+  colors: string[]
+  sizes: string[]
+  jobTitles: string[]
 }
 
-export type ConfigFormData = ConfigPatch;
+export type ConfigFormData = ConfigPatch
 export interface ConfigResponse<T> {
   data: {
     fields: T

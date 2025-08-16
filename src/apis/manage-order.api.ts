@@ -45,7 +45,11 @@ const ManageOrderAPI = {
   assignTask: (orderItemId: string, body: AssignTask) =>
     api.post<ItemBaseResponse<[]>>(`/order-item/assign-task/${orderItemId}`, body), //không sài
   assignCharge: (body: AssignCharge[]) => api.post<ItemBaseResponse<[]>>(`/order-items/assign-charge`, body),
-  checkListStatus: (body: checkListStatus) => api.put<ItemBaseResponse<[]>>(`/order-items/check-list-status`, body)
+  checkListStatus: (body: checkListStatus) => api.put<ItemBaseResponse<[]>>(`/order-items/check-list-status`, body),
+
+  // Orders created from a Design Request (grouped by designRequestId)
+  getOrdersByDesignRequest: (designRequestId: string) =>
+    api.get<ItemBaseResponse<OrderType[]>>(`/order/order-group-designRequest/${designRequestId}`)
 }
 
 export default ManageOrderAPI

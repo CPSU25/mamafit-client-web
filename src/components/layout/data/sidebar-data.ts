@@ -47,7 +47,7 @@ export const sidebarData: SidebarData = {
         {
           title: 'Tổng quan',
           items: [
-            { title: 'Bảng điều khiển', url: 'dashboard', icon: LayoutDashboard },
+            { title: 'Bảng điều khiển', url: 'dashboard', icon: LayoutDashboard }
             // {
             //   title: 'Phân tích & Báo cáo',
             //   icon: BarChart3,
@@ -62,12 +62,12 @@ export const sidebarData: SidebarData = {
         {
           title: 'Quản lý hệ thống',
           items: [
-            { title: 'Quản lý người dùng', url: 'manage-user', icon: Users},
+            { title: 'Quản lý người dùng', url: 'manage-user', icon: Users },
             {
               title: 'Quản lý chi nhánh',
               icon: Building,
               items: [
-                { title: 'Danh sách chi nhánh', url: 'manage-branch', icon: Store },
+                { title: 'Danh sách chi nhánh', url: 'manage-branch', icon: Store }
                 // { title: 'Phân bổ nhân viên', url: 'manage-branch/staff-allocation', icon: UserCheck }
               ]
             },
@@ -97,7 +97,7 @@ export const sidebarData: SidebarData = {
         {
           title: 'Cài đặt',
           items: [
-            { title: 'Cấu hình hệ thống', url: 'settings', icon: Settings },
+            { title: 'Cấu hình hệ thống', url: 'settings', icon: Settings }
             // { title: 'Thông báo hệ thống', url: 'system-notifications', icon: Bell }
           ]
         }
@@ -109,7 +109,7 @@ export const sidebarData: SidebarData = {
         {
           title: 'Quản lý chi nhánh',
           items: [
-            { title: 'Tổng quan chi nhánh', url: 'dashboard', icon: LayoutDashboard },
+            { title: 'Tổng quan chi nhánh', url: 'dashboard', icon: LayoutDashboard }
             // { title: 'Báo cáo chi nhánh', url: 'reports', icon: BarChart3, badge: '3' }
           ]
         },
@@ -122,18 +122,18 @@ export const sidebarData: SidebarData = {
               title: 'Quản lý đơn hàng',
               icon: Package,
               items: [
-                { title: 'Đơn hàng mới', url: 'manage-order', icon: AlertCircle, badge: '1' },
+                { title: 'Đơn hàng mới', url: 'manage-order', icon: AlertCircle, badge: '1' }
                 // { title: 'Đang xử lý', url: 'manage-order/processing', icon: Clock },
                 // { title: 'Hoàn thành', url: 'manage-order/completed', icon: CheckCircle }
               ]
-            },
+            }
             // { title: 'Quản lý kho', url: 'manage-inventory', icon: Package2 }
           ]
         },
         {
           title: 'Tương tác',
           items: [
-            { title: 'Tin nhắn khách hàng', url: 'messages', icon: MessagesSquare, badge: '8' },
+            { title: 'Tin nhắn khách hàng', url: 'messages', icon: MessagesSquare, badge: '8' }
             // { title: 'Check-in/Check-out', url: 'check-in-out', icon: UserCheck }
           ]
         },
@@ -149,7 +149,7 @@ export const sidebarData: SidebarData = {
         {
           title: 'Thiết kế',
           items: [
-            { title: 'Bảng làm việc', url: 'dashboard', icon: LayoutDashboard },
+            { title: 'Bảng làm việc', url: 'dashboard', icon: LayoutDashboard }
             // { title: 'Thống kê thiết kế', url: 'design-stats', icon: TrendingUp }
           ]
         },
@@ -160,19 +160,19 @@ export const sidebarData: SidebarData = {
               title: 'Mẫu thiết kế',
               icon: Palette,
               items: [
-                { title: 'Thư viện mẫu', url: 'manage-template', icon: Shirt },
+                { title: 'Thư viện mẫu', url: 'manage-template', icon: Shirt }
                 // { title: 'Tạo mẫu mới', url: 'manage-template/create', icon: PaintBucket },
                 // { title: 'Mẫu nổi bật', url: 'manage-template/featured', icon: Award }
               ]
             },
-            { title: 'Yêu cầu thiết kế', url: 'manage-design-request', icon: Award, badge: '7' },
+            { title: 'Yêu cầu thiết kế', url: 'manage-design-request', icon: Award, badge: '7' }
             // { title: 'Công việc của tôi', url: 'manage-task', icon: ClipboardList }
           ]
         },
         {
           title: 'Tương tác',
           items: [
-            { title: 'Chat với khách hàng', url: 'messages', icon: MessagesSquare, badge: '4' },
+            { title: 'Chat với khách hàng', url: 'messages', icon: MessagesSquare, badge: '4' }
             // { title: 'Phản hồi thiết kế', url: 'design-feedback', icon: FileText }
           ]
         },
@@ -188,7 +188,7 @@ export const sidebarData: SidebarData = {
         {
           title: 'Quản lý sản xuất',
           items: [
-            { title: 'Tổng quan sản xuất', url: 'dashboard', icon: LayoutDashboard },
+            { title: 'Tổng quan sản xuất', url: 'dashboard', icon: LayoutDashboard }
             // { title: 'Báo cáo sản xuất', url: 'production-reports', icon: BarChart3 }
           ]
         },
@@ -199,7 +199,7 @@ export const sidebarData: SidebarData = {
               title: 'Quản lý sản phẩm',
               icon: Factory,
               items: [
-                { title: 'Sản phẩm', url: 'manage-production', icon: Scissors },
+                { title: 'Sản phẩm', url: 'manage-production', icon: Scissors }
                 // { title: 'Kiểm tra chất lượng', url: 'manage-production/qc', icon: CheckCircle }
               ]
             },
@@ -214,9 +214,8 @@ export const sidebarData: SidebarData = {
                 { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: Clock },
                 { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: CheckCircle }
               ]
-            },
-          ],
-          
+            }
+          ]
         },
         {
           title: 'Quản lý bảo hành',
@@ -225,7 +224,7 @@ export const sidebarData: SidebarData = {
         {
           title: 'Quản lý nhân sự',
           items: [
-            { title: 'Phân công công việc', url: 'manage-task', icon: FolderOpen },
+            { title: 'Phân công công việc', url: 'manage-task', icon: FolderOpen }
             // { title: 'Theo dõi tiến độ', url: 'track-progress', icon: TrendingUp }
           ]
         },

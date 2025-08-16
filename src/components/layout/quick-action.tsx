@@ -61,7 +61,12 @@ export function QuickActions({ role }: QuickActionsProps) {
         ]
       case 'Manager':
         return [
-          { icon: Package, label: 'Đơn Hàng Sản Xuất', action: () => navigate('manage-order'), color: 'text-green-500' },
+          {
+            icon: Package,
+            label: 'Đơn Hàng Sản Xuất',
+            action: () => navigate('manage-order'),
+            color: 'text-green-500'
+          },
           { icon: Plus, label: 'Tạo task', action: () => navigate('manage-task'), color: 'text-orange-500' }
         ]
       default:

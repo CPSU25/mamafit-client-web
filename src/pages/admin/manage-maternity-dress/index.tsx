@@ -39,8 +39,11 @@ export default function ManageMaternityDressPage() {
   // Calculate statistics
   const totalMaternityDresses = maternityDressList.length
   const activeMaternityDresses = maternityDressList.filter((dress) => dress.status === 'ACTIVE').length
-  const maternityDressesWithImages = maternityDressList.filter((dress) => dress.images && dress.images.length > 0).length
-  const utilizationRate = totalMaternityDresses > 0 ? Math.round((activeMaternityDresses / totalMaternityDresses) * 100) : 0
+  const maternityDressesWithImages = maternityDressList.filter(
+    (dress) => dress.images && dress.images.length > 0
+  ).length
+  const utilizationRate =
+    totalMaternityDresses > 0 ? Math.round((activeMaternityDresses / totalMaternityDresses) * 100) : 0
   const totalValue = maternityDressList.reduce((sum, dress) => sum + dress.price, 0)
 
   if (isLoading) {
@@ -174,7 +177,9 @@ export default function ManageMaternityDressPage() {
                   <div className='space-y-1'>
                     <p className='text-sm font-medium text-muted-foreground'>Tổng giá trị</p>
                     <div className='flex items-baseline gap-2'>
-                      <p className='text-xl font-bold text-orange-600 dark:text-orange-400'>{formatCurrency(totalValue)}</p>
+                      <p className='text-xl font-bold text-orange-600 dark:text-orange-400'>
+                        {formatCurrency(totalValue)}
+                      </p>
                     </div>
                     <p className='text-xs text-muted-foreground'>Giá trị sản phẩm</p>
                   </div>

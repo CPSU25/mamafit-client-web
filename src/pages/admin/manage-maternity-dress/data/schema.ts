@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { MaternityDressType } from '@/@types/inventory.type'
+import { MaternityDressList, MaternityDressType } from '@/@types/inventory.type'
 
 const maternityDressStatusSchema = z.union([z.literal('ACTIVE'), z.literal('INACTIVE')])
 export type MaternityDressStatus = z.infer<typeof maternityDressStatusSchema>
@@ -40,7 +40,7 @@ export const transformMaternityDressTypeToMaternityDress = (apiMaternityDress: M
   }
 }
 
-export const transformMaternityDressListToMaternityDress = (apiMaternityDress: any): MaternityDress => {
+export const transformMaternityDressListToMaternityDress = (apiMaternityDress: MaternityDressList): MaternityDress => {
   return {
     id: apiMaternityDress.id,
     styleName: apiMaternityDress.styleName,

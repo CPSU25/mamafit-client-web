@@ -30,7 +30,9 @@ type NormalizedAxiosError = AxiosError & {
   validationErrors?: string[]
 }
 
-const extractServerErrorMessage = (error: AxiosError): {
+const extractServerErrorMessage = (
+  error: AxiosError
+): {
   message: string
   errorCode?: string
   validationMessages?: string[]
@@ -68,7 +70,7 @@ const extractServerErrorMessage = (error: AxiosError): {
       for (const key of Object.keys(errors)) {
         const val = (errors as Record<string, unknown>)[key]
         if (Array.isArray(val)) {
-          messages.push(...(val as unknown[]).filter((x) => typeof x === 'string') as string[])
+          messages.push(...((val as unknown[]).filter((x) => typeof x === 'string') as string[]))
         } else if (typeof val === 'string') {
           messages.push(val)
         }
@@ -193,15 +195,15 @@ api.interceptors.response.use(
       }
     }
 
-  // Chuẩn hóa message lỗi cho tất cả case còn lại (bao gồm 400/422 validation)
-  const enriched = error as NormalizedAxiosError
-  const { message, errorCode, validationMessages } = extractServerErrorMessage(error)
-  enriched.userMessage = message
-  if (message && enriched.message !== message) enriched.message = message
-  if (errorCode) enriched.errorCode = errorCode
-  if (validationMessages && validationMessages.length) enriched.validationErrors = validationMessages
+    // Chuẩn hóa message lỗi cho tất cả case còn lại (bao gồm 400/422 validation)
+    const enriched = error as NormalizedAxiosError
+    const { message, errorCode, validationMessages } = extractServerErrorMessage(error)
+    enriched.userMessage = message
+    if (message && enriched.message !== message) enriched.message = message
+    if (errorCode) enriched.errorCode = errorCode
+    if (validationMessages && validationMessages.length) enriched.validationErrors = validationMessages
 
-  return Promise.reject(enriched)
+    return Promise.reject(enriched)
   }
 )
 
