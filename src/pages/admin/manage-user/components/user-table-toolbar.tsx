@@ -1,4 +1,4 @@
-import { Cross } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,7 +46,7 @@ export function UserTableToolbar<TData>({ table }: UserTableToolbarProps<TData>)
         {isFiltered && (
           <Button variant='ghost' onClick={() => table.resetColumnFilters()} className='h-8 px-2 lg:px-3'>
             Reset
-            <Cross className='ml-2 h-4 w-4' />
+            <X className='ml-2 h-4 w-4' />
           </Button>
         )}
       </div>
