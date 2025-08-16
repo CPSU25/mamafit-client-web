@@ -2,7 +2,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { callTypes, userTypes } from '../data/data'
+import { userTypes } from '../data/data'
 import { User } from '../data/schema'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { UserTableRowActions } from './user-table-row-action'
@@ -16,13 +16,14 @@ export const columns: ColumnDef<User>[] = [
         checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label='Select all'
-        className='translate-y-[2px]'
+  className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
+  data-action-button='true'
       />
     ),
     meta: {
       className: cn(
-        'sticky md:table-cell left-0 z-10 rounded-tl',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
+  'sticky md:table-cell left-0 z-10 rounded-tl w-12',
+  'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30'
       )
     },
     cell: ({ row }) => (
@@ -30,7 +31,8 @@ export const columns: ColumnDef<User>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label='Select row'
-        className='translate-y-[2px]'
+  className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
+  data-action-button='true'
       />
     ),
     enableSorting: false,
@@ -43,8 +45,8 @@ export const columns: ColumnDef<User>[] = [
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-        'sticky left-6 md:table-cell'
+        'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30',
+  'sticky left-12 md:table-cell'
       )
     },
     enableHiding: false
@@ -52,8 +54,11 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: 'fullName',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Full Name' />,
-    cell: ({ row }) => <LongText className='max-w-36'>{row.getValue('fullName')}</LongText>,
-    meta: { className: 'w-36' }
+    cell: ({ row }) => {
+      const value = row.getValue('fullName') as string
+      return <div className='block max-w-[240px] min-w-[160px] truncate'>{value}</div>
+    },
+    meta: { className: 'min-w-[160px] max-w-[260px]' }
   },
   {
     accessorKey: 'userEmail',
@@ -72,11 +77,20 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       const user = row.original
       const status = user.isVerify ? 'active' : 'inactive'
-      const badgeColor = callTypes.get(status)
+      const isActive = status === 'active'
       return (
-        <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {status}
+        <div className='flex items-center gap-2'>
+          <div className={cn('h-2 w-2 rounded-full', isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400')} />
+          <Badge
+            variant={isActive ? 'default' : 'secondary'}
+            className={cn(
+              'font-semibold capitalize',
+              isActive
+                ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-sm'
+                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+            )}
+          >
+            {isActive ? 'Active' : 'Inactive'}
           </Badge>
         </div>
       )
