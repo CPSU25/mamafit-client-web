@@ -4,10 +4,12 @@ import { AuthProvider } from '@/context/auth-context'
 import { Outlet } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
 import { useSignalRAutoConnect } from '@/hooks/useSignalRAutoConnect'
+import { useNotificationSignalR } from '@/hooks/use-notification-signalr'
 
 export default function AppLayout() {
   // Auto-connect/disconnect SignalR based on authentication status
   useSignalRAutoConnect()
+  useNotificationSignalR()
 
   return (
     <QueryProvider>

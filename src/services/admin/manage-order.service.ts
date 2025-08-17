@@ -8,7 +8,8 @@ export const orderKeys = {
   lists: () => [...orderKeys.all, 'list'] as const,
   list: (params: OrderQueryParams) => [...orderKeys.lists(), 'list', params] as const,
   details: () => [...orderKeys.all, 'detail'] as const,
-  detail: (id: string) => [...orderKeys.details(), id] as const
+  detail: (id: string) => [...orderKeys.details(), id] as const,
+  designGroup: (designRequestId: string) => [...orderKeys.all, 'design-group', designRequestId] as const
 }
 
 export const useOrders = (params: OrderQueryParams) => {
@@ -48,6 +49,22 @@ export const useOrder = (id: string) => {
         return false
       }
       return failureCount < 3
+    }
+  })
+}
+
+// Get all orders created from a given designRequestId
+export const useOrdersByDesignRequest = (designRequestId?: string) => {
+  return useQuery({
+    enabled: Boolean(designRequestId),
+    queryKey: orderKeys.designGroup(designRequestId || 'unknown'),
+    queryFn: async () => {
+      if (!designRequestId) return { data: [] as unknown as never } as never
+      const response = await ManageOrderAPI.getOrdersByDesignRequest(designRequestId)
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      throw new Error(response.data.message || 'Failed to fetch orders by design request')
     }
   })
 }
@@ -151,7 +168,7 @@ export const useAssignCharge = () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all })
       queryClient.invalidateQueries({ queryKey: ['designer-tasks'] })
       queryClient.invalidateQueries({ queryKey: ['staff-tasks'] })
-
+      queryClient.invalidateQueries({ queryKey: [orderKeys.details()] })
       toast.success('Phân công nhiệm vụ thành công!')
     },
     onError: () => {

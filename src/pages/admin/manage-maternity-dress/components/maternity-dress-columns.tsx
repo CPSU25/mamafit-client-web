@@ -226,7 +226,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
       <DataTableColumnHeader column={column} title='Trạng Thái' className='text-pink-700 dark:text-pink-300' />
     ),
     cell: ({ row }) => {
-      const status = row.getValue('status') as string || 'ACTIVE'
+      const status = (row.getValue('status') as string) || 'ACTIVE'
       const isActive = status === 'ACTIVE'
 
       return (

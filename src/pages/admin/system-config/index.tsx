@@ -411,7 +411,7 @@ const SystemConfig = () => {
                     control={form.control}
                     name='colors'
                     render={({ field }) => (
-                      <FormItem >
+                      <FormItem>
                         <FormLabel>Colors</FormLabel>
                         <FormControl>
                           <TagEditor value={field.value} onChange={field.onChange} placeholder='Nhập màu và Enter' />
@@ -425,7 +425,7 @@ const SystemConfig = () => {
                     control={form.control}
                     name='sizes'
                     render={({ field }) => (
-                      <FormItem >
+                      <FormItem>
                         <FormLabel>Sizes</FormLabel>
                         <FormControl>
                           <TagEditor value={field.value} onChange={field.onChange} placeholder='Nhập size và Enter' />

@@ -18,6 +18,6 @@ export type TransactionType = {
 export interface TransactionQueryParams {
   index?: number
   pageSize?: number
-  startDate?: string 
-  endDate?: string 
+  startDate?: string
+  endDate?: string
 }

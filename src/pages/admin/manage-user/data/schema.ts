@@ -47,7 +47,7 @@ export const transformManageUserToUser = (apiUser: ManageUserType): User => {
     profilePicture: apiUser.profilePicture,
     phoneNumber: apiUser.phoneNumber,
     roleName: apiUser.roleName,
-  jobTitle: apiUser.jobTitle,
+    jobTitle: apiUser.jobTitle,
     fullName: apiUser.fullName,
     createdAt: apiUser.createdAt,
     updatedAt: apiUser.updatedAt,

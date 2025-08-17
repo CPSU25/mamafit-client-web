@@ -16,14 +16,14 @@ export const columns: ColumnDef<User>[] = [
         checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label='Select all'
-  className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
-  data-action-button='true'
+        className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
+        data-action-button='true'
       />
     ),
     meta: {
       className: cn(
-  'sticky md:table-cell left-0 z-10 rounded-tl w-12',
-  'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30'
+        'sticky md:table-cell left-0 z-10 rounded-tl w-12',
+        'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30'
       )
     },
     cell: ({ row }) => (
@@ -31,8 +31,8 @@ export const columns: ColumnDef<User>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label='Select row'
-  className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
-  data-action-button='true'
+        className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
+        data-action-button='true'
       />
     ),
     enableSorting: false,
@@ -46,7 +46,7 @@ export const columns: ColumnDef<User>[] = [
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
         'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30',
-  'sticky left-12 md:table-cell'
+        'sticky left-12 md:table-cell'
       )
     },
     enableHiding: false
@@ -68,7 +68,7 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: 'jobTitle',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Job Title' />,
-    cell: ({ row }) => <div className='w-fit text-nowrap'>{row.getValue('jobTitle')}</div>
+    cell: ({ row }) => <div className='w-fit text-nowrap'>{row.getValue('jobTitle') ?? 'Chưa có'}</div>
   },
   {
     accessorKey: 'phoneNumber',

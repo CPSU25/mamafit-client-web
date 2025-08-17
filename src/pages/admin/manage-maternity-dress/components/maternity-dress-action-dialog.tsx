@@ -11,14 +11,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
@@ -27,7 +20,6 @@ import { Package, Loader2, ImageIcon } from 'lucide-react'
 import { MaternityDress } from '../data/schema'
 import { useCreateMaternityDress, useUpdateMaternityDress } from '@/services/admin/maternity-dress.service'
 import { FirebaseImageUpload } from '@/components/firebase-image-upload'
-
 
 const maternityDressFormSchema = z.object({
   styleId: z.string().min(1, 'Vui lòng chọn style'),
@@ -200,11 +192,7 @@ export function MaternityDressFormDialog({ open, onOpenChange, currentRow }: Mat
                       Hình ảnh *
                     </FormLabel>
                     <FormControl>
-                      <FirebaseImageUpload
-                        value={images}
-                        onChange={setImages}
-                        className='w-full'
-                      />
+                      <FirebaseImageUpload value={images} onChange={setImages} className='w-full' />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

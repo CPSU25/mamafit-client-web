@@ -4,13 +4,7 @@ import { Table } from '@tanstack/react-table'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { X, Search, Filter, Download, Calendar as CalendarIcon } from 'lucide-react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { DateRange } from 'react-day-picker'
 import { DateRangePicker } from '@/components/date-range-picker'
@@ -26,9 +20,7 @@ export function TransactionTableToolbar<TData>({ table, onDateRangeChange }: Tra
 
   // Get unique gateways for filter dropdown
   const gateways = Array.from(
-    new Set(
-      table.getCoreRowModel().rows.map((row) => (row.getValue('gateway') as string))
-    )
+    new Set(table.getCoreRowModel().rows.map((row) => row.getValue('gateway') as string))
   ).filter(Boolean)
 
   return (
@@ -110,13 +102,20 @@ export function TransactionTableToolbar<TData>({ table, onDateRangeChange }: Tra
       <div className='flex items-center gap-2'>
         {/* Selected rows count */}
         {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <Badge variant='secondary' className='bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'>
+          <Badge
+            variant='secondary'
+            className='bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'
+          >
             {table.getFilteredSelectedRowModel().rows.length} được chọn
           </Badge>
         )}
 
         {/* Export Button */}
-        <Button variant='outline' size='sm' className='border-violet-300 text-violet-700 hover:bg-violet-50 dark:hover:bg-violet-950/20'>
+        <Button
+          variant='outline'
+          size='sm'
+          className='border-violet-300 text-violet-700 hover:bg-violet-50 dark:hover:bg-violet-950/20'
+        >
           <Download className='mr-2 h-4 w-4' />
           Xuất CSV
         </Button>
