@@ -65,14 +65,17 @@ export function TransactionTable({ columns, data, onDateRangeChange }: Transacti
   return (
     <div className='space-y-2'>
       {/* Search Filter and Toolbar */}
-  <TransactionTableToolbar<Transaction> table={table} onDateRangeChange={onDateRangeChange} />
+      <TransactionTableToolbar<Transaction> table={table} onDateRangeChange={onDateRangeChange} />
 
       {/* Table */}
       <div className='rounded-md border border-violet-200 dark:border-violet-800 shadow-sm'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className='group/row bg-violet-50/50 dark:bg-violet-950/20 hover:bg-violet-50 dark:hover:bg-violet-950/30'>
+              <TableRow
+                key={headerGroup.id}
+                className='group/row bg-violet-50/50 dark:bg-violet-950/20 hover:bg-violet-50 dark:hover:bg-violet-950/30'
+              >
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
@@ -116,7 +119,10 @@ export function TransactionTable({ columns, data, onDateRangeChange }: Transacti
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center border-violet-100 dark:border-violet-900'>
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center border-violet-100 dark:border-violet-900'
+                >
                   <div className='flex flex-col items-center gap-2 text-muted-foreground'>
                     <span>Không có giao dịch nào được tìm thấy.</span>
                     <span className='text-sm'>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</span>

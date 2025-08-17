@@ -19,26 +19,56 @@ function GatewayIcon({ gateway }: { gateway: string }) {
   const getGatewayInfo = (gateway: string) => {
     switch (gateway.toLowerCase()) {
       case 'gift card':
-        return { icon: '🎁', color: 'from-pink-500 to-pink-600', bgColor: 'from-pink-100 to-pink-50 dark:from-pink-900/30 dark:to-pink-950/30' }
+        return {
+          icon: '🎁',
+          color: 'from-pink-500 to-pink-600',
+          bgColor: 'from-pink-100 to-pink-50 dark:from-pink-900/30 dark:to-pink-950/30'
+        }
       case 'coupon':
-        return { icon: '🎫', color: 'from-orange-500 to-orange-600', bgColor: 'from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-950/30' }
+        return {
+          icon: '🎫',
+          color: 'from-orange-500 to-orange-600',
+          bgColor: 'from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-950/30'
+        }
       case 'cod':
-        return { icon: '💵', color: 'from-green-500 to-green-600', bgColor: 'from-green-100 to-green-50 dark:from-green-900/30 dark:to-green-950/30' }
+        return {
+          icon: '💵',
+          color: 'from-green-500 to-green-600',
+          bgColor: 'from-green-100 to-green-50 dark:from-green-900/30 dark:to-green-950/30'
+        }
       case 'upi':
-        return { icon: '📱', color: 'from-blue-500 to-blue-600', bgColor: 'from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-950/30' }
+        return {
+          icon: '📱',
+          color: 'from-blue-500 to-blue-600',
+          bgColor: 'from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-950/30'
+        }
       case 'debit card':
-        return { icon: '💳', color: 'from-purple-500 to-purple-600', bgColor: 'from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-950/30' }
+        return {
+          icon: '💳',
+          color: 'from-purple-500 to-purple-600',
+          bgColor: 'from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-950/30'
+        }
       case 'cash':
-        return { icon: '💰', color: 'from-yellow-500 to-yellow-600', bgColor: 'from-yellow-100 to-yellow-50 dark:from-yellow-900/30 dark:to-yellow-950/30' }
+        return {
+          icon: '💰',
+          color: 'from-yellow-500 to-yellow-600',
+          bgColor: 'from-yellow-100 to-yellow-50 dark:from-yellow-900/30 dark:to-yellow-950/30'
+        }
       default:
-        return { icon: '🏦', color: 'from-gray-500 to-gray-600', bgColor: 'from-gray-100 to-gray-50 dark:from-gray-900/30 dark:to-gray-950/30' }
+        return {
+          icon: '🏦',
+          color: 'from-gray-500 to-gray-600',
+          bgColor: 'from-gray-100 to-gray-50 dark:from-gray-900/30 dark:to-gray-950/30'
+        }
     }
   }
 
   const { icon, bgColor } = getGatewayInfo(gateway)
 
   return (
-    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${bgColor} flex items-center justify-center border-2 border-violet-200 dark:border-violet-800 shadow-sm`}>
+    <div
+      className={`w-10 h-10 rounded-lg bg-gradient-to-br ${bgColor} flex items-center justify-center border-2 border-violet-200 dark:border-violet-800 shadow-sm`}
+    >
       <span className='text-lg'>{icon}</span>
     </div>
   )
@@ -150,9 +180,7 @@ export const columns: ColumnDef<Transaction>[] = [
         <div className='flex items-center gap-3'>
           <GatewayIcon gateway={gateway} />
           <div className='flex flex-col'>
-            <Badge className={cn('font-semibold', getGatewayBadgeColor(gateway))}>
-              {gateway}
-            </Badge>
+            <Badge className={cn('font-semibold', getGatewayBadgeColor(gateway))}>{gateway}</Badge>
           </div>
         </div>
       )
@@ -173,9 +201,7 @@ export const columns: ColumnDef<Transaction>[] = [
             <TooltipTrigger asChild>
               <div className='flex items-center gap-2'>
                 <DollarSign className='h-4 w-4 text-green-600' />
-                <span className='font-bold text-green-600 text-lg'>
-                  {formatCurrency(amount)}
-                </span>
+                <span className='font-bold text-green-600 text-lg'>{formatCurrency(amount)}</span>
               </div>
             </TooltipTrigger>
             <TooltipContent>

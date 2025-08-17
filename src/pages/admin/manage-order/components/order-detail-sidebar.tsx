@@ -523,7 +523,8 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                       key={imgIndex}
                                       src={imageUrl}
                                       alt={`Design request image ${imgIndex + 1}`}
-                                      className='aspect-square rounded-lg border-2 border-violet-200 dark:border-violet-700'
+                                      containerClassName='aspect-square w-16 rounded-lg border-2 border-violet-200 dark:border-violet-700'
+                                      imgClassName='p-1'
                                     />
                                   ))}
                                 </div>
@@ -572,7 +573,8 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                             <ProductImageViewer
                               src={item.preset?.images?.[0] || item.maternityDressDetail?.images?.[0] || ''}
                               alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
-                              className='w-16 h-16 rounded-lg border-2 border-violet-200 dark:border-violet-700'
+                              containerClassName='aspect-square w-16 rounded-lg border-2 border-violet-200 dark:border-violet-700'
+                              imgClassName='px-2'
                             />
                             <div className='flex-1 min-w-0 space-y-1'>
                               <h4 className='font-semibold text-sm text-foreground truncate'>{item.preset.name}</h4>

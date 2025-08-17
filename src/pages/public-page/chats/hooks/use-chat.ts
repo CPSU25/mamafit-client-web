@@ -65,7 +65,7 @@ export function useChat(): UseChatReturn {
       try {
         setError(null)
         const result = await createRoomMutation.mutateAsync({ userId1, userId2 })
-        setLastCreatedRoomId(result.id) // <-- Track phòng vừa tạo
+        setLastCreatedRoomId(result.id) //
         return result
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to create room'

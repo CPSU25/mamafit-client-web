@@ -16,7 +16,7 @@ interface CreateSystemAccountData {
   fullName: string
   password: string
   userEmail: string
-  jobTitle: string 
+  jobTitle: string
   phoneNumber: string
   roleId: string
 }
@@ -26,7 +26,7 @@ interface CreateUserData {
   userName: string
   userEmail: string
   fullName: string
-  jobTitle: string 
+  jobTitle: string
   phoneNumber: string
   roleName: string
   dateOfBirth?: string
