@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { DressTemplate } from '@/@types/designer.types'
-import { presetApi, transformPresetListItem, transformPresetDetail, PresetListParams } from '@/apis/preset.api'
+import { PresetFormData } from '@/@types/manage-template.types'
+import { presetApi, transformPresetListItem, transformPresetDetail, PresetListParams } from '@/apis/manage-template.api'
 
 // Query keys
 export const templateKeys = {
@@ -48,7 +49,7 @@ export const useCreateTemplate = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: presetApi.createPreset,
+    mutationFn: (data: PresetFormData) => presetApi.createPreset(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: templateKeys.all })
       toast.success('Tạo mẫu thiết kế thành công!')

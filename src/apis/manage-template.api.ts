@@ -1,46 +1,14 @@
 import { api } from '@/lib/axios/axios'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
-import { DressTemplate, ComponentOption } from '@/@types/designer.types'
+import { DressTemplate } from '@/@types/designer.types'
+import {
+  PresetDetailResponse,
+  PresetListItem,
+  SendPresetToDesignRequestResponse,
+  PresetFormData
+} from '@/@types/manage-template.types'
 
 // API Response interfaces based on actual API structure
-interface PresetListItem {
-  id: string
-  styleId: string
-  styleName: string
-  createdAt: string
-  createdBy: string
-  updatedAt: string
-  updatedBy: string
-  images: string[]
-  type: 'SYSTEM' | 'USER'
-  isDefault: boolean
-  price: number
-}
-
-interface PresetDetailResponse {
-  id: string
-  styleId: string
-  styleName: string
-  createdAt: string
-  createdBy: string
-  updatedAt: string
-  updatedBy: string
-  images: string[]
-  type: 'SYSTEM' | 'USER'
-  isDefault: boolean
-  price: number
-  componentOptions: ComponentOption[]
-}
-
-interface SendPresetToDesignRequestResponse {
-  success: boolean
-  message: string
-  data?: {
-    presetId: string
-    designRequestId: string
-    orderId: string
-  }
-}
 
 export interface PresetListParams {
   index?: number
@@ -67,7 +35,7 @@ export const presetApi = {
   },
 
   // Create new preset
-  createPreset: async (data: Partial<DressTemplate>): Promise<ItemBaseResponse<DressTemplate>> => {
+  createPreset: async (data: PresetFormData): Promise<ItemBaseResponse<[]>> => {
     const response = await api.post('/preset', data)
     return response.data
   },
@@ -124,5 +92,8 @@ export const transformPresetDetail = (item: PresetDetailResponse): DressTemplate
   type: item.type,
   isDefault: item.isDefault,
   price: item.price,
-  componentOptions: item.componentOptions
+  componentOptions: item.componentOptions?.map((option) => ({
+    ...option,
+    tag: Array.isArray(option.tag) ? option.tag.join(', ') : null
+  }))
 })

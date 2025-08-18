@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Upload, Palette, Sparkles } from 'lucide-react'
+import { Upload, Palette, Sparkles, Loader2, CheckCircle2, AlertCircle, DollarSign } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -11,296 +11,655 @@ import {
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { SingleImageUpload } from '@/components/ui/single-image-upload'
-// import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { useCreateTemplate } from '@/services/designer/template.service'
+import { useComponents, useComponent } from '@/services/admin/manage-component.service'
+import { useGetStyles } from '@/services/admin/category.service'
+import { PresetFormData } from '@/@types/manage-template.types'
+import { ComponentOptionType } from '@/@types/manage-component.types'
+import { StyleType } from '@/@types/manage-maternity-dress.types'
+import { toast } from 'sonner'
 
 interface CreatePresetModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSave?: (presetData: PresetData) => void
+  onSuccess?: () => void
 }
 
-interface PresetData {
-  image: string
-  collar: string
-  body: string
-  sleeves: string
-  skirt: string
+interface FormData {
+  styleId: string
+  images: string[]
+  price: number
+  isDefault: boolean
+  hemOptionId: string
+  necklineOptionId: string
+  waistOptionId: string
+  sleevesOptionId: string
+  fabricOptionId: string
+  colorOptionId: string
 }
 
-const componentOptions = {
-  collar: ['V-Neck', 'Round Neck', 'Scoop Neck', 'Boat Neck', 'Turtleneck'],
-  body: ['A-Line', 'Fitted', 'Empire Waist', 'Wrap Style', 'Straight Cut'],
-  sleeves: ['Sleeveless', 'Short Sleeve', 'Long Sleeve', '3/4 Sleeve', 'Cap Sleeve'],
-  skirt: ['A-Line', 'Pencil', 'Pleated', 'Flared', 'Straight']
+interface FormErrors {
+  styleId?: string
+  images?: string
+  price?: string
+  hemOptionId?: string
+  necklineOptionId?: string
+  waistOptionId?: string
+  sleevesOptionId?: string
+  fabricOptionId?: string
+  colorOptionId?: string
 }
 
+// Component colors mapping
 const componentColors = {
-  collar: 'bg-blue-500',
-  body: 'bg-green-500',
-  sleeves: 'bg-purple-500',
-  skirt: 'bg-orange-500'
+  Hem: 'bg-blue-500',
+  Neckline: 'bg-green-500',
+  Waist: 'bg-purple-500',
+  Sleeves: 'bg-orange-500',
+  Fabric: 'bg-pink-500',
+  Color: 'bg-indigo-500'
 }
 
 const componentLabels = {
-  collar: { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
-  body: { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' },
-  sleeves: { color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
-  skirt: { color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' }
+  Hem: { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+  Neckline: { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' },
+  Waist: { color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
+  Sleeves: { color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' },
+  Fabric: { color: 'text-pink-600', bg: 'bg-pink-50', border: 'border-pink-200' },
+  Color: { color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200' }
 }
 
-export default function CreatePresetModal({ open, onOpenChange, onSave }: CreatePresetModalProps) {
-  const [presetData, setPresetData] = useState<PresetData>({
-    image: '',
-    collar: '',
-    body: '',
-    sleeves: '',
-    skirt: ''
+export default function CreatePresetModal({ open, onOpenChange, onSuccess }: CreatePresetModalProps) {
+  const [formData, setFormData] = useState<FormData>({
+    styleId: '',
+    images: [],
+    price: 0,
+    isDefault: false,
+    hemOptionId: '',
+    necklineOptionId: '',
+    waistOptionId: '',
+    sleevesOptionId: '',
+    fabricOptionId: '',
+    colorOptionId: ''
   })
 
-  const handleSave = () => {
-    if (onSave) {
-      onSave(presetData)
+  const [errors, setErrors] = useState<FormErrors>({})
+  const createTemplateMutation = useCreateTemplate()
+
+  // Fetch styles data với filter isCustom = true
+  const { data: stylesData } = useGetStyles({
+    pageSize: 100
+  })
+
+  // Filter chỉ lấy những style có isCustom = true
+  const customStyles: StyleType[] = stylesData?.data?.items?.filter((style: StyleType) => style.isCustom === true) || []
+
+  // Fetch components data to get IDs first
+  const { data: componentsData, isLoading: isLoadingComponents } = useComponents({
+    pageSize: 100
+  })
+
+  // Get component IDs by name
+  const getComponentIdByName = (name: string): string | undefined => {
+    return componentsData?.data?.items.find((comp) => comp.name.toLowerCase() === name.toLowerCase())?.id
+  }
+
+  // Fetch component details with options
+  const hemComponentId = getComponentIdByName('Hem')
+  const necklineComponentId = getComponentIdByName('Neckline')
+  const waistComponentId = getComponentIdByName('Waist')
+  const sleevesComponentId = getComponentIdByName('Sleeves')
+  const fabricComponentId = getComponentIdByName('Fabric')
+  const colorComponentId = getComponentIdByName('Color')
+
+  const { data: hemComponent } = useComponent(hemComponentId || '')
+  const { data: necklineComponent } = useComponent(necklineComponentId || '')
+  const { data: waistComponent } = useComponent(waistComponentId || '')
+  const { data: sleevesComponent } = useComponent(sleevesComponentId || '')
+  const { data: fabricComponent } = useComponent(fabricComponentId || '')
+  const { data: colorComponent } = useComponent(colorComponentId || '')
+
+  // Extract options from component details
+  const hemOptions = hemComponent?.data?.options || []
+  const necklineOptions = necklineComponent?.data?.options || []
+  const waistOptions = waistComponent?.data?.options || []
+  const sleevesOptions = sleevesComponent?.data?.options || []
+  const fabricOptions = fabricComponent?.data?.options || []
+  const colorOptions = colorComponent?.data?.options || []
+
+  // Validate form
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {}
+
+    if (!formData.styleId) {
+      newErrors.styleId = 'Vui lòng chọn kiểu style'
     }
-    onOpenChange(false)
+
+    if (!formData.images.length) {
+      newErrors.images = 'Vui lòng tải lên ít nhất 1 hình ảnh'
+    }
+
+    if (formData.price <= 0) {
+      newErrors.price = 'Giá phải lớn hơn 0'
+    }
+
+    if (!formData.hemOptionId) {
+      newErrors.hemOptionId = 'Vui lòng chọn kiểu viền'
+    }
+
+    if (!formData.necklineOptionId) {
+      newErrors.necklineOptionId = 'Vui lòng chọn kiểu cổ áo'
+    }
+
+    if (!formData.waistOptionId) {
+      newErrors.waistOptionId = 'Vui lòng chọn kiểu eo'
+    }
+
+    if (!formData.sleevesOptionId) {
+      newErrors.sleevesOptionId = 'Vui lòng chọn kiểu tay áo'
+    }
+
+    if (!formData.fabricOptionId) {
+      newErrors.fabricOptionId = 'Vui lòng chọn chất liệu'
+    }
+
+    if (!formData.colorOptionId) {
+      newErrors.colorOptionId = 'Vui lòng chọn màu sắc'
+    }
+
+    return newErrors
+  }
+
+  // Handle form submission
+  const handleSubmit = async () => {
+    const validationErrors = validateForm()
+    setErrors(validationErrors)
+
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error('Vui lòng kiểm tra lại thông tin')
+      return
+    }
+
+    // Collect all selected component option IDs
+    const componentOptionIds = [
+      formData.hemOptionId,
+      formData.necklineOptionId,
+      formData.waistOptionId,
+      formData.sleevesOptionId,
+      formData.fabricOptionId,
+      formData.colorOptionId
+    ].filter(Boolean) // Remove empty strings
+    console.log('Selected component option IDs:', componentOptionIds)
+    const presetFormData: PresetFormData = {
+      sku: '',
+      styleId: formData.styleId,
+      images: formData.images,
+      type: 'SYSTEM',
+      isDefault: formData.isDefault,
+      price: formData.price,
+      componentOptionIds
+    }
+
+    try {
+      await createTemplateMutation.mutateAsync(presetFormData)
+
+      // Reset form
+      setFormData({
+        styleId: '',
+        images: [],
+        price: 0,
+        isDefault: false,
+        hemOptionId: '',
+        necklineOptionId: '',
+        waistOptionId: '',
+        sleevesOptionId: '',
+        fabricOptionId: '',
+        colorOptionId: ''
+      })
+      setErrors({})
+
+      onSuccess?.()
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Create preset failed:', error)
+    }
   }
 
   const handleImageChange = (value: string) => {
-    setPresetData((prev) => ({ ...prev, image: value }))
+    setFormData((prev) => ({ ...prev, images: [value] }))
+    if (errors.images) {
+      setErrors((prev) => ({ ...prev, images: undefined }))
+    }
   }
 
-  const handleComponentChange = (component: keyof Omit<PresetData, 'image'>, value: string) => {
-    setPresetData((prev) => ({ ...prev, [component]: value }))
+  const handleInputChange = (field: keyof FormData, value: string | number | boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (errors[field as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }))
+    }
   }
 
-  const isFormValid = presetData.image && presetData.collar && presetData.body && presetData.sleeves && presetData.skirt
+  const handleComponentChange = (
+    component:
+      | 'hemOptionId'
+      | 'necklineOptionId'
+      | 'waistOptionId'
+      | 'sleevesOptionId'
+      | 'fabricOptionId'
+      | 'colorOptionId',
+    value: string
+  ) => {
+    handleInputChange(component, value)
+  }
+
+  const isFormValid =
+    formData.styleId &&
+    formData.images.length > 0 &&
+    formData.price > 0 &&
+    formData.hemOptionId &&
+    formData.necklineOptionId &&
+    formData.waistOptionId &&
+    formData.sleevesOptionId &&
+    formData.fabricOptionId &&
+    formData.colorOptionId
+
+  const isLoading = createTemplateMutation.isPending || isLoadingComponents
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='w-[95vw] max-w-[1600px] !max-w-[1000px] max-h-[95vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50/30'>
+      <DialogContent className='sm:max-w-6xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50/30'>
         <DialogHeader className='text-center pb-4'>
           <DialogTitle className='text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center justify-center gap-3'>
             <Sparkles className='h-8 w-8 text-purple-500' />
-            Create New Preset
+            Tạo Preset Mới
           </DialogTitle>
           <DialogDescription className='text-lg text-gray-600 mt-3'>
-            Design a stunning dress preset by selecting components and uploading an image
+            Thiết kế một preset váy bầu tuyệt đẹp bằng cách chọn các thành phần và tải lên hình ảnh
           </DialogDescription>
         </DialogHeader>
 
-        <div className='relative grid grid-cols-12 gap-14 py-10'>
-          {/* SVG Overlay for Connection Lines */}
-          <svg className='absolute inset-0 w-full h-full pointer-events-none z-10' style={{ overflow: 'visible' }}>
-            <defs>
-              <marker id='arrowhead-blue' markerWidth='10' markerHeight='7' refX='9' refY='3.5' orient='auto'>
-                <polygon points='0 0, 10 3.5, 0 7' fill='#3B82F6' />
-              </marker>
-              <marker id='arrowhead-green' markerWidth='10' markerHeight='7' refX='9' refY='3.5' orient='auto'>
-                <polygon points='0 0, 10 3.5, 0 7' fill='#10B981' />
-              </marker>
-              <marker id='arrowhead-purple' markerWidth='10' markerHeight='7' refX='9' refY='3.5' orient='auto'>
-                <polygon points='0 0, 10 3.5, 0 7' fill='#8B5CF6' />
-              </marker>
-              <marker id='arrowhead-orange' markerWidth='10' markerHeight='7' refX='9' refY='3.5' orient='auto'>
-                <polygon points='0 0, 10 3.5, 0 7' fill='#F59E0B' />
-              </marker>
-            </defs>
+        {/* Style Selection */}
+        <div className='space-y-3 mb-6'>
+          <Label className='text-lg font-semibold text-gray-700 flex items-center gap-2'>
+            <Sparkles className='h-5 w-5 text-purple-500' />
+            Chọn Style *
+          </Label>
+          <Select value={formData.styleId} onValueChange={(value) => handleInputChange('styleId', value)}>
+            <SelectTrigger className={`h-12 text-base ${errors.styleId ? 'border-red-500' : ''}`}>
+              <SelectValue placeholder='Chọn style cho template...' />
+            </SelectTrigger>
+            <SelectContent>
+              {customStyles.map((style: StyleType) => (
+                <SelectItem key={style.id} value={style.id}>
+                  <div className='flex flex-col items-start gap-1 py-1'>
+                    <span className='font-medium text-sm'>{style.name}</span>
+                    {style.description && <span className='text-xs text-muted-foreground'>{style.description}</span>}
+                    <Badge variant='outline' className='text-xs'>
+                      Custom Style
+                    </Badge>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.styleId && (
+            <p className='text-sm text-red-500 flex items-center gap-1'>
+              <AlertCircle className='h-4 w-4' />
+              {errors.styleId}
+            </p>
+          )}
+        </div>
 
-            {/* Collar line - from left collar dropdown to top center of dress */}
-            <path
-              d='M 200 130 Q 410 10 470 100'
-              stroke='#3B82F6'
-              strokeWidth='2'
-              fill='none'
-              strokeDasharray='5,5'
-              markerEnd='url(#arrowhead-blue)'
-              className='animate-pulse'
+        {/* Price Input */}
+        <div className='mb-6'>
+          <div className='space-y-2'>
+            <Label htmlFor='price' className='text-lg font-semibold text-gray-700 flex items-center gap-2'>
+              <DollarSign className='h-5 w-5 text-green-500' />
+              Giá (VNĐ)
+            </Label>
+            <Input
+              id='price'
+              type='number'
+              placeholder='0'
+              value={formData.price || ''}
+              onChange={(e) => handleInputChange('price', Number(e.target.value))}
+              className={`h-12 text-base ${errors.price ? 'border-red-500 focus:border-red-500' : ''}`}
             />
+            {errors.price && (
+              <p className='text-sm text-red-500 flex items-center gap-1'>
+                <AlertCircle className='h-4 w-4' />
+                {errors.price}
+              </p>
+            )}
+          </div>
+        </div>
 
-            {/* Body line - from left body dropdown to center of dress */}
-            <path
-              d='M 200 330 Q 300 300 400 250'
-              stroke='#10B981'
-              strokeWidth='2'
-              fill='none'
-              strokeDasharray='5,5'
-              markerEnd='url(#arrowhead-green)'
-              className='animate-pulse'
+        {/* Checkbox Default */}
+        <div className='mb-6'>
+          <div className='flex items-center space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200'>
+            <Checkbox
+              id='isDefault'
+              checked={formData.isDefault}
+              onCheckedChange={(checked) => handleInputChange('isDefault', checked as boolean)}
             />
+            <Label htmlFor='isDefault' className='text-base text-blue-700 font-medium cursor-pointer'>
+              Đặt làm preset mặc định
+            </Label>
+          </div>
+        </div>
 
-            {/* Sleeves line - from right sleeves dropdown to shoulder area */}
-            <path
-              d='M 750 150 Q 700 100 580 140'
-              stroke='#8B5CF6'
-              strokeWidth='2'
-              fill='none'
-              strokeDasharray='5,5'
-              markerEnd='url(#arrowhead-purple)'
-              className='animate-pulse'
-            />
+        <Separator className='my-6' />
 
-            {/* Skirt line - from right skirt dropdown to bottom of dress */}
-            <path
-              d='M 790 400 Q 680 580 580 500'
-              stroke='#F59E0B'
-              strokeWidth='2'
-              fill='none'
-              strokeDasharray='5,5'
-              markerEnd='url(#arrowhead-orange)'
-              className='animate-pulse'
-            />
-          </svg>
+        {/* Main Layout */}
+        <div className='grid grid-cols-12 gap-8'>
+          {/* Left Column - Components */}
+          <div className='col-span-4 space-y-6'>
+            <h3 className='text-lg font-semibold text-gray-800 flex items-center gap-2'>
+              <Palette className='h-5 w-5' />
+              Thành Phần Dress
+            </h3>
 
-          {/* Left Column - Collar and Body */}
-          <div className='col-span-3 space-y-16'>
-            <div className='space-y-6'>
+            {/* Hem */}
+            <div className='space-y-3'>
               <div className='flex items-center gap-3'>
-                <div className={`w-4 h-4 rounded-full ${componentColors.collar}`}></div>
-                <Label htmlFor='collar' className={`text-xl font-semibold ${componentLabels.collar.color}`}>
-                  Collar Style
-                </Label>
+                <div className={`w-3 h-3 rounded-full ${componentColors.Hem}`}></div>
+                <Label className={`font-medium ${componentLabels.Hem.color}`}>Hem (Viền)</Label>
               </div>
-              <div
-                className={`p-6 rounded-xl border-2 ${componentLabels.collar.bg} ${componentLabels.collar.border} shadow-lg`}
-              >
-                <Select value={presetData.collar} onValueChange={(value) => handleComponentChange('collar', value)}>
-                  <SelectTrigger className='bg-white/80 border-gray-200 hover:border-blue-300 transition-colors h-12 text-base'>
-                    <SelectValue placeholder='Choose collar style' />
+              <div className={`p-4 rounded-lg border ${componentLabels.Hem.bg} ${componentLabels.Hem.border}`}>
+                <Select
+                  value={formData.hemOptionId}
+                  onValueChange={(value) => handleComponentChange('hemOptionId', value)}
+                >
+                  <SelectTrigger className={`bg-white h-10 ${errors.hemOptionId ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder='Chọn kiểu viền' />
                   </SelectTrigger>
                   <SelectContent>
-                    {componentOptions.collar.map((option) => (
-                      <SelectItem key={option} value={option} className='text-base'>
-                        {option}
+                    {hemOptions.map((option: ComponentOptionType) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.hemOptionId && (
+                  <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
+                    <AlertCircle className='h-3 w-3' />
+                    {errors.hemOptionId}
+                  </p>
+                )}
               </div>
             </div>
 
-            <div className='space-y-6'>
+            {/* Neckline */}
+            <div className='space-y-3'>
               <div className='flex items-center gap-3'>
-                <div className={`w-4 h-4 rounded-full ${componentColors.body}`}></div>
-                <Label htmlFor='body' className={`text-xl font-semibold ${componentLabels.body.color}`}>
-                  Body Style
-                </Label>
+                <div className={`w-3 h-3 rounded-full ${componentColors.Neckline}`}></div>
+                <Label className={`font-medium ${componentLabels.Neckline.color}`}>Neckline (Cổ áo)</Label>
               </div>
               <div
-                className={`p-6 rounded-xl border-2 ${componentLabels.body.bg} ${componentLabels.body.border} shadow-lg`}
+                className={`p-4 rounded-lg border ${componentLabels.Neckline.bg} ${componentLabels.Neckline.border}`}
               >
-                <Select value={presetData.body} onValueChange={(value) => handleComponentChange('body', value)}>
-                  <SelectTrigger className='bg-white/80 border-gray-200 hover:border-green-300 transition-colors h-12 text-base'>
-                    <SelectValue placeholder='Choose body style' />
+                <Select
+                  value={formData.necklineOptionId}
+                  onValueChange={(value) => handleComponentChange('necklineOptionId', value)}
+                >
+                  <SelectTrigger className={`bg-white h-10 ${errors.necklineOptionId ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder='Chọn kiểu cổ áo' />
                   </SelectTrigger>
                   <SelectContent>
-                    {componentOptions.body.map((option) => (
-                      <SelectItem key={option} value={option} className='text-base'>
-                        {option}
+                    {necklineOptions.map((option: ComponentOptionType) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.necklineOptionId && (
+                  <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
+                    <AlertCircle className='h-3 w-3' />
+                    {errors.necklineOptionId}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Waist */}
+            <div className='space-y-3'>
+              <div className='flex items-center gap-3'>
+                <div className={`w-3 h-3 rounded-full ${componentColors.Waist}`}></div>
+                <Label className={`font-medium ${componentLabels.Waist.color}`}>Waist (Eo)</Label>
+              </div>
+              <div className={`p-4 rounded-lg border ${componentLabels.Waist.bg} ${componentLabels.Waist.border}`}>
+                <Select
+                  value={formData.waistOptionId}
+                  onValueChange={(value) => handleComponentChange('waistOptionId', value)}
+                >
+                  <SelectTrigger className={`bg-white h-10 ${errors.waistOptionId ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder='Chọn kiểu eo' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {waistOptions.map((option: ComponentOptionType) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.waistOptionId && (
+                  <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
+                    <AlertCircle className='h-3 w-3' />
+                    {errors.waistOptionId}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Sleeves */}
+            <div className='space-y-3'>
+              <div className='flex items-center gap-3'>
+                <div className={`w-3 h-3 rounded-full ${componentColors.Sleeves}`}></div>
+                <Label className={`font-medium ${componentLabels.Sleeves.color}`}>Sleeves (Tay áo)</Label>
+              </div>
+              <div className={`p-4 rounded-lg border ${componentLabels.Sleeves.bg} ${componentLabels.Sleeves.border}`}>
+                <Select
+                  value={formData.sleevesOptionId}
+                  onValueChange={(value) => handleComponentChange('sleevesOptionId', value)}
+                >
+                  <SelectTrigger className={`bg-white h-10 ${errors.sleevesOptionId ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder='Chọn kiểu tay áo' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sleevesOptions.map((option: ComponentOptionType) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.sleevesOptionId && (
+                  <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
+                    <AlertCircle className='h-3 w-3' />
+                    {errors.sleevesOptionId}
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
           {/* Center Column - Image */}
-          <div className='col-span-6 flex flex-col items-center space-y-8'>
+          <div className='col-span-4 flex flex-col items-center space-y-6'>
             <div className='relative'>
-              <div className='relative w-[420px] h-[540px] bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-4 border-dashed border-gray-300 shadow-2xl overflow-hidden'>
-                {presetData.image ? (
-                  <img src={presetData.image} alt='Preset preview' className='w-full h-full object-cover' />
+              <div className='relative w-full h-[500px] bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-4 border-dashed border-gray-300 shadow-xl overflow-hidden'>
+                {formData.images.length > 0 ? (
+                  <img src={formData.images[0]} alt='Preset preview' className='w-full h-full object-cover' />
                 ) : (
-                  <div className='absolute inset-0 flex flex-col items-center justify-center text-center space-y-8'>
-                    <div className='w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center'>
-                      <Upload className='h-12 w-12 text-purple-500' />
+                  <div className='absolute inset-0 flex flex-col items-center justify-center text-center space-y-6'>
+                    <div className='w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center'>
+                      <Upload className='h-10 w-10 text-purple-500' />
                     </div>
-                    <div className='space-y-3'>
-                      <p className='text-2xl font-semibold text-gray-600'>Dress Image Preview</p>
-                      <p className='text-base text-gray-500'>Upload an image to see your design</p>
+                    <div className='space-y-2'>
+                      <p className='text-xl font-semibold text-gray-600'>Xem Trước Thiết Kế</p>
+                      <p className='text-sm text-gray-500'>Tải lên hình ảnh để xem thiết kế của bạn</p>
                     </div>
                   </div>
                 )}
-                Component indicators on the dress
               </div>
+              {errors.images && (
+                <p className='text-sm text-red-500 mt-2 text-center flex items-center justify-center gap-1'>
+                  <AlertCircle className='h-4 w-4' />
+                  {errors.images}
+                </p>
+              )}
             </div>
 
-            {/* Enhanced Image Upload Component */}
-            <div className='w-[420px] p-8 bg-white rounded-xl shadow-lg border border-gray-200'>
-              <div className='flex items-center gap-3 mb-6'>
-                <Palette className='h-6 w-6 text-purple-500' />
-                <h3 className='text-xl font-semibold text-gray-800'>Upload Design Image</h3>
+            {/* Image Upload */}
+            <div className='w-full p-6 bg-white rounded-xl shadow-lg border border-gray-200'>
+              <div className='flex items-center gap-3 mb-4'>
+                <Palette className='h-5 w-5 text-purple-500' />
+                <h3 className='text-lg font-semibold text-gray-800'>Tải Lên Hình Ảnh</h3>
               </div>
               <SingleImageUpload
-                value={presetData.image}
+                value={formData.images[0] || ''}
                 onChange={handleImageChange}
-                placeholder='Upload your dress design'
+                placeholder='Tải lên thiết kế váy của bạn'
                 className='w-full'
               />
             </div>
           </div>
 
-          {/* Right Column - Sleeves and Skirt */}
-          <div className='col-span-3 space-y-16'>
-            <div className='space-y-6'>
+          {/* Right Column - Fabric & Color */}
+          <div className='col-span-4 space-y-6'>
+            <h3 className='text-lg font-semibold text-gray-800 flex items-center gap-2'>
+              <Palette className='h-5 w-5' />
+              Chất Liệu & Màu Sắc
+            </h3>
+
+            {/* Fabric */}
+            <div className='space-y-3'>
               <div className='flex items-center gap-3'>
-                <div className={`w-4 h-4 rounded-full ${componentColors.sleeves}`}></div>
-                <Label htmlFor='sleeves' className={`text-xl font-semibold ${componentLabels.sleeves.color}`}>
-                  Sleeves Style
-                </Label>
+                <div className={`w-3 h-3 rounded-full ${componentColors.Fabric}`}></div>
+                <Label className={`font-medium ${componentLabels.Fabric.color}`}>Fabric (Chất liệu)</Label>
               </div>
-              <div
-                className={`p-6 rounded-xl border-2 ${componentLabels.sleeves.bg} ${componentLabels.sleeves.border} shadow-lg`}
-              >
-                <Select value={presetData.sleeves} onValueChange={(value) => handleComponentChange('sleeves', value)}>
-                  <SelectTrigger className='bg-white/80 border-gray-200 hover:border-purple-300 transition-colors h-12 text-base'>
-                    <SelectValue placeholder='Choose sleeve style' />
+              <div className={`p-4 rounded-lg border ${componentLabels.Fabric.bg} ${componentLabels.Fabric.border}`}>
+                <Select
+                  value={formData.fabricOptionId}
+                  onValueChange={(value) => handleComponentChange('fabricOptionId', value)}
+                >
+                  <SelectTrigger className={`bg-white h-10 ${errors.fabricOptionId ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder='Chọn chất liệu' />
                   </SelectTrigger>
                   <SelectContent>
-                    {componentOptions.sleeves.map((option) => (
-                      <SelectItem key={option} value={option} className='text-base'>
-                        {option}
+                    {fabricOptions.map((option: ComponentOptionType) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.fabricOptionId && (
+                  <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
+                    <AlertCircle className='h-3 w-3' />
+                    {errors.fabricOptionId}
+                  </p>
+                )}
               </div>
             </div>
 
-            <div className='space-y-6'>
+            {/* Color */}
+            <div className='space-y-3'>
               <div className='flex items-center gap-3'>
-                <div className={`w-4 h-4 rounded-full ${componentColors.skirt}`}></div>
-                <Label htmlFor='skirt' className={`text-xl font-semibold ${componentLabels.skirt.color}`}>
-                  Skirt Style
-                </Label>
+                <div className={`w-3 h-3 rounded-full ${componentColors.Color}`}></div>
+                <Label className={`font-medium ${componentLabels.Color.color}`}>Color (Màu sắc)</Label>
               </div>
-              <div
-                className={`p-6 rounded-xl border-2 ${componentLabels.skirt.bg} ${componentLabels.skirt.border} shadow-lg`}
-              >
-                <Select value={presetData.skirt} onValueChange={(value) => handleComponentChange('skirt', value)}>
-                  <SelectTrigger className='bg-white/80 border-gray-200 hover:border-orange-300 transition-colors h-12 text-base'>
-                    <SelectValue placeholder='Choose skirt style' />
+              <div className={`p-4 rounded-lg border ${componentLabels.Color.bg} ${componentLabels.Color.border}`}>
+                <Select
+                  value={formData.colorOptionId}
+                  onValueChange={(value) => handleComponentChange('colorOptionId', value)}
+                >
+                  <SelectTrigger className={`bg-white h-10 ${errors.colorOptionId ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder='Chọn màu sắc' />
                   </SelectTrigger>
                   <SelectContent>
-                    {componentOptions.skirt.map((option) => (
-                      <SelectItem key={option} value={option} className='text-base'>
-                        {option}
+                    {colorOptions.map((option: ComponentOptionType) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.colorOptionId && (
+                  <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
+                    <AlertCircle className='h-3 w-3' />
+                    {errors.colorOptionId}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Selected Options Summary */}
+            <div className='p-4 bg-gray-50 rounded-lg border'>
+              <h4 className='font-medium text-gray-700 mb-3'>Tóm tắt lựa chọn:</h4>
+              <div className='space-y-2 text-sm'>
+                {formData.styleId && (
+                  <Badge variant='default' className='mr-2 bg-purple-500'>
+                    Style: {customStyles.find((s: StyleType) => s.id === formData.styleId)?.name}
+                  </Badge>
+                )}
+                {formData.hemOptionId && (
+                  <Badge variant='outline' className='mr-2'>
+                    Hem: {hemOptions.find((o: ComponentOptionType) => o.id === formData.hemOptionId)?.name}
+                  </Badge>
+                )}
+                {formData.necklineOptionId && (
+                  <Badge variant='outline' className='mr-2'>
+                    Cổ: {necklineOptions.find((o: ComponentOptionType) => o.id === formData.necklineOptionId)?.name}
+                  </Badge>
+                )}
+                {formData.waistOptionId && (
+                  <Badge variant='outline' className='mr-2'>
+                    Eo: {waistOptions.find((o: ComponentOptionType) => o.id === formData.waistOptionId)?.name}
+                  </Badge>
+                )}
+                {formData.sleevesOptionId && (
+                  <Badge variant='outline' className='mr-2'>
+                    Tay: {sleevesOptions.find((o: ComponentOptionType) => o.id === formData.sleevesOptionId)?.name}
+                  </Badge>
+                )}
+                {formData.fabricOptionId && (
+                  <Badge variant='outline' className='mr-2'>
+                    Vải: {fabricOptions.find((o: ComponentOptionType) => o.id === formData.fabricOptionId)?.name}
+                  </Badge>
+                )}
+                {formData.colorOptionId && (
+                  <Badge variant='outline' className='mr-2'>
+                    Màu: {colorOptions.find((o: ComponentOptionType) => o.id === formData.colorOptionId)?.name}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter className='bg-gray-50/50 -mx-6 -mb-6 px-8 py-6 rounded-b-lg'>
+        <DialogFooter className='bg-gray-50/50 -mx-6 -mb-6 px-8 py-6 rounded-b-lg mt-8'>
           <div className='flex items-center justify-between w-full'>
             <div className='flex items-center gap-3'>
-              <div className={`w-3 h-3 rounded-full ${isFormValid ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-              <span className={`text-base ${isFormValid ? 'text-green-600' : 'text-gray-500'}`}>
-                {isFormValid ? 'Ready to save' : 'Please complete all fields'}
-              </span>
+              {isFormValid ? (
+                <>
+                  <CheckCircle2 className='w-5 h-5 text-green-500' />
+                  <span className='text-base text-green-600 font-medium'>Sẵn sàng để lưu</span>
+                </>
+              ) : (
+                <>
+                  <AlertCircle className='w-5 h-5 text-gray-400' />
+                  <span className='text-base text-gray-500'>Vui lòng hoàn thành tất cả trường</span>
+                </>
+              )}
             </div>
             <div className='flex gap-4'>
               <Button
@@ -308,17 +667,27 @@ export default function CreatePresetModal({ open, onOpenChange, onSave }: Create
                 variant='outline'
                 onClick={() => onOpenChange(false)}
                 className='px-8 py-3 text-base hover:bg-gray-100'
+                disabled={isLoading}
               >
-                Cancel
+                Hủy
               </Button>
               <Button
                 type='button'
-                onClick={handleSave}
-                disabled={!isFormValid}
+                onClick={handleSubmit}
+                disabled={!isFormValid || isLoading}
                 className='px-10 py-3 text-base bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
               >
-                <Sparkles className='h-5 w-5 mr-2' />
-                Save Preset
+                {isLoading ? (
+                  <>
+                    <Loader2 className='h-5 w-5 mr-2 animate-spin' />
+                    Đang tạo...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className='h-5 w-5 mr-2' />
+                    Lưu Preset
+                  </>
+                )}
               </Button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ComponentByIdType, ComponentOptionType, ComponentType } from '@/@types/admin.types'
+import { ComponentByIdType, ComponentOptionType, ComponentType } from '@/@types/manage-component.types'
 
 const componentStatusSchema = z.union([z.literal('ACTIVE'), z.literal('INACTIVE')])
 export type ComponentStatus = z.infer<typeof componentStatusSchema>
@@ -11,14 +11,7 @@ const componentOptionSchema = z.object({
   componentId: z.string(),
   componentName: z.string(),
   price: z.number(),
-  tag: z
-    .object({
-      parentTag: z.array(z.string()),
-      childTag: z.array(z.string())
-    })
-    .nullable(),
   images: z.array(z.string()),
-  componentOptionType: z.enum(['APPROVED', 'PENDING', 'REJECTED', 'QUOTATION_PENDING']),
   createdBy: z.string(),
   updatedBy: z.string(),
   createdAt: z.union([z.string(), z.date()]),
@@ -75,9 +68,7 @@ export const transformComponentTypeToComponent = (apiComponent: ComponentByIdTyp
       componentId: option.componentId,
       componentName: option.componentName,
       price: option.price,
-      tag: option.tag || { parentTag: [], childTag: [] },
       images: option.images || [],
-      componentOptionType: option.componentOptionType,
       createdBy: option.createdBy,
       updatedBy: option.updatedBy,
       createdAt: option.createdAt,
@@ -91,4 +82,4 @@ export const transformComponentTypeToComponent = (apiComponent: ComponentByIdTyp
 }
 
 // Form data types (re-export from admin.types.ts for convenience)
-export type { ComponentTypeFormData, ComponentOptionFormData } from '@/@types/admin.types'
+export type { ComponentTypeFormData, ComponentOptionFormData } from '@/@types/manage-component.types'
