@@ -35,11 +35,15 @@ export const useWarrantyRequestById = (id: string, options?: { enabled?: boolean
 }
 
 export const useCreateBranchWarrantyRequest = () => {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: BranchWarrantyRequestForm) => warrantyAPI.createWarrantyRequest(data),
-    onSuccess: () => {},
+    onSuccess: () => {
+      toast.success('Tạo yêu cầu bảo hành thành công')
+      queryClient.invalidateQueries({ queryKey: warrantyKey.lists() })
+    },
     onError: () => {
-      // Handle error
+      toast.error('Tạo yêu cầu bảo hành thất bại')
     }
   })
 }

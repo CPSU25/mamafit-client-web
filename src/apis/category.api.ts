@@ -1,4 +1,4 @@
-import { CategoryFormData, CategoryType, StyleType, StyleFormData } from '@/@types/inventory.type'
+import { CategoryFormData, CategoryType, StyleType, StyleFormData } from '@/@types/manage-maternity-dress.types'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { api } from '@/lib/axios/axios'
 

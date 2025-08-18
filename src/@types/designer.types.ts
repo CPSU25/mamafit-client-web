@@ -2,6 +2,7 @@
 
 export interface PresetType {
   name: string | null
+  sku: string | null
   id: string
   styleName: string
   styleId: string

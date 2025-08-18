@@ -1,5 +1,5 @@
 import { api } from '@/lib/axios/axios'
-import { StyleType, StyleFormData } from '@/@types/inventory.type'
+import { StyleType, StyleFormData } from '@/@types/manage-maternity-dress.types'
 import { ListBaseResponse, ItemBaseResponse } from '@/@types/response'
 
 interface StyleQueryParams {

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { CategoryFormData, StyleFormData } from '@/@types/inventory.type'
+import { CategoryFormData, StyleFormData } from '@/@types/manage-maternity-dress.types'
 import categoryAPI from '@/apis/category.api'
 import { styleAPI } from '@/apis'
 import { toast } from 'sonner'
@@ -139,19 +139,6 @@ export const useUpdateCategory = () => {
   })
 }
 
-// Get Styles
-export const useGetStyles = (params?: StyleQueryParams) => {
-  return useQuery({
-    queryKey: ['styles', 'list', params || {}],
-    queryFn: async () => {
-      const response = await styleAPI.getStyles(params)
-      if (response.data.statusCode === 200) {
-        return response.data
-      }
-      throw new Error(response.data.message || 'Failed to fetch styles')
-    }
-  })
-}
 // Delete Category
 export const useDeleteCategory = () => {
   const queryClient = useQueryClient()
@@ -188,6 +175,34 @@ export const useDeleteCategory = () => {
   })
 }
 
+//-------Style--------
+// Get Styles
+export const useGetStyles = (params?: StyleQueryParams) => {
+  return useQuery({
+    queryKey: ['styles', 'list', params || {}],
+    queryFn: async () => {
+      const response = await styleAPI.getStyles(params)
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      toast.error(response.data.message || 'Failed to fetch style')
+    }
+  })
+}
+//Get Style by Id
+export const useGetStyleById = (id: string) => {
+  return useQuery({
+    queryKey: ['style', id],
+    enabled: !!id,
+    queryFn: async () => {
+      const response = await styleAPI.getStyleById(id)
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      toast.error(response.data.message || 'Failed to fetch style')
+    }
+  })
+}
 // Create Style
 export const useCreateStyle = () => {
   const queryClient = useQueryClient()
@@ -224,7 +239,39 @@ export const useCreateStyle = () => {
     }
   })
 }
+//Update style
+export const useUpdateStyle = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: StyleFormData }) => {
+      const response = await styleAPI.updateStyle(id, data)
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      throw new Error(response.data.message || 'Failed to update style')
+    },
+    onSuccess: (data, variables) => {
+      // Comprehensive cache invalidation
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all })
 
+      // Update specific category detail if exists
+      queryClient.setQueryData(categoryKeys.detail(variables.id), data)
+
+      toast.success('Cập nhật danh mục thành công!')
+    },
+    onError: (error) => {
+      console.error('Update category error:', error)
+      toast.error('Cập nhật danh mục thất bại!')
+    },
+    retry: (failureCount, error: unknown) => {
+      const status = (error as { response?: { status?: number } })?.response?.status
+      if (status && status >= 400 && status < 500) {
+        return false
+      }
+      return failureCount < 2
+    }
+  })
+}
 // Delete Style
 export const useDeleteStyle = () => {
   const queryClient = useQueryClient()

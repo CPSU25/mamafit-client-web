@@ -472,7 +472,7 @@ export default function OrderDetailPage() {
                           <div className='flex items-center justify-between'>
                             <div className='flex items-center gap-4'>
                               <ProductImageViewer
-                                src={item.preset?.images?.[0] || item.maternityDressDetail?.images?.[0] || ''}
+                                src={item.preset?.images?.[0] || item.maternityDressDetail?.image?.[0] || ''}
                                 alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
                                 thumbnailClassName='w-12 h-12 rounded-md'
                               />

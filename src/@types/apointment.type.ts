@@ -52,8 +52,6 @@ export interface Branch {
 export enum AppointmentStatus {
   UP_COMING = 'UP_COMING',
   CANCELED = 'CANCELED',
-  COMPLETED = 'COMPLETED',
-  IN_PROGRESS = 'IN_PROGRESS',
   CHECKED_IN = 'CHECKED_IN',
   CHECKED_OUT = 'CHECKED_OUT'
 }

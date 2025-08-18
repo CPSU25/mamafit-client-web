@@ -28,7 +28,7 @@ function ImageMessage({ message, isCurrentUser }: { message: string; isCurrentUs
                 key={index}
                 src={imageUrl}
                 alt={`Hình ảnh ${index + 1}`}
-                className='w-full'
+                containerClassName='w-full'
                 thumbnailClassName='w-full h-24 object-cover rounded'
                 title={`Hình ảnh ${index + 1}`}
               />

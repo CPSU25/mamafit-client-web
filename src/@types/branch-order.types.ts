@@ -1,6 +1,6 @@
 import HttpStatusCode from '@/lib/utils/httpStatusCode.enum'
 import { PresetType } from './designer.types'
-import { MaternityDressDetailType } from './inventory.type'
+import { MaternityDressDetailType } from './manage-maternity-dress.types'
 import {
   DesignRequestType,
   ItemType,

@@ -23,12 +23,13 @@ export interface StyleFormData {
 export interface MaternityDress {
   id: string
   styleId: string
+  sku: string | null
   name: string
   description: string
   price: number
   images: string[]
   slug: string
-  status: 'Draft' | 'Incomplete' | 'Complete'
+  globalStatus: 'ACTIVE' | 'INACTIVE'
   createdAt: Date
   updatedAt?: Date
 }
@@ -36,6 +37,7 @@ export interface MaternityDress {
 export interface MaternityDressVariant {
   id: string
   maternityDressId: string
+  sku: string
   name: string
   description: string
   color: string

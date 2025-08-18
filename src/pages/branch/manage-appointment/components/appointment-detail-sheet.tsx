@@ -32,11 +32,7 @@ export const AppointmentDetailSheet = ({
   const getStatusBadge = (status: AppointmentStatus) => {
     const statusConfig = {
       [AppointmentStatus.UP_COMING]: { label: 'Sắp tới', className: 'bg-sky-500/10 text-sky-500 border-sky-500/20' },
-      [AppointmentStatus.IN_PROGRESS]: {
-        label: 'Đang diễn ra',
-        className: 'bg-green-500/10 text-green-500 border-green-500/20'
-      },
-      [AppointmentStatus.COMPLETED]: { label: 'Hoàn thành', className: 'bg-muted text-muted-foreground border-border' },
+
       [AppointmentStatus.CANCELED]: {
         label: 'Đã hủy',
         className: 'bg-destructive/10 text-destructive border-destructive/20'
@@ -70,12 +66,12 @@ export const AppointmentDetailSheet = ({
             <CheckCircle className='mr-2 h-4 w-4' /> Bắt đầu phục vụ
           </Button>
         )}
-        {appointment.status === AppointmentStatus.IN_PROGRESS && (
+        {appointment.status === AppointmentStatus.CHECKED_IN && (
           <Button onClick={() => onCheckOut(appointment.id)} className='w-full bg-sky-500 hover:bg-sky-600 text-white'>
             <LogOut className='mr-2 h-4 w-4' /> Hoàn thành phục vụ
           </Button>
         )}
-        {![AppointmentStatus.COMPLETED, AppointmentStatus.CANCELED].includes(appointment.status) && (
+        {![AppointmentStatus.CHECKED_OUT, AppointmentStatus.CANCELED].includes(appointment.status) && (
           <Button variant='destructive' onClick={() => onCancel(appointment.id)} className='w-full'>
             <XCircle className='mr-2 h-4 w-4' /> Hủy lịch hẹn
           </Button>

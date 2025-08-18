@@ -14,17 +14,6 @@ import { MaternityDressPrimaryButtons } from './components/maternity-dress-prima
 import { MaternityDressTable } from './components/maternity-dress-table'
 import MaternityDressProvider from './context/maternity-dress-context'
 
-// Helper function để format tiền VNĐ
-const formatCurrency = (amount: number): string => {
-  return (
-    new Intl.NumberFormat('vi-VN', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount) + ' VNĐ'
-  )
-}
-
 export default function ManageMaternityDressPage() {
   const [queryParams] = useState({
     index: 0,
@@ -38,13 +27,12 @@ export default function ManageMaternityDressPage() {
 
   // Calculate statistics
   const totalMaternityDresses = maternityDressList.length
-  const activeMaternityDresses = maternityDressList.filter((dress) => dress.status === 'ACTIVE').length
+  const activeMaternityDresses = maternityDressList.filter((dress) => dress.globalStatus === 'ACTIVE').length
   const maternityDressesWithImages = maternityDressList.filter(
     (dress) => dress.images && dress.images.length > 0
   ).length
   const utilizationRate =
     totalMaternityDresses > 0 ? Math.round((activeMaternityDresses / totalMaternityDresses) * 100) : 0
-  const totalValue = maternityDressList.reduce((sum, dress) => sum + dress.price, 0)
 
   if (isLoading) {
     return (
@@ -52,8 +40,8 @@ export default function ManageMaternityDressPage() {
         <div className='flex items-center justify-center h-[calc(100vh-200px)]'>
           <div className='text-center space-y-4'>
             <div className='relative'>
-              <div className='animate-spin rounded-full h-16 w-16 border-4 border-pink-200 border-t-pink-600 mx-auto'></div>
-              <Package className='h-8 w-8 text-pink-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' />
+              <div className='animate-spin rounded-full h-16 w-16 border-4 border-violet-200 border-t-violet-600 mx-auto'></div>
+              <Package className='h-8 w-8 text-violet-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' />
             </div>
             <div>
               <p className='text-lg font-medium text-foreground'>Đang tải đầm bầu...</p>
@@ -103,16 +91,16 @@ export default function ManageMaternityDressPage() {
           <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
             <div className='space-y-1'>
               <div className='flex items-center gap-2'>
-                <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center shadow-lg'>
+                <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg'>
                   <Package className='h-6 w-6 text-white' />
                 </div>
                 <div>
-                  <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-pink-600 to-pink-500 bg-clip-text text-transparent'>
+                  <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
                     Quản Lý Đầm Bầu
                   </h1>
                   <p className='text-sm text-muted-foreground flex items-center gap-1'>
                     Quản lý các mẫu đầm bầu trong hệ thống
-                    <Sparkles className='h-3 w-3 text-pink-500' />
+                    <Sparkles className='h-3 w-3 text-violet-500' />
                   </p>
                 </div>
               </div>
@@ -122,15 +110,15 @@ export default function ManageMaternityDressPage() {
 
           {/* Statistics Cards */}
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-            <Card className='border-pink-200 dark:border-pink-800 bg-gradient-to-br from-pink-50 to-white dark:from-pink-950/30 dark:to-background hover:shadow-lg transition-all duration-300'>
+            <Card className='border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/30 dark:to-background hover:shadow-lg transition-all duration-300'>
               <CardContent className='p-4'>
                 <div className='flex items-center justify-between'>
                   <div className='space-y-1'>
                     <p className='text-sm font-medium text-muted-foreground'>Tổng đầm bầu</p>
-                    <p className='text-2xl font-bold text-pink-600 dark:text-pink-400'>{totalMaternityDresses}</p>
+                    <p className='text-2xl font-bold text-violet-600 dark:text-violet-400'>{totalMaternityDresses}</p>
                   </div>
-                  <div className='h-12 w-12 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center'>
-                    <Package className='h-6 w-6 text-pink-600 dark:text-pink-400' />
+                  <div className='h-12 w-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center'>
+                    <Package className='h-6 w-6 text-violet-600 dark:text-violet-400' />
                   </div>
                 </div>
               </CardContent>
@@ -175,13 +163,12 @@ export default function ManageMaternityDressPage() {
               <CardContent className='p-4'>
                 <div className='flex items-center justify-between'>
                   <div className='space-y-1'>
-                    <p className='text-sm font-medium text-muted-foreground'>Tổng giá trị</p>
+                    <p className='text-sm font-medium text-muted-foreground'>Tỷ lệ tăng trưởng</p>
                     <div className='flex items-baseline gap-2'>
-                      <p className='text-xl font-bold text-orange-600 dark:text-orange-400'>
-                        {formatCurrency(totalValue)}
-                      </p>
+                      <p className='text-2xl font-bold text-orange-600 dark:text-orange-400'>+8%</p>
+                      <TrendingUp className='h-4 w-4 text-orange-500' />
                     </div>
-                    <p className='text-xs text-muted-foreground'>Giá trị sản phẩm</p>
+                    <p className='text-xs text-muted-foreground'>So với tháng trước</p>
                   </div>
                   <div className='h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center'>
                     <TrendingUp className='h-6 w-6 text-orange-600 dark:text-orange-400' />
@@ -193,7 +180,7 @@ export default function ManageMaternityDressPage() {
         </div>
 
         {/* Table Section with Enhanced Styling */}
-        <Card className='border-0 shadow-xl bg-gradient-to-br from-background via-background to-pink-50/30 dark:to-pink-950/10'>
+        <Card className='border-0 shadow-xl bg-gradient-to-br from-background via-background to-violet-50/30 dark:to-violet-950/10'>
           <CardContent className='p-0'>
             <div className='p-6 space-y-4'>
               <MaternityDressTable data={maternityDressList} columns={columns} />

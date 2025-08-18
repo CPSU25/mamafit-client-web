@@ -2,6 +2,7 @@ import {
   AssignCharge,
   AssignTask,
   checkListStatus,
+  FindOrderBySKUAndCodeResponse,
   OrderById,
   OrderItemById,
   OrderStatus,
@@ -49,7 +50,11 @@ const ManageOrderAPI = {
 
   // Orders created from a Design Request (grouped by designRequestId)
   getOrdersByDesignRequest: (designRequestId: string) =>
-    api.get<ItemBaseResponse<OrderType[]>>(`/order/order-group-designRequest/${designRequestId}`)
+    api.get<ItemBaseResponse<OrderType[]>>(`/order/order-group-designRequest/${designRequestId}`),
+
+  //Find order by SKU and OrderCode
+  findOrder: (sku: string, orderCode: string) =>
+    api.get<ItemBaseResponse<FindOrderBySKUAndCodeResponse>>(`/order/by-sku-and-code?sku=${sku}&code=${orderCode}`)
 }
 
 export default ManageOrderAPI
