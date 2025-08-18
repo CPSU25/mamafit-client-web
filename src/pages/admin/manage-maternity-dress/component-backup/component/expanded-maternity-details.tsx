@@ -32,7 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 import { useMaternityDressStore } from '@/stores/admin/maternity-dress.store'
-import { MaternityDressDetailFormData, MaternityDressDetailType } from '@/@types/inventory.type'
+import { MaternityDressDetailFormData, MaternityDressDetailType } from '@/@types/manage-maternity-dress.types'
 import {
   useGetMaternityDressDetail,
   useCreateMaternityDressDetail,
@@ -218,7 +218,7 @@ export default function ExpendMaternityDressDetails() {
       maternityDressId: '',
       name: '',
       description: '',
-      images: [],
+      image: [],
       color: '',
       size: '',
       quantity: 0,
@@ -651,7 +651,7 @@ export default function ExpendMaternityDressDetails() {
 
                           <FormField
                             control={form.control}
-                            name='images'
+                            name='image'
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className='font-medium flex items-center gap-2'>
@@ -753,16 +753,16 @@ export default function ExpendMaternityDressDetails() {
                         </Button>
 
                         <CardContent className='p-0'>
-                          {detail.images && detail.images.length > 0 ? (
+                          {detail.image && detail.image.length > 0 ? (
                             <div className='relative overflow-hidden'>
                               <DetailProductImage
-                                src={detail.images[0]}
+                                src={detail.image[0]}
                                 alt={detail.name}
                                 className='w-full h-56 object-cover'
                               />
-                              {detail.images.length > 1 && (
+                                {detail.image.length > 1 && (
                                 <Badge variant='secondary' className='absolute bottom-3 left-3 backdrop-blur-sm'>
-                                  +{detail.images.length - 1} ảnh
+                                  +{detail.image.length - 1} ảnh
                                 </Badge>
                               )}
                             </div>
@@ -920,9 +920,9 @@ export default function ExpendMaternityDressDetails() {
                           className='flex items-center justify-between p-6 rounded-2xl border hover:shadow-sm transition-all duration-200'
                         >
                           <div className='flex items-center gap-6'>
-                            {detail.images && detail.images.length > 0 && (
+                              {detail.image && detail.image.length > 0 && (
                               <DetailProductImage
-                                src={detail.images[0]}
+                                src={detail.image[0]}
                                 alt={detail.name}
                                 className='w-16 h-16 rounded-xl object-cover border'
                               />

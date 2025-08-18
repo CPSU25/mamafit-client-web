@@ -112,5 +112,5 @@ export interface BranchWarrantyRequestItemForm {
   orderItemId: string
   description: string
   images: string[]
-  video: string[]
+  videos: string[]
 }

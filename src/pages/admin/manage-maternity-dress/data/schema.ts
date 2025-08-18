@@ -1,8 +1,5 @@
 import { z } from 'zod'
-import { MaternityDressList, MaternityDressType } from '@/@types/inventory.type'
-
-const maternityDressStatusSchema = z.union([z.literal('ACTIVE'), z.literal('INACTIVE')])
-export type MaternityDressStatus = z.infer<typeof maternityDressStatusSchema>
+import { MaternityDressList, MaternityDressType } from '@/@types/manage-maternity-dress.types'
 
 const maternityDressSchema = z.object({
   id: z.string(),
@@ -16,7 +13,7 @@ const maternityDressSchema = z.object({
   updatedAt: z.union([z.string(), z.date()]),
   createdBy: z.string(),
   updatedBy: z.string().nullable(),
-  status: maternityDressStatusSchema.optional().default('ACTIVE')
+  globalStatus: z.enum(['ACTIVE', 'INACTIVE']).optional()
 })
 
 export type MaternityDress = z.infer<typeof maternityDressSchema>
@@ -36,7 +33,7 @@ export const transformMaternityDressTypeToMaternityDress = (apiMaternityDress: M
     updatedAt: apiMaternityDress.updatedAt,
     createdBy: apiMaternityDress.createdBy,
     updatedBy: apiMaternityDress.updatedBy,
-    status: 'ACTIVE'
+    globalStatus: apiMaternityDress.globalStatus || 'INACTIVE'
   }
 }
 
@@ -53,9 +50,9 @@ export const transformMaternityDressListToMaternityDress = (apiMaternityDress: M
     updatedAt: apiMaternityDress.updatedAt,
     createdBy: apiMaternityDress.createdBy,
     updatedBy: apiMaternityDress.updatedBy,
-    status: 'ACTIVE'
+    globalStatus: apiMaternityDress.globalStatus
   }
 }
 
 // Form data types (re-export from inventory.type.ts for convenience)
-export type { MaternityDressFormData } from '@/@types/inventory.type'
+export type { MaternityDressFormData } from '@/@types/manage-maternity-dress.types'

@@ -34,21 +34,28 @@ export interface StyleFormData {
 export interface MaternityDressDetailType {
   id: string
   name: string
+  sku: string
   description: string
-  images: string[]
+  image: string[]
   color: string
   size: string
   quantity: number
   price: number
 }
+export enum GlobalStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE'
+}
 export interface MaternityDressType {
   id: string
   styleName: string
   name: string
+  sku: string | null
   description: string
   images: Array<string>
   slug: string
   price: number
+  globalStatus: GlobalStatus
   createdAt: Date | string
   updatedAt: Date | string
   createdBy: string
@@ -64,6 +71,8 @@ export type MaternityDressList = Pick<
   | 'images'
   | 'slug'
   | 'price'
+  | 'sku'
+  | 'globalStatus'
   | 'createdAt'
   | 'updatedAt'
   | 'createdBy'
@@ -74,6 +83,7 @@ export type MaternityDressDetail = Pick<
   | 'id'
   | 'styleName'
   | 'name'
+  | 'sku'
   | 'description'
   | 'images'
   | 'slug'
@@ -97,7 +107,7 @@ export interface MaternityDressDetailFormData {
   maternityDressId: string
   name: string
   description: string
-  images: string[]
+  image: string[]
   color: string
   size: string
   price: number

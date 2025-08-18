@@ -6,7 +6,7 @@
 import { MeasurementType } from '@/pages/staff/manage-task/tasks/types'
 import { PresetType } from './designer.types'
 import { AddressType } from './global.types'
-import { MaternityDressDetailType } from './inventory.type'
+import { MaternityDressDetailType } from './manage-maternity-dress.types'
 import { MilestoneType } from './admin.types'
 import HttpStatusCode from '@/lib/utils/httpStatusCode.enum'
 
@@ -122,6 +122,10 @@ export interface OrderById extends OrderType {
   items: Array<OrderItemType>
   address?: AddressType
   measurementDiary: MeasurementDiaryType
+}
+
+export interface FindOrderBySKUAndCodeResponse extends OrderType {
+  items: Array<OrderItemType>
 }
 
 export interface MeasurementDiaryType {

@@ -144,9 +144,12 @@ export function CloudinaryImageUpload({
   }
 
   // Update parent khi images thay đổi (trừ những cái đang uploading)
+  // Lưu ý: không đưa updateParent vào deps để tránh loop khi parent truyền onChange mới mỗi render
   useEffect(() => {
-    updateParent(images)
-  }, [images, updateParent])
+    const urls = images.filter((img) => !img.isUploading).map((img) => img.url)
+    onChange(urls)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [images])
 
   const canUpload = images.length < maxFiles && !disabled && isConfigured
 
@@ -177,7 +180,7 @@ export function CloudinaryImageUpload({
         onDrop={handleDrop}
         onClick={() => canUpload && fileInputRef.current?.click()}
       >
-        <Upload className='mx-auto h-12 w-12 text-gray-400 mb-4' />
+        <Upload className='mx-auto h-12 w-12 text-gray-400 mb-4' aria-hidden='true' />
         <p className='text-sm text-gray-600 mb-2'>
           {!canUpload
             ? disabled
@@ -229,7 +232,7 @@ export function CloudinaryImageUpload({
               <div className='aspect-square rounded-lg overflow-hidden border bg-gray-100'>
                 {image.isUploading ? (
                   <div className='w-full h-full flex items-center justify-center'>
-                    <Loader2 className='h-8 w-8 animate-spin text-gray-400' />
+                    <Loader2 className='h-8 w-8 animate-spin text-gray-400' aria-hidden='true' />
                   </div>
                 ) : (
                   <img
@@ -261,8 +264,9 @@ export function CloudinaryImageUpload({
                       removeImage(image.id)
                     }}
                     disabled={disabled}
+                    aria-label='Xóa ảnh'
                   >
-                    <X className='h-3 w-3' />
+                    <X className='h-3 w-3' aria-hidden='true' />
                   </Button>
                 )}
 

@@ -30,8 +30,8 @@ function MaternityDressImage({ src, alt, count }: { src: string; alt: string; co
   if (!src) {
     return (
       <div className='relative group'>
-        <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-pink-100 to-pink-50 dark:from-pink-900/30 dark:to-pink-950/30 flex items-center justify-center border-2 border-pink-200 dark:border-pink-800 shadow-sm group-hover:shadow-md transition-all duration-300'>
-          <Package className='h-7 w-7 text-pink-500 dark:text-pink-400' />
+        <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-violet-100 to-violet-50 dark:from-violet-900/30 dark:to-violet-950/30 flex items-center justify-center border-2 border-violet-200 dark:border-violet-800 shadow-sm group-hover:shadow-md transition-all duration-300'>
+          <Package className='h-7 w-7 text-violet-500 dark:text-violet-400' />
         </div>
       </div>
     )
@@ -43,18 +43,18 @@ function MaternityDressImage({ src, alt, count }: { src: string; alt: string; co
         <img
           src={src}
           alt={alt}
-          className='w-14 h-14 rounded-xl object-cover border-2 border-pink-200 dark:border-pink-800 shadow-md group-hover:shadow-xl group-hover:scale-105 transition-all duration-300'
+          className='w-14 h-14 rounded-xl object-cover border-2 border-violet-200 dark:border-violet-800 shadow-md group-hover:shadow-xl group-hover:scale-105 transition-all duration-300'
           onError={(e) => {
             const target = e.target as HTMLImageElement
             target.style.display = 'none'
             target.nextElementSibling?.classList.remove('hidden')
           }}
         />
-        <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-pink-100 to-pink-50 dark:from-pink-900/30 dark:to-pink-950/30 flex items-center justify-center hidden border-2 border-pink-200 dark:border-pink-800'>
-          <Package className='h-7 w-7 text-pink-500 dark:text-pink-400' />
+        <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-violet-100 to-violet-50 dark:from-violet-900/30 dark:to-violet-950/30 items-center justify-center hidden border-2 border-violet-200 dark:border-violet-800'>
+          <Package className='h-7 w-7 text-violet-500 dark:text-violet-400' />
         </div>
         {count > 1 && (
-          <div className='absolute -top-2 -right-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg'>
+          <div className='absolute -top-2 -right-2 bg-gradient-to-r from-violet-500 to-violet-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg'>
             +{count - 1}
           </div>
         )}
@@ -71,14 +71,14 @@ export const columns: ColumnDef<MaternityDress>[] = [
         checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label='Select all'
-        className='translate-y-[2px] border-pink-300 data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600'
+        className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
         data-action-button='true'
       />
     ),
     meta: {
       className: cn(
         'sticky md:table-cell left-12 z-10 rounded-tl w-12',
-        'bg-background transition-colors duration-200 group-hover/row:bg-pink-50/50 dark:group-hover/row:bg-pink-950/20 group-data-[state=selected]/row:bg-pink-50 dark:group-data-[state=selected]/row:bg-pink-950/30'
+        'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30'
       )
     },
     cell: ({ row }) => (
@@ -86,7 +86,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label='Select row'
-        className='translate-y-[2px] border-pink-300 data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600'
+        className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
         data-action-button='true'
       />
     ),
@@ -99,7 +99,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
       <DataTableColumnHeader
         column={column}
         title='Tên Đầm Bầu'
-        className='text-pink-700 dark:text-pink-300 font-semibold'
+        className='text-violet-700 dark:text-violet-300 font-semibold'
       />
     ),
     cell: ({ row }) => {
@@ -109,8 +109,8 @@ export const columns: ColumnDef<MaternityDress>[] = [
 
       return (
         <div className='flex items-center gap-3'>
-          <Avatar className='h-10 w-10 border-2 border-pink-200 dark:border-pink-800'>
-            <AvatarFallback className='bg-gradient-to-br from-pink-500 to-pink-600 text-white font-bold text-sm'>
+          <Avatar className='h-10 w-10 border-2 border-violet-200 dark:border-violet-800'>
+            <AvatarFallback className='bg-gradient-to-br from-violet-500 to-violet-600 text-white font-bold text-sm'>
               {firstLetter}
             </AvatarFallback>
           </Avatar>
@@ -132,7 +132,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
-        'bg-background transition-colors duration-200 group-hover/row:bg-pink-50/50 dark:group-hover/row:bg-pink-950/20 group-data-[state=selected]/row:bg-pink-50 dark:group-data-[state=selected]/row:bg-pink-950/30',
+        'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30',
         'sticky left-24 md:table-cell'
       )
     },
@@ -141,7 +141,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
   {
     accessorKey: 'description',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Mô Tả' className='text-pink-700 dark:text-pink-300' />
+      <DataTableColumnHeader column={column} title='Mô Tả' className='text-violet-700 dark:text-violet-300' />
     ),
     cell: ({ row }) => {
       const description = row.getValue('description') as string
@@ -173,7 +173,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
-        'bg-background transition-colors duration-200 group-hover/row:bg-pink-50/50 dark:group-hover/row:bg-pink-950/20 group-data-[state=selected]/row:bg-pink-50 dark:group-data-[state=selected]/row:bg-pink-950/30',
+        'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30',
         'sticky left-6 md:table-cell'
       )
     },
@@ -182,7 +182,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
   {
     accessorKey: 'images',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Hình Ảnh' className='text-pink-700 dark:text-pink-300' />
+      <DataTableColumnHeader column={column} title='Hình Ảnh' className='text-violet-700 dark:text-violet-300' />
     ),
     cell: ({ row }) => {
       const images = row.getValue('images') as string[]
@@ -205,14 +205,14 @@ export const columns: ColumnDef<MaternityDress>[] = [
   {
     accessorKey: 'price',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Giá' className='text-pink-700 dark:text-pink-300' />
+      <DataTableColumnHeader column={column} title='Giá' className='text-violet-700 dark:text-violet-300' />
     ),
     cell: ({ row }) => {
       const price = row.getValue('price') as number
 
       return (
         <div className='flex items-center gap-2'>
-          <Sparkles className='h-4 w-4 text-pink-500' />
+          <Sparkles className='h-4 w-4 text-violet-500' />
           <span className='font-semibold text-foreground'>{formatCurrency(price)}</span>
         </div>
       )
@@ -221,12 +221,12 @@ export const columns: ColumnDef<MaternityDress>[] = [
     enableHiding: false
   },
   {
-    accessorKey: 'status',
+    accessorKey: 'globalStatus',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Trạng Thái' className='text-pink-700 dark:text-pink-300' />
+      <DataTableColumnHeader column={column} title='Trạng Thái' className='text-violet-700 dark:text-violet-300' />
     ),
     cell: ({ row }) => {
-      const status = (row.getValue('status') as string) || 'ACTIVE'
+      const status = (row.getValue('globalStatus') as string) || 'ACTIVE'
       const isActive = status === 'ACTIVE'
 
       return (
@@ -252,7 +252,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
   {
     accessorKey: 'createdAt',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Ngày Tạo' className='text-pink-700 dark:text-pink-300' />
+      <DataTableColumnHeader column={column} title='Ngày Tạo' className='text-violet-700 dark:text-violet-300' />
     ),
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as string
@@ -264,7 +264,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
           <Tooltip>
             <TooltipTrigger asChild>
               <div className='flex items-center gap-2 text-sm'>
-                <Calendar className='h-4 w-4 text-pink-500' />
+                <Calendar className='h-4 w-4 text-violet-500' />
                 <span className='font-medium'>{formattedDate}</span>
               </div>
             </TooltipTrigger>
