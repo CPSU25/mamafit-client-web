@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+import Tiptap from '@/components/TipTap/TipTap'
 import {
+  FileText,
   ImageIcon,
   Loader2,
-  Package,
   Palette,
   Plus,
   Ruler,
@@ -216,22 +216,41 @@ export const MaternityDressDetailAction: React.FC<MaternityDressDetailActionProp
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name='description'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className='font-medium flex items-center gap-2'>
-                    <Package className='h-4 w-4' aria-hidden='true' />
-                    Mô Tả Chi Tiết
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea placeholder='Mô tả chi tiết...' rows={4} className='resize-none' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Card className='border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50/50 to-background dark:from-blue-950/20'>
+              <CardHeader className='pb-4'>
+                <CardTitle className='flex items-center gap-2 text-base'>
+                  <FileText className='h-4 w-4 text-blue-500' />
+                  Mô tả biến thể
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name='description'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className='w-full'>
+                          <Tiptap
+                            onChange={(content: string) => {
+                              field.onChange(content)
+                            }}
+                            initialValue={field.value || ''}
+                            className='min-h-[200px] w-full'
+                            placeholder='Mô tả chi tiết về biến thể: đặc điểm nổi bật, phù hợp với ai...'
+                          />
+                        </div>
+                      </FormControl>
+                      <div className='flex justify-between text-xs text-muted-foreground mt-2'>
+                        <span>Mô tả chi tiết giúp khách hàng hiểu rõ hơn về biến thể này</span>
+                        <span>{field.value?.replace(/<[^>]*>/g, '').length || 0} ký tự</span>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
 
             <FormField
               control={form.control}

@@ -136,7 +136,6 @@ export const useDeleteMaternityDress = () => {
         ([key, data]) => ({ key: key as QueryKey, data })
       )
 
-      // Optimistically remove item from lists
       affectedLists.forEach(([key, data]) => {
         if (!data || !data.data?.items) return
         const items = (data.data.items as MaternityDressList[]).filter((it) => it.id !== deletedId)
@@ -235,13 +234,10 @@ export const useUpdateMaternityDressDetail = () => {
       throw new Error(response.data.message || 'Failed to update maternity dress')
     },
     onSuccess: (_, variables) => {
-      // Invalidate the detail query for the specific maternity dress
       queryClient.invalidateQueries({
         queryKey: maternityDressKeys.maternityDressDetail(variables.data.maternityDressId)
       })
-      // Also invalidate the list
       queryClient.invalidateQueries({ queryKey: maternityDressKeys.all })
-      toast.success('Cập nhật chi tiết sản phẩm thành công!')
     },
     onError: (error) => {
       console.error('Update maternity dress detail error:', error)

@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,6 +22,7 @@ import { MaternityDress } from '../data/schema'
 import { useCreateMaternityDress, useUpdateMaternityDress } from '@/services/admin/maternity-dress.service'
 import { useGetStyles, useGetStyleById } from '@/services/admin/category.service'
 import { FirebaseImageUpload } from '@/components/firebase-image-upload'
+import Tiptap from '@/components/TipTap/TipTap'
 
 // Function to generate slug from Vietnamese text
 const generateSlug = (text: string): string => {
@@ -167,7 +167,7 @@ export function MaternityDressFormDialog({ open, onOpenChange, currentRow }: Mat
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[800px] max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='sm:max-w-[1000px] max-h-[90vh] overflow-y-auto'>
         <DialogHeader className='pb-4'>
           <DialogTitle className='flex items-center gap-3'>
             <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg'>
@@ -189,159 +189,160 @@ export function MaternityDressFormDialog({ open, onOpenChange, currentRow }: Mat
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-              {/* Left Column - Basic Info */}
-              <div className='space-y-6'>
-                <Card className='border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50/50 to-background dark:from-violet-950/20'>
-                  <CardHeader className='pb-4'>
-                    <CardTitle className='flex items-center gap-2 text-base'>
-                      <Sparkles className='h-4 w-4 text-violet-500' />
-                      Thông tin cơ bản
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className='space-y-4'>
-                    {/* Style Selection */}
-                    <FormField
-                      control={form.control}
-                      name='styleId'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='flex items-center gap-2 font-medium'>
-                            <Package className='h-4 w-4 text-muted-foreground' />
-                            Chọn style *
-                          </FormLabel>
-                          <FormControl>
-                            <div>
-                              <Select value={field.value ?? ''} onValueChange={field.onChange} disabled={stylesLoading}>
-                                <SelectTrigger className='w-full h-auto min-h-[2.5rem]'>
-                                  <SelectValue
-                                    placeholder={stylesLoading ? 'Đang tải styles...' : 'Chọn style cho đầm bầu'}
-                                  />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {styles.map((style) => (
-                                    <SelectItem key={style.id} value={style.id}>
-                                      <div className='flex flex-col items-start gap-1 py-1'>
-                                        <span className='font-medium text-sm'>{style.name}</span>
-                                        {style.description && (
-                                          <span className='text-xs text-muted-foreground leading-tight max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap'>
-                                            {style.description}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </FormControl>
-                          {selectedStyle && (
-                            <div className='mt-2 rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground'>
-                              <div className='font-medium text-foreground'>{selectedStyle.name}</div>
-                              {selectedStyle.description && (
-                                <div className='line-clamp-2'>{selectedStyle.description}</div>
-                              )}
-                            </div>
-                          )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Name */}
-                    <FormField
-                      control={form.control}
-                      name='name'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='flex items-center gap-2 font-medium'>
-                            <FileText className='h-4 w-4 text-muted-foreground' />
-                            Tên đầm bầu *
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder='VD: Đầm bầu công sở thanh lịch...'
-                              className='h-10'
-                              value={field.value ?? ''}
-                              onChange={field.onChange}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Slug */}
-                    <FormField
-                      control={form.control}
-                      name='slug'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='flex items-center gap-2 font-medium'>
-                            <Hash className='h-4 w-4 text-muted-foreground' />
-                            URL Slug *
-                            {!isEdit && (
-                              <span className='text-xs text-violet-600 bg-violet-100 px-2 py-1 rounded-md'>
-                                Tự động tạo
-                              </span>
+            {/* Basic Info Section - Full Width */}
+            <Card className='border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50/50 to-background dark:from-violet-950/20'>
+              <CardHeader className='pb-4'>
+                <CardTitle className='flex items-center gap-2 text-base'>
+                  <Sparkles className='h-4 w-4 text-violet-500' />
+                  Thông tin cơ bản
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  {/* Style Selection */}
+                  <FormField
+                    control={form.control}
+                    name='styleId'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='flex items-center gap-2 font-medium'>
+                          <Package className='h-4 w-4 text-muted-foreground' />
+                          Chọn style *
+                        </FormLabel>
+                        <FormControl>
+                          <div>
+                            <Select value={field.value ?? ''} onValueChange={field.onChange} disabled={stylesLoading}>
+                              <SelectTrigger className='w-full h-auto min-h-[2.5rem]'>
+                                <SelectValue
+                                  placeholder={stylesLoading ? 'Đang tải styles...' : 'Chọn style cho đầm bầu'}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {styles.map((style) => (
+                                  <SelectItem key={style.id} value={style.id}>
+                                    <div className='flex flex-col items-start gap-1 py-1'>
+                                      <span className='font-medium text-sm'>{style.name}</span>
+                                      {style.description && (
+                                        <span className='text-xs text-muted-foreground leading-tight max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap'>
+                                          {style.description}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </FormControl>
+                        {selectedStyle && (
+                          <div className='mt-2 rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground'>
+                            <div className='font-medium text-foreground'>{selectedStyle.name}</div>
+                            {selectedStyle.description && (
+                              <div className='line-clamp-2'>{selectedStyle.description}</div>
                             )}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder='dam-bau-cong-so-thanh-lich'
-                              className='h-10 font-mono text-sm'
-                              value={field.value ?? ''}
-                              onChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className='text-xs text-muted-foreground mt-1'>
-                            URL thân thiện cho SEO.{' '}
-                            {!isEdit ? 'Tự động tạo từ tên đầm bầu.' : 'Có thể chỉnh sửa thủ công.'}
                           </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* Right Column - Details */}
-              <div className='space-y-6'>
-                {/* Description */}
-                <Card className='border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50/50 to-background dark:from-blue-950/20'>
-                  <CardHeader className='pb-4'>
-                    <CardTitle className='flex items-center gap-2 text-base'>
-                      <FileText className='h-4 w-4 text-blue-500' />
-                      Mô tả sản phẩm
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <FormField
-                      control={form.control}
-                      name='description'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Textarea
-                              placeholder='Mô tả chi tiết về đầm bầu: chất liệu, phong cách, ưu điểm...'
-                              className='min-h-[140px] resize-none leading-relaxed'
-                              value={field.value ?? ''}
-                              onChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className='flex justify-between text-xs text-muted-foreground mt-2'>
-                            <span>Mô tả chi tiết giúp khách hàng hiểu rõ hơn về sản phẩm</span>
-                            <span>{field.value?.length || 0} ký tự</span>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+                  {/* Name */}
+                  <FormField
+                    control={form.control}
+                    name='name'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='flex items-center gap-2 font-medium'>
+                          <FileText className='h-4 w-4 text-muted-foreground' />
+                          Tên đầm bầu *
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder='VD: Đầm bầu công sở thanh lịch...'
+                            className='h-10'
+                            value={field.value ?? ''}
+                            onChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Slug - Full width */}
+                <div className='mt-4'>
+                  <FormField
+                    control={form.control}
+                    name='slug'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='flex items-center gap-2 font-medium'>
+                          <Hash className='h-4 w-4 text-muted-foreground' />
+                          URL Slug *
+                          {!isEdit && (
+                            <span className='text-xs text-violet-600 bg-violet-100 px-2 py-1 rounded-md'>
+                              Tự động tạo
+                            </span>
+                          )}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder='dam-bau-cong-so-thanh-lich'
+                            className='h-10 font-mono text-sm'
+                            value={field.value ?? ''}
+                            onChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className='text-xs text-muted-foreground mt-1'>
+                          URL thân thiện cho SEO.{' '}
+                          {!isEdit ? 'Tự động tạo từ tên đầm bầu.' : 'Có thể chỉnh sửa thủ công.'}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Description Section - Full Width */}
+            <Card className='border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50/50 to-background dark:from-blue-950/20'>
+              <CardHeader className='pb-4'>
+                <CardTitle className='flex items-center gap-2 text-base'>
+                  <FileText className='h-4 w-4 text-blue-500' />
+                  Mô tả sản phẩm
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name='description'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className='w-full'>
+                          <Tiptap
+                            onChange={(content: string) => {
+                              field.onChange(content)
+                            }}
+                            initialValue={field.value || ''}
+                            className='min-h-[250px] w-full'
+                            placeholder='Mô tả chi tiết về đầm bầu: chất liệu, phong cách, ưu điểm...'
+                          />
+                        </div>
+                      </FormControl>
+                      <div className='flex justify-between text-xs text-muted-foreground mt-2'>
+                        <span>Mô tả chi tiết giúp khách hàng hiểu rõ hơn về sản phẩm</span>
+                        <span>{field.value?.replace(/<[^>]*>/g, '').length || 0} ký tự</span>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
 
             {/* Images Section - Full Width */}
             <Card className='border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50/50 to-background dark:from-green-950/20'>

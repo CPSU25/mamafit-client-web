@@ -19,7 +19,8 @@ import {
   Eye,
   Image as ImageIcon,
   FileText,
-  Sparkles
+  Sparkles,
+  Store
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,14 +32,18 @@ import { toast } from 'sonner'
 import { MaternityDressDetailAction } from './maternity-dress-detail-action'
 import { MaternityDressDetailEditDialog } from './maternity-dress-detail-edit-dialog'
 import { MaternityDressDetailViewDialog } from './maternity-dress-detail-view-dialog'
+import { BranchAllocationDialog } from './branch-allocation-dialog'
 import { useGetConfigs } from '@/services/global/system-config.service'
+import ExpandableHtmlContent from '@/components/expandable-html-content'
 
 interface ExpandedMaternityDressDetailsProps {
   maternityDressId: string
 }
 
+// Component để hiển thị HTML với tính năng mở rộng/thu gọn
+
 // Enhanced Component riêng để xử lý hình ảnh tránh vòng lặp
-function DetailProductImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+export const DetailProductImage = ({ src, alt, className }: { src: string; alt: string; className?: string }) => {
   const [imgSrc, setImgSrc] = useState(src)
   const [hasError, setHasError] = useState(false)
 
@@ -66,7 +71,7 @@ function DetailProductImage({ src, alt, className }: { src: string; alt: string;
 }
 
 // Enhanced Component để hiển thị gallery hình ảnh
-function ImageGallery({ images, productName }: { images: string[]; productName: string }) {
+export const ImageGallery = ({ images, productName }: { images: string[]; productName: string }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showAllImages, setShowAllImages] = useState(false)
 
@@ -446,7 +451,9 @@ export function ExpandedMaternityDressDetails({ maternityDressId }: ExpandedMate
                         </span>
                       </div>
                       {maternityDress.description ? (
-                        <p className='text-sm leading-relaxed text-muted-foreground'>{maternityDress.description}</p>
+                        <div className='max-w-full overflow-hidden'>
+                          <ExpandableHtmlContent content={maternityDress.description} maxLength={300} />
+                        </div>
                       ) : (
                         <p className='text-sm italic text-muted-foreground'>Chưa có mô tả chi tiết cho sản phẩm này.</p>
                       )}
@@ -564,7 +571,7 @@ export function ExpandedMaternityDressDetails({ maternityDressId }: ExpandedMate
                               (detail.quantity || 0) > 10
                                 ? 'default'
                                 : (detail.quantity || 0) > 0
-                                  ? 'secondary'
+                                  ? 'outline'
                                   : 'destructive'
                             }
                             className='absolute top-3 left-3 backdrop-blur-sm'
@@ -663,32 +670,50 @@ export function ExpandedMaternityDressDetails({ maternityDressId }: ExpandedMate
                               Mô tả
                             </span>
                           </div>
-                          <p className='text-sm text-muted-foreground line-clamp-3 leading-relaxed'>
-                            {detail.description}
-                          </p>
+                          <div className='max-w-full overflow-hidden'>
+                            <ExpandableHtmlContent content={detail.description} maxLength={150} />
+                          </div>
                         </div>
                       )}
 
                       {/* Action Buttons */}
-                      <div className='flex gap-2 pt-2'>
-                        <MaternityDressDetailEditDialog
+                      <div className='space-y-2 pt-2'>
+                        {/* Hàng đầu tiên: Edit và View */}
+                        <div className='flex gap-2'>
+                          <MaternityDressDetailEditDialog
+                            detail={detail}
+                            maternityDressId={maternityDressId}
+                            colors={colors}
+                            sizes={sizes}
+                            trigger={
+                              <Button variant='outline' size='sm' className='flex-1 h-9'>
+                                <Settings className='h-4 w-4 mr-2' />
+                                Chỉnh sửa
+                              </Button>
+                            }
+                          />
+                          <MaternityDressDetailViewDialog
+                            detail={detail}
+                            trigger={
+                              <Button variant='outline' size='sm' className='flex-1 h-9'>
+                                <Eye className='h-4 w-4 mr-2' />
+                                Xem chi tiết
+                              </Button>
+                            }
+                          />
+                        </div>
+
+                        {/* Hàng thứ hai: Branch Allocation */}
+                        <BranchAllocationDialog
                           detail={detail}
-                          maternityDressId={maternityDressId}
-                          colors={colors}
-                          sizes={sizes}
                           trigger={
-                            <Button variant='outline' size='sm' className='flex-1 h-9'>
-                              <Settings className='h-4 w-4 mr-2' />
-                              Chỉnh sửa
-                            </Button>
-                          }
-                        />
-                        <MaternityDressDetailViewDialog
-                          detail={detail}
-                          trigger={
-                            <Button variant='outline' size='sm' className='flex-1 h-9'>
-                              <Eye className='h-4 w-4 mr-2' />
-                              Xem chi tiết
+                            <Button
+                              variant='outline'
+                              size='sm'
+                              className='w-full h-9 bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-300 text-blue-700'
+                            >
+                              <Store className='h-4 w-4 mr-2' />
+                              Phân bổ chi nhánh
                             </Button>
                           }
                         />
