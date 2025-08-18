@@ -198,11 +198,19 @@ export interface ComponentTypeFormData {
 }
 
 //Milestone Type
+export enum ApplyFor {
+  READY_TO_BUY = 'READY_TO_BUY',
+  PRESET = 'PRESET',
+  DESIGN_REQUEST = 'DESIGN_REQUEST',
+  WARRANTY = 'WARRANTY',
+  ADD_ON = 'ADD_ON',
+  QC_FAIL = 'QC_FAIL'
+}
 export interface MilestoneType {
   id: string
   name: string
   description: string
-  applyFor: Array<string>
+  applyFor: Array<ApplyFor>
   sequenceOrder: number
   createdAt: string
   updatedAt: string
@@ -225,7 +233,7 @@ export interface TaskType {
 export interface MilestoneFormData {
   name: string
   description: string
-  applyFor: Array<string>
+  applyFor: Array<ApplyFor>
   sequenceOrder: number
 }
 export interface TaskFormData {

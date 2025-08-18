@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { applyForOptions } from '../data/data'
 import { Milestone } from '../data/schema'
+import { ApplyFor } from '@/@types/admin.types'
 import { useCreateMilestone, useUpdateMilestone } from '@/services/admin/manage-milestone.service'
 
 const milestoneFormSchema = z.object({
@@ -69,14 +70,14 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
           id: currentRow.id,
           data: {
             ...data,
-            applyFor: data.applyFor || []
+            applyFor: (data.applyFor || []) as ApplyFor[]
           }
         })
         toast.success('Milestone updated successfully!')
       } else {
         await createMilestoneMutation.mutateAsync({
           ...data,
-          applyFor: data.applyFor || []
+          applyFor: (data.applyFor || []) as ApplyFor[]
         })
         toast.success('Milestone created successfully!')
       }
@@ -103,13 +104,11 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
     >
       <DialogContent className='sm:max-w-[700px]'>
         <DialogHeader className='space-y-3'>
-          <DialogTitle className='text-2xl font-bold'>
-            {isEditing ? 'Edit Milestone' : 'Create New Milestone'}
+          <DialogTitle className='text-xl font-bold bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
+            {currentRow ? 'Chỉnh Sửa Mốc Nhiệm Vụ' : 'Thêm Mốc Nhiệm Vụ Mới'}
           </DialogTitle>
-          <DialogDescription className='text-base'>
-            {isEditing
-              ? 'Update milestone information. Click save to apply changes.'
-              : 'Enter information to create a new milestone. Click create to complete.'}
+          <DialogDescription className='text-muted-foreground'>
+            {currentRow ? 'Cập nhật thông tin mốc nhiệm vụ hiện tại.' : 'Tạo mốc nhiệm vụ mới cho hệ thống.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -118,18 +117,18 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
             <form id='milestone-form' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
               {/* Basic Information Card */}
               <Card className='border-l-4 border-l-blue-500'>
-                <CardContent className='pt-6'>
-                  <h3 className='text-lg font-semibold mb-4 text-gray-800'>Basic Information</h3>
+                <CardContent className=''>
+                  <h3 className='text-lg font-semibold mb-4 text-gray-800'>Thông tin cơ bản</h3>
                   <div className='grid grid-cols-2 gap-6'>
                     <FormField
                       control={form.control}
                       name='name'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-sm font-medium'>Milestone Name *</FormLabel>
+                          <FormLabel className='text-sm font-medium text-foreground'>Tên Mốc Nhiệm Vụ</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder='Enter milestone name'
+                              placeholder='Nhập tên mốc nhiệm vụ...'
                               {...field}
                               disabled={isLoading}
                               className='focus:ring-2 focus:ring-blue-500 focus:border-transparent'
@@ -145,7 +144,7 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
                       name='sequenceOrder'
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className='text-sm font-medium'>Sequence Order *</FormLabel>
+                          <FormLabel className='text-sm font-medium'>Thứ tự *</FormLabel>
                           <FormControl>
                             <Input
                               type='number'
@@ -168,7 +167,7 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
 
               {/* Apply For Card */}
               <Card className='border-l-4 border-l-green-500'>
-                <CardContent className='pt-6'>
+                <CardContent className=''>
                   <FormField
                     control={form.control}
                     name='applyFor'
@@ -176,9 +175,9 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
                       <FormItem>
                         <div className='space-y-4'>
                           <div>
-                            <FormLabel className='text-lg font-semibold text-gray-800'>Apply For *</FormLabel>
+                            <FormLabel className='text-lg font-semibold text-gray-800'>Áp dụng cho *</FormLabel>
                             <p className='text-sm text-gray-600 mt-1'>
-                              Select one or more order types that this milestone applies to
+                              Chọn một hoặc nhiều loại đơn hàng mà mốc này áp dụng
                             </p>
                           </div>
 
@@ -235,16 +234,16 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
 
               {/* Description Card */}
               <Card className='border-l-4 border-l-purple-500'>
-                <CardContent className='pt-6'>
+                <CardContent className=''>
                   <FormField
                     control={form.control}
                     name='description'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className='text-lg font-semibold text-gray-800'>Description *</FormLabel>
+                        <FormLabel className='text-lg font-semibold text-gray-800'>Mô tả *</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder='Enter milestone description'
+                            placeholder='Nhập mô tả cho mốc thời gian'
                             className='min-h-[120px] focus:ring-2 focus:ring-purple-500 focus:border-transparent'
                             {...field}
                             disabled={isLoading}
@@ -268,7 +267,7 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
             disabled={isLoading}
             className='px-6'
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             type='submit'
@@ -276,7 +275,7 @@ export function MilestoneFormDialog({ open, onOpenChange, currentRow }: Mileston
             disabled={isLoading}
             className='min-w-[140px] bg-blue-600 hover:bg-blue-700'
           >
-            {isLoading ? (isEditing ? 'Saving...' : 'Creating...') : isEditing ? 'Save changes' : 'Create milestone'}
+            {isLoading ? (isEditing ? 'Đang lưu...' : 'Đang tạo...') : isEditing ? 'Lưu thay đổi' : 'Tạo mốc thời gian'}
           </Button>
         </DialogFooter>
       </DialogContent>
