@@ -131,6 +131,10 @@ export const sidebarData: SidebarData = {
           ]
         },
         {
+          title: 'Bảo hành',
+          items: [{ title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }]
+        },
+        {
           title: 'Tương tác',
           items: [
             { title: 'Tin nhắn khách hàng', url: 'messages', icon: MessagesSquare, badge: '8' }

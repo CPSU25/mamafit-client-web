@@ -124,6 +124,10 @@ export interface OrderById extends OrderType {
   measurementDiary: MeasurementDiaryType
 }
 
+export interface FindOrderBySKUAndCodeResponse extends OrderType {
+  items: Array<OrderItemType>
+}
+
 export interface MeasurementDiaryType {
   id: string
   userId: string

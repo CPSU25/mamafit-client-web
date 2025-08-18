@@ -9,7 +9,8 @@ export const orderKeys = {
   list: (params: OrderQueryParams) => [...orderKeys.lists(), 'list', params] as const,
   details: () => [...orderKeys.all, 'detail'] as const,
   detail: (id: string) => [...orderKeys.details(), id] as const,
-  designGroup: (designRequestId: string) => [...orderKeys.all, 'design-group', designRequestId] as const
+  designGroup: (designRequestId: string) => [...orderKeys.all, 'design-group', designRequestId] as const,
+  findOrder: (sku: string, code: string) => [...orderKeys.all, 'find-order', sku, code] as const
 }
 
 export const useOrders = (params: OrderQueryParams) => {
@@ -174,6 +175,27 @@ export const useAssignCharge = () => {
     onError: () => {
       toast.error('Phân công nhiệm vụ thất bại!')
     },
+    retry: (failureCount, error: unknown) => {
+      const status = (error as { response?: { status?: number } })?.response?.status
+      if (status && status >= 400 && status < 500) {
+        return false
+      }
+      return failureCount < 3
+    }
+  })
+}
+
+export const useFindOrder = (sku: string, code: string, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: orderKeys.findOrder(sku, code),
+    queryFn: async () => {
+      const response = await ManageOrderAPI.findOrder(sku, code)
+      if (response.data.statusCode === 200) {
+        return response.data
+      }
+      throw new Error(response.data.message || 'Failed to fetch order')
+    },
+    enabled: options?.enabled ?? Boolean(sku && code),
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status
       if (status && status >= 400 && status < 500) {

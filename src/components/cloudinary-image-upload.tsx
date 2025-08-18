@@ -144,9 +144,12 @@ export function CloudinaryImageUpload({
   }
 
   // Update parent khi images thay đổi (trừ những cái đang uploading)
+  // Lưu ý: không đưa updateParent vào deps để tránh loop khi parent truyền onChange mới mỗi render
   useEffect(() => {
-    updateParent(images)
-  }, [images, updateParent])
+    const urls = images.filter((img) => !img.isUploading).map((img) => img.url)
+    onChange(urls)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [images])
 
   const canUpload = images.length < maxFiles && !disabled && isConfigured
 

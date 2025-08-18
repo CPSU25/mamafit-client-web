@@ -78,8 +78,8 @@ export const useAppointmentStats = (appointments: Appointment[]): AppointmentSta
   return {
     totalAppointments: appointments.length,
     upComing: appointments.filter((apt) => apt.status === AppointmentStatus.UP_COMING).length,
-    inProgress: appointments.filter((apt) => apt.status === AppointmentStatus.IN_PROGRESS).length,
-    completed: appointments.filter((apt) => apt.status === AppointmentStatus.COMPLETED).length,
+    inProgress: appointments.filter((apt) => apt.status === AppointmentStatus.CHECKED_IN).length,
+    completed: appointments.filter((apt) => apt.status === AppointmentStatus.CHECKED_OUT).length,
     canceled: appointments.filter((apt) => apt.status === AppointmentStatus.CANCELED).length
   }
 }

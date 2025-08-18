@@ -18,8 +18,8 @@ interface AppointmentToolbarProps {
 // Danh sách các tùy chọn trạng thái, được đưa ra ngoài để dễ quản lý
 const statusOptions: { value: AppointmentStatus; label: string }[] = [
   { value: AppointmentStatus.UP_COMING, label: 'Sắp tới' },
-  { value: AppointmentStatus.IN_PROGRESS, label: 'Đang diễn ra' },
-  { value: AppointmentStatus.COMPLETED, label: 'Hoàn thành' },
+  { value: AppointmentStatus.CHECKED_IN, label: 'Đang diễn ra' },
+  { value: AppointmentStatus.CHECKED_OUT, label: 'Hoàn thành' },
   { value: AppointmentStatus.CANCELED, label: 'Đã hủy' }
 ]
 

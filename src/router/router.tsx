@@ -21,7 +21,13 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
 // import { FactoryManagerDashboard } from '@/pages/factory-manager'
 import { DesignerDashboard, ManageTemplatePage, ManageDesignRequestPage } from '@/pages/designer'
-import { BranchDashboard, CashierPage, ManageAppointmentPage, ManageBranchOrderPage } from '@/pages/branch'
+import {
+  BranchDashboard,
+  CashierPage,
+  ManageAppointmentPage,
+  ManageBranchOrderPage,
+  ManageBranchWarrantyPage
+} from '@/pages/branch'
 import { OrderItemDetailPage, StaffTasksPage } from '@/pages/staff'
 
 export const router = createBrowserRouter([
@@ -101,6 +107,10 @@ export const router = createBrowserRouter([
           {
             path: 'manage-order',
             element: <ManageBranchOrderPage />
+          },
+          {
+            path: 'manage-warranty',
+            element: <ManageBranchWarrantyPage />
           }
         ]
       },
