@@ -16,9 +16,12 @@ export const pageSizeOptions = [
   { value: '50', label: '50 / trang' }
 ]
 
-// Apply for options (milestone types)
+// Apply for options (milestone types) - Updated with all enum values
 export const applyForOptions = [
-  { value: 'READY_TO_BUY', label: 'Ready to buy' },
-  { value: 'PRESET', label: 'Preset' },
-  { value: 'DESIGN_REQUEST', label: 'Design request' }
+  { value: 'READY_TO_BUY', label: 'Sẵn sàng mua', color: 'bg-gradient-to-r from-green-500 to-green-600' },
+  { value: 'PRESET', label: 'Mẫu có sẵn', color: 'bg-gradient-to-r from-blue-500 to-blue-600' },
+  { value: 'DESIGN_REQUEST', label: 'Yêu cầu thiết kế', color: 'bg-gradient-to-r from-orange-500 to-orange-600' },
+  { value: 'WARRANTY', label: 'Bảo hành', color: 'bg-gradient-to-r from-purple-500 to-purple-600' },
+  { value: 'ADD_ON', label: 'Dịch vụ thêm', color: 'bg-gradient-to-r from-pink-500 to-pink-600' },
+  { value: 'QC_FAIL', label: 'QC thất bại', color: 'bg-gradient-to-r from-red-500 to-red-600' }
 ]

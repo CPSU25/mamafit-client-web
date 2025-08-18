@@ -1,9 +1,8 @@
-// index.tsx - Enhanced Manage Order Page
+// index.tsx - Trang Quản Lý Đơn Hàng
 import { useMemo, useState } from 'react'
-import { AlertCircle, Package2 } from 'lucide-react'
+import { Package2, ShoppingCart, Package, CheckCircle, RotateCcw, Sparkles } from 'lucide-react'
 
 import { Main } from '@/components/layout/main'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { useOrders } from '@/services/admin/manage-order.service'
@@ -12,7 +11,6 @@ import { useGetListUser } from '@/services/admin/manage-user.service'
 import { transformOrderData } from './data/schema'
 import { createOrderColumns } from './components/order-columns'
 import { OrderTable } from './components/order-table'
-import { OrderStatistics } from './components/order-statistics'
 import { OrderDialogs } from './components/order-dialogs'
 import { OrderDetailSidebar } from './components/order-detail-sidebar'
 import OrderProvider from './contexts/order-context'
@@ -22,75 +20,162 @@ import type { OrderById } from '@/@types/manage-order.types'
 
 // Constants
 const DEFAULT_PAGE_SIZE = 100
-const USERS_FETCH_SIZE = 1000
+const USERS_FETCH_SIZE = 100
 
-// Enhanced Loading skeleton component
+// Component Statistics Cards theo pattern dự án
+interface OrderStatisticsProps {
+  totalOrders: number
+  processedOrders: number
+  deliveredOrders: number
+  returnAmount: number
+  isLoading?: boolean
+}
+
+function OrderStatistics({
+  totalOrders,
+  processedOrders,
+  deliveredOrders,
+  returnAmount,
+  isLoading = false
+}: OrderStatisticsProps) {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount)
+  }
+
+  const stats = [
+    {
+      title: 'Tổng đơn hàng',
+      subtitle: 'Số đơn nhận được',
+      value: totalOrders,
+      icon: ShoppingCart,
+      iconBg: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+      cardBg:
+        'border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/30 dark:to-background'
+    },
+    {
+      title: 'Đang xử lý',
+      subtitle: 'Đơn đã xác nhận',
+      value: processedOrders,
+      icon: Package,
+      iconBg: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+      cardBg:
+        'border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/30 dark:to-background'
+    },
+    {
+      title: 'Hoàn thành',
+      subtitle: 'Đã giao thành công',
+      value: deliveredOrders,
+      icon: CheckCircle,
+      iconBg: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+      cardBg:
+        'border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-white dark:from-green-950/30 dark:to-background'
+    },
+    {
+      title: 'Giá trị trả hàng',
+      subtitle: 'Thiệt hại do hoàn trả',
+      value: returnAmount,
+      icon: RotateCcw,
+      iconBg: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+      cardBg:
+        'border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-white dark:from-red-950/30 dark:to-background',
+      isAmount: true
+    }
+  ]
+
+  if (isLoading) {
+    return (
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className='hover:shadow-lg transition-all duration-300'>
+            <CardHeader className='pb-2'>
+              <div className='h-4 w-24 bg-muted rounded animate-pulse' />
+              <div className='h-3 w-32 bg-muted rounded mt-1 animate-pulse' />
+            </CardHeader>
+            <CardContent>
+              <div className='h-7 w-20 bg-muted rounded animate-pulse' />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      {stats.map((stat, index) => {
+        const Icon = stat.icon
+        return (
+          <Card key={index} className={`${stat.cardBg} hover:shadow-lg transition-all duration-300`}>
+            <CardContent className='p-4'>
+              <div className='flex items-center justify-between'>
+                <div className='space-y-1'>
+                  <p className='text-sm font-medium text-muted-foreground'>{stat.title}</p>
+                  <p className='text-2xl font-bold'>
+                    {stat.isAmount ? formatCurrency(stat.value) : stat.value.toLocaleString()}
+                  </p>
+                  <p className='text-xs text-muted-foreground'>{stat.subtitle}</p>
+                </div>
+                <div className={`h-12 w-12 rounded-full flex items-center justify-center ${stat.iconBg}`}>
+                  <Icon className='h-6 w-6' />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
+    </div>
+  )
+}
+
+// Component Loading skeleton theo pattern dự án
 const OrderPageSkeleton = () => (
-  <div className='space-y-8'>
-    {/* Header skeleton with gradient */}
-    <div className='space-y-4'>
-      <div className='space-y-3'>
-        <div className='h-10 w-80 bg-gradient-to-r from-violet-200 to-purple-200 dark:from-violet-800 dark:to-purple-800 animate-pulse rounded-lg' />
-        <div className='h-5 w-96 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-md' />
+  <Main>
+    <div className='flex items-center justify-center h-[calc(100vh-200px)]'>
+      <div className='text-center space-y-4'>
+        <div className='relative'>
+          <div className='animate-spin rounded-full h-16 w-16 border-4 border-violet-200 border-t-violet-600 mx-auto'></div>
+          <Package2 className='h-8 w-8 text-violet-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' />
+        </div>
+        <div>
+          <p className='text-lg font-medium text-foreground'>Đang tải đơn hàng...</p>
+          <p className='text-sm text-muted-foreground mt-1'>Vui lòng đợi trong giây lát</p>
+        </div>
       </div>
     </div>
-
-    {/* Enhanced Statistics skeleton */}
-    <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i} className='border-violet-200 dark:border-violet-800 shadow-lg'>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <div className='h-4 w-28 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-md' />
-            <div className='h-10 w-10 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-xl' />
-          </CardHeader>
-          <CardContent>
-            <div className='h-8 w-24 bg-violet-200 dark:bg-violet-800 animate-pulse rounded-md mb-2' />
-            <div className='h-4 w-32 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-md' />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-
-    {/* Enhanced Table skeleton */}
-    <Card className='border-violet-200 dark:border-violet-800 shadow-lg'>
-      <CardHeader className='bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30'>
-        <div className='h-6 w-40 bg-violet-200 dark:bg-violet-800 animate-pulse rounded-md' />
-        <div className='h-4 w-64 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-md' />
-      </CardHeader>
-      <CardContent className='p-6'>
-        <div className='space-y-4'>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className='h-16 bg-gradient-to-r from-violet-50 to-transparent dark:from-violet-950/20 dark:to-transparent animate-pulse rounded-lg'
-            />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  </div>
+  </Main>
 )
 
-// Enhanced Error state component
+// Component Error state theo pattern dự án
 const OrderPageError = ({ error }: { error: unknown }) => {
   const errorMessage = error instanceof Error ? error.message : 'Đã xảy ra lỗi không xác định'
 
   return (
-    <div className='flex items-center justify-center min-h-[500px]'>
-      <Alert variant='destructive' className='max-w-lg border-red-200 dark:border-red-800 shadow-lg'>
-        <AlertCircle className='h-5 w-5' />
-        <AlertDescription className='space-y-3'>
-          <div>
-            <p className='font-semibold text-lg'>Không thể tải danh sách đơn hàng</p>
-            <p className='text-sm mt-2'>{errorMessage}</p>
-          </div>
-          <div className='flex items-center space-x-2 text-xs text-muted-foreground'>
-            <div className='w-2 h-2 bg-red-400 rounded-full animate-pulse' />
-            <span>Vui lòng thử lại sau hoặc liên hệ bộ phận kỹ thuật</span>
-          </div>
-        </AlertDescription>
-      </Alert>
-    </div>
+    <Main>
+      <div className='flex items-center justify-center h-[calc(100vh-200px)]'>
+        <Card className='max-w-md w-full border-destructive/20 bg-destructive/5'>
+          <CardContent className='pt-6'>
+            <div className='text-center space-y-4'>
+              <div className='h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto'>
+                <Package2 className='h-8 w-8 text-destructive' />
+              </div>
+              <div>
+                <p className='text-lg font-semibold text-destructive'>Không thể tải danh sách đơn hàng</p>
+                <p className='text-sm text-muted-foreground mt-2'>{errorMessage}</p>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className='px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors'
+              >
+                Thử lại
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Main>
   )
 }
 
@@ -154,18 +239,27 @@ function ManageOrderContent() {
   const handleCloseSidebar = () => setOpen(null)
 
   return (
-    <div className='flex h-full relative'>
+    <Main>
       {/* Main Content */}
       <div className={`flex-1 transition-all duration-300 ease-in-out ${isDetailOpen ? 'mr-80 lg:mr-96' : ''}`}>
-        <div className='container mx-auto py-6 space-y-6'>
-          {/* Page Header */}
-          <div className='flex items-center justify-between'>
+        <div className='space-y-6'>
+          {/* Header theo pattern dự án */}
+          <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
             <div className='space-y-1'>
               <div className='flex items-center gap-2'>
-                <Package2 className='h-6 w-6' />
-                <h1 className='text-2xl font-bold tracking-tight'>Quản lý đơn hàng</h1>
+                <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg'>
+                  <Package2 className='h-6 w-6 text-white' />
+                </div>
+                <div>
+                  <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
+                    Quản Lý Đơn Hàng
+                  </h1>
+                  <p className='text-sm text-muted-foreground flex items-center gap-1'>
+                    Quản lý và theo dõi tất cả đơn hàng trong hệ thống
+                    <Sparkles className='h-3 w-3 text-violet-500' />
+                  </p>
+                </div>
               </div>
-              <p className='text-muted-foreground'>Quản lý và theo dõi tất cả đơn hàng trong hệ thống</p>
             </div>
           </div>
 
@@ -179,22 +273,24 @@ function ManageOrderContent() {
           />
 
           {/* Orders Table */}
-          <Card>
-            <CardHeader className='pb-4'>
-              <div className='flex items-center justify-between'>
-                <div className='space-y-1'>
-                  <CardTitle className='text-lg font-semibold'>Tất cả đơn hàng</CardTitle>
-                  <p className='text-sm text-muted-foreground'>Nhận được {statistics.totalOrders} đơn hàng cần xử lý</p>
+          <Card className='border-0 shadow-xl bg-gradient-to-br from-background via-background to-violet-50/30 dark:to-violet-950/10'>
+            <CardContent className='p-0'>
+              <div className='p-6 space-y-4'>
+                <div className='flex items-center justify-between'>
+                  <div className='space-y-1'>
+                    <CardTitle className='text-lg font-semibold'>Tất cả đơn hàng</CardTitle>
+                    <p className='text-sm text-muted-foreground'>
+                      Nhận được {statistics.totalOrders} đơn hàng cần xử lý
+                    </p>
+                  </div>
                 </div>
+                <OrderTable
+                  columns={columns}
+                  data={orderList}
+                  isLoading={ordersLoading}
+                  error={ordersError instanceof Error ? ordersError.message : null}
+                />
               </div>
-            </CardHeader>
-            <CardContent className='pt-0'>
-              <OrderTable
-                columns={columns}
-                data={orderList}
-                isLoading={ordersLoading}
-                error={ordersError instanceof Error ? ordersError.message : null}
-              />
             </CardContent>
           </Card>
         </div>
@@ -205,14 +301,14 @@ function ManageOrderContent() {
 
       {/* Order Detail Sidebar */}
       <OrderDetailSidebar order={currentRow as OrderById} isOpen={isDetailOpen} onClose={handleCloseSidebar} />
-    </div>
+    </Main>
   )
 }
 
 export default function ManageOrderPage() {
   return (
     <OrderProvider>
-      <Main className='min-h-screen p-0 bg-gradient-to-br from-violet-50/30 via-white to-purple-50/20 dark:from-violet-950/10 dark:via-background dark:to-purple-950/10'>
+      <Main className='space-y-6'>
         <ManageOrderContent />
       </Main>
     </OrderProvider>

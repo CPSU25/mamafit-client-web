@@ -9,12 +9,14 @@
 
 - **Tên dự án:** MamaFit Client Web.
 - **Mô tả:** Frontend cho hệ thống quản lý sản xuất và kinh doanh trang phục bầu.
+- **Tech Stack Chính:** React 19 + TypeScript 5.7 + Vite 6 + TailwindCSS 4 + React Router DOM v7
 - **Mô hình kiến trúc:**
-    - **Single Page Application (SPA)**: Được xây dựng trên nền tảng React.
-    - **Component-Based**: Tái sử dụng component là nguyên tắc cốt lõi.
-    - **Layer-Based & Service-Oriented**: Phân tách rõ ràng giữa các tầng logic (Presentation, Business, Data). Logic nghiệp vụ được đặt trong các `services`.
-- **Điểm vào (Entry Point):** `main.tsx`.
-- **Luồng khởi tạo:** `AppLayout` là layout gốc, bọc ngoài cùng các providers quan trọng như `QueryProvider`, `ThemeProvider`, `AuthProvider`.
+    - **Single Page Application (SPA)**: React với routing hierarchical
+    - **Component-Based**: Tái sử dụng component là nguyên tắc cốt lõi (shadcn/ui + Radix UI)
+    - **Layer-Based & Service-Oriented**: Phân tách rõ ràng giữa các tầng logic (Presentation, Business, Data)
+    - **Role-Based Multi-tenant**: UI khác nhau cho từng vai trò (Admin, BranchManager, Designer, Manager, Staff)
+- **Điểm vào:** `main.tsx` → `RouterProvider` với browser router
+- **Layout Hierarchy:** `AppLayout` (providers) → Role-based layouts với `AuthGuard` protection
 
 ---
 
@@ -41,61 +43,109 @@ Luôn tuân thủ cấu trúc đã định sẵn. Dưới đây là vai trò c�
 
 ## 🛠️ 3. Công nghệ & Thư viện Chính
 
-Luôn ưu tiên sử dụng các thư viện đã có trong dự án cho đúng mục đích của chúng.
+**LUÔN SỬ DỤNG CÁC THỦ VIỆN ĐÃ CÓ TRONG DỰ ÁN** - Không tự ý thêm dependencies mới.
 
 - **UI & Styling:**
-    - **Tailwind CSS:** Framework chính.
-    - **shadcn/ui & Radix UI:** Sử dụng để xây dựng các component UI.
-    - **lucide-react:** Thư viện icon.
-    - **class-variance-authority (cva) & clsx:** Để tạo các component có variants và quản lý class.
+    - **Tailwind CSS v4:** Framework chính với `@tailwindcss/vite` plugin
+    - **shadcn/ui & Radix UI:** Component system - luôn sử dụng existing components trước khi tạo mới
+    - **lucide-react:** Thư viện icon duy nhất
+    - **class-variance-authority (cva) & clsx & tailwind-merge:** Để tạo component variants
 
-- **Quản lý Trạng thái (State Management):**
-    - **Zustand:** Dùng cho **trạng thái client toàn cục** (global client state) như thông tin xác thực, cài đặt UI.
-    - **TanStack Query (React Query):** Dùng cho **trạng thái server** (server state). Quản lý tất cả các hoạt động data fetching, caching, và mutation.
-    - **React Hook Form:** Dùng cho **trạng thái của form** (form state).
-    - **React Context:** Dùng cho các trạng thái ít thay đổi và cần chia sẻ trong một cây component cụ thể (ví dụ: `AuthProvider`, `SearchProvider`).
+- **State Management (Phân chia rõ ràng):**
+    - **Zustand:** Chỉ cho **global client state** (auth, UI settings) - VD: `useAuthStore`
+    - **TanStack Query v5:** Chỉ cho **server state** - cache 5 phút, auto retry, background refetch
+    - **React Hook Form + Zod:** Cho **form state** - luôn dùng zodResolver
+    - **React Context:** Cho state ít thay đổi trong component tree cụ thể
 
-- **Định tuyến (Routing):**
-    - **React Router DOM (v7):** Thư viện chính để định tuyến.
+- **Routing & Navigation:**
+    - **React Router DOM v7:** `createBrowserRouter` với nested routes
+    - **Hierarchical routing:** `/system/{role}/*` structure với AuthGuard protection
+    - **Role-based layouts:** SystemLayout component nhận role prop
 
-- **Xử lý Form:**
-    - **React Hook Form:** Thư viện chính để xây dựng form.
-    - **Zod:** Dùng để định nghĩa schema và **validation**. Ưu tiên sử dụng Zod thay vì Yup.
-
-- **Giao tiếp API & Real-time:**
-    - **Axios:** HTTP client chính. Luôn sử dụng instance đã được cấu hình sẵn trong `lib/axios/axios.ts` với các interceptor.
-    - **Microsoft SignalR:** Dùng cho giao tiếp real-time (chat, notifications).
-
----
-
-## 🔄 4. Luồng Dữ liệu & API
-
-- **Cấu hình Axios:** Instance Axios đã được cấu hình với `baseURL`, `timeout`, và quan trọng nhất là các `interceptors`:
-    - **Request Interceptor:** Tự động đính kèm `Authorization: Bearer <token>`.
-    - **Response Interceptor:** Tự động refresh token khi nhận lỗi 401, xếp hàng và thử lại các request thất bại.
-
-- **Cấu trúc Response API:** Tuân thủ theo cấu trúc `ItemBaseResponse<T>` và `ListBaseResponse<T>` đã được định nghĩa trong `src/@types/response.ts`.
-
-- **Sử dụng React Query:**
-    - Tận dụng cache (`staleTime: 5 phút`) để giảm thiểu request.
-    - Sử dụng `queryKey` một cách nhất quán để quản lý cache.
-    - Khi thực hiện `mutations`, hãy làm vô hiệu (invalidate) các queries liên quan để dữ liệu luôn được đồng bộ.
+- **API & Real-time:**
+    - **Axios:** Instance trong `lib/axios/axios.ts` có interceptors cho auto-refresh token
+    - **Microsoft SignalR v8:** Real-time chat/notifications với auto-connect hooks
+    - **Response patterns:** `ItemBaseResponse<T>` và `ListBaseResponse<T>`
 
 ---
 
-## 🔐 5. Xác thực & Phân quyền (Auth)
+## 🔄 4. Luồng Dữ liệu & API Patterns
 
-- **Cơ chế:** JWT-based (Access Token & Refresh Token).
-- **Lưu trữ Token:** Token được quản lý bởi `useAuthStore` của Zustand và lưu vào `localStorage`.
-- **Bảo vệ Route (Route Guarding):**
-    - Component `AuthGuard` được sử dụng để bọc các route cần bảo vệ.
-    - `AuthGuard` kiểm tra trạng thái đăng nhập và vai trò (`requiredRole`) của người dùng.
-    - Nếu không đáp ứng, tự động chuyển hướng người dùng đến trang đăng nhập.
-- **Vai trò người dùng (Roles):** Hệ thống phân quyền dựa trên vai trò (RBAC). Các vai trò chính: `Admin`, `BranchManager`, `Designer`, `Manager`, `Staff`.
+- **Axios Instance Pattern:** Luôn import từ `@/lib/axios/axios` - KHÔNG tạo instance mới
+    - **Auto Authorization:** Request interceptor tự động thêm Bearer token
+    - **Smart Token Refresh:** Response interceptor với queue system để refresh token
+    - **Error Normalization:** Unified error message extraction từ server response
+    - **Retry Logic:** Auto retry network errors với exponential backoff
+
+- **API Response Structure:** Backend trả về chuẩn `ItemBaseResponse<T>` hoặc `ListBaseResponse<T>`
+    ```typescript
+    // Single item response
+    { statusCode, message, data: T, code, additionalData? }
+    // List response  
+    { data: { items: T[], pageNumber, totalPages, totalCount, pageSize, hasPreviousPage, hasNextPage }, ... }
+    ```
+
+- **React Query Best Practices:**
+    - **Cache config:** `staleTime: 5 phút`, no refetch on window focus
+    - **Query keys:** Consistent naming - `['entity', 'action', ...params]`
+    - **Mutations:** Luôn `invalidateQueries` related data sau khi mutation thành công
+    - **Error handling:** Errors từ axios interceptor, toast notifications trong mutations
+
+- **Service Layer Pattern:** 
+    - API calls trong `apis/*.api.ts` - thuần HTTP calls
+    - Business logic trong `services/*/*.service.ts` - combine hooks + logic
+    - Custom hooks combine useQuery/useMutation với form state
 
 ---
 
-## ✍️ 6. Quy ước Code & Naming
+## 🔐 5. Authentication & Authorization Patterns
+
+- **JWT Flow:** Access + Refresh tokens trong `useAuthStore` với localStorage persistence
+- **Auto-refresh:** Axios interceptor queue system - requests chờ khi refresh, retry với token mới
+- **Route Protection Pattern:**
+    ```tsx
+    <AuthGuard requiredRole='Admin'>
+      <SystemLayout role='Admin' />
+    </AuthGuard>
+    ```
+- **Role Hierarchy:** `Admin | BranchManager | Designer | Manager | Staff` - check role với `hasRole()` method
+- **Permission Context:** `AuthProvider` wrap app, expose `isAuthenticated`, `isLoading`, `hasRole`
+- **Silent Redirects:** AuthGuard có loading states, tránh flash of unauthorized content
+- **SignalR Integration:** Auto-connect/disconnect dựa trên auth status trong `AppLayout`
+
+---
+
+## ⚡ 6. Developer Workflow & Commands  
+
+- **Development:** `npm run dev` (port 3000) và `npm run prod` cho production mode
+- **Build:** `npm run build` = TypeScript check + Vite build (luôn chạy type check trước)
+- **Code Quality:** `npm run lint` (ESLint) và `npm run format` (Prettier) - chạy trước commit
+- **Path Aliases:** `@/*` map to `src/*` - luôn dùng absolute imports
+- **Environment:** Config trong `vite.config.ts`, sử dụng `import.meta.env.VITE_*` variables
+
+---
+
+## 🏛️ 7. Component Architecture Patterns
+
+- **shadcn/ui Base:** Import từ `@/components/ui/*` - KHÔNG tạo lại basic components
+- **Compound Components:** Sử dụng Radix UI patterns với `forwardRef` và proper typing
+- **Variant System:** CVA cho consistent component variants - `size`, `variant`, `color` props
+- **Form Integration:** React Hook Form + Zod resolver pattern:
+    ```tsx
+    const methods = useForm<FormType>({
+      resolver: zodResolver(schema),
+      defaultValues
+    })
+    ```
+- **Loading States:** Consistent spinner với `animate-spin` class, disable buttons khi `isPending`
+- **Error Boundaries:** Toast notifications trong mutation errors, user-friendly messages
+- **TypeScript Patterns:** Generic components với proper inference, extend HTML element props
+
+---
+
+---
+
+## ✍️ 9. Quy ước Code & Naming
 
 - **Components:** `PascalCase.tsx` (ví dụ: `UserProfile.tsx`).
 - **Hooks & Stores:** `useCamelCase.ts` hoặc `use-kebab-case.ts` (ví dụ: `useAuth.ts`, `use-auth-store.ts`).
@@ -103,3 +153,47 @@ Luôn ưu tiên sử dụng các thư viện đã có trong dự án cho đúng 
 - **APIs & Services:** `*.api.ts`, `*.service.ts`.
 - **Linting & Formatting:** Tuân thủ nghiêm ngặt các quy tắc trong file `eslint.config.js` và `.prettierrc`. Chạy `npm run format` và `npm run lint` thường xuyên.
 - **Path Aliases:** Sử dụng `@/*` để import từ thư mục `src/`.
+
+## 🗂️ 10. MCP Filesystem – BẮT BUỘC trước khi phân tích
+
+> **Mục tiêu:** Trước khi trả lời hay kết luận về code, Copilot **phải dùng MCP Filesystem để tìm & đọc file liên quan**, rồi mới phân tích. **Không suy đoán** khi chưa đọc.
+
+### 10.1 Luồng hành động chuẩn (bắt buộc)
+1. **Xác định phạm vi đọc**
+   - Ưu tiên: `src/**`, `apps/**`, `packages/**`, `config/**`
+   - Bỏ qua: `node_modules`, `dist`, `build`, `coverage`, các file sinh ra khi build
+2. **Tìm entry points & cấu hình**
+   - `main.tsx`, `router.tsx`, `AppLayout`, `SystemLayout`, `AuthGuard`, `components/providers/*`
+   - `vite.config.ts`, `tsconfig.*`, `package.json`, `lib/axios/axios.ts`, `stores/*`
+3. **Đọc theo ngữ cảnh câu hỏi**
+   - Với lỗi/feature cụ thể: lần theo import từ file liên quan → đọc component/container/service → theo dõi call graph (service → api/query → store)
+4. **Chỉ sau khi đọc xong**: tóm tắt kiến trúc, nêu giả thuyết, đề xuất sửa/refactor
+5. **Nếu chưa đủ dữ liệu**: yêu cầu quyền đọc thêm file/thư mục cụ thể (nêu rõ đường dẫn)
+
+### 10.2 Cách gọi tool (nếu Chat cho phép chọn tool trực tiếp)
+- **Tìm file:** `#filesystem.search_files`
+  - `path=${workspaceFolder}`
+  - `pattern=src/**/*.{ts,tsx}, apps/**/*, packages/**/*`
+  - `exclude=node_modules|dist|build|coverage`
+- **Đọc nội dung:** `#filesystem.read_text_file` (đọc batch các file entry/route/service chính)
+- **Kiểm tra phạm vi:** `#filesystem.list_allowed_directories` để đảm bảo chỉ đọc trong workspace  
+**Lưu ý:** Không ghi file trừ khi **được yêu cầu rõ ràng**.
+
+### 10.3 Quy tắc trả lời sau khi đọc
+- **Bắt đầu bằng:** “**Đã đọc các file:** …” và liệt kê ngắn gọn đường dẫn chính đã đọc
+- **Tóm tắt 5 phần (ngắn – gọn – đúng trọng tâm):**
+  1. **Overview:** entry points, layout, router, providers
+  2. **Luồng dữ liệu:** component → service → api/query → store
+  3. **Hợp đồng API:** kiểu dữ liệu `ItemBaseResponse`/`ListBaseResponse`, interceptor/refresh
+  4. **Điểm rủi ro:** state, side effects, cache, guard
+  5. **Hành động đề xuất:** từng bước, nêu rõ file/đường dẫn cần chỉnh
+- **Không kết luận** về file **chưa đọc**; nếu cần, **xin phép đọc tiếp** (chỉ rõ đường dẫn)
+
+### 10.4 Ưu tiên performance khi repo lớn
+- Đọc **ít nhưng đúng**: entry points, router, layout, providers, service/axios, store
+- Giới hạn **số file/độ sâu** ở lượt đầu; mở rộng dần theo call graph và theo câu hỏi
+- Tái sử dụng kết quả đã đọc ở lượt trước; tránh đọc lặp
+
+### 10.5 Giữ đúng “Quy tắc Vàng”
+- **Mọi giao tiếp, giải thích, và code** đều bằng **tiếng Việt**
+- Khi trích dẫn/đề xuất sửa, ghi rõ **file/đường dẫn** để thao tác nhanh

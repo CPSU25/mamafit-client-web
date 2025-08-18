@@ -50,7 +50,7 @@ export const columns: ColumnDef<Component>[] = [
       <Checkbox
         checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Select all'
+        aria-label='Chọn tất cả'
         className='translate-y-[2px]'
         data-action-button='true'
       />
@@ -65,7 +65,7 @@ export const columns: ColumnDef<Component>[] = [
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
+        aria-label='Chọn dòng'
         className='translate-y-[2px]'
         data-action-button='true'
       />
@@ -75,7 +75,7 @@ export const columns: ColumnDef<Component>[] = [
   },
   {
     accessorKey: 'name',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Component Name' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Tên thành phần' />,
     cell: ({ row }) => <LongText className='max-w-36'>{row.getValue('name')}</LongText>,
     meta: {
       className: cn(
@@ -88,7 +88,7 @@ export const columns: ColumnDef<Component>[] = [
   },
   {
     accessorKey: 'description',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Description' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Mô tả' />,
     cell: ({ row }) => {
       const description = row.getValue('description') as string
       return <LongText className='max-w-xs'>{description || '-'}</LongText>
@@ -104,7 +104,7 @@ export const columns: ColumnDef<Component>[] = [
   },
   {
     accessorKey: 'images',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Images' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Hình ảnh' />,
     cell: ({ row }) => {
       const images = row.getValue('images') as string[]
       const componentName = row.getValue('name') as string
@@ -120,12 +120,12 @@ export const columns: ColumnDef<Component>[] = [
   },
   {
     accessorKey: 'globalStatus',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Status' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Trạng thái' />,
     cell: ({ row }) => {
       const status = row.getValue('globalStatus') as string
       return (
         <Badge variant={status === 'ACTIVE' ? 'default' : 'secondary'}>
-          {status === 'ACTIVE' ? 'Active' : 'In Active'}
+          {status === 'ACTIVE' ? 'Đang hoạt động' : 'Tạm ngưng'}
         </Badge>
       )
     },
@@ -134,7 +134,7 @@ export const columns: ColumnDef<Component>[] = [
   },
   {
     accessorKey: 'createdAt',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Created At' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Ngày tạo' />,
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as string
       return <div className='text-muted-foreground text-sm'>{dayjs(date).format('DD/MM/YYYY')}</div>

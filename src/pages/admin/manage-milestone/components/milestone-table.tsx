@@ -1,12 +1,14 @@
-import { Fragment, useState } from 'react'
+import { useState, Fragment } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
   ExpandedState,
+  RowData,
   SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
@@ -14,27 +16,41 @@ import {
   getSortedRowModel,
   useReactTable
 } from '@tanstack/react-table'
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { DataTablePagination } from '../../components/data-table-pagination'
-import { MilestoneTableToolbar } from './milestone-table-toolbar'
 import { Button } from '@/components/ui/button'
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import { Milestone } from '../data/schema'
+import { DataTablePagination } from '@/pages/admin/components/data-table-pagination'
+import { MilestoneTableToolbar } from './milestone-table-toolbar'
 import { ExpandedMilestoneDetail } from './expanded-milestone-detail'
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    className: string
+  }
 }
 
-export function MilestoneTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+interface MilestoneTableProps {
+  columns: ColumnDef<Milestone>[]
+  data: Milestone[]
+}
+
+export function MilestoneTable({ columns, data }: MilestoneTableProps) {
   const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: 'sequenceOrder',
+      desc: false // false = ascending (tăng dần)
+    }
+  ])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [expanded, setExpanded] = useState<ExpandedState>({})
 
-  const expandableColumns: ColumnDef<TData, TValue>[] = [
+  // Create columns with expand functionality
+  const expandableColumns: ColumnDef<Milestone>[] = [
+    // Expand column
     {
       id: 'expand',
       header: () => null,
@@ -63,6 +79,7 @@ export function MilestoneTable<TData, TValue>({ columns, data }: DataTableProps<
     },
     ...columns
   ]
+
   const table = useReactTable({
     data,
     columns: expandableColumns,
@@ -76,29 +93,38 @@ export function MilestoneTable<TData, TValue>({ columns, data }: DataTableProps<
     enableRowSelection: true,
     enableExpanding: true,
     onRowSelectionChange: setRowSelection,
-    onExpandedChange: setExpanded,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onExpandedChange: setExpanded,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues()
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand: () => true
   })
 
   return (
     <div className='space-y-4'>
-      <MilestoneTableToolbar table={table} />
+      {/* Search Filter */}
+      <MilestoneTableToolbar<Milestone> table={table} />
+
+      {/* Table */}
       <div className='rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className='group/row'>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} colSpan={header.colSpan}>
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      className={header.column.columnDef.meta?.className ?? ''}
+                    >
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   )
@@ -110,6 +136,7 @@ export function MilestoneTable<TData, TValue>({ columns, data }: DataTableProps<
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <Fragment key={row.id}>
+                  {/* Main row */}
                   <TableRow
                     data-state={row.getIsSelected() && 'selected'}
                     className={`group/row cursor-pointer transition-colors hover:bg-muted/50 ${
@@ -122,6 +149,7 @@ export function MilestoneTable<TData, TValue>({ columns, data }: DataTableProps<
                         key={cell.id}
                         className={cell.column.columnDef.meta?.className ?? ''}
                         onClick={(e) => {
+                          // Prevent row click when clicking on checkboxes or action buttons
                           if (
                             (e.target as HTMLElement).closest('[data-action-button="true"]') ||
                             (e.target as HTMLElement).closest('input[type="checkbox"]')
@@ -135,11 +163,12 @@ export function MilestoneTable<TData, TValue>({ columns, data }: DataTableProps<
                     ))}
                   </TableRow>
 
+                  {/* Expanded row content */}
                   {row.getIsExpanded() && (
                     <TableRow>
                       <TableCell colSpan={expandableColumns.length} className='p-0'>
                         <div className='border-l-4 border-primary'>
-                          <ExpandedMilestoneDetail milestoneId={(row.original as { id: string }).id} />
+                          <ExpandedMilestoneDetail milestoneId={row.original.id} />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -156,6 +185,7 @@ export function MilestoneTable<TData, TValue>({ columns, data }: DataTableProps<
           </TableBody>
         </Table>
       </div>
+
       <DataTablePagination table={table} />
     </div>
   )
