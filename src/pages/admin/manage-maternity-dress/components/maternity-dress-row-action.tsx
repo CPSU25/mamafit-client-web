@@ -31,7 +31,7 @@ export function MaternityDressTableRowActions({ row }: MaternityDressTableRowAct
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant='ghost' className='flex h-8 w-8 p-0 data-[state=open]:bg-muted' data-action-button='true'>
           <MoreHorizontal className='h-4 w-4' />

@@ -4,7 +4,7 @@ import {
   MaternityDressDetailType,
   MaternityDressFormData,
   MaternityDressList
-} from '@/@types/inventory.type'
+} from '@/@types/manage-maternity-dress.types'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { api } from '@/lib/axios/axios'
 
@@ -40,25 +40,7 @@ const maternityDressAPI = {
     api.put<ItemBaseResponse<[]>>(`/maternity-dress/${id}`, data),
 
   deleteMaternityDress: (id: string) => api.delete<ItemBaseResponse<[]>>(`/maternity-dress/${id}`),
-
-  // Maternity Dresses Details
-  // getMaternityDressDetails: (params?: MaternityDressQueryParams) => {
-  //   const queryParams = new URLSearchParams()
-
-  //   if (params?.index) queryParams.append('index', params.index.toString())
-  //   if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
-  //   if (params?.search) queryParams.append('search', params.search)
-  //   if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
-
-  //   const queryString = queryParams.toString()
-  //   const url = queryString ? `/maternity-dress-detail?${queryString}` : '/maternity-dress-detail'
-
-  //   return api.get<ListBaseResponse<MaternityDressDetailType>>(url)
-  // },
-
-  // getMaternityDressDetailById: (id: string) =>
-  //   api.get<ItemBaseResponse<MaternityDressDetailType>>(`/maternity-dress-detail/${id}`),
-
+  //Detail
   createMaternityDressDetail: (data: MaternityDressDetailFormData) =>
     api.post<ItemBaseResponse<MaternityDressDetailType>>('/maternity-dress-detail', data),
 

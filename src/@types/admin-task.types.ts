@@ -5,7 +5,7 @@
 // =====================================================================
 
 import { PresetType } from './designer.types'
-import { MaternityDressDetailType } from './inventory.type'
+import { MaternityDressDetailType } from './manage-maternity-dress.types'
 import { DesignRequestType } from './manage-order.types'
 
 /**

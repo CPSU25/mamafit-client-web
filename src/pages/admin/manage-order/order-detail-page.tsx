@@ -699,7 +699,7 @@ export default function OrderDetailPage() {
                     (ordersByDesign?.data || []).map((od) => {
                       const items = (od as unknown as { items?: OrderItemType[] }).items || []
                       const first = items[0]
-                      const previewImg = first?.preset?.images?.[0] || first?.maternityDressDetail?.images?.[0] || ''
+                      const previewImg = first?.preset?.images?.[0] || first?.maternityDressDetail?.image?.[0] || ''
                       const title = first?.preset?.name || first?.maternityDressDetail?.name || first?.itemType
                       const styleName = first?.preset?.styleName
                       const totalQty = items.reduce((sum, it) => sum + (it.quantity || 0), 0)
@@ -787,7 +787,7 @@ export default function OrderDetailPage() {
                       <div key={index} className='space-y-3'>
                         <div className='flex items-center space-x-4 p-4 bg-gradient-to-r from-violet-50 to-purple-50/50 dark:from-violet-950/30 dark:to-purple-950/20 rounded-xl border border-violet-200 dark:border-violet-700'>
                           <ProductImageViewer
-                            src={item.preset?.images?.[0] || item.maternityDressDetail?.images?.[0] || ''}
+                            src={item.preset?.images?.[0] || item.maternityDressDetail?.image?.[0] || ''}
                             alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
                             containerClassName='aspect-square w-16 rounded-lg border-2 border-violet-200 dark:border-violet-700'
                             imgClassName='px-2'

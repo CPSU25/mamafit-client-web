@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CategoryType } from '@/@types/inventory.type'
+import { CategoryType } from '@/@types/manage-maternity-dress.types'
 
 const categoryStatusSchema = z.union([z.literal('ACTIVE'), z.literal('INACTIVE')])
 export type CategoryStatus = z.infer<typeof categoryStatusSchema>
@@ -47,4 +47,4 @@ export const styleListSchema = z.array(styleSchema)
 export type StyleSchema = z.infer<typeof styleSchema>
 
 // Form data types (re-export from inventory.type.ts for convenience)
-export type { CategoryFormData, StyleFormData } from '@/@types/inventory.type'
+export type { CategoryFormData, StyleFormData } from '@/@types/manage-maternity-dress.types'

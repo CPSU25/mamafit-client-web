@@ -8,7 +8,7 @@ import {
   MaternityDressFormData,
   MaternityDressList,
   MaternityDressDetailType
-} from '@/@types/inventory.type'
+} from '@/@types/manage-maternity-dress.types'
 import type { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { toast } from 'sonner'
 
@@ -58,7 +58,7 @@ export const useGetMaternityDressDetail = (id: string) => {
       if (response.data.statusCode === 200) {
         return response.data
       }
-      throw new Error(response.data.message || 'Failed to fetch product')
+      throw new Error(response.data.message || 'Failed to fetch maternity dress')
     },
     enabled: !!id
   })
@@ -81,8 +81,7 @@ export const useCreateMaternityDress = () => {
       toast.success('Tạo sản phẩm thành công!')
     },
     onError: (error) => {
-      console.error('Create maternity dress error:', error)
-      toast.error('Tạo sản phẩm thất bại!')
+      toast.error(error.message || 'Tạo sản phẩm thất bại!')
     }
   })
 }
@@ -105,8 +104,7 @@ export const useUpdateMaternityDress = () => {
       toast.success('Cập nhật sản phẩm thành công!')
     },
     onError: (error) => {
-      console.error('Update maternity dress error:', error)
-      toast.error('Cập nhật sản phẩm thất bại!')
+      toast.error(error.message || 'Cập nhật sản phẩm thất bại!')
     }
   })
 }
@@ -173,39 +171,6 @@ export const useDeleteMaternityDress = () => {
   })
 }
 
-// ===============================
-// MATERNITY DRESSES DETAILS HOOKS
-// ===============================
-
-// Fetch Maternity Dresses Details
-// export const useMaternityDressesDetails = (params?: MaternityDressDetailQueryParams) => {
-//   return useQuery({
-//     queryKey: maternityDressKeys.maternityDressesDetailsList(params || {}),
-//     queryFn: async () => {
-//       const response = await maternityDressAPI.getMaternityDressDetails(params)
-//       if (response.data.statusCode === 200) {
-//         return response.data
-//       }
-//       throw new Error(response.data.message || 'Failed to fetch maternity dresses')
-//     },
-//   })
-// }
-
-// Fetch Single Maternity Dress
-// export const useGetMaternityDressDetail = (id: string) => {
-//   return useQuery({
-//     queryKey: maternityDressKeys.maternityDressDetail(id),
-//     queryFn: async () => {
-//       const response = await maternityDressAPI.getMaternityDressDetailById(id)
-//       if (response.data.statusCode === 200) {
-//         return response.data
-//       }
-//       throw new Error(response.data.message || 'Failed to fetch maternity dress')
-//     },
-//     enabled: !!id,
-//   })
-// }
-
 // Create Maternity Dress
 export const useCreateMaternityDressDetail = () => {
   const queryClient = useQueryClient()
@@ -230,7 +195,7 @@ export const useCreateMaternityDressDetail = () => {
           id: `temp-${Date.now()}`,
           name: variables.name,
           description: variables.description,
-          images: variables.images,
+          image: variables.image,
           color: variables.color,
           size: variables.size,
           quantity: variables.quantity,

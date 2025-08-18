@@ -255,12 +255,12 @@ function FindAndCreateWarranty() {
                           </div>
                         )}
                         {/* Hình ảnh sản phẩm */}
-                        {Array.isArray(item.maternityDressDetail?.images) &&
-                          item.maternityDressDetail!.images.length > 0 && (
+                        {Array.isArray(item.maternityDressDetail?.image) &&
+                          item.maternityDressDetail!.image.length > 0 && (
                             <div className='mt-3'>
                               <div className='text-xs text-muted-foreground mb-2'>Hình ảnh sản phẩm</div>
                               <div className='grid grid-cols-3 gap-2'>
-                                {item.maternityDressDetail!.images.slice(0, 6).map((url, idx) => (
+                                {item.maternityDressDetail!.image.slice(0, 6).map((url, idx) => (
                                   <div key={idx} className='aspect-square overflow-hidden rounded border bg-background'>
                                     <img src={url} alt={`product-${idx}`} className='h-full w-full object-cover' />
                                   </div>
