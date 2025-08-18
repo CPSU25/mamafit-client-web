@@ -20,8 +20,8 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 export const formSchema = z.object({
-  name: z.string().min(1, { message: 'Component name is required' }),
-  description: z.string().min(1, { message: 'Description is required' }),
+  name: z.string().min(1, { message: 'Tên thành phần là bắt buộc' }),
+  description: z.string().min(1, { message: 'Mô tả là bắt buộc' }),
   images: z.array(z.string()).optional()
 })
 
@@ -63,13 +63,13 @@ export function ComponentFormDialog({ open, onOpenChange, currentRow }: Props) {
             images: data.images || []
           }
         })
-        toast.success('Update component successfully!')
+        toast.success('Cập nhật thành phần thành công!')
       } else {
         await createComponentMutation.mutateAsync({
           ...data,
           images: data.images || []
         })
-        toast.success('Create component successfully!')
+        toast.success('Tạo thành phần thành công!')
       }
       form.reset()
       onOpenChange(false)
@@ -81,7 +81,7 @@ export function ComponentFormDialog({ open, onOpenChange, currentRow }: Props) {
           ? error.message
           : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Có lỗi xảy ra'
 
-      toast.error(`${isEdit ? 'Failed to update' : 'Failed to create'} component: ${errorMessage}`)
+      toast.error(`${isEdit ? 'Không thể cập nhật' : 'Không thể tạo'} thành phần: ${errorMessage}`)
     }
   }
 
@@ -97,11 +97,11 @@ export function ComponentFormDialog({ open, onOpenChange, currentRow }: Props) {
     >
       <DialogContent className='sm:max-w-[600px]'>
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit Component' : 'Create New Component'}</DialogTitle>
+          <DialogTitle>{isEdit ? 'Chỉnh sửa Thành phần' : 'Tạo Thành phần Mới'}</DialogTitle>
           <DialogDescription>
             {isEdit
-              ? 'Update component information. Fields with * are required.'
-              : 'Create new component for the system. Fields with * are required.'}
+              ? 'Cập nhật thông tin thành phần. Các trường có dấu * là bắt buộc.'
+              : 'Tạo thành phần mới cho hệ thống. Các trường có dấu * là bắt buộc.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -113,9 +113,9 @@ export function ComponentFormDialog({ open, onOpenChange, currentRow }: Props) {
                 name='name'
                 render={({ field }) => (
                   <FormItem className='items-center space-y-2 gap-x-4 gap-y-1'>
-                    <FormLabel>Component Name *</FormLabel>
+                    <FormLabel>Tên Thành phần *</FormLabel>
                     <FormControl>
-                      <Input placeholder='eg: Button, Input, Card' {...field} disabled={isSubmitting} />
+                      <Input placeholder='vd: Nút bấm, Ô nhập, Thẻ' {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -127,9 +127,9 @@ export function ComponentFormDialog({ open, onOpenChange, currentRow }: Props) {
                 name='description'
                 render={({ field }) => (
                   <FormItem className='items-center space-y-2 gap-x-4 gap-y-1'>
-                    <FormLabel>Description *</FormLabel>
+                    <FormLabel>Mô tả *</FormLabel>
                     <FormControl>
-                      <Textarea placeholder='Description of component...' rows={3} {...field} disabled={isSubmitting} />
+                      <Textarea placeholder='Mô tả về thành phần...' rows={3} {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -141,13 +141,13 @@ export function ComponentFormDialog({ open, onOpenChange, currentRow }: Props) {
                 name='images'
                 render={({ field }) => (
                   <FormItem className='items-center space-y-2 gap-x-4 gap-y-1'>
-                    <FormLabel>Component Images</FormLabel>
+                    <FormLabel>Hình ảnh Thành phần</FormLabel>
                     <FormControl>
                       <FirebaseImageUpload
                         value={field.value || []}
                         onChange={(value) => field.onChange(value)}
                         maxFiles={5}
-                        placeholder='Upload component images or enter URL'
+                        placeholder='Tải lên hình ảnh thành phần hoặc nhập URL'
                         disabled={isSubmitting}
                         uploadOptions={{
                           folder: 'components/', // Tổ chức ảnh theo thư mục
@@ -168,7 +168,7 @@ export function ComponentFormDialog({ open, onOpenChange, currentRow }: Props) {
         </div>
         <DialogFooter>
           <Button type='submit' form='component-form' disabled={isSubmitting}>
-            {isSubmitting ? (isEdit ? 'Updating...' : 'Creating...') : 'Save changes'}
+            {isSubmitting ? (isEdit ? 'Đang cập nhật...' : 'Đang tạo...') : 'Lưu thay đổi'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -30,7 +30,8 @@ import {
   // PaintBucket,
   Store,
   // Bell,
-  Shield
+  Shield,
+  PenTool
 } from 'lucide-react'
 import { SidebarData } from '../types'
 
@@ -85,9 +86,9 @@ export const sidebarData: SidebarData = {
               title: 'Quản lý đơn hàng',
               icon: Package,
               items: [
-                { title: 'Tất cả đơn hàng', url: 'manage-order', icon: AlertCircle },
-                { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: Clock },
-                { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: CheckCircle }
+                { title: 'Tất cả đơn hàng', url: 'manage-order', icon: Package2 },
+                { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: PenTool },
+                { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: Shield }
               ]
             },
             { title: 'Quản lý voucher', url: 'manage-voucher', icon: Ticket },
@@ -214,9 +215,9 @@ export const sidebarData: SidebarData = {
               title: 'Quản lý đơn hàng',
               icon: Package,
               items: [
-                { title: 'Quản lý đơn hàng ', url: 'manage-order', icon: AlertCircle },
-                { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: Clock },
-                { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: CheckCircle }
+                { title: 'Quản lý đơn hàng ', url: 'manage-order', icon: Package2 },
+                { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: PenTool },
+                { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: Shield }
               ]
             }
           ]

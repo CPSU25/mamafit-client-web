@@ -17,7 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Branch } from '../data/schema'
 import { DataTablePagination } from '../../components/data-table-pagination'
 import { BranchTableToolbar } from './branch-table-toolbar'
-import { createBranchColumns } from './branch-columns'
+import { columns } from './branch-columns'
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -35,8 +35,6 @@ export function BranchTable({ data }: BranchTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [sorting, setSorting] = useState<SortingState>([])
-
-  const columns = createBranchColumns()
 
   const table = useReactTable({
     data,
@@ -96,7 +94,7 @@ export function BranchTable({ data }: BranchTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className='h-24 text-center'>
-                  No results.
+                  Không có dữ liệu.
                 </TableCell>
               </TableRow>
             )}

@@ -24,7 +24,7 @@ export function ComponentDeleteDialog({ open, onOpenChange, currentRow }: Props)
     if (value.trim() !== currentRow.name) return
     try {
       await deleteComponentMutation.mutateAsync(currentRow.id)
-      toast.success(`Component "${currentRow.name}" has been deleted successfully`)
+      toast.success(`Thành phần "${currentRow.name}" đã được xóa thành công`)
       onOpenChange(false)
       setValue('')
     } catch (error: unknown) {
@@ -33,9 +33,9 @@ export function ComponentDeleteDialog({ open, onOpenChange, currentRow }: Props)
       const errorMessage =
         error instanceof Error
           ? error.message
-          : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Something went wrong'
+          : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Đã xảy ra lỗi'
 
-      toast.error(`Failed to delete component: ${errorMessage}`)
+      toast.error(`Không thể xóa thành phần: ${errorMessage}`)
     }
   }
 
@@ -52,35 +52,35 @@ export function ComponentDeleteDialog({ open, onOpenChange, currentRow }: Props)
       disabled={value.trim() !== currentRow.name || deleteComponentMutation.isPending}
       title={
         <span className='text-destructive'>
-          <AlertTriangle className='stroke-destructive mr-1 inline-block' size={18} /> Delete Component
+          <AlertTriangle className='stroke-destructive mr-1 inline-block' size={18} /> Xóa Thành phần
         </span>
       }
       desc={
         <div className='space-y-4'>
           <p className='mb-2'>
-            Are you sure you want to delete <span className='font-bold'>{currentRow.name}</span>?
+            Bạn có chắc chắn muốn xóa <span className='font-bold'>{currentRow.name}</span>?
             <br />
-            This action will permanently remove the component and all its options from the system. This cannot be
-            undone.
+            Hành động này sẽ xóa vĩnh viễn thành phần và tất cả các tùy chọn của nó khỏi hệ thống. Điều này không thể
+            hoàn tác.
           </p>
           <Label className='my-2'>
-            Component Name:
+            Tên Thành phần:
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder='Enter component name to confirm deletion.'
+              placeholder='Nhập tên thành phần để xác nhận xóa.'
               disabled={deleteComponentMutation.isPending}
             />
           </Label>
         </div>
       }
-      confirmText={isDeleting ? 'Deleting...' : 'Delete'}
+      confirmText={isDeleting ? 'Đang xóa...' : 'Xóa'}
       destructive
     >
       <Alert variant='destructive'>
-        <AlertTitle>Warning!</AlertTitle>
+        <AlertTitle>Cảnh báo!</AlertTitle>
         <AlertDescription>
-          Please be careful, this operation can not be rolled back and will delete all component options.
+          Vui lòng cẩn thận, thao tác này không thể hoàn tác và sẽ xóa tất cả các tùy chọn thành phần.
         </AlertDescription>
       </Alert>
     </ConfirmDialog>

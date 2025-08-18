@@ -1,15 +1,14 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils/utils'
-import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { callTypes } from '../data/data'
 import { Branch } from '../data/schema'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { BranchTableRowActions } from './branch-table-row-action'
 import LongText from '@/components/long-text'
 import { BranchManagerType } from '@/@types/branch.type'
+import { ImageViewer } from '@/components/ui/image-viewer'
 
-export const createBranchColumns = (): ColumnDef<Branch>[] => [
+export const columns: ColumnDef<Branch>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -17,13 +16,14 @@ export const createBranchColumns = (): ColumnDef<Branch>[] => [
         checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label='Select all'
-        className='translate-y-[2px]'
+        className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
+        data-action-button='true'
       />
     ),
     meta: {
       className: cn(
-        'sticky md:table-cell left-0 z-10 rounded-tl',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
+        'sticky md:table-cell left-0 z-10 rounded-tl w-12',
+        'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30'
       )
     },
     cell: ({ row }) => (
@@ -31,7 +31,8 @@ export const createBranchColumns = (): ColumnDef<Branch>[] => [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label='Select row'
-        className='translate-y-[2px]'
+        className='translate-y-[2px] border-violet-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600'
+        data-action-button='true'
       />
     ),
     enableSorting: false,
@@ -39,87 +40,102 @@ export const createBranchColumns = (): ColumnDef<Branch>[] => [
   },
   {
     accessorKey: 'name',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Branch Name' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Tên chi nhánh' />,
     cell: ({ row }) => <LongText className='max-w-36 font-medium'>{row.getValue('name')}</LongText>,
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-        'sticky left-6 md:table-cell'
+        'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30',
+        'sticky left-12 md:table-cell'
       )
     },
     enableHiding: false
   },
   {
+    accessorKey: 'images',
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Hình ảnh' />,
+    cell: ({ row }) => {
+      const branch = row.original
+      const firstImage = branch.images && branch.images.length > 0 ? branch.images[0] : null
+
+      if (!firstImage) {
+        return (
+          <div className='w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50'>
+            <span className='text-xs text-gray-400'>Không có ảnh</span>
+          </div>
+        )
+      }
+
+      return (
+        <ImageViewer
+          src={firstImage}
+          alt={`Hình ảnh chi nhánh ${branch.name}`}
+          containerClassName='w-16 h-16 rounded-lg border-2 border-violet-200 dark:border-violet-700 bg-background'
+          imgClassName='p-1'
+          fit='cover'
+          title={`Hình ảnh chi nhánh ${branch.name}`}
+        />
+      )
+    },
+    enableSorting: false,
+    meta: { className: 'w-20' }
+  },
+  {
     id: 'address',
-    header: 'Address',
+    header: 'Địa chỉ',
     cell: ({ row }) => {
       const branch = row.original
       const address = [branch.street, branch.ward, branch.district, branch.province].filter(Boolean).join(', ')
-      return <LongText className='max-w-64 text-sm'>{address || 'No address'}</LongText>
+      return <LongText className='max-w-64 text-sm'>{address || 'Chưa có địa chỉ'}</LongText>
     },
-    enableSorting: false
+    enableSorting: false,
+    meta: { className: 'min-w-[200px] max-w-[300px]' }
   },
   {
     accessorKey: 'description',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Description' />,
-    cell: ({ row }) => <LongText className='max-w-48'>{row.getValue('description')}</LongText>
-  },
-  {
-    accessorKey: 'openingHour',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Opening Time' />,
-    cell: ({ row }) => <div className='text-sm'>{row.getValue('openingHour')}</div>,
-    enableSorting: false
-  },
-  {
-    accessorKey: 'closingHour',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Closing Time' />,
-    cell: ({ row }) => <div className='text-sm'>{row.getValue('closingHour')}</div>,
-    enableSorting: false
-  },
-  {
-    accessorKey: 'branchManager',
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Branch Manager' />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Mô tả' />,
     cell: ({ row }) => {
-      const branchManager: BranchManagerType = row.getValue('branchManager')
+      const value = row.getValue('description') as string
+      return <LongText className='max-w-48'>{value || 'Chưa có mô tả'}</LongText>
+    },
+    meta: { className: 'min-w-[160px] max-w-[200px]' }
+  },
+  {
+    id: 'operatingHours',
+    header: 'Giờ hoạt động',
+    cell: ({ row }) => {
+      const branch = row.original
       return (
-        <div className='flex flex-col'>
-          <span className='font-medium'>{branchManager.fullName}</span>
-          <span className='text-sm text-muted-foreground'>{branchManager.userEmail}</span>
-          <span className='text-sm text-muted-foreground'>{branchManager.phoneNumber}</span>
+        <div className='text-sm space-y-1'>
+          <div className='font-medium'>
+            {branch.openingHour} - {branch.closingHour}
+          </div>
+          <div className='text-muted-foreground text-xs'>Hàng ngày</div>
         </div>
       )
     },
     enableSorting: false,
-    enableHiding: false
+    meta: { className: 'w-fit text-nowrap' }
   },
   {
-    id: 'status',
-    accessorFn: () => 'active', // Always return 'active' since there's no status field in schema
-    header: ({ column }) => <DataTableColumnHeader column={column} title='Status' />,
-    cell: () => {
-      // For now, we'll assume all branches are active since there's no status field in the schema
-      const status = 'active'
-      const badgeColor = callTypes.get(status)
+    accessorKey: 'branchManager',
+    header: ({ column }) => <DataTableColumnHeader column={column} title='Quản lý chi nhánh' />,
+    cell: ({ row }) => {
+      const branchManager: BranchManagerType = row.getValue('branchManager')
       return (
-        <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {status}
-          </Badge>
+        <div className='flex flex-col space-y-1 min-w-[180px]'>
+          <span className='font-medium text-sm'>{branchManager.fullName}</span>
+          <span className='text-xs text-muted-foreground'>{branchManager.userEmail}</span>
+          <span className='text-xs text-muted-foreground'>{branchManager.phoneNumber}</span>
         </div>
       )
     },
-    filterFn: (filterValue) => {
-      const status = 'active' // Default status
-      return Array.isArray(filterValue) ? filterValue.includes(status) : true
-    },
+    enableSorting: false,
     enableHiding: false,
-    enableSorting: false
+    meta: { className: 'min-w-[180px]' }
   },
   {
     id: 'actions',
     cell: BranchTableRowActions
   }
 ]
-
-export const columns = createBranchColumns()

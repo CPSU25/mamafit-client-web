@@ -1,13 +1,13 @@
-import { Building, MapPin, Clock } from 'lucide-react'
+import { Building, MapPin, CheckCircle, XCircle } from 'lucide-react'
 
 export const branchTypes = [
   {
-    label: 'Main Branch',
+    label: 'Chi nhánh chính',
     value: 'main',
     icon: Building
   },
   {
-    label: 'Sub Branch',
+    label: 'Chi nhánh phụ',
     value: 'sub',
     icon: MapPin
   }
@@ -15,18 +15,18 @@ export const branchTypes = [
 
 export const branchStatusTypes = [
   {
-    label: 'Active',
+    label: 'Hoạt động',
     value: 'active',
-    icon: Building
+    icon: CheckCircle
   },
   {
-    label: 'Inactive',
+    label: 'Ngừng hoạt động',
     value: 'inactive',
-    icon: Clock
+    icon: XCircle
   }
 ] as const
 
 export const callTypes = new Map([
-  ['active', 'text-green-600 bg-green-50 border-green-200'],
-  ['inactive', 'text-red-600 bg-red-50 border-red-200']
+  ['active', 'bg-teal-100/30 text-teal-900 dark:text-teal-200 border-teal-200'],
+  ['inactive', 'bg-neutral-300/40 border-neutral-300']
 ])
