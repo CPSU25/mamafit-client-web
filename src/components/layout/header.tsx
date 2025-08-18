@@ -41,11 +41,12 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
 
     const currentPath = location.pathname
     const pathSegments = currentPath.split('/').filter(Boolean)
-    const lastSegment = pathSegments[pathSegments.length - 1] || 'dashboard'
+    // Xử lý cho nested routes như /system/admin/manage-order/design-request
+    const relevantPath = pathSegments.slice(2).join('/') || 'dashboard' // Bỏ qua /system/admin
 
     for (const navGroup of currentRole.navGroups) {
       for (const navItem of navGroup.items) {
-        if (navItem.url === lastSegment) {
+        if (navItem.url === relevantPath) {
           return {
             title: navItem.title,
             groupTitle: navGroup.title,
@@ -55,7 +56,7 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
 
         if ('items' in navItem && navItem.items) {
           for (const subItem of navItem.items) {
-            if (subItem.url === lastSegment) {
+            if (subItem.url === relevantPath) {
               return {
                 title: subItem.title,
                 groupTitle: navGroup.title,

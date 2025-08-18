@@ -27,7 +27,7 @@ export function MilestoneTableToolbar<TData>({ table }: MilestoneTableToolbarPro
             <DataTableFacetedFilter
               column={table.getColumn('applyFor')}
               title='Áp dụng cho'
-              options={applyForOptions.map(option => ({
+              options={applyForOptions.map((option) => ({
                 label: option.label,
                 value: option.value
               }))}

@@ -21,17 +21,24 @@ export default function ManageBranchPage() {
   const { data: branchesResponse, isLoading, error } = useGetBranches(queryParams)
 
   // Transform API data to component format
-  const branchList = useMemo(() => branchesResponse?.data?.items?.map(transformManageBranchTypeToBranch) || [], [branchesResponse])
+  const branchList = useMemo(
+    () => branchesResponse?.data?.items?.map(transformManageBranchTypeToBranch) || [],
+    [branchesResponse]
+  )
 
   // Stats
   const totalBranches = branchList.length
-  const totalManagers = new Set(branchList.map(b => b.branchManager.id)).size
-  const avgOperatingHours = branchList.length > 0 ? 
-    Math.round(branchList.reduce((acc, branch) => {
-      const openHour = parseInt(branch.openingHour.split(':')[0])
-      const closeHour = parseInt(branch.closingHour.split(':')[0])
-      return acc + (closeHour - openHour)
-    }, 0) / branchList.length) : 0
+  const totalManagers = new Set(branchList.map((b) => b.branchManager.id)).size
+  const avgOperatingHours =
+    branchList.length > 0
+      ? Math.round(
+          branchList.reduce((acc, branch) => {
+            const openHour = parseInt(branch.openingHour.split(':')[0])
+            const closeHour = parseInt(branch.closingHour.split(':')[0])
+            return acc + (closeHour - openHour)
+          }, 0) / branchList.length
+        )
+      : 0
 
   if (isLoading) {
     return (

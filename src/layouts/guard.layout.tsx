@@ -32,8 +32,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiredRole, fallbackP
       try {
         const authStorage = localStorage.getItem('auth-storage')
         if (authStorage && authStorage !== 'null' && authStorage !== 'undefined') {
-          // Có auth data trong localStorage, đợi auth store hydrate
-          // Chỉ cần kiểm tra sự tồn tại, không parse JSON để tránh lỗi
           const timeoutId = setTimeout(() => {
             setIsChecking(false)
           }, 1000) // Timeout sau 1 giây

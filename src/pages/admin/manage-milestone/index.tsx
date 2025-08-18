@@ -28,8 +28,8 @@ export default function ManageMilestonePage() {
   // Calculate meaningful statistics
   const totalMilestones = milestoneList.length
   const activeMilestones = milestoneList.filter((milestone) => milestone.tasks && milestone.tasks.length > 0).length
-  const warrantiyMilestones = milestoneList.filter((milestone) => 
-    milestone.applyFor && milestone.applyFor.includes('WARRANTY')
+  const warrantiyMilestones = milestoneList.filter(
+    (milestone) => milestone.applyFor && milestone.applyFor.includes('WARRANTY')
   ).length
   const completionRate = totalMilestones > 0 ? Math.round((activeMilestones / totalMilestones) * 100) : 0
 
@@ -164,7 +164,9 @@ export default function ManageMilestonePage() {
                   <div className='space-y-1'>
                     <p className='text-sm font-medium text-muted-foreground'>Yêu cầu đặc biệt</p>
                     <div className='flex items-baseline gap-2'>
-                      <p className='text-2xl font-bold text-red-600 dark:text-red-400'>{totalMilestones - activeMilestones}</p>
+                      <p className='text-2xl font-bold text-red-600 dark:text-red-400'>
+                        {totalMilestones - activeMilestones}
+                      </p>
                       <AlertTriangle className='h-4 w-4 text-red-500' />
                     </div>
                     <p className='text-xs text-muted-foreground'>Cần xem xét kỹ</p>

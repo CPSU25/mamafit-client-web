@@ -24,7 +24,7 @@ export function ComponentTableRowActions<TData>({ row }: ComponentTableRowAction
         <DropdownMenuTrigger asChild>
           <Button variant='ghost' className='data-[state=open]:bg-muted flex h-8 w-8 p-0'>
             <MoreHorizontal className='h-4 w-4' />
-            <span className='sr-only'>Open menu</span>
+            <span className='sr-only'>Mở menu</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end' className='w-[160px]'>
@@ -34,7 +34,7 @@ export function ComponentTableRowActions<TData>({ row }: ComponentTableRowAction
               setOpen('edit')
             }}
           >
-            Edit
+            Chỉnh sửa
             <DropdownMenuShortcut>
               <Edit size={16} />
             </DropdownMenuShortcut>
@@ -47,7 +47,7 @@ export function ComponentTableRowActions<TData>({ row }: ComponentTableRowAction
             }}
             className='text-destructive focus:text-destructive'
           >
-            Delete
+            Xóa
             <DropdownMenuShortcut>
               <Trash size={16} />
             </DropdownMenuShortcut>

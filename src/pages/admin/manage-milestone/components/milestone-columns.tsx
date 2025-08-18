@@ -1,7 +1,7 @@
 // milestone-columns.tsx - Enhanced Table Columns
 import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
-import { Hash, FileText, Calendar } from 'lucide-react'
+import { FileText, Calendar } from 'lucide-react'
 import { Milestone } from '../data/schema'
 import LongText from '@/components/long-text'
 import dayjs from 'dayjs'
@@ -83,21 +83,11 @@ export const columns: ColumnDef<Milestone>[] = [
     ),
     cell: ({ row }) => {
       const name = row.getValue('name') as string
-      const firstLetter = name.charAt(0).toUpperCase()
 
       return (
-        <div className='flex items-center gap-3'>
-          <Avatar className='h-10 w-10 border-2 border-violet-200 dark:border-violet-800'>
-            <AvatarFallback className='bg-gradient-to-br from-violet-500 to-violet-600 text-white font-bold text-sm'>
-              {firstLetter}
-            </AvatarFallback>
-          </Avatar>
+        <div className='flex items-center '>
           <div className='flex flex-col'>
             <span className='font-semibold text-foreground'>{name}</span>
-            <span className='text-xs text-muted-foreground flex items-center gap-1'>
-              <Hash className='h-3 w-3' />
-              {row.original.id.slice(-6)}
-            </span>
           </div>
         </div>
       )
@@ -159,7 +149,7 @@ export const columns: ColumnDef<Milestone>[] = [
     ),
     cell: ({ row }) => {
       const applyFor = row.getValue('applyFor') as string[]
-      
+
       const getBadgeConfig = (type: string) => {
         const configs = {
           READY_TO_BUY: {
@@ -224,7 +214,10 @@ export const columns: ColumnDef<Milestone>[] = [
           })}
 
           {remainingCount > 0 && (
-            <Badge variant='outline' className='text-xs font-medium bg-violet-50 text-violet-700 border-violet-300 dark:bg-violet-950/30 dark:text-violet-400'>
+            <Badge
+              variant='outline'
+              className='text-xs font-medium bg-violet-50 text-violet-700 border-violet-300 dark:bg-violet-950/30 dark:text-violet-400'
+            >
               +{remainingCount} khác
             </Badge>
           )}
@@ -282,7 +275,7 @@ export const columns: ColumnDef<Milestone>[] = [
       const createdBy = row.getValue('createdBy') as string
       const initials = createdBy
         .split(' ')
-        .map(word => word.charAt(0))
+        .map((word) => word.charAt(0))
         .join('')
         .toUpperCase()
         .slice(0, 2)

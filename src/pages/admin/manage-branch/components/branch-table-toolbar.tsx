@@ -20,9 +20,7 @@ export function BranchTableToolbar<TData>({ table }: BranchTableToolbarProps<TDa
           onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
           className='h-8 w-[150px] lg:w-[250px] border-violet-200 dark:border-violet-800 focus:border-violet-400 dark:focus:border-violet-600'
         />
-        <div className='flex gap-x-2'>
-          {/* Removed status filter since no status field exists */}
-        </div>
+        <div className='flex gap-x-2'>{/* Removed status filter since no status field exists */}</div>
         {isFiltered && (
           <Button
             variant='ghost'

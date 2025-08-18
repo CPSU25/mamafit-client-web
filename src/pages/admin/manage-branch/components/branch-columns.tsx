@@ -57,7 +57,7 @@ export const columns: ColumnDef<Branch>[] = [
     cell: ({ row }) => {
       const branch = row.original
       const firstImage = branch.images && branch.images.length > 0 ? branch.images[0] : null
-      
+
       if (!firstImage) {
         return (
           <div className='w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50'>
@@ -65,7 +65,7 @@ export const columns: ColumnDef<Branch>[] = [
           </div>
         )
       }
-      
+
       return (
         <ImageViewer
           src={firstImage}
