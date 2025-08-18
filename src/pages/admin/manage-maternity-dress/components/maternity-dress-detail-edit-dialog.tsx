@@ -10,13 +10,13 @@ import {
 } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { ImageIcon, Loader2, Package, Palette, Ruler, Save, ShoppingBag, Sparkles, TrendingUp, X } from 'lucide-react'
-import React, { useEffect } from 'react'
+import { ImageIcon, Loader2, Palette, Ruler, Save, ShoppingBag, Sparkles, TrendingUp, X } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { MaternityDressDetailFormData, MaternityDressDetailType } from '@/@types/manage-maternity-dress.types'
 import { useUpdateMaternityDressDetail } from '@/services/admin/maternity-dress.service'
+import Tiptap from '@/components/TipTap/TipTap'
 
 interface MaternityDressDetailEditDialogProps {
   detail: MaternityDressDetailType
@@ -37,6 +37,7 @@ export const MaternityDressDetailEditDialog: React.FC<MaternityDressDetailEditDi
   open,
   onOpenChange
 }) => {
+  const [isOpen, setIsOpen] = useState(open || false)
   const updateDetailMutation = useUpdateMaternityDressDetail()
 
   const form = useForm<MaternityDressDetailFormData>({
@@ -51,6 +52,16 @@ export const MaternityDressDetailEditDialog: React.FC<MaternityDressDetailEditDi
       price: detail.price || 0
     }
   })
+
+  // Sync with external open state
+  useEffect(() => {
+    setIsOpen(open || false)
+  }, [open])
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setIsOpen(newOpen)
+    onOpenChange?.(newOpen)
+  }
 
   // Reset form when detail changes
   useEffect(() => {
@@ -74,8 +85,11 @@ export const MaternityDressDetailEditDialog: React.FC<MaternityDressDetailEditDi
         id: detail.id,
         data
       })
-      toast.success('Cập nhật biến thể thành công!')
+      form.reset()
+      // Đóng dialog khi cập nhật thành công
+      setIsOpen(false)
       onOpenChange?.(false)
+      toast.success('Cập nhật biến thể thành công!')
     } catch (error) {
       console.error('Error updating detail:', error)
       toast.error('Có lỗi xảy ra khi cập nhật biến thể')
@@ -83,9 +97,9 @@ export const MaternityDressDetailEditDialog: React.FC<MaternityDressDetailEditDi
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange} modal={false}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
+      <DialogContent className=' sm:max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <div className='h-8 w-8 rounded-lg bg-violet-500 flex items-center justify-center'>
@@ -221,13 +235,22 @@ export const MaternityDressDetailEditDialog: React.FC<MaternityDressDetailEditDi
               name='description'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-medium flex items-center gap-2'>
-                    <Package className='h-4 w-4' />
-                    Mô Tả Chi Tiết
-                  </FormLabel>
                   <FormControl>
-                    <Textarea placeholder='Mô tả chi tiết...' rows={4} className='resize-none' {...field} />
+                    <div className='w-full'>
+                      <Tiptap
+                        onChange={(content: string) => {
+                          field.onChange(content)
+                        }}
+                        initialValue={field.value || ''}
+                        className='min-h-[100px] sm:max-w-xl'
+                        placeholder='Mô tả chi tiết về biến thể: đặc điểm nổi bật, phù hợp với ai...'
+                      />
+                    </div>
                   </FormControl>
+                  <div className='flex justify-between text-xs text-muted-foreground mt-2'>
+                    <span>Mô tả chi tiết giúp khách hàng hiểu rõ hơn về biến thể này</span>
+                    <span>{field.value?.replace(/<[^>]*>/g, '').length || 0} ký tự</span>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -277,7 +300,7 @@ export const MaternityDressDetailEditDialog: React.FC<MaternityDressDetailEditDi
                   </>
                 )}
               </Button>
-              <Button type='button' variant='outline' onClick={() => onOpenChange?.(false)} className='h-10'>
+              <Button type='button' variant='outline' onClick={() => handleOpenChange(false)} className='h-10'>
                 <X className='h-4 w-4 mr-2' />
                 Hủy bỏ
               </Button>

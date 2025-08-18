@@ -1,9 +1,8 @@
 // maternity-dress-columns.tsx - Enhanced Table Columns
 import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
-import { Package, Image, Calendar, Hash, FileText, Sparkles } from 'lucide-react'
+import { Package, Image, Calendar, FileText } from 'lucide-react'
 import { MaternityDress } from '../data/schema'
-import LongText from '@/components/long-text'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
@@ -11,8 +10,8 @@ import { cn } from '@/lib/utils/utils'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { MaternityDressTableRowActions } from './maternity-dress-row-action'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import ExpandableHtmlContent from '@/components/expandable-html-content'
 
 // Helper function để format tiền VNĐ
 const formatCurrency = (amount: number): string => {
@@ -94,6 +93,35 @@ export const columns: ColumnDef<MaternityDress>[] = [
     enableHiding: false
   },
   {
+    accessorKey: 'sku',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title='SKU'
+        className='text-violet-700 dark:text-violet-300 font-semibold'
+      />
+    ),
+    cell: ({ row }) => {
+      const sku = row.getValue('sku') as string
+
+      return (
+        <div className='flex items-center gap-2'>
+          <div className='flex flex-col'>
+            <span className='font-semibold text-foreground'>{sku}</span>
+          </div>
+        </div>
+      )
+    },
+    meta: {
+      className: cn(
+        'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
+        'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30',
+        'sticky left-24 md:table-cell'
+      )
+    },
+    enableHiding: false
+  },
+  {
     accessorKey: 'name',
     header: ({ column }) => (
       <DataTableColumnHeader
@@ -104,27 +132,47 @@ export const columns: ColumnDef<MaternityDress>[] = [
     ),
     cell: ({ row }) => {
       const name = row.getValue('name') as string
-      const styleName = row.original.styleName
-      const firstLetter = name.charAt(0).toUpperCase()
-
       return (
-        <div className='flex items-center gap-3'>
-          <Avatar className='h-10 w-10 border-2 border-violet-200 dark:border-violet-800'>
-            <AvatarFallback className='bg-gradient-to-br from-violet-500 to-violet-600 text-white font-bold text-sm'>
-              {firstLetter}
-            </AvatarFallback>
-          </Avatar>
+        <div className='flex items-center text-center'>
           <div className='flex flex-col'>
-            <span className='font-semibold text-foreground'>{name}</span>
-            <div className='flex items-center gap-2'>
-              <Badge variant='secondary' className='text-xs'>
-                {styleName}
-              </Badge>
-              <span className='text-xs text-muted-foreground flex items-center gap-1'>
-                <Hash className='h-3 w-3' />
-                {row.original.id.slice(-6)}
-              </span>
-            </div>
+            <span
+              className='font-semibold text-foreground'
+              style={{
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                maxWidth: '100%'
+              }}
+            >
+              {name}
+            </span>
+          </div>
+        </div>
+      )
+    },
+    meta: {
+      className: cn(
+        'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
+        'bg-background transition-colors duration-200 group-hover/row:bg-violet-50/50 dark:group-hover/row:bg-violet-950/20 group-data-[state=selected]/row:bg-violet-50 dark:group-data-[state=selected]/row:bg-violet-950/30',
+        'sticky left-24 md:table-cell'
+      )
+    },
+    enableHiding: false
+  },
+  {
+    accessorKey: 'styleName',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title='Kiểu dáng'
+        className='text-violet-700 dark:text-violet-300 font-md'
+      />
+    ),
+    cell: ({ row }) => {
+      const styleName = row.getValue('styleName') as string
+      return (
+        <div className='flex items-center gap-2'>
+          <div className='flex flex-col'>
+            <span className='font-md text-foreground'>{styleName}</span>
           </div>
         </div>
       )
@@ -145,7 +193,6 @@ export const columns: ColumnDef<MaternityDress>[] = [
     ),
     cell: ({ row }) => {
       const description = row.getValue('description') as string
-
       if (!description) {
         return (
           <span className='text-muted-foreground italic flex items-center gap-1'>
@@ -160,11 +207,11 @@ export const columns: ColumnDef<MaternityDress>[] = [
           <Tooltip>
             <TooltipTrigger asChild>
               <div className='max-w-xs'>
-                <LongText className='text-sm line-clamp-2'>{description}</LongText>
+                <ExpandableHtmlContent content={description} maxLength={20} />
               </div>
             </TooltipTrigger>
             <TooltipContent className='max-w-sm'>
-              <p className='text-sm'>{description}</p>
+              <ExpandableHtmlContent content={description} maxLength={20} />
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -212,7 +259,6 @@ export const columns: ColumnDef<MaternityDress>[] = [
 
       return (
         <div className='flex items-center gap-2'>
-          <Sparkles className='h-4 w-4 text-violet-500' />
           <span className='font-semibold text-foreground'>{formatCurrency(price)}</span>
         </div>
       )
