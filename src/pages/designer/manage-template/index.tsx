@@ -7,7 +7,8 @@ import {
   StatsCards,
   TemplateFilters,
   StyleGrid,
-  PresetDetailView
+  PresetDetailView,
+  CreatePresetModal
 } from '@/pages/designer/manage-template/components'
 
 import { useTemplateManager } from '@/hooks/use-template-manager'
@@ -17,18 +18,19 @@ import { ViewMode, SortBy, FilterBy } from '@/@types/designer.types'
 export default function ManageTemplatePage() {
   const [searchParams] = useSearchParams()
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   // Lấy params từ URL để truyền vào hook
-  const page = parseInt(searchParams.get('page') || '1')
+  const page = parseInt(searchParams.get('page') || '100')
   const searchTerm = searchParams.get('search') || ''
   const sortBy = (searchParams.get('sortBy') as SortBy) || 'CREATED_AT_DESC'
   const filterBy = (searchParams.get('filterBy') as FilterBy) || 'all'
   const viewMode = (searchParams.get('viewMode') as ViewMode) || 'grid'
 
   // Fetch dữ liệu từ API - chỉ cần pagination
-  const { data, error } = useTemplates({
-    index: page,
-    pageSize: 12
+  const { data, error, refetch } = useTemplates({
+    index: 0,
+    pageSize: page
   })
 
   // Sử dụng hook quản lý template với dữ liệu từ API
@@ -43,6 +45,14 @@ export default function ManageTemplatePage() {
 
   const groupedByStyle = templateManager.groupedByStyle
   const stats = templateManager.stats
+
+  const handleCreateTemplate = () => {
+    setIsCreateModalOpen(true)
+  }
+
+  const handleCreateSuccess = () => {
+    refetch() // Refresh the data after successful creation
+  }
 
   const handleEdit = (id: string) => {
     console.log('Edit template:', id)
@@ -79,7 +89,7 @@ export default function ManageTemplatePage() {
     <div className='space-y-6'>
       <div className='max-w-[1600px] mx-auto p-6 space-y-6'>
         <PageHeader
-          onCreateTemplate={() => console.log('Create template')}
+          onCreateTemplate={handleCreateTemplate}
           onImport={() => console.log('Import')}
           onExport={() => console.log('Export')}
           onSettings={() => console.log('Settings')}
@@ -179,6 +189,13 @@ export default function ManageTemplatePage() {
             )}
           </div>
         </div>
+
+        {/* Create Preset Modal */}
+        <CreatePresetModal
+          open={isCreateModalOpen}
+          onOpenChange={setIsCreateModalOpen}
+          onSuccess={handleCreateSuccess}
+        />
       </div>
     </div>
   )

@@ -5,7 +5,7 @@ import {
   ComponentType,
   ComponentTypeFormData,
   ComponentOptionFormData
-} from '@/@types/admin.types'
+} from '@/@types/manage-component.types'
 import { api } from '@/lib/axios/axios'
 
 interface ComponentQueryParams {

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ComponentTypeFormData, ComponentOptionType, ComponentOptionFormData } from '@/@types/admin.types'
+import { ComponentTypeFormData, ComponentOptionType, ComponentOptionFormData } from '@/@types/manage-component.types'
 import ManageComponentAPI from '@/apis/manage-component.api'
 import { toast } from 'sonner'
 

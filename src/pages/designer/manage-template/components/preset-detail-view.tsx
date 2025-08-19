@@ -24,7 +24,7 @@ export const PresetDetailView: React.FC<PresetDetailViewProps> = ({
 }) => {
   // Fetch preset detail từ API
   const { data: template, isLoading, error } = useTemplateDetail(presetId || '')
-
+  console.log('Preset Detail:', template)
   if (!presetId) return null
 
   // Loading state

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { presetApi } from '@/apis/preset.api'
+import { presetApi } from '@/apis/manage-template.api'
 import { toast } from 'sonner'
 
 // Hook để lấy danh sách preset

@@ -1,46 +1,13 @@
 import { api } from '@/lib/axios/axios'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
-import { DressTemplate, ComponentOption } from '@/@types/designer.types'
+import {
+  PresetDetailResponse,
+  PresetListItem,
+  SendPresetToDesignRequestResponse,
+  PresetFormData
+} from '@/@types/manage-template.types'
 
 // API Response interfaces based on actual API structure
-interface PresetListItem {
-  id: string
-  styleId: string
-  styleName: string
-  createdAt: string
-  createdBy: string
-  updatedAt: string
-  updatedBy: string
-  images: string[]
-  type: 'SYSTEM' | 'USER'
-  isDefault: boolean
-  price: number
-}
-
-interface PresetDetailResponse {
-  id: string
-  styleId: string
-  styleName: string
-  createdAt: string
-  createdBy: string
-  updatedAt: string
-  updatedBy: string
-  images: string[]
-  type: 'SYSTEM' | 'USER'
-  isDefault: boolean
-  price: number
-  componentOptions: ComponentOption[]
-}
-
-interface SendPresetToDesignRequestResponse {
-  success: boolean
-  message: string
-  data?: {
-    presetId: string
-    designRequestId: string
-    orderId: string
-  }
-}
 
 export interface PresetListParams {
   index?: number
@@ -67,13 +34,13 @@ export const presetApi = {
   },
 
   // Create new preset
-  createPreset: async (data: Partial<DressTemplate>): Promise<ItemBaseResponse<DressTemplate>> => {
+  createPreset: async (data: PresetFormData): Promise<ItemBaseResponse<[]>> => {
     const response = await api.post('/preset', data)
     return response.data
   },
 
   // Update preset
-  updatePreset: async (id: string, data: Partial<DressTemplate>): Promise<ItemBaseResponse<DressTemplate>> => {
+  updatePreset: async (id: string, data: PresetFormData): Promise<ItemBaseResponse<[]>> => {
     const response = await api.put(`/preset/${id}`, data)
     return response.data
   },
@@ -98,8 +65,9 @@ export const presetApi = {
 }
 
 // Transform functions to convert API data to our internal types
-export const transformPresetListItem = (item: PresetListItem): DressTemplate => ({
+export const transformPresetListItem = (item: PresetListItem) => ({
   id: item.id,
+  name: item.name,
   styleId: item.styleId,
   styleName: item.styleName,
   createdAt: item.createdAt,
@@ -112,8 +80,9 @@ export const transformPresetListItem = (item: PresetListItem): DressTemplate => 
   price: item.price
 })
 
-export const transformPresetDetail = (item: PresetDetailResponse): DressTemplate => ({
+export const transformPresetDetail = (item: PresetDetailResponse) => ({
   id: item.id,
+  name: item.name,
   styleId: item.styleId,
   styleName: item.styleName,
   createdAt: item.createdAt,
@@ -124,5 +93,8 @@ export const transformPresetDetail = (item: PresetDetailResponse): DressTemplate
   type: item.type,
   isDefault: item.isDefault,
   price: item.price,
-  componentOptions: item.componentOptions
+  componentOptions: item.componentOptions?.map((option) => ({
+    ...option,
+    tag: Array.isArray(option.tag) ? option.tag.join(', ') : null
+  }))
 })

@@ -14,7 +14,7 @@ import {
   useDeleteComponentOption
 } from '@/services/admin/manage-component.service'
 import { toast } from 'sonner'
-import { ComponentOptionType } from '@/@types/admin.types'
+import { ComponentOptionType } from '@/@types/manage-component.types'
 
 interface ExpandedComponentDetailProps {
   componentId: string
@@ -429,48 +429,11 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
                               </Badge>
                             </div>
                             <div className='flex items-center justify-between'>
-                              <span className='text-xs text-muted-foreground'>Status:</span>
-                              <Badge
-                                variant={option.componentOptionType === 'APPROVED' ? 'default' : 'secondary'}
-                                className='text-xs'
-                              >
-                                {option.componentOptionType}
-                              </Badge>
-                            </div>
-                            <div className='flex items-center justify-between'>
                               <span className='text-xs text-muted-foreground'>Price:</span>
                               <Badge variant='outline' className='text-xs'>
                                 {option.price.toLocaleString()} VND
                               </Badge>
                             </div>
-                            {option.tag && (option.tag.parentTag?.length > 0 || option.tag.childTag?.length > 0) && (
-                              <div className='space-y-1'>
-                                {option.tag.parentTag && option.tag.parentTag.length > 0 && (
-                                  <div>
-                                    <span className='text-xs text-muted-foreground'>Parent Tags:</span>
-                                    <div className='flex flex-wrap gap-1 mt-1'>
-                                      {option.tag.parentTag.map((tag, index) => (
-                                        <Badge key={index} variant='outline' className='text-xs'>
-                                          {tag}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {option.tag.childTag && option.tag.childTag.length > 0 && (
-                                  <div>
-                                    <span className='text-xs text-muted-foreground'>Child Tags:</span>
-                                    <div className='flex flex-wrap gap-1 mt-1'>
-                                      {option.tag.childTag.map((tag, index) => (
-                                        <Badge key={index} variant='secondary' className='text-xs'>
-                                          {tag}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
                           </div>
 
                           {option.description && (
@@ -500,12 +463,6 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
                   <div className='p-3 bg-primary/10 rounded-lg'>
                     <span className='text-xs font-medium text-primary uppercase tracking-wide'>Tổng options</span>
                     <p className='text-lg font-bold text-primary mt-1'>{options.length}</p>
-                  </div>
-                  <div className='p-3 bg-accent/10 rounded-lg'>
-                    <span className='text-xs font-medium text-accent uppercase tracking-wide'>Options được duyệt</span>
-                    <p className='text-lg font-bold text-accent mt-1'>
-                      {options.filter((o: ComponentOptionType) => o.componentOptionType === 'APPROVED').length}
-                    </p>
                   </div>
                   <div className='p-3 bg-secondary/10 rounded-lg'>
                     <span className='text-xs font-medium text-secondary-foreground uppercase tracking-wide'>

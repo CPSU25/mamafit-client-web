@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import designerTaskAPI from '@/apis/designer-task.api'
-import { presetApi } from '@/apis/preset.api'
+import { presetApi } from '@/apis/manage-template.api'
 
 export function useDesignerTasks() {
   return useQuery({
