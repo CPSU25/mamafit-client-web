@@ -15,7 +15,7 @@ export const useWarrantyRequestList = (params: WarrantyRequestListParams) => {
   return useQuery({
     queryKey: warrantyKey.list(params),
     queryFn: () => warrantyAPI.getWarrantyRequestList(params),
-    select: (data) => data.data.data,
+    select: (data) => data.data.data, // Return full pagination data structure
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
