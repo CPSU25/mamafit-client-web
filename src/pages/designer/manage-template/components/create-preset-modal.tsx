@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Upload, Palette, Sparkles, Loader2, CheckCircle2, AlertCircle, DollarSign } from 'lucide-react'
 import {
   Dialog,
@@ -30,30 +32,22 @@ interface CreatePresetModalProps {
   onSuccess?: () => void
 }
 
-interface FormData {
-  styleId: string
-  images: string[]
-  price: number
-  isDefault: boolean
-  hemOptionId: string
-  necklineOptionId: string
-  waistOptionId: string
-  sleevesOptionId: string
-  fabricOptionId: string
-  colorOptionId: string
-}
+// Zod schema for form validation
+const formSchema = z.object({
+  styleId: z.string().min(1, 'Vui lòng chọn kiểu style'),
+  name: z.string().min(1, 'Vui lòng nhập tên preset'),
+  images: z.array(z.string()).min(1, 'Vui lòng tải lên ít nhất 1 hình ảnh'),
+  price: z.number().min(1, 'Giá phải lớn hơn 0'),
+  isDefault: z.boolean(),
+  hemOptionId: z.string().min(1, 'Vui lòng chọn kiểu viền'),
+  necklineOptionId: z.string().min(1, 'Vui lòng chọn kiểu cổ áo'),
+  waistOptionId: z.string().min(1, 'Vui lòng chọn kiểu eo'),
+  sleevesOptionId: z.string().min(1, 'Vui lòng chọn kiểu tay áo'),
+  fabricOptionId: z.string().min(1, 'Vui lòng chọn chất liệu'),
+  colorOptionId: z.string().min(1, 'Vui lòng chọn màu sắc')
+})
 
-interface FormErrors {
-  styleId?: string
-  images?: string
-  price?: string
-  hemOptionId?: string
-  necklineOptionId?: string
-  waistOptionId?: string
-  sleevesOptionId?: string
-  fabricOptionId?: string
-  colorOptionId?: string
-}
+type FormDataType = z.infer<typeof formSchema>
 
 // Component colors mapping
 const componentColors = {
@@ -75,20 +69,26 @@ const componentLabels = {
 }
 
 export default function CreatePresetModal({ open, onOpenChange, onSuccess }: CreatePresetModalProps) {
-  const [formData, setFormData] = useState<FormData>({
-    styleId: '',
-    images: [],
-    price: 0,
-    isDefault: false,
-    hemOptionId: '',
-    necklineOptionId: '',
-    waistOptionId: '',
-    sleevesOptionId: '',
-    fabricOptionId: '',
-    colorOptionId: ''
+  const form = useForm<FormDataType>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      styleId: '',
+      name: '',
+      images: [],
+      price: 0,
+      isDefault: false,
+      hemOptionId: '',
+      necklineOptionId: '',
+      waistOptionId: '',
+      sleevesOptionId: '',
+      fabricOptionId: '',
+      colorOptionId: ''
+    }
   })
 
-  const [errors, setErrors] = useState<FormErrors>({})
+  const formData = form.watch() // Watch all form values for UI logic
+  const errors = form.formState.errors // Get form errors
+
   const createTemplateMutation = useCreateTemplate()
 
   // Fetch styles data với filter isCustom = true
@@ -132,116 +132,57 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
   const fabricOptions = fabricComponent?.data?.options || []
   const colorOptions = colorComponent?.data?.options || []
 
-  // Validate form
-  const validateForm = (): FormErrors => {
-    const newErrors: FormErrors = {}
-
-    if (!formData.styleId) {
-      newErrors.styleId = 'Vui lòng chọn kiểu style'
-    }
-
-    if (!formData.images.length) {
-      newErrors.images = 'Vui lòng tải lên ít nhất 1 hình ảnh'
-    }
-
-    if (formData.price <= 0) {
-      newErrors.price = 'Giá phải lớn hơn 0'
-    }
-
-    if (!formData.hemOptionId) {
-      newErrors.hemOptionId = 'Vui lòng chọn kiểu viền'
-    }
-
-    if (!formData.necklineOptionId) {
-      newErrors.necklineOptionId = 'Vui lòng chọn kiểu cổ áo'
-    }
-
-    if (!formData.waistOptionId) {
-      newErrors.waistOptionId = 'Vui lòng chọn kiểu eo'
-    }
-
-    if (!formData.sleevesOptionId) {
-      newErrors.sleevesOptionId = 'Vui lòng chọn kiểu tay áo'
-    }
-
-    if (!formData.fabricOptionId) {
-      newErrors.fabricOptionId = 'Vui lòng chọn chất liệu'
-    }
-
-    if (!formData.colorOptionId) {
-      newErrors.colorOptionId = 'Vui lòng chọn màu sắc'
-    }
-
-    return newErrors
-  }
-
   // Handle form submission
-  const handleSubmit = async () => {
-    const validationErrors = validateForm()
-    setErrors(validationErrors)
-
-    if (Object.keys(validationErrors).length > 0) {
-      toast.error('Vui lòng kiểm tra lại thông tin')
-      return
-    }
-
+  const handleSubmit = async (data: FormDataType) => {
     // Collect all selected component option IDs
     const componentOptionIds = [
-      formData.hemOptionId,
-      formData.necklineOptionId,
-      formData.waistOptionId,
-      formData.sleevesOptionId,
-      formData.fabricOptionId,
-      formData.colorOptionId
+      data.hemOptionId,
+      data.necklineOptionId,
+      data.waistOptionId,
+      data.sleevesOptionId,
+      data.fabricOptionId,
+      data.colorOptionId
     ].filter(Boolean) // Remove empty strings
+
     console.log('Selected component option IDs:', componentOptionIds)
+
     const presetFormData: PresetFormData = {
       sku: '',
-      styleId: formData.styleId,
-      images: formData.images,
+      name: data.name,
+      styleId: data.styleId,
+      images: data.images,
       type: 'SYSTEM',
-      isDefault: formData.isDefault,
-      price: formData.price,
+      isDefault: data.isDefault,
+      price: data.price,
       componentOptionIds
     }
 
     try {
       await createTemplateMutation.mutateAsync(presetFormData)
+      toast.success('Tạo preset thành công!')
 
       // Reset form
-      setFormData({
-        styleId: '',
-        images: [],
-        price: 0,
-        isDefault: false,
-        hemOptionId: '',
-        necklineOptionId: '',
-        waistOptionId: '',
-        sleevesOptionId: '',
-        fabricOptionId: '',
-        colorOptionId: ''
-      })
-      setErrors({})
-
+      form.reset()
       onSuccess?.()
       onOpenChange(false)
     } catch (error) {
       console.error('Create preset failed:', error)
+      toast.error('Có lỗi xảy ra khi tạo preset')
     }
   }
 
   const handleImageChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, images: [value] }))
-    if (errors.images) {
-      setErrors((prev) => ({ ...prev, images: undefined }))
-    }
+    form.setValue('images', [value])
   }
 
-  const handleInputChange = (field: keyof FormData, value: string | number | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
-    if (errors[field as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }))
+  const handleInputChange = (field: keyof FormDataType, value: string | number | boolean) => {
+    // Type-safe setValue with specific handling for each field type
+    if (field === 'price') {
+      form.setValue(field, value as number)
+    } else if (field === 'isDefault') {
+      form.setValue(field, value as boolean)
+    } else {
+      form.setValue(field, value as string)
     }
   }
 
@@ -273,84 +214,113 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-6xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50/30'>
+      <DialogContent className='sm:max-w-4xl max-h-[95vh] overflow-y-auto'>
         <DialogHeader className='text-center pb-4'>
           <DialogTitle className='text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center justify-center gap-3'>
             <Sparkles className='h-8 w-8 text-purple-500' />
-            Tạo Preset Mới
+            Tạo mẫu đầm bầu mới
           </DialogTitle>
-          <DialogDescription className='text-lg text-gray-600 mt-3'>
+          <DialogDescription className='text-base text-center text-gray-600 mt-3'>
             Thiết kế một preset váy bầu tuyệt đẹp bằng cách chọn các thành phần và tải lên hình ảnh
           </DialogDescription>
         </DialogHeader>
 
-        {/* Style Selection */}
-        <div className='space-y-3 mb-6'>
-          <Label className='text-lg font-semibold text-gray-700 flex items-center gap-2'>
-            <Sparkles className='h-5 w-5 text-purple-500' />
-            Chọn Style *
-          </Label>
-          <Select value={formData.styleId} onValueChange={(value) => handleInputChange('styleId', value)}>
-            <SelectTrigger className={`h-12 text-base ${errors.styleId ? 'border-red-500' : ''}`}>
-              <SelectValue placeholder='Chọn style cho template...' />
-            </SelectTrigger>
-            <SelectContent>
-              {customStyles.map((style: StyleType) => (
-                <SelectItem key={style.id} value={style.id}>
-                  <div className='flex flex-col items-start gap-1 py-1'>
-                    <span className='font-medium text-sm'>{style.name}</span>
-                    {style.description && <span className='text-xs text-muted-foreground'>{style.description}</span>}
-                    <Badge variant='outline' className='text-xs'>
-                      Custom Style
-                    </Badge>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.styleId && (
-            <p className='text-sm text-red-500 flex items-center gap-1'>
-              <AlertCircle className='h-4 w-4' />
-              {errors.styleId}
-            </p>
-          )}
-        </div>
-
-        {/* Price Input */}
-        <div className='mb-6'>
-          <div className='space-y-2'>
-            <Label htmlFor='price' className='text-lg font-semibold text-gray-700 flex items-center gap-2'>
-              <DollarSign className='h-5 w-5 text-green-500' />
-              Giá (VNĐ)
+        {/* Style Selection and Default Preset */}
+        <div className='flex flex-row gap-6 mb-6'>
+          {/* Style Selection */}
+          <div className='flex-1 space-y-3'>
+            <Label className=' text-base font-medium text-gray-700 flex items-center gap-2'>
+              <Sparkles className='h-4 w-4 text-purple-600' />
+              Chọn Kiểu Dáng *
             </Label>
-            <Input
-              id='price'
-              type='number'
-              placeholder='0'
-              value={formData.price || ''}
-              onChange={(e) => handleInputChange('price', Number(e.target.value))}
-              className={`h-12 text-base ${errors.price ? 'border-red-500 focus:border-red-500' : ''}`}
-            />
-            {errors.price && (
+            <Select value={formData.styleId} onValueChange={(value) => handleInputChange('styleId', value)}>
+              <SelectTrigger className={`!h-20 text-base ${errors.styleId ? 'border-red-500' : ''}`}>
+                <SelectValue placeholder='Chọn kiểu dáng cho mẫu đầm bầu...' className='!h-20' />
+              </SelectTrigger>
+              <SelectContent>
+                {customStyles.map((style: StyleType) => (
+                  <SelectItem key={style.id} value={style.id}>
+                    <div className='flex flex-col items-start gap-1'>
+                      <span className='font-medium text-sm'>{style.name}</span>
+                      {style.description && (
+                        <span className='text-xs text-muted-foreground line-clamp-1'>{style.description}</span>
+                      )}
+                      <Badge variant='outline' className='text-xs'>
+                        Kiểu dáng custom
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.styleId && (
               <p className='text-sm text-red-500 flex items-center gap-1'>
                 <AlertCircle className='h-4 w-4' />
-                {errors.price}
+                {errors.styleId.message}
               </p>
             )}
           </div>
+
+          {/* Default Preset Checkbox */}
+          <div className='flex items-center justify-center pt-8'>
+            <div className='flex items-center space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200'>
+              <Checkbox
+                id='isDefault'
+                checked={formData.isDefault}
+                onCheckedChange={(checked) => handleInputChange('isDefault', checked as boolean)}
+              />
+              <Label htmlFor='isDefault' className='text-sm text-blue-700 font-medium cursor-pointer'>
+                Đặt làm preset mặc định
+              </Label>
+            </div>
+          </div>
         </div>
 
-        {/* Checkbox Default */}
-        <div className='mb-6'>
-          <div className='flex items-center space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200'>
-            <Checkbox
-              id='isDefault'
-              checked={formData.isDefault}
-              onCheckedChange={(checked) => handleInputChange('isDefault', checked as boolean)}
-            />
-            <Label htmlFor='isDefault' className='text-base text-blue-700 font-medium cursor-pointer'>
-              Đặt làm preset mặc định
-            </Label>
+        {/* Name and Price Input */}
+        <div className='flex flex-row gap-4 mb-6'>
+          <div className='flex-1'>
+            <div className='space-y-2'>
+              <Label htmlFor='name' className='text-base font-medium text-gray-700 flex items-center gap-2'>
+                <Sparkles className='h-4 w-4 text-purple-600' />
+                Tên mẫu
+              </Label>
+              <Input
+                id='name'
+                type='text'
+                placeholder='Tên của mẫu đầm bầu'
+                value={formData.name || ''}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className={`h-12 text-base ${errors.name ? 'border-red-500 focus:border-red-500' : ''}`}
+              />
+              {errors.name && (
+                <p className='text-sm text-red-500 flex items-center gap-1'>
+                  <AlertCircle className='h-4 w-4' />
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className='flex-1'>
+            <div className='space-y-2'>
+              <Label htmlFor='price' className='text-base font-medium text-gray-700 flex items-center gap-2'>
+                <DollarSign className='h-4 w-4 text-green-600' />
+                Giá (VNĐ)
+              </Label>
+              <Input
+                id='price'
+                type='number'
+                placeholder='0'
+                value={formData.price || ''}
+                onChange={(e) => handleInputChange('price', Number(e.target.value))}
+                className={`h-12 text-base ${errors.price ? 'border-red-500 focus:border-red-500' : ''}`}
+              />
+              {errors.price && (
+                <p className='text-sm text-red-500 flex items-center gap-1'>
+                  <AlertCircle className='h-4 w-4' />
+                  {errors.price.message}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -390,7 +360,7 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
                 {errors.hemOptionId && (
                   <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
                     <AlertCircle className='h-3 w-3' />
-                    {errors.hemOptionId}
+                    {errors.hemOptionId.message}
                   </p>
                 )}
               </div>
@@ -423,7 +393,7 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
                 {errors.necklineOptionId && (
                   <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
                     <AlertCircle className='h-3 w-3' />
-                    {errors.necklineOptionId}
+                    {errors.necklineOptionId.message}
                   </p>
                 )}
               </div>
@@ -454,7 +424,7 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
                 {errors.waistOptionId && (
                   <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
                     <AlertCircle className='h-3 w-3' />
-                    {errors.waistOptionId}
+                    {errors.waistOptionId.message}
                   </p>
                 )}
               </div>
@@ -485,7 +455,7 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
                 {errors.sleevesOptionId && (
                   <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
                     <AlertCircle className='h-3 w-3' />
-                    {errors.sleevesOptionId}
+                    {errors.sleevesOptionId.message}
                   </p>
                 )}
               </div>
@@ -513,7 +483,7 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
               {errors.images && (
                 <p className='text-sm text-red-500 mt-2 text-center flex items-center justify-center gap-1'>
                   <AlertCircle className='h-4 w-4' />
-                  {errors.images}
+                  {errors.images.message}
                 </p>
               )}
             </div>
@@ -565,7 +535,7 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
                 {errors.fabricOptionId && (
                   <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
                     <AlertCircle className='h-3 w-3' />
-                    {errors.fabricOptionId}
+                    {errors.fabricOptionId.message}
                   </p>
                 )}
               </div>
@@ -596,7 +566,7 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
                 {errors.colorOptionId && (
                   <p className='text-sm text-red-500 mt-1 flex items-center gap-1'>
                     <AlertCircle className='h-3 w-3' />
-                    {errors.colorOptionId}
+                    {errors.colorOptionId.message}
                   </p>
                 )}
               </div>
@@ -673,7 +643,7 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
               </Button>
               <Button
                 type='button'
-                onClick={handleSubmit}
+                onClick={form.handleSubmit(handleSubmit)}
                 disabled={!isFormValid || isLoading}
                 className='px-10 py-3 text-base bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
               >

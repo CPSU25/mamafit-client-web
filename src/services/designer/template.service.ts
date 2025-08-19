@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { DressTemplate } from '@/@types/designer.types'
 import { PresetFormData } from '@/@types/manage-template.types'
 import { presetApi, transformPresetListItem, transformPresetDetail, PresetListParams } from '@/apis/manage-template.api'
 
@@ -64,7 +63,7 @@ export const useUpdateTemplate = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<DressTemplate> }) => presetApi.updatePreset(id, data),
+    mutationFn: ({ id, data }: { id: string; data: PresetFormData }) => presetApi.updatePreset(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: templateKeys.lists() })
       queryClient.invalidateQueries({ queryKey: templateKeys.detail(variables.id) })

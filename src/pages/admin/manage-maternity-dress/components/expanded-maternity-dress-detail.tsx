@@ -355,7 +355,7 @@ export function ExpandedMaternityDressDetails({ maternityDressId }: ExpandedMate
                           Mã sản phẩm
                         </p>
                         <p className='text-lg font-bold text-violet-700 dark:text-violet-300 font-mono'>
-                          #{maternityDress.id?.slice(-8) || 'N/A'}
+                          #{maternityDress.sku || 'N/A'}
                         </p>
                       </div>
                       <div className='h-10 w-10 rounded-full bg-violet-500/20 flex items-center justify-center'>

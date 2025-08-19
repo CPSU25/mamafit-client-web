@@ -1,6 +1,5 @@
 import { api } from '@/lib/axios/axios'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
-import { DressTemplate } from '@/@types/designer.types'
 import {
   PresetDetailResponse,
   PresetListItem,
@@ -41,7 +40,7 @@ export const presetApi = {
   },
 
   // Update preset
-  updatePreset: async (id: string, data: Partial<DressTemplate>): Promise<ItemBaseResponse<DressTemplate>> => {
+  updatePreset: async (id: string, data: PresetFormData): Promise<ItemBaseResponse<[]>> => {
     const response = await api.put(`/preset/${id}`, data)
     return response.data
   },
@@ -66,8 +65,9 @@ export const presetApi = {
 }
 
 // Transform functions to convert API data to our internal types
-export const transformPresetListItem = (item: PresetListItem): DressTemplate => ({
+export const transformPresetListItem = (item: PresetListItem) => ({
   id: item.id,
+  name: item.name,
   styleId: item.styleId,
   styleName: item.styleName,
   createdAt: item.createdAt,
@@ -80,8 +80,9 @@ export const transformPresetListItem = (item: PresetListItem): DressTemplate => 
   price: item.price
 })
 
-export const transformPresetDetail = (item: PresetDetailResponse): DressTemplate => ({
+export const transformPresetDetail = (item: PresetDetailResponse) => ({
   id: item.id,
+  name: item.name,
   styleId: item.styleId,
   styleName: item.styleName,
   createdAt: item.createdAt,

@@ -38,10 +38,10 @@ const StatCard: React.FC<{
 export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-      <StatCard title='Dress Styles' value={stats.styles} icon={<Palette className='w-6 h-6 text-primary' />} />
-      <StatCard title='Templates' value={stats.templates} icon={<Shirt className='w-6 h-6 text-primary' />} />
+      <StatCard title='Kiểu dáng' value={stats.styles} icon={<Palette className='w-6 h-6 text-primary' />} />
+      <StatCard title='Mẫu đầm bầu' value={stats.templates} icon={<Shirt className='w-6 h-6 text-primary' />} />
       <StatCard
-        title='Component Options'
+        title='Tùy chọn thành phần'
         value={stats.componentOptions}
         icon={<Package className='w-6 h-6 text-primary' />}
       />

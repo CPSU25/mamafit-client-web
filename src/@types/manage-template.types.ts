@@ -1,6 +1,7 @@
 import { ComponentOptionType } from './manage-component.types'
 
 export interface PresetListItem {
+  name: string
   id: string
   sku: string
   styleId: string
@@ -15,18 +16,7 @@ export interface PresetListItem {
   price: number
 }
 
-export interface PresetDetailResponse {
-  id: string
-  styleId: string
-  styleName: string
-  createdAt: string
-  createdBy: string
-  updatedAt: string
-  updatedBy: string
-  images: string[]
-  type: 'SYSTEM' | 'USER'
-  isDefault: boolean
-  price: number
+export interface PresetDetailResponse extends PresetListItem {
   componentOptions: ComponentOptionType[]
 }
 
@@ -42,6 +32,7 @@ export interface SendPresetToDesignRequestResponse {
 
 export interface PresetFormData {
   sku: string
+  name: string
   styleId: string
   images: string[]
   type: 'SYSTEM'
