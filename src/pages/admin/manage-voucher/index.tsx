@@ -82,7 +82,7 @@ function ManageVoucherContent() {
     () => voucherBatchResponse?.data?.items?.map(transformVoucherBatchToSchema) || [],
     [voucherBatchResponse?.data?.items]
   )
-  
+
   const voucherDiscountList = useMemo(
     () => voucherDiscountResponse?.data?.items?.map(transformVoucherDiscountToSchema) || [],
     [voucherDiscountResponse?.data?.items]
@@ -131,21 +131,39 @@ function ManageVoucherContent() {
             <div className='flex items-center justify-between'>
               <div className='space-y-1'>
                 <CardTitle className='text-lg font-semibold'>Danh sách Voucher</CardTitle>
-                <p className='text-sm text-muted-foreground'>Quản lý các loại voucher và voucher giảm giá trong hệ thống</p>
+                <p className='text-sm text-muted-foreground'>
+                  Quản lý các loại voucher và voucher giảm giá trong hệ thống
+                </p>
               </div>
             </div>
-            
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'batch' | 'discount')} className='space-y-4'>
+
+            <Tabs
+              value={activeTab}
+              onValueChange={(value) => setActiveTab(value as 'batch' | 'discount')}
+              className='space-y-4'
+            >
               <TabsList className='grid w-full grid-cols-2 max-w-[400px] bg-purple-50 dark:bg-purple-950/20'>
-                <TabsTrigger value='batch' className='flex items-center gap-2 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 dark:data-[state=active]:bg-purple-900/50 dark:data-[state=active]:text-purple-300'>
+                <TabsTrigger
+                  value='batch'
+                  className='flex items-center gap-2 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 dark:data-[state=active]:bg-purple-900/50 dark:data-[state=active]:text-purple-300'
+                >
                   <span>Loại Voucher</span>
-                  <Badge variant='secondary' className='text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'>
+                  <Badge
+                    variant='secondary'
+                    className='text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                  >
                     {voucherBatchList.length}
                   </Badge>
                 </TabsTrigger>
-                <TabsTrigger value='discount' className='flex items-center gap-2 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 dark:data-[state=active]:bg-purple-900/50 dark:data-[state=active]:text-purple-300'>
+                <TabsTrigger
+                  value='discount'
+                  className='flex items-center gap-2 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 dark:data-[state=active]:bg-purple-900/50 dark:data-[state=active]:text-purple-300'
+                >
                   <span>Voucher</span>
-                  <Badge variant='secondary' className='text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'>
+                  <Badge
+                    variant='secondary'
+                    className='text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                  >
                     {voucherDiscountList.length}
                   </Badge>
                 </TabsTrigger>
