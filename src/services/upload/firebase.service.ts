@@ -70,9 +70,9 @@ class FirebaseStorageService {
   }
 
   /**
-   * Upload single image to Firebase Storage
+   * Upload single file to Firebase Storage (supports both images and videos)
    */
-  async uploadImage(
+  async uploadFile(
     file: File,
     options: UploadOptions = {},
     onProgress?: (progress: number) => void
@@ -83,15 +83,21 @@ class FirebaseStorageService {
         throw new Error('No file provided')
       }
 
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        throw new Error('File must be an image')
-      }
-
-      // Validate file size (max 10MB)
-      const maxSize = 10 * 1024 * 1024 // 10MB
-      if (file.size > maxSize) {
-        throw new Error('File size must be less than 10MB')
+      // Validate file type and size based on type
+      if (file.type.startsWith('image/')) {
+        // Image validation (max 10MB)
+        const maxSize = 10 * 1024 * 1024 // 10MB
+        if (file.size > maxSize) {
+          throw new Error('Image size must be less than 10MB')
+        }
+      } else if (file.type.startsWith('video/')) {
+        // Video validation (max 100MB)
+        const maxSize = 100 * 1024 * 1024 // 100MB
+        if (file.size > maxSize) {
+          throw new Error('Video size must be less than 100MB')
+        }
+      } else {
+        throw new Error('File must be an image or video')
       }
 
       // Create file path
@@ -155,9 +161,35 @@ class FirebaseStorageService {
   }
 
   /**
-   * Upload multiple images
+   * Legacy method for image upload (backwards compatibility)
    */
-  async uploadMultipleImages(
+  async uploadImage(
+    file: File,
+    options: UploadOptions = {},
+    onProgress?: (progress: number) => void
+  ): Promise<FirebaseUploadResponse> {
+    return this.uploadFile(file, options, onProgress)
+  }
+
+  /**
+   * Upload video to Firebase Storage
+   */
+  async uploadVideo(
+    file: File,
+    options: UploadOptions = {},
+    onProgress?: (progress: number) => void
+  ): Promise<FirebaseUploadResponse> {
+    const videoOptions = {
+      ...options,
+      folder: options.folder || 'videos/'
+    }
+    return this.uploadFile(file, videoOptions, onProgress)
+  }
+
+  /**
+   * Upload multiple files (images/videos)
+   */
+  async uploadMultipleFiles(
     files: File[],
     options: UploadOptions = {},
     onProgress?: (progress: number) => void
@@ -174,7 +206,12 @@ class FirebaseStorageService {
           fileOptions.fileName = `${fileOptions.fileName}_${index}`
         }
 
-        return this.uploadImage(file, fileOptions, (fileProgress) => {
+        // Use appropriate folder based on file type
+        if (!fileOptions.folder) {
+          fileOptions.folder = file.type.startsWith('video/') ? 'videos/' : 'images/'
+        }
+
+        return this.uploadFile(file, fileOptions, (fileProgress) => {
           // Calculate overall progress
           if (onProgress) {
             const overallProgress = (completedUploads * 100 + fileProgress) / totalFiles
@@ -192,6 +229,17 @@ class FirebaseStorageService {
       console.error('Multiple upload error:', error)
       throw error
     }
+  }
+
+  /**
+   * Legacy method for multiple image upload (backwards compatibility)
+   */
+  async uploadMultipleImages(
+    files: File[],
+    options: UploadOptions = {},
+    onProgress?: (progress: number) => void
+  ): Promise<FirebaseUploadResponse[]> {
+    return this.uploadMultipleFiles(files, options, onProgress)
   }
 
   /**
@@ -262,13 +310,42 @@ export const useFirebaseUpload = () => {
     try {
       if (onProgress) onProgress(0)
 
-      const results = await firebaseStorageService.uploadMultipleImages(files, options, onProgress)
+      const results = await firebaseStorageService.uploadMultipleFiles(files, options, onProgress)
 
-      toast.success(`${results.length} ảnh đã được upload thành công!`)
+      const imageCount = results.filter((r) => r.contentType.startsWith('image/')).length
+      const videoCount = results.filter((r) => r.contentType.startsWith('video/')).length
+
+      if (imageCount > 0 && videoCount > 0) {
+        toast.success(`${imageCount} ảnh và ${videoCount} video đã được upload thành công!`)
+      } else if (imageCount > 0) {
+        toast.success(`${imageCount} ảnh đã được upload thành công!`)
+      } else if (videoCount > 0) {
+        toast.success(`${videoCount} video đã được upload thành công!`)
+      }
+
       return results
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Upload failed'
       toast.error(`Upload thất bại: ${errorMessage}`)
+      throw error
+    }
+  }
+
+  const uploadVideo = async (
+    file: File,
+    options: UploadOptions = {},
+    onProgress?: (progress: number) => void
+  ): Promise<FirebaseUploadResponse> => {
+    try {
+      if (onProgress) onProgress(0)
+
+      const result = await firebaseStorageService.uploadVideo(file, options, onProgress)
+
+      toast.success('Video đã được upload thành công!')
+      return result
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed'
+      toast.error(`Upload video thất bại: ${errorMessage}`)
       throw error
     }
   }
@@ -292,6 +369,7 @@ export const useFirebaseUpload = () => {
   return {
     uploadSingle,
     uploadMultiple,
+    uploadVideo,
     deleteImage,
     isConfigured: firebaseStorageService.isConfigured(),
     getFileURL: firebaseStorageService.getFileURL.bind(firebaseStorageService)

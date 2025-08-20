@@ -31,7 +31,8 @@ import {
   Store,
   // Bell,
   Shield,
-  PenTool
+  PenTool,
+  Bell
 } from 'lucide-react'
 import { SidebarData } from '../types'
 
@@ -47,41 +48,12 @@ export const sidebarData: SidebarData = {
       navGroups: [
         {
           title: 'Tổng quan',
-          items: [
-            { title: 'Bảng điều khiển', url: 'dashboard', icon: LayoutDashboard }
-            // {
-            //   title: 'Phân tích & Báo cáo',
-            //   icon: BarChart3,
-            //   items: [
-            //     { title: 'Báo cáo doanh thu', url: 'analytics/revenue', icon: TrendingUp },
-            //     { title: 'Báo cáo khách hàng', url: 'analytics/customer', icon: Users },
-            //     { title: 'Báo cáo sản xuất', url: 'analytics/production', icon: Factory }
-            //   ]
-            // }
-          ]
+          items: [{ title: 'Bảng điều khiển', url: 'dashboard', icon: LayoutDashboard }]
         },
         {
           title: 'Quản lý hệ thống',
           items: [
             { title: 'Quản lý người dùng', url: 'manage-user', icon: Users },
-            {
-              title: 'Quản lý chi nhánh',
-              icon: Building,
-              items: [
-                { title: 'Danh sách chi nhánh', url: 'manage-branch', icon: Store }
-                // { title: 'Phân bổ nhân viên', url: 'manage-branch/staff-allocation', icon: UserCheck }
-              ]
-            },
-            { title: 'Quản lý danh mục', url: 'manage-category', icon: Tags },
-            { title: 'Quản lý váy bầu', url: 'manage-maternity-dress', icon: Shirt },
-            { title: 'Quản lý thành phần', url: 'manage-component', icon: Boxes },
-            { title: 'Quản lý mốc nhiệm vụ', url: 'manage-milestone', icon: Clock },
-            { title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }
-          ]
-        },
-        {
-          title: 'Quản lý giao dịch',
-          items: [
             {
               title: 'Quản lý đơn hàng',
               icon: Package,
@@ -91,15 +63,29 @@ export const sidebarData: SidebarData = {
                 { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: Shield }
               ]
             },
-            { title: 'Quản lý voucher', url: 'manage-voucher', icon: Ticket },
-            { title: 'Quản lý thanh toán', url: 'manage-transaction', icon: DollarSign }
+            {
+              title: 'Quản lý chi nhánh',
+              icon: Building,
+              items: [{ title: 'Danh sách chi nhánh', url: 'manage-branch', icon: Store }]
+            },
+            { title: 'Quản lý danh mục', url: 'manage-category', icon: Tags },
+            { title: 'Quản lý váy bầu', url: 'manage-maternity-dress', icon: Shirt },
+            { title: 'Quản lý thành phần', url: 'manage-component', icon: Boxes },
+            { title: 'Quản lý mốc nhiệm vụ', url: 'manage-milestone', icon: Clock },
+            { title: 'Yêu cầu bảo hành', url: 'manage-warranty', icon: Shield },
+
+            { title: 'Quản lý khuyến mãi', url: 'manage-voucher', icon: Ticket }
           ]
+        },
+        {
+          title: 'Giao dịch',
+          items: [{ title: 'Quản lý thanh toán', url: 'manage-transaction', icon: DollarSign }]
         },
         {
           title: 'Cài đặt',
           items: [
-            { title: 'Cấu hình hệ thống', url: 'settings', icon: Settings }
-            // { title: 'Thông báo hệ thống', url: 'system-notifications', icon: Bell }
+            { title: 'Cấu hình hệ thống', url: 'settings', icon: Settings },
+            { title: 'Thông báo hệ thống', url: 'system-notifications', icon: Bell }
           ]
         }
       ]
