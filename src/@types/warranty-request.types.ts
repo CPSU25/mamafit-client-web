@@ -37,6 +37,7 @@ export interface WarrantyRequestList {
     phoneNumber: string
     userEmail: string
   }
+  warrantyRound: number
   status: StatusWarrantyRequest
   countItem: number | 0
   createdAt: string
@@ -60,7 +61,7 @@ export interface WarrantyRequestItems {
   rejectedReason: string | null
   description: string
   images: string[]
-  video: string[]
+  videos: string[]
   status: StatusWarrantyRequestItem
   estimateTime: string | null
   destinationType: DestinationType
@@ -109,6 +110,7 @@ export interface DecisionWarrantyItemResponse {
 //type of branch create warranty offline
 export interface BranchWarrantyRequestForm {
   paymentMethod: PaymentMethod
+  fee: number | null
   items: BranchWarrantyRequestItemForm[]
 }
 export interface BranchWarrantyRequestItemForm {

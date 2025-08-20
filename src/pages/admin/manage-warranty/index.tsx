@@ -30,8 +30,8 @@ function WarrantyManagementSystem() {
   const [pageSize] = useState(12) // 12 items per page for better grid layout
 
   const { data: warrantyRequestsResponse, isLoading } = useWarrantyRequestList({
-    page: currentPage,
-    limit: pageSize,
+    index: currentPage,
+    pageSize: pageSize,
     search: searchQuery,
     sortBy: 'CREATED_AT_DESC'
   })

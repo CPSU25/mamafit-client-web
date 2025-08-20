@@ -108,6 +108,7 @@ export interface OrderItemType {
   preset: PresetType
   warrantyDate?: string
   warrantyNumber?: string
+  warrantyRound?: number
   createdAt: string
   updatedAt: string
   createdBy: string

@@ -7,6 +7,7 @@ export const warrantyKey = {
   all: ['warranty'] as const,
   lists: () => [...warrantyKey.all, 'list'] as const,
   list: (params: WarrantyRequestListParams) => [...warrantyKey.lists(), params] as const,
+  byBranch: (params: WarrantyRequestListParams) => [...warrantyKey.all, 'branch', params] as const,
   details: () => [...warrantyKey.all, 'detail'] as const,
   detail: (id: string) => [...warrantyKey.details(), id] as const
 }
@@ -18,6 +19,19 @@ export const useWarrantyRequestList = (params: WarrantyRequestListParams) => {
     select: (data) => data.data.data, // Return full pagination data structure
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    refetchIntervalInBackground: false
+  })
+}
+export const useWarrantyRequestOfBranchs = (params: WarrantyRequestListParams) => {
+  return useQuery({
+    queryKey: warrantyKey.byBranch(params),
+    queryFn: () => warrantyAPI.getWarrantyRequestOfBranch(params),
+    select: (data) => data.data.data,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true,
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchInterval: false,
@@ -63,6 +77,22 @@ export const useSubmitDecisionMutation = (request: { id: string }) => {
     onError: (error) => {
       console.error('Error submitting warranty decision:', error)
       toast.error('Có lỗi xảy ra khi cập nhật quyết định bảo hành')
+    }
+  })
+}
+export const useCompleteWarrantyRequest = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (warrantyRequestId: string) => warrantyAPI.completeWarrantyRequest(warrantyRequestId),
+    onSuccess: () => {
+      toast.success('Đã hoàn thành yêu cầu bảo hành thành công')
+      // Invalidate both general and branch warranty lists to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['warranty', 'branch'] })
+    },
+    onError: (error) => {
+      console.error('Error completing warranty request:', error)
+      toast.error('Có lỗi xảy ra khi hoàn thành yêu cầu bảo hành')
     }
   })
 }
