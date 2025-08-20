@@ -18,7 +18,7 @@ import {
 import WarrantyOrderPage from '@/pages/admin/manage-order/warranty'
 import DesignRequestPage from '@/pages/admin/manage-order/design-request'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-import { NotFoundPage, LoginSystem, ChatPage } from '@/pages/public-page'
+import { NotFoundPage, LoginSystem, ChatPage, NotificationSettingPage } from '@/pages/public-page'
 // import { FactoryManagerDashboard } from '@/pages/factory-manager'
 import { DesignerDashboard, ManageTemplatePage, ManageDesignRequestPage } from '@/pages/designer'
 import {
@@ -75,6 +75,7 @@ export const router = createBrowserRouter([
           { path: 'manage-voucher', element: <ManageVoucherPage /> },
           { path: 'manage-transaction', element: <ManageTransactionPage /> },
           { path: 'manage-warranty', element: <WarrantyManagementSystem /> },
+          { path: 'system-notifications', element: <NotificationSettingPage /> },
           { path: 'settings', element: <SystemConfigPage /> }
         ]
       },

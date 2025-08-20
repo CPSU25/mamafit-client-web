@@ -7,37 +7,40 @@ type RequestTypeConfigEntry = { label: string; color: string }
 export const statusConfig: Record<StatusWarrantyRequest, StatusConfigEntry> = {
   PENDING: {
     label: 'Chờ xử lý',
-    color: 'bg-amber-100 text-amber-800 border-amber-200',
+    color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800',
     icon: Clock
   },
   APPROVED: {
     label: 'Đã duyệt',
-    color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    color:
+      'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/20 dark:text-violet-400 dark:border-violet-800',
     icon: ShieldCheck
   },
   REPAIRING: {
     label: 'Đang sửa chữa',
-    color: 'bg-orange-100 text-orange-800 border-orange-200',
+    color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800',
     icon: Wrench
   },
   COMPLETED: {
     label: 'Hoàn thành',
-    color: 'bg-green-100 text-green-800 border-green-200',
+    color:
+      'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800',
     icon: CheckCircle
   },
   REJECTED: {
     label: 'Từ chối',
-    color: 'bg-red-100 text-red-800 border-red-200',
+    color: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-800',
     icon: XCircle
   },
   PARTIALLY_REJECTED: {
     label: 'Từ chối một phần',
-    color: 'bg-red-100 text-red-800 border-red-200',
+    color:
+      'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-800',
     icon: AlertTriangle
   },
   CANCELLED: {
     label: 'Đã hủy',
-    color: 'bg-gray-100 text-gray-800 border-gray-200',
+    color: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950/20 dark:text-gray-400 dark:border-gray-800',
     icon: XCircle
   }
 }
@@ -45,10 +48,12 @@ export const statusConfig: Record<StatusWarrantyRequest, StatusConfigEntry> = {
 export const requestTypeConfig: Record<RequestType, RequestTypeConfigEntry> = {
   FEE: {
     label: 'Sửa chữa, Có tính phí',
-    color: 'bg-violet-100 text-violet-800 border-violet-200'
+    color:
+      'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-800'
   },
   FREE: {
     label: 'Bảo Hành',
-    color: 'bg-blue-100 text-blue-800 border-blue-200'
+    color:
+      'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/20 dark:text-violet-400 dark:border-violet-800'
   }
 }

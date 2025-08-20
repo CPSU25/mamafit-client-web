@@ -6,7 +6,8 @@ import { Clock } from 'lucide-react'
 export const StatusBadge = ({ status }: { status: StatusWarrantyRequest }) => {
   const fallback = {
     label: String(status ?? 'Không xác định'),
-    color: 'bg-gray-100 text-gray-800 border-gray-200',
+    color:
+      'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-950/20 dark:text-violet-400 dark:border-violet-800',
     icon: Clock
   }
   const config = status ? (statusConfig[status] ?? fallback) : fallback

@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react'
-import { CheckCircle, XCircle, Clock, CreditCard, Truck, ChevronRight, User, Phone, Mail, MapPin } from 'lucide-react'
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  CreditCard,
+  Truck,
+  ChevronRight,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Building2,
+  Factory
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,13 +26,15 @@ import {
   WarrantyRequestById,
   WarrantyRequestItemForm,
   StatusWarrantyRequestItem,
-  RequestType
+  RequestType,
+  DestinationType
 } from '@/@types/warranty-request.types'
 import { OrderStatus } from '@/@types/manage-order.types'
 import { AddressType } from '@/@types/global.types'
 import { useSubmitDecisionMutation } from '@/services/global/warranty.service'
 import globalAPI from '@/apis/global.api'
 import warrantyAPI from '@/apis/warranty-request.api'
+import { cn } from '@/lib/utils/utils'
 
 interface WarrantyDecisionFormProps {
   warrantyRequest: WarrantyRequestById
@@ -188,7 +203,7 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
       if (decision.status === StatusWarrantyRequestItem.REJECTED) {
         return {
           ...baseItem,
-          destinationType: 'FACTORY' as const,
+          destinationType: DestinationType.FACTORY as const, // Tất cả từ chối sẽ gửi về xưởng
           shippingFee: null,
           fee: null,
           rejectedReason: decision.rejectedReason || null,
@@ -197,7 +212,7 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
       } else {
         return {
           ...baseItem,
-          destinationType: 'FACTORY' as const,
+          destinationType: DestinationType.FACTORY as const,
           shippingFee: warrantyRequest.requestType === RequestType.FEE ? decision.shippingFee || null : null,
           fee: warrantyRequest.requestType === RequestType.FEE ? decision.fee || null : null,
           rejectedReason: null,
@@ -216,30 +231,30 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
     if (!canCreateShippingOrder) return
 
     setLoadingCreateShipping(true)
-    try {
-      await warrantyAPI.createShippingWarrantyRequestFee(warrantyRequest.id)
-      toast.success('✅ Đã tạo đơn shipping thành công!')
-    } catch (error) {
-      console.error('Lỗi khi tạo đơn shipping:', error)
-      toast.error('❌ Không thể tạo đơn shipping. Vui lòng thử lại sau.')
-    } finally {
-      setLoadingCreateShipping(false)
-    }
+
+    await warrantyAPI.createShippingWarrantyRequestFee(warrantyRequest.id)
+    toast.success('✅ Đã tạo đơn shipping thành công!')
+
+    setLoadingCreateShipping(false)
   }
 
   const isRequestTypeFee = warrantyRequest.requestType === RequestType.FEE
   const canCreateShippingOrder = warrantyRequest.orderStatus === OrderStatus.PICKUP_IN_PROGRESS
 
+  // Kiểm tra xem có item nào có destinationType là BRANCH không
+  const hasBranchDestination =
+    warrantyRequest.items?.some((item) => item.destinationType === DestinationType.BRANCH) ?? false
+
   const getItemStatusColor = (status: StatusWarrantyRequestItem) => {
     switch (status) {
       case StatusWarrantyRequestItem.APPROVED:
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200'
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800'
       case StatusWarrantyRequestItem.REJECTED:
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800'
       case StatusWarrantyRequestItem.IN_TRANSIT:
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800'
       default:
-        return 'bg-amber-100 text-amber-800 border-amber-200'
+        return 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-950/20 dark:text-violet-400 dark:border-violet-800'
     }
   }
 
@@ -258,83 +273,201 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
 
   return (
     <div className='max-h-[85vh] overflow-y-auto custom-scrollbar'>
-      <div className='space-y-6 p-1 pb-20'>
+      <div className='space-y-8 p-2 pb-20'>
+        {/* HEADER SECTION: Warranty Request Overview */}
+        <div className='bg-gradient-to-br from-violet-50 via-purple-50 to-violet-100 dark:from-violet-950/30 dark:via-purple-950/30 dark:to-violet-950/20 rounded-2xl p-6 border border-violet-200/50 dark:border-violet-800/50 shadow-lg'>
+          <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6'>
+            <div className='flex items-center gap-4'>
+              <div className='w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-600 dark:to-purple-700 rounded-2xl flex items-center justify-center shadow-lg'>
+                <Clock className='w-8 h-8 text-white' />
+              </div>
+              <div>
+                <h1 className='text-xl font-bold text-gray-900 dark:text-white'>Chi tiết yêu cầu bảo hành</h1>
+                <p className='text-violet-700 dark:text-violet-300 font-medium text-base'>{warrantyRequest.sku}</p>
+                <p className='text-sm text-gray-600 dark:text-gray-400 mt-1'>
+                  Đánh giá và xử lý yêu cầu bảo hành từ khách hàng
+                </p>
+              </div>
+            </div>
+
+            <div className='flex flex-wrap gap-3'>
+              <Badge
+                variant='outline'
+                className={`px-4 py-2 text-sm font-semibold ${
+                  isRequestTypeFee
+                    ? 'bg-orange-50 text-orange-700 border-orange-300 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-800'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800'
+                }`}
+              >
+                {isRequestTypeFee ? '💰 Có phí' : '🆓 Miễn phí'}
+              </Badge>
+              <Badge
+                variant='outline'
+                className={`px-4 py-2 text-sm font-semibold ${
+                  warrantyRequest.status === 'PENDING'
+                    ? 'bg-violet-50 text-violet-700 border-violet-300 dark:bg-violet-950/20 dark:text-violet-400 dark:border-violet-800'
+                    : warrantyRequest.status === 'APPROVED'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800'
+                      : 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800'
+                }`}
+              >
+                {warrantyRequest.status === 'PENDING' && '⏳ Chờ xử lý'}
+                {warrantyRequest.status === 'APPROVED' && '✅ Đã duyệt'}
+                {warrantyRequest.status === 'REJECTED' && '❌ Đã từ chối'}
+              </Badge>
+              <Badge
+                variant='outline'
+                className='px-4 py-2 text-sm font-semibold bg-blue-50 text-blue-700 border-blue-300'
+              >
+                📦 {warrantyRequest.items?.length || 0} sản phẩm
+              </Badge>
+              {warrantyRequest.destinationType && (
+                <Badge
+                  variant={warrantyRequest.destinationType === DestinationType.BRANCH ? 'default' : 'secondary'}
+                  className={cn(
+                    'px-3 py-2 text-sm flex items-center gap-1',
+                    warrantyRequest.destinationType === DestinationType.BRANCH
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                      : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                  )}
+                >
+                  {warrantyRequest.destinationType === DestinationType.BRANCH ? (
+                    <Building2 className='h-3 w-3' />
+                  ) : (
+                    <Factory className='h-3 w-3' />
+                  )}
+                  {warrantyRequest.destinationType === DestinationType.BRANCH
+                    ? 'Bảo hành tại Chi nhánh'
+                    : 'Bảo hành tại Nhà máy'}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {warrantyRequest.totalFee && warrantyRequest.totalFee > 0 && (
+            <div className='mt-4 pt-4 border-t border-violet-200/50'>
+              <div className='flex items-center justify-between'>
+                <span className='text-sm font-medium text-gray-600 dark:text-gray-300'>Tổng phí dự kiến:</span>
+                <span className='text-xl font-bold text-violet-700 dark:text-violet-300'>
+                  {warrantyRequest.totalFee.toLocaleString('vi-VN')}₫
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* TOP SECTION: Customer Info + Address */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
           {/* Thông tin khách hàng */}
-          <Card className='border-l-4 border-l-blue-400 shadow-sm hover:shadow-md transition-shadow duration-200'>
-            <CardHeader className='bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/30 dark:to-gray-900 pb-4'>
+          <Card className='border-l-4 border-l-blue-500 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-950/20 py-0'>
+            <CardHeader className='bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/40 dark:to-blue-900/30 rounded-t-lg p-4'>
               <CardTitle className='flex items-center gap-3'>
-                <div className='p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm'>
-                  <User className='w-5 h-5 text-blue-600' />
+                <div className='p-3 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-violet-200 dark:border-violet-700'>
+                  <User className='w-6 h-6 text-blue-600' />
                 </div>
                 <div>
-                  <h3 className='text-lg font-bold text-gray-900 dark:text-white'>Khách hàng</h3>
-                  <p className='text-xs text-gray-600 dark:text-gray-300 mt-0.5'>Thông tin người yêu cầu</p>
+                  <h3 className='text-lg font-bold text-gray-900 dark:text-white'>Thông tin khách hàng</h3>
+                  <p className='text-sm text-blue-600 dark:text-blue-300 mt-0.5'>Người yêu cầu bảo hành</p>
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className='pt-4 space-y-4'>
-              <div className='flex items-center gap-3'>
-                <User className='w-4 h-4 text-gray-500' />
+            <CardContent className='space-y-5 py-4 pt-1'>
+              <div className='flex items-center gap-4 p-3 bg-blue-50/50 dark:bg-blue-950/20 rounded-lg shadow-xl'>
+                <div className='w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center'>
+                  <User className='w-5 h-5 text-blue-600 dark:text-blue-400' />
+                </div>
                 <div className='flex-1'>
-                  <p className='text-sm font-medium text-gray-900'>{warrantyRequest.customer.fullName}</p>
-                  <p className='text-xs text-gray-500'>Tên khách hàng</p>
+                  <p className='text-base font-semibold text-gray-900 dark:text-white'>
+                    {warrantyRequest.customer.fullName}
+                  </p>
+                  <p className='text-sm text-blue-600 dark:text-blue-400'>Tên khách hàng</p>
                 </div>
               </div>
 
-              <div className='flex items-center gap-3'>
-                <Phone className='w-4 h-4 text-gray-500' />
+              <div className='flex items-center gap-4 p-3 bg-green-50/50 dark:bg-green-950/20 rounded-lg shadow-xl'>
+                <div className='w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center'>
+                  <Phone className='w-5 h-5 text-green-600 dark:text-green-400' />
+                </div>
                 <div className='flex-1'>
-                  <p className='text-sm font-medium text-gray-900'>{warrantyRequest.customer.phoneNumber}</p>
-                  <p className='text-xs text-gray-500'>Số điện thoại</p>
+                  <p className='text-base font-semibold text-gray-900 dark:text-white'>
+                    {warrantyRequest.customer.phoneNumber}
+                  </p>
+                  <p className='text-sm text-green-600 dark:text-green-400'>Số điện thoại</p>
                 </div>
               </div>
 
-              <div className='flex items-center gap-3'>
-                <Mail className='w-4 h-4 text-gray-500' />
+              <div className='flex items-center gap-4 p-3 bg-purple-50/50 dark:bg-purple-950/20 rounded-lg shadow-xl'>
+                <div className='w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center'>
+                  <Mail className='w-5 h-5 text-purple-600 dark:text-purple-400' />
+                </div>
                 <div className='flex-1'>
-                  <p className='text-sm font-medium text-gray-900 truncate'>{warrantyRequest.customer.userEmail}</p>
-                  <p className='text-xs text-gray-500'>Email</p>
+                  <p
+                    className='text-base font-semibold text-gray-900 dark:text-white truncate'
+                    title={warrantyRequest.customer.userEmail}
+                  >
+                    {warrantyRequest.customer.userEmail}
+                  </p>
+                  <p className='text-sm text-purple-600 dark:text-purple-400'>Email liên hệ</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Địa chỉ nhận hàng */}
-          <Card className='border-l-4 border-l-sky-400 shadow-sm hover:shadow-md transition-shadow duration-200'>
-            <CardHeader className='bg-gradient-to-r from-sky-50 to-white dark:from-sky-950/30 dark:to-gray-900 pb-4'>
+          <Card className='border-l-4 border-l-sky-500 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-sky-50/30 dark:from-gray-800 dark:to-sky-950/20 py-0'>
+            <CardHeader className='bg-gradient-to-r from-sky-50 to-sky-100/50 dark:from-sky-950/40 dark:to-sky-900/30 pb-4 rounded-t-lg p-4'>
               <CardTitle className='flex items-center gap-3'>
-                <div className='p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm'>
-                  <MapPin className='w-5 h-5 text-sky-600' />
+                <div className='p-3 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-violet-200 dark:border-violet-700'>
+                  <MapPin className='w-6 h-6 text-sky-600' />
                 </div>
                 <div className='flex-1'>
-                  <h3 className='text-lg font-bold text-gray-900 dark:text-white'>Địa chỉ nhận hàng</h3>
-                  <p className='text-xs text-gray-600 dark:text-gray-300 mt-0.5'>Cho tính phí ship & giao nhận</p>
+                  <h3 className='text-xl font-bold text-gray-900 dark:text-white'>Địa chỉ giao nhận</h3>
+                  <p className='text-sm text-sky-600 dark:text-sky-300 mt-0.5'>Để tính phí vận chuyển</p>
                 </div>
                 {isRequestTypeFee && address && (
-                  <Button variant='outline' size='sm' onClick={calculateAllShippingFees} className='text-xs px-2 py-1'>
-                    Tính tất cả
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={calculateAllShippingFees}
+                    className='text-sm px-4 py-2 bg-sky-50 hover:bg-sky-100 border-sky-300 text-sky-700 font-medium'
+                  >
+                    🧮 Tính tất cả
                   </Button>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className='pt-4'>
+            <CardContent className='pt-6'>
               {loadingAddress ? (
-                <div className='flex items-center gap-2 text-sm text-gray-500'>
-                  <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-sky-500'></div>
-                  Đang tải địa chỉ...
+                <div className='flex items-center gap-3 text-base text-gray-600 dark:text-gray-300 p-4 bg-violet-50/50 dark:bg-violet-950/10 rounded-lg'>
+                  <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-sky-500'></div>
+                  <span>Đang tải thông tin địa chỉ...</span>
                 </div>
               ) : address ? (
-                <div className='space-y-2'>
-                  <p className='text-sm font-medium text-gray-900'>{warrantyRequest.customer.fullName}</p>
-                  <p className='text-sm text-gray-700 leading-relaxed'>
-                    {address.street}, {address.ward}, {address.district}, {address.province}
-                  </p>
-                  <p className='text-xs text-gray-500'>📞 {warrantyRequest.customer.phoneNumber}</p>
+                <div className='space-y-4'>
+                  <div className='p-4 bg-sky-50/50 dark:bg-sky-950/20 rounded-lg border border-sky-200/50'>
+                    <div className='flex items-center gap-3 mb-3'>
+                      <div className='w-8 h-8 bg-sky-100 dark:bg-sky-900 rounded-full flex items-center justify-center'>
+                        <User className='w-4 h-4 text-sky-600 dark:text-sky-400' />
+                      </div>
+                      <p className='text-base font-semibold text-gray-900 dark:text-white'>
+                        {warrantyRequest.customer.fullName}
+                      </p>
+                    </div>
+                    <div className='space-y-2 pl-11'>
+                      <p className='text-sm text-gray-700 dark:text-gray-300 leading-relaxed'>
+                        📍 {address.street}, {address.ward}, {address.district}, {address.province}
+                      </p>
+                      <p className='text-sm text-sky-600 dark:text-sky-400 font-medium'>
+                        📞 {warrantyRequest.customer.phoneNumber}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <div className='text-sm text-gray-500 italic'>Không có địa chỉ nhận hàng.</div>
+                <div className='p-4 bg-amber-50 border border-amber-200 rounded-lg text-center'>
+                  <p className='text-sm text-amber-800 font-medium'>⚠️ Không có địa chỉ nhận hàng</p>
+                  <p className='text-xs text-amber-600 mt-1'>Yêu cầu khách hàng cung cấp địa chỉ</p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -343,55 +476,71 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
         {/* MIDDLE SECTION: Request Info + Payment Status */}
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
           {/* Thông tin yêu cầu bảo hành */}
-          <Card className='lg:col-span-2 border-l-4 border-l-amber-400 shadow-sm hover:shadow-md transition-shadow duration-200'>
-            <CardHeader className='bg-gradient-to-r from-amber-50 to-white dark:from-amber-950/30 dark:to-gray-900 pb-4'>
+          <Card className='lg:col-span-2 border-l-4 border-l-amber-500 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-amber-50/30 dark:from-gray-800 dark:to-amber-950/20 py-0'>
+            <CardHeader className='bg-gradient-to-r from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/30 p-4 rounded-t-lg'>
               <CardTitle className='flex items-center gap-3'>
-                <div className='p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm'>
-                  <Clock className='w-5 h-5 text-amber-600' />
+                <div className='p-3 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-violet-200 dark:border-violet-700'>
+                  <Clock className='w-6 h-6 text-amber-600' />
                 </div>
                 <div>
-                  <h3 className='text-lg font-bold text-gray-900 dark:text-white'>Yêu cầu bảo hành</h3>
-                  <p className='text-xs text-gray-600 dark:text-gray-300 mt-0.5'>{warrantyRequest.sku}</p>
+                  <h3 className='text-xl font-bold text-gray-900 dark:text-white'>Thông tin yêu cầu</h3>
+                  <p className='text-sm text-amber-600 dark:text-amber-300 mt-0.5'>{warrantyRequest.sku}</p>
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className='pt-4'>
-              <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-                <div className='text-center'>
+            <CardContent className='pt-6'>
+              <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-6'>
+                <div className='bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 p-4 rounded-xl text-center border border-orange-200/50'>
                   <Badge
-                    className={`${isRequestTypeFee ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'} px-2 py-1 text-xs`}
+                    className={`${isRequestTypeFee ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'} px-3 py-1.5 text-sm font-semibold mb-2`}
                   >
-                    {isRequestTypeFee ? 'Bảo hành/sửa chữa có phí' : 'Bảo hành miễn phí'}
+                    {isRequestTypeFee ? '💰 Có phí' : '🆓 Miễn phí'}
                   </Badge>
-                  <p className='text-xs text-gray-500 mt-1'>Loại yêu cầu</p>
+                  <p className='text-xs text-orange-600 dark:text-orange-400 font-medium'>Loại yêu cầu</p>
                 </div>
 
-                <div className='text-center'>
-                  <Badge variant='outline' className='px-2 py-1 text-xs'>
-                    {warrantyRequest.status === 'PENDING' && 'Chờ xử lý'}
-                    {warrantyRequest.status === 'APPROVED' && 'Đã duyệt'}
-                    {warrantyRequest.status === 'REJECTED' && 'Đã từ chối'}
+                <div className='bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 p-4 rounded-xl text-center border border-blue-200/50'>
+                  <Badge
+                    variant='outline'
+                    className={`px-3 py-1.5 text-sm font-semibold mb-2 ${
+                      warrantyRequest.status === 'PENDING'
+                        ? 'bg-amber-100 text-amber-800 border-amber-300'
+                        : warrantyRequest.status === 'APPROVED'
+                          ? 'bg-green-100 text-green-800 border-green-300'
+                          : 'bg-red-100 text-red-800 border-red-300'
+                    }`}
+                  >
+                    {warrantyRequest.status === 'PENDING' && '⏳ Chờ duyệt'}
+                    {warrantyRequest.status === 'APPROVED' && '✅ Đã duyệt'}
+                    {warrantyRequest.status === 'REJECTED' && '❌ Từ chối'}
                   </Badge>
-                  <p className='text-xs text-gray-500 mt-1'>Trạng thái</p>
+                  <p className='text-xs text-blue-600 dark:text-blue-400 font-medium'>Trạng thái</p>
                 </div>
 
-                <div className='text-center'>
-                  <p className='text-sm font-medium text-gray-900'>
+                <div className='bg-gradient-to-br from-violet-50 to-violet-100/50 dark:from-violet-950/30 dark:to-violet-900/20 p-4 rounded-xl text-center border border-violet-200/50'>
+                  <p className='text-lg font-bold text-violet-800 dark:text-violet-300 mb-1'>
                     {warrantyRequest.totalFee ? `${warrantyRequest.totalFee.toLocaleString('vi-VN')}₫` : '0₫'}
                   </p>
-                  <p className='text-xs text-gray-500 mt-1'>Tổng phí</p>
+                  <p className='text-xs text-violet-600 dark:text-violet-400 font-medium'>Tổng phí</p>
                 </div>
 
-                <div className='text-center'>
-                  <p className='text-sm font-medium text-gray-900'>{warrantyRequest.items?.length || 0}</p>
-                  <p className='text-xs text-gray-500 mt-1'>Sản phẩm</p>
+                <div className='bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 p-4 rounded-xl text-center border border-emerald-200/50'>
+                  <p className='text-lg font-bold text-emerald-800 dark:text-emerald-300 mb-1'>
+                    {warrantyRequest.items?.length || 0}
+                  </p>
+                  <p className='text-xs text-emerald-600 dark:text-emerald-400 font-medium'>Sản phẩm</p>
                 </div>
               </div>
 
               {warrantyRequest.rejectReason && (
-                <div className='mt-4 p-3 bg-red-50 border border-red-200 rounded-lg'>
-                  <p className='text-xs font-medium text-red-800 mb-1'>Lý do từ chối</p>
-                  <p className='text-sm text-red-700'>{warrantyRequest.rejectReason}</p>
+                <div className='p-4 bg-red-50 border border-red-200 rounded-xl'>
+                  <div className='flex items-center gap-2 mb-2'>
+                    <div className='w-5 h-5 bg-red-100 rounded-full flex items-center justify-center'>
+                      <XCircle className='w-3 h-3 text-red-600' />
+                    </div>
+                    <p className='text-sm font-semibold text-red-800'>Lý do từ chối</p>
+                  </div>
+                  <p className='text-sm text-red-700 pl-7'>{warrantyRequest.rejectReason}</p>
                 </div>
               )}
             </CardContent>
@@ -399,32 +548,32 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
 
           {/* Payment Status - chỉ hiển thị khi là FEE */}
           {isRequestTypeFee && (
-            <Card className='border-l-4 border-l-violet-400 shadow-sm hover:shadow-md transition-shadow duration-200'>
-              <CardHeader className='bg-gradient-to-r from-violet-50 to-white dark:from-violet-950/30 dark:to-gray-900 pb-4'>
+            <Card className='border-l-4 border-l-violet-500 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-violet-50/30 dark:from-gray-800 dark:to-violet-950/20'>
+              <CardHeader className='bg-gradient-to-r from-violet-50 to-violet-100/50 dark:from-violet-950/40 dark:to-violet-900/30 pb-4 rounded-t-lg'>
                 <CardTitle className='flex items-center gap-3'>
-                  <div className='p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm'>
-                    <CreditCard className='w-5 h-5 text-violet-600' />
+                  <div className='p-3 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-violet-200 dark:border-violet-700'>
+                    <CreditCard className='w-6 h-6 text-violet-600' />
                   </div>
                   <div>
-                    <h3 className='text-lg font-bold text-gray-900 dark:text-white'>Thanh toán</h3>
-                    <p className='text-xs text-gray-600 dark:text-gray-300 mt-0.5'>Trạng thái & hành động</p>
+                    <h3 className='text-xl font-bold text-gray-900 dark:text-white'>Thanh toán</h3>
+                    <p className='text-sm text-violet-600 dark:text-violet-300 mt-0.5'>& Vận chuyển</p>
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent className='pt-4 space-y-4'>
+              <CardContent className='pt-6 space-y-5'>
                 <div className='text-center'>
                   <Badge
                     variant='outline'
-                    className={`px-3 py-1.5 text-xs font-medium ${
+                    className={`px-4 py-2.5 text-sm font-semibold ${
                       warrantyRequest.orderStatus === OrderStatus.AWAITING_PAID_WARRANTY
-                        ? 'bg-violet-100 text-violet-800 border-violet-200'
+                        ? 'bg-amber-50 text-amber-800 border-amber-300'
                         : warrantyRequest.orderStatus === OrderStatus.PICKUP_IN_PROGRESS
-                          ? 'bg-green-100 text-green-800 border-green-200'
-                          : 'bg-gray-100 text-gray-800 border-gray-200'
+                          ? 'bg-green-50 text-green-800 border-green-300'
+                          : 'bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-950/20 dark:text-violet-400 dark:border-violet-800'
                     }`}
                   >
-                    {warrantyRequest.orderStatus === OrderStatus.AWAITING_PAID_WARRANTY && 'Chờ thanh toán'}
-                    {warrantyRequest.orderStatus === OrderStatus.PICKUP_IN_PROGRESS && 'Đã thanh toán'}
+                    {warrantyRequest.orderStatus === OrderStatus.AWAITING_PAID_WARRANTY && '⏳ Chờ thanh toán'}
+                    {warrantyRequest.orderStatus === OrderStatus.PICKUP_IN_PROGRESS && '✅ Đã thanh toán'}
                   </Badge>
                 </div>
 
@@ -433,31 +582,31 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
                   size='sm'
                   disabled={!canCreateShippingOrder || loadingCreateShipping}
                   onClick={handleCreateShipping}
-                  className={`w-full gap-2 text-xs ${
+                  className={`w-full gap-3 py-3 text-sm font-medium ${
                     canCreateShippingOrder
-                      ? 'text-blue-700 border-blue-200 hover:bg-blue-50'
-                      : 'text-gray-400 border-gray-200 bg-gray-50'
+                      ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-300 shadow-sm hover:shadow-md'
+                      : 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed'
                   }`}
                 >
                   {loadingCreateShipping ? (
                     <>
                       <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500'></div>
-                      Đang tạo...
+                      Đang tạo đơn...
                     </>
                   ) : (
                     <>
-                      <Truck className='w-4 h-4' />
-                      Tạo đơn shipping
+                      <Truck className='w-5 h-5' />
+                      Tạo đơn vận chuyển
                     </>
                   )}
                 </Button>
 
                 {!canCreateShippingOrder && (
-                  <div className='p-2 bg-amber-50 border border-amber-200 rounded text-center'>
-                    <p className='text-xs text-amber-800'>
+                  <div className='p-3 bg-amber-50 border border-amber-200 rounded-lg text-center'>
+                    <p className='text-sm text-amber-800 font-medium'>
                       {warrantyRequest.orderStatus === OrderStatus.AWAITING_PAID_WARRANTY
-                        ? 'Cần thanh toán trước'
-                        : 'Cần duyệt & thanh toán'}
+                        ? '⚠️ Cần thanh toán trước khi tạo shipping'
+                        : '⚠️ Cần duyệt yêu cầu và thanh toán'}
                     </p>
                   </div>
                 )}
@@ -466,84 +615,106 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
           )}
         </div>
 
-        {/* REQUEST TYPE INDICATOR (cho FREE type) */}
-        {!isRequestTypeFee && (
-          <Card className='border-l-4 border-l-green-400 shadow-sm'>
-            <CardContent className='py-4'>
-              <div className='flex items-center gap-3'>
-                <div className='p-2 bg-green-100 rounded-lg'>
-                  <CheckCircle className='w-5 h-5 text-green-600' />
-                </div>
-                <div>
-                  <h4 className='font-semibold text-gray-900'>Bảo hành miễn phí</h4>
-                  <p className='text-sm text-gray-600'>Yêu cầu trong thời hạn bảo hành, không tính phí</p>
-                </div>
+        {/* INTERNAL NOTES SECTION */}
+        <Card className='shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-900/50 py-0'>
+          <CardHeader className='pb-4 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-700/30 rounded-t-lg p-4'>
+            <CardTitle className='text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-3'>
+              <div className='w-10 h-10 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl flex items-center justify-center shadow-md'>
+                <Clock className='w-5 h-5 text-white' />
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* BOTTOM SECTION: Internal Notes */}
-        <Card className='shadow-sm hover:shadow-md transition-shadow duration-200'>
-          <CardHeader className='pb-4'>
-            <CardTitle className='text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
-              <div className='p-1 bg-gray-100 rounded'>
-                <Clock className='w-4 h-4 text-gray-600' />
+              <div>
+                <span>Ghi chú nội bộ</span>
+                <p className='text-sm text-gray-600 dark:text-gray-400 font-normal mt-0.5'>
+                  Thông tin cho đội ngũ xử lý
+                </p>
               </div>
-              Ghi chú nội bộ
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='p-4 pt-1'>
             <Textarea
-              placeholder='Nhập ghi chú nội bộ...'
+              placeholder='Nhập ghi chú nội bộ để hỗ trợ quá trình xử lý...'
               value={noteInternal}
               onChange={(e) => setNoteInternal(e.target.value)}
-              rows={3}
-              className='w-full resize-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200'
+              rows={4}
+              className='w-full resize-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200 border-2 border-gray-200 bg-gray-50/50 focus:bg-white'
             />
           </CardContent>
         </Card>
 
-        {/* Danh sách items */}
-        <Card className='shadow-sm hover:shadow-md transition-shadow duration-200'>
-          <CardHeader>
-            <CardTitle className='text-lg font-semibold text-gray-900 dark:text-white'>
-              Quyết định cho từng sản phẩm
+        {/* PRODUCT DECISIONS SECTION */}
+        <Card className='shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-indigo-50/20 dark:from-gray-800 dark:to-indigo-950/20 py-0'>
+          <CardHeader className='bg-gradient-to-r from-indigo-50 to-indigo-100/50 dark:from-indigo-950/40 dark:to-indigo-900/30 rounded-t-lg p-4'>
+            <CardTitle className='text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-3'>
+              <div className='w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md'>
+                <CheckCircle className='w-5 h-5 text-white' />
+              </div>
+              <div>
+                <span>Quyết định cho từng sản phẩm</span>
+                <p className='text-sm text-indigo-600 dark:text-indigo-300 font-normal mt-0.5'>
+                  Xem xét và đưa ra quyết định cho {warrantyRequest.items?.length || 0} sản phẩm
+                </p>
+              </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className='space-y-6'>
+          <CardContent className='space-y-8 p-6'>
             {warrantyRequest.items?.map((item, index) => (
               <div
                 key={item.orderItemId}
-                className='border border-gray-200 rounded-xl p-6 space-y-4 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 shadow-sm hover:shadow-md transition-all duration-200'
+                className='border-2 border-gray-200 rounded-2xl p-6 space-y-6 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-900/50 shadow-md hover:shadow-lg transition-all duration-300 hover:border-indigo-300'
               >
                 <div className='flex items-start justify-between'>
                   <div className='flex-1'>
-                    <h4 className='font-semibold text-gray-900'>Sản phẩm #{index + 1}</h4>
-                    <p className='text-sm text-gray-600 mt-1'>• Lần bảo hành: {item.warrantyRound}</p>
-                    <div className='mt-3'>
-                      <Label className='text-xs text-gray-500 uppercase tracking-wide'>Mô tả lỗi</Label>
-                      <p className='text-sm text-gray-700 mt-2'>{item.description}</p>
+                    <div className='flex items-center gap-3 mb-4'>
+                      <div className='w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm'>
+                        {index + 1}
+                      </div>
+                      <div className='flex-1'>
+                        <h4 className='text-lg font-bold text-gray-900 dark:text-white'>Sản phẩm #{index + 1}</h4>
+                        <div className='flex items-center gap-3 mt-1'>
+                          <p className='text-sm text-indigo-600 dark:text-indigo-300 font-medium'>
+                            🔄 Lần bảo hành: {item.warrantyRound}
+                          </p>
+                          <Badge
+                            variant='outline'
+                            className={`${
+                              item.destinationType === DestinationType.BRANCH
+                                ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800'
+                                : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/20 dark:text-indigo-400 dark:border-indigo-800'
+                            } text-xs`}
+                          ></Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className='mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl'>
+                      <Label className='text-sm font-semibold text-amber-800 uppercase tracking-wide mb-2 block'>
+                        📝 Mô tả vấn đề từ khách hàng
+                      </Label>
+                      <p className='text-sm text-gray-700 leading-relaxed'>{item.description}</p>
                     </div>
 
                     {/* Hiển thị hình ảnh */}
                     {item.images && item.images.length > 0 && (
-                      <div className='mt-3'>
-                        <Label className='text-xs text-gray-500 uppercase tracking-wide'>Hình ảnh vấn đề</Label>
-                        <div className='mt-2 grid grid-cols-3 gap-2'>
-                          {item.images.slice(0, 3).map((image, imgIndex) => (
+                      <div className='mb-4'>
+                        <Label className='text-sm font-semibold text-blue-800 uppercase tracking-wide mb-3 block'>
+                          📸 Hình ảnh vấn đề ({item.images.length} ảnh)
+                        </Label>
+                        <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+                          {item.images.slice(0, 4).map((image, imgIndex) => (
                             <ImageViewer
                               key={imgIndex}
                               src={image}
-                              alt={`Hình ảnh ${imgIndex + 1}`}
+                              alt={`Hình ảnh vấn đề ${imgIndex + 1}`}
                               className='w-full'
-                              thumbnailClassName='w-full h-20 object-cover rounded-lg border'
+                              thumbnailClassName='w-full h-24 object-cover rounded-lg border-2 border-gray-200 hover:border-indigo-300 transition-all duration-200 shadow-sm hover:shadow-md'
                               title={`Hình ảnh vấn đề ${imgIndex + 1}`}
                             />
                           ))}
                         </div>
-                        {item.images.length > 3 && (
-                          <p className='text-xs text-gray-500 mt-1'>+{item.images.length - 3} hình ảnh khác</p>
+                        {item.images.length > 4 && (
+                          <p className='text-sm text-indigo-600 mt-2 font-medium'>
+                            +{item.images.length - 4} hình ảnh khác - click để xem tất cả
+                          </p>
                         )}
                       </div>
                     )}
@@ -551,51 +722,58 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
 
                   <Badge
                     variant='outline'
-                    className={getItemStatusColor(
+                    className={`${getItemStatusColor(
                       itemDecisions[item.orderItemId]?.status ?? StatusWarrantyRequestItem.PENDING
-                    )}
+                    )} px-4 py-2 text-sm font-semibold`}
                   >
                     {getItemStatusLabel(itemDecisions[item.orderItemId]?.status ?? StatusWarrantyRequestItem.PENDING)}
                   </Badge>
+                  {item.trackingCode && (
+                    <Badge variant='outline' className='px-4 py-2 text-sm font-semibold'>
+                      Tracking code: {item.trackingCode}
+                    </Badge>
+                  )}
                 </div>
 
-                {/* Buttons quyết định */}
-                <div className='space-y-3'>
-                  <Label className='text-sm font-medium text-gray-600'>Quyết định xử lý</Label>
-                  <div className='flex gap-2'>
+                {/* Decision Buttons */}
+                <div className='space-y-4 p-4 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl border border-gray-200'>
+                  <Label className='text-base font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2'>
+                    ⚖️ Quyết định xử lý
+                  </Label>
+                  <div className='flex gap-3'>
                     <Button
-                      size='sm'
+                      size='lg'
                       variant={
                         itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.REJECTED
                           ? 'default'
                           : 'outline'
                       }
                       onClick={() => handleItemDecision(item.orderItemId, StatusWarrantyRequestItem.REJECTED)}
-                      className={
+                      className={`flex-1 py-3 font-semibold ${
                         itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.REJECTED
-                          ? 'bg-red-600 hover:bg-red-700 text-white'
-                          : 'text-red-700 border-red-200 hover:bg-red-50'
-                      }
+                          ? 'bg-red-600 hover:bg-red-700 text-white shadow-md'
+                          : 'text-red-700 border-red-300 hover:bg-red-50 border-2'
+                      }`}
                     >
-                      <XCircle className='w-4 h-4 mr-1' />
+                      <XCircle className='w-5 h-5 mr-2' />
                       Từ chối
                     </Button>
 
                     <Button
-                      size='sm'
+                      size='lg'
                       variant={
                         itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.APPROVED
                           ? 'default'
                           : 'outline'
                       }
                       onClick={() => handleItemDecision(item.orderItemId, StatusWarrantyRequestItem.APPROVED)}
-                      className={
+                      className={`flex-1 py-3 font-semibold ${
                         itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.APPROVED
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                          : 'text-emerald-700 border-emerald-200 hover:bg-emerald-50'
-                      }
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'
+                          : 'text-emerald-700 border-emerald-300 hover:bg-emerald-50 border-2'
+                      }`}
                     >
-                      <CheckCircle className='w-4 h-4 mr-1' />
+                      <CheckCircle className='w-5 h-5 mr-2' />
                       Chấp nhận
                     </Button>
                   </div>
@@ -603,66 +781,82 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
 
                 {/* Form chi tiết dựa trên quyết định */}
                 {itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.REJECTED && (
-                  <div className='p-4 bg-red-50 rounded-lg border border-red-200'>
-                    <Label className='text-sm font-medium text-red-800'>Lý do từ chối *</Label>
+                  <div className='p-5 bg-red-50 rounded-xl border-2 border-red-200'>
+                    <div className='flex items-center gap-2 mb-3'>
+                      <XCircle className='w-5 h-5 text-red-600' />
+                      <Label className='text-base font-semibold text-red-800'>Lý do từ chối *</Label>
+                    </div>
                     <Textarea
-                      placeholder='Nhập lý do từ chối bảo hành...'
+                      placeholder='Nhập lý do cụ thể tại sao từ chối yêu cầu bảo hành này...'
                       value={itemDecisions[item.orderItemId]?.rejectedReason || ''}
                       onChange={(e) => handleItemDetailChange(item.orderItemId, 'rejectedReason', e.target.value)}
-                      rows={2}
-                      className='mt-2'
+                      rows={3}
+                      className='mt-2 border-2 border-red-300 focus:border-red-500'
                     />
                   </div>
                 )}
 
                 {itemDecisions[item.orderItemId]?.status === StatusWarrantyRequestItem.APPROVED && (
-                  <div className='p-4 bg-emerald-50 rounded-lg border border-emerald-200 space-y-4'>
-                    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                  <div className='p-5 bg-emerald-50 rounded-xl border-2 border-emerald-200 space-y-5'>
+                    <div className='flex items-center gap-2 mb-3'>
+                      <CheckCircle className='w-5 h-5 text-emerald-600' />
+                      <Label className='text-base font-semibold text-emerald-800'>Chi tiết xử lý</Label>
+                    </div>
+
+                    <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
                       {/* Thời gian ước tính - bắt buộc cho cả FREE và FEE */}
-                      <div>
-                        <Label className='text-sm font-medium text-emerald-800'>Thời gian ước tính (ngày) *</Label>
+                      <div className='bg-white p-4 rounded-lg border border-emerald-200'>
+                        <Label className='text-sm font-semibold text-emerald-800 mb-2 block'>
+                          ⏱️ Thời gian ước tính (ngày) *
+                        </Label>
                         <Input
                           type='number'
-                          placeholder='7'
+                          placeholder='Ví dụ: 7'
                           min='1'
                           max='30'
                           value={itemDecisions[item.orderItemId]?.estimateDays || ''}
                           onChange={(e) => handleEstimateDaysChange(item.orderItemId, Number(e.target.value) || 0)}
-                          className='mt-1'
+                          className='border-2 border-emerald-300 focus:border-emerald-500'
                         />
+                        <p className='text-xs text-emerald-600 mt-1'>Từ 1-30 ngày làm việc</p>
                       </div>
 
                       {/* Phí bảo hành - chỉ hiển thị cho FEE type */}
                       {isRequestTypeFee && (
-                        <div>
-                          <Label className='text-sm font-medium text-emerald-800'>Phí bảo hành (VNĐ) *</Label>
+                        <div className='bg-white p-4 rounded-lg border border-emerald-200'>
+                          <Label className='text-sm font-semibold text-emerald-800 mb-2 block'>
+                            💰 Phí bảo hành (VNĐ) *
+                          </Label>
                           <Input
                             type='number'
-                            placeholder='0'
+                            placeholder='Ví dụ: 200000'
                             min='0'
                             value={itemDecisions[item.orderItemId]?.fee || ''}
                             onChange={(e) =>
                               handleItemDetailChange(item.orderItemId, 'fee', Number(e.target.value) || 0)
                             }
-                            className='mt-1'
+                            className='border-2 border-emerald-300 focus:border-emerald-500'
                           />
+                          <p className='text-xs text-emerald-600 mt-1'>Chi phí sửa chữa/thay thế</p>
                         </div>
                       )}
 
                       {/* Phí vận chuyển - chỉ hiển thị cho FEE type */}
                       {isRequestTypeFee && (
-                        <div>
-                          <Label className='text-sm font-medium text-emerald-800'>Phí vận chuyển (VNĐ) *</Label>
-                          <div className='flex gap-2 mt-1'>
+                        <div className='bg-white p-4 rounded-lg border border-emerald-200'>
+                          <Label className='text-sm font-semibold text-emerald-800 mb-2 block'>
+                            🚚 Phí vận chuyển (VNĐ) *
+                          </Label>
+                          <div className='flex gap-2'>
                             <Input
                               type='number'
-                              placeholder='0'
+                              placeholder='Ví dụ: 50000'
                               min='0'
                               value={itemDecisions[item.orderItemId]?.shippingFee || ''}
                               onChange={(e) =>
                                 handleItemDetailChange(item.orderItemId, 'shippingFee', Number(e.target.value) || 0)
                               }
-                              className='flex-1'
+                              className='flex-1 border-2 border-emerald-300 focus:border-emerald-500'
                             />
                             <Button
                               type='button'
@@ -670,39 +864,48 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
                               size='sm'
                               onClick={() => calculateShippingFee(item.orderItemId)}
                               disabled={!address || loadingShippingFee[item.orderItemId]}
-                              className='px-3 whitespace-nowrap'
+                              className='px-3 whitespace-nowrap border-2 border-emerald-300 hover:bg-emerald-50'
                             >
                               {loadingShippingFee[item.orderItemId] ? (
                                 <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-500'></div>
                               ) : (
-                                'Tính phí'
+                                '🧮 Tính phí'
                               )}
                             </Button>
                           </div>
                           {!address && (
-                            <p className='text-xs text-gray-500 mt-1'>Cần có địa chỉ để tính phí vận chuyển</p>
+                            <p className='text-xs text-amber-600 mt-1'>⚠️ Cần có địa chỉ để tính phí vận chuyển</p>
                           )}
                         </div>
                       )}
                     </div>
 
                     {/* Hiển thị thông tin dự kiến */}
-                    <div className='flex items-center gap-2 text-sm text-emerald-700'>
-                      <Clock className='w-4 h-4' />
-                      <span>
-                        Dự kiến hoàn thành:{' '}
-                        {itemDecisions[item.orderItemId]?.estimateTime
-                          ? new Date(itemDecisions[item.orderItemId].estimateTime!).toLocaleDateString('vi-VN')
-                          : 'Chưa xác định'}
-                      </span>
+                    <div className='flex items-center gap-3 p-3 bg-emerald-100 border border-emerald-300 rounded-lg'>
+                      <Clock className='w-5 h-5 text-emerald-700' />
+                      <div>
+                        <span className='text-sm font-semibold text-emerald-800'>
+                          Dự kiến hoàn thành:{' '}
+                          {itemDecisions[item.orderItemId]?.estimateTime
+                            ? new Date(itemDecisions[item.orderItemId].estimateTime!).toLocaleDateString('vi-VN', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })
+                            : 'Chưa xác định'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
 
                 {/* Hiển thị thông tin đơn hàng gốc */}
                 {Array.isArray(item.orders) && item.orders.length > 0 && (
-                  <div className='mt-6 pt-4 border-t border-gray-200'>
-                    <Label className='text-sm font-medium text-gray-700 mb-3 block'>📦 Đơn hàng gốc liên quan</Label>
+                  <div className='mt-6 pt-6 border-t-2 border-gray-200 dark:border-gray-700'>
+                    <Label className='text-base font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2'>
+                      📦 Đơn hàng gốc liên quan ({item.orders.length} đơn)
+                    </Label>
                     <div className='space-y-4'>
                       {item.orders.map((order) => (
                         <div
@@ -710,47 +913,60 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
                           role='button'
                           aria-label={`Xem đơn ${order.code}`}
                           onClick={() => navigate(`/system/manager/manage-order/${order.id}`)}
-                          className='rounded-xl border border-gray-200 p-4 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 hover:shadow-md transition-all cursor-pointer group hover:border-violet-300'
+                          className='rounded-xl border-2 border-gray-200 p-5 bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-950/20 hover:shadow-lg transition-all cursor-pointer group hover:border-violet-400'
                         >
-                          <div className='flex items-center justify-between gap-3 mb-3'>
-                            <p className='text-base font-semibold text-slate-700 dark:text-slate-300'>
-                              Mã đơn: <span className='text-violet-700 dark:text-violet-400'>{order.code}</span>
-                            </p>
-                            <p className='text-sm text-slate-500'>
-                              Ngày nhận:{' '}
-                              {order.receivedAt ? new Date(order.receivedAt).toLocaleString('vi-VN') : 'Chưa có'}
-                            </p>
+                          <div className='flex items-center justify-between gap-3 mb-4'>
+                            <div className='flex items-center gap-3'>
+                              <div>
+                                <p className='text-lg font-bold text-slate-700 dark:text-slate-300'>
+                                  Mã Đơn Hàng:{' '}
+                                  <span className='text-violet-700 dark:text-violet-400'>{order.code}</span>
+                                </p>
+                                <p className='text-sm text-slate-500'>
+                                  📅 Ngày nhận:{' '}
+                                  {order.receivedAt
+                                    ? new Date(order.receivedAt).toLocaleString('vi-VN')
+                                    : 'Chưa xác định'}
+                                </p>
+                              </div>
+                            </div>
+                            <ChevronRight className='w-5 h-5 text-violet-500 opacity-0 group-hover:opacity-100 transition-opacity' />
                           </div>
 
-                          <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                             {order.orderItems?.map((oi) => (
                               <div
                                 key={oi.id}
-                                className='flex gap-3 border border-gray-200 rounded-lg p-3 bg-white dark:bg-gray-700'
+                                className='flex gap-4 border-2 border-gray-200 rounded-xl p-4 bg-white dark:bg-gray-700'
                               >
-                                <div className='w-16 h-16 bg-gray-100 dark:bg-gray-600 rounded overflow-hidden flex-shrink-0 border'>
+                                <div className='w-16 h-16 bg-gray-100 dark:bg-gray-600 rounded-lg overflow-hidden flex-shrink-0 border-2 border-gray-200'>
                                   {oi.preset?.images?.[0] && (
                                     <img
                                       src={oi.preset.images[0]}
-                                      alt={oi.preset?.styleName ?? 'Preset'}
+                                      alt={oi.preset?.styleName ?? 'Sản phẩm'}
                                       className='w-full h-full object-cover'
                                     />
                                   )}
                                 </div>
                                 <div className='flex-1 min-w-0'>
-                                  <div className='text-sm font-semibold text-gray-900 dark:text-gray-100 truncate'>
-                                    {oi.preset?.styleName ?? 'Sản phẩm'}
+                                  <div className='text-sm font-bold text-gray-900 dark:text-gray-100 truncate'>
+                                    {oi.preset?.styleName ?? 'Sản phẩm không xác định'}
                                   </div>
-                                  <div className='text-xs text-gray-600 dark:text-gray-400 truncate'>
-                                    {oi.preset?.styleName}
-                                  </div>
-                                  <div className='mt-1 text-xs text-gray-700 dark:text-gray-300'>
-                                    SL: <span className='font-medium'>{oi.quantity}</span> • Giá:
-                                    <span className='font-medium'> {oi.price?.toLocaleString('vi-VN')}₫</span>
+                                  <div className='mt-2 grid grid-cols-2 gap-2 text-xs'>
+                                    <div className='bg-blue-50 dark:bg-blue-900/30 p-1 rounded text-center'>
+                                      <span className='font-medium text-blue-700 dark:text-blue-300'>
+                                        SL: {oi.quantity}
+                                      </span>
+                                    </div>
+                                    <div className='bg-green-50 dark:bg-green-900/30 p-1 rounded text-center'>
+                                      <span className='font-medium text-green-700 dark:text-green-300'>
+                                        {oi.price?.toLocaleString('vi-VN')}₫
+                                      </span>
+                                    </div>
                                   </div>
                                   {oi.warrantyDate && (
-                                    <div className='text-xs text-gray-500 dark:text-gray-400'>
-                                      Ngày Bảo Hành Lần 1: {new Date(oi.warrantyDate).toLocaleString('vi-VN')}
+                                    <div className='mt-2 text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 p-1 rounded'>
+                                      🛡️ BH: {new Date(oi.warrantyDate).toLocaleDateString('vi-VN')}
                                     </div>
                                   )}
                                 </div>
@@ -758,11 +974,11 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
                             ))}
                           </div>
 
-                          <div className='mt-3 flex items-center justify-end text-violet-700 dark:text-violet-400 text-sm font-medium'>
-                            <span className='mr-1 opacity-0 group-hover:opacity-100 transition-opacity'>
-                              Xem chi tiết đơn
+                          <div className='mt-4 flex items-center justify-end text-violet-700 dark:text-violet-400 text-sm font-semibold'>
+                            <span className='mr-2 opacity-0 group-hover:opacity-100 transition-opacity'>
+                              👆 Click để xem chi tiết đơn hàng
                             </span>
-                            <ChevronRight className='w-4 h-4' />
+                            <div className='w-2 h-2 bg-violet-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity'></div>
                           </div>
                         </div>
                       ))}
@@ -775,29 +991,40 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
         </Card>
 
         {/* Action buttons */}
-        <div className='flex justify-end gap-3 pt-6 pb-4 mt-6 border-t bg-gradient-to-r from-white via-violet-50/30 to-white dark:from-gray-950 dark:via-violet-950/30 dark:to-gray-950 sticky bottom-0 z-10 -mx-1 px-1 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] backdrop-blur-sm'>
+        <div className='flex justify-end gap-4 pt-8 pb-6 mt-8 border-t-2 bg-gradient-to-r from-white via-violet-50/40 to-white dark:from-gray-950 dark:via-violet-950/40 dark:to-gray-950 sticky bottom-0 z-20 -mx-2 px-4 shadow-[0_-8px_16px_-4px_rgba(0,0,0,0.1)] backdrop-blur-md rounded-t-2xl border-violet-200'>
           <Button
             variant='outline'
             onClick={onClose}
             disabled={submitDecisionMutation.isPending}
-            className='px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200'
+            className='px-8 py-3 text-base font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 transform hover:scale-[1.02] shadow-sm hover:shadow-md'
           >
-            Hủy bỏ
+            ❌ Hủy bỏ
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={submitDecisionMutation.isPending}
-            className='px-8 py-2.5 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]'
-          >
-            {submitDecisionMutation.isPending ? (
-              <>
-                <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2'></div>
-                Đang xử lý...
-              </>
-            ) : (
-              'Lưu quyết định'
-            )}
-          </Button>
+
+          {/* Chỉ hiển thị nút submit khi KHÔNG có item nào có destinationType là BRANCH */}
+          {!hasBranchDestination && (
+            <Button
+              onClick={handleSubmit}
+              disabled={submitDecisionMutation.isPending}
+              className='px-10 py-3 text-base font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-violet-700 hover:from-violet-700 hover:via-purple-700 hover:to-violet-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] border-0'
+            >
+              {submitDecisionMutation.isPending ? (
+                <>
+                  <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3'></div>
+                  Đang xử lý quyết định...
+                </>
+              ) : (
+                <>💾 Lưu quyết định</>
+              )}
+            </Button>
+          )}
+
+          {/* Hiển thị thông báo khi có item có destinationType là BRANCH */}
+          {hasBranchDestination && (
+            <div className='px-6 py-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-700 dark:text-blue-300 text-sm font-medium'>
+              🏢 Yêu cầu này được xử lý tại chi nhánh, không thể thay đổi quyết định từ hệ thống
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Plus, CalendarPlus, ShoppingBag, MessageCircle, Package } from 'lucide-react'
+import { Plus, CalendarPlus, ShoppingBag, MessageCircle, Package, DollarSignIcon } from 'lucide-react'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -30,17 +30,17 @@ export function QuickActions({ role }: QuickActionsProps) {
             action: () => navigate('manage-user'),
             color: 'text-violet-500'
           },
-          { icon: Package, label: 'Đơn hàng mới', action: () => navigate('manage-order'), color: 'text-blue-500' },
-          // {
-          //   icon: MessageCircle,
-          //   label: 'Thông báo',
-          //   action: () => navigate('system-notifications'),
-          //   color: 'text-green-500'
-          // },
+          { icon: Package, label: 'Đơn hàng', action: () => navigate('manage-order'), color: 'text-blue-500' },
           {
             icon: ShoppingBag,
-            label: 'Voucher mới',
-            action: () => navigate('manage-voucher'),
+            label: 'Yêu cầu bảo hành',
+            action: () => navigate('manage-warranty'),
+            color: 'text-purple-500'
+          },
+          {
+            icon: DollarSignIcon,
+            label: 'Giao dịch',
+            action: () => navigate('manage-transaction'),
             color: 'text-purple-500'
           }
         ]

@@ -19,11 +19,16 @@ export enum StatusWarrantyRequestItem {
   REJECTED = 'REJECTED',
   PENDING = 'PENDING'
 }
+export enum DestinationType {
+  FACTORY = 'FACTORY',
+  BRANCH = 'BRANCH'
+}
 export interface WarrantyRequestList {
   id: string
   sku: string
   noteInternal: string | null
   requestType: RequestType
+  destinationType: DestinationType
   rejectReason: string | null
   totalFee: number | null
   customer: {
@@ -32,6 +37,7 @@ export interface WarrantyRequestList {
     phoneNumber: string
     userEmail: string
   }
+  warrantyRound: number
   status: StatusWarrantyRequest
   countItem: number | 0
   createdAt: string
@@ -42,8 +48,6 @@ export interface WarrantyRequestList {
 
 export interface WarrantyRequestById extends WarrantyRequestList {
   orderStatus: OrderStatus
-  // Lưu ý: API có thể trả về pickAddressId (đúng chính tả)
-  // nhưng type cũ đang là pickAdrressId (sai chính tả). Hỗ trợ cả hai để tương thích.
   pickAddressId?: string
   items: WarrantyRequestItems[]
 }
@@ -57,10 +61,10 @@ export interface WarrantyRequestItems {
   rejectedReason: string | null
   description: string
   images: string[]
-  video: string[]
+  videos: string[]
   status: StatusWarrantyRequestItem
   estimateTime: string | null
-  destinationType: 'FACTORY' | 'BRANCH'
+  destinationType: DestinationType
   warrantyRound: number | 0
   orders: OrderOfWarranty[]
   histories: string[]
@@ -86,7 +90,7 @@ export interface DecisionWarrantyRequestForm {
 export interface WarrantyRequestItemForm {
   orderItemId: string
   status: StatusWarrantyRequestItem
-  destinationType: 'FACTORY' | 'BRANCH'
+  destinationType: DestinationType
   shippingFee: number | null
   fee: number | null
   rejectedReason: string | null
@@ -106,6 +110,7 @@ export interface DecisionWarrantyItemResponse {
 //type of branch create warranty offline
 export interface BranchWarrantyRequestForm {
   paymentMethod: PaymentMethod
+  fee: number | null
   items: BranchWarrantyRequestItemForm[]
 }
 export interface BranchWarrantyRequestItemForm {
