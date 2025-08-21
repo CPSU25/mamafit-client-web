@@ -33,6 +33,7 @@ export const orderStatusOptions = [
 export const paymentStatusOptions = [
   { value: 'PENDING', label: 'Chờ thanh toán', color: 'bg-yellow-100 text-yellow-800' },
   { value: 'PAID_FULL', label: 'Đã thanh toán đủ', color: 'bg-green-100 text-green-800' },
+  { value: 'WARRANTY', label: 'Bảo hành', color: 'bg-purple-100 text-yellow-800' },
   { value: 'FAILED', label: 'Thanh toán thất bại', color: 'bg-red-100 text-red-800' },
   { value: 'PAID_DEPOSIT', label: 'Đã cọc', color: 'bg-blue-100 text-blue-800' },
   { value: 'PAID_DEPOSIT_COMPLETED', label: 'Hoàn thành cọc', color: 'bg-green-100 text-green-800' },
