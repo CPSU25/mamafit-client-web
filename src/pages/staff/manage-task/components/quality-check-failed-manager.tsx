@@ -1,5 +1,6 @@
 // components/quality-check-failed-manager.tsx
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import dayjs from 'dayjs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,7 @@ interface QualityCheckFailedTask {
   description?: string
   sequenceOrder: number
   note: string // Note chứa các failed tasks được nối bằng "|"
+  deadline?: string
 }
 
 interface QualityCheckFailedSubTask {
@@ -37,6 +39,11 @@ export const QualityCheckFailedManager: React.FC<QualityCheckFailedManagerProps>
 }) => {
   const [subTasks, setSubTasks] = useState<QualityCheckFailedSubTask[]>([])
   const updateTaskStatusMutation = useStaffUpdateTaskStatus()
+  const [minuteTick, setMinuteTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setMinuteTick((t) => (t + 1) % 60000), 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   // Parse note để tạo sub-tasks
   useEffect(() => {
@@ -107,12 +114,31 @@ export const QualityCheckFailedManager: React.FC<QualityCheckFailedManagerProps>
     )
   }
 
+  // Deadline tổng (nếu task QC Failed có deadline riêng)
+  void minuteTick
+  const headerDeadline = task.deadline
+    ? (
+        <Badge className='bg-violet-600 text-white ml-2'>
+          {(() => {
+            const d = dayjs(task.deadline!)
+            const diff = d.diff(dayjs(), 'minute')
+            const abs = Math.abs(diff)
+            const h = Math.floor(abs / 60)
+            const m = abs % 60
+            const label = h > 0 ? `${h}h ${m}m` : `${m}m`
+            return `${diff < 0 ? 'Quá hạn' : 'Còn'} ${label} • ${d.format('HH:mm DD/MM')}`
+          })()}
+        </Badge>
+      )
+    : null
+
   return (
     <Card className='overflow-hidden border-orange-200'>
       <CardHeader className='bg-gradient-to-r from-orange-50 to-amber-50'>
         <CardTitle className='flex items-center gap-2 text-orange-800'>
           <RefreshCw className='h-5 w-5' />
           Quality Check Failed - Sửa chữa các vấn đề
+          {headerDeadline}
         </CardTitle>
         <div className='flex items-center gap-4 text-sm flex-wrap'>
           <Badge variant='outline' className='border-orange-200'>

@@ -22,6 +22,8 @@ export interface StaffMaternityDressTask {
   name: string
   description: string
   sequenceOrder: number
+  estimateTimeSpan?: number
+  deadline?: string
   note: string | null
   image: string | null
   status: StaffTaskStatus // Trực tiếp trong task, không có detail object

@@ -54,6 +54,8 @@ const transformStaffDataForUI = (data: StaffOrderTaskItem[]): ProductTaskGroup[]
                 sequenceOrder: task.sequenceOrder,
                 image: task.image,
                 note: task.note,
+                deadline: task.deadline,
+                estimateTimeSpan: task.estimateTimeSpan,
                 orderItemId: staffOrderTaskItem.orderItem.id
               }
             })

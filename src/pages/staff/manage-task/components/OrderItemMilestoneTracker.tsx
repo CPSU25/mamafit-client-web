@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import dayjs from 'dayjs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -72,6 +73,24 @@ const getStatusColor = (status: TaskStatus): string => {
     default:
       return 'bg-gray-100 text-gray-600 border-gray-200'
   }
+}
+
+// Helper for pretty deadline pill text
+const renderDeadlinePill = (deadline?: string, forceRerenderTick?: number) => {
+  if (!deadline) return null
+  // forceRerenderTick is used only to re-run render each minute
+  void forceRerenderTick
+  const d = dayjs(deadline)
+  const minutesLeft = d.diff(dayjs(), 'minute')
+  const abs = Math.abs(minutesLeft)
+  const hours = Math.floor(abs / 60)
+  const mins = abs % 60
+  const label = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+  const prefix = minutesLeft < 0 ? 'Quá hạn' : 'Còn'
+  const when = d.format('HH:mm DD/MM')
+  return (
+    <Badge className='bg-violet-600 text-white hover:bg-violet-600'>{`${prefix} ${label} • ${when}`}</Badge>
+  )
 }
 
 const getQualityStatusBadge = (status: QualityCheckStatus) => {
@@ -175,6 +194,12 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   orderId,
   orderStatus
 }) => {
+  // Re-render every minute to update countdowns
+  const [minuteTick, setMinuteTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setMinuteTick((t) => (t + 1) % 60000), 60_000)
+    return () => clearInterval(id)
+  }, [])
   const updateTaskStatusMutation = useStaffUpdateTaskStatus()
   const { handlePostSubmit } = useQualityCheckPostSubmitHandler()
   const { data: currentSequence, isLoading: isLoadingCurrentSequence } = useStaffGetCurrentSequence(orderItemId)
@@ -280,9 +305,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
   // Kiểm tra milestone có bị khóa không dựa trên current sequence từ API
   const isMilestoneLocked = (milestone: MilestoneUI) => {
-    // Nếu đang load current sequence thì tạm thời lock tất cả
+    // Trong lúc loading sequence, đừng khóa (tránh chớp Locked sai)
     if (isLoadingCurrentSequence || currentSequence === undefined) {
-      return true
+      return false
     }
 
     // Nếu currentSequence = 0, có nghĩa là tất cả milestone đã hoàn thành 100%
@@ -357,40 +382,41 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
   // Cập nhật getMilestoneStatus để sử dụng logic currentSequence
   const getMilestoneStatus = (milestone: MilestoneUI) => {
-    const isQualityCheckFailed = isQualityCheckFailedMilestone(milestone.name)
 
     // Kiểm tra milestone có hoàn thành không
     const isCompleted = isMilestoneCompleted(milestone)
 
-    // Quality Check Failed có logic riêng, không theo sequential
-    if (isQualityCheckFailed) {
-      const failedTask = milestone.maternityDressTasks.find(
-        (task) =>
-          (task.note && task.note.includes('|')) ||
-          (task.status === 'DONE' && task.note && task.note.includes('Đã hoàn thành sửa chữa'))
-      )
-
-      if (isCompleted) {
-        return { status: 'completed', label: 'Hoàn thành', variant: 'default' as const }
-      } else if (failedTask && failedTask.status === 'IN_PROGRESS') {
-        return { status: 'in-progress', label: 'Đang thực hiện', variant: 'secondary' as const }
-      } else if (failedTask && failedTask.note && failedTask.note.includes('|')) {
-        // Quality Check Failed với failed tasks luôn active
-        return { status: 'active', label: 'Sẵn sàng', variant: 'outline' as const }
-      } else {
-        return { status: 'locked', label: 'Bị khóa', variant: 'secondary' as const }
-      }
-    }
+    // Quality Check Failed cũng sử dụng logic currentSequence như các milestone khác
 
     // Sử dụng logic mới để kiểm tra milestone có bị khóa không
     const isLockedBySequence = isMilestoneLocked(milestone)
-    // Khóa milestone hiện tại nếu đang chờ khách thanh toán phần còn lại
+    
+    // Logic khóa thanh toán: khóa milestone hiện tại khi chờ thanh toán
+    // Có độ ưu tiên cao hơn logic milestone hiện tại
     const paymentLocked =
       orderStatus === OrderStatus.AWAITING_PAID_REST &&
       typeof currentSequence === 'number' &&
-      milestone.sequenceOrder === currentSequence
+      currentSequence > 0 &&
+      milestone.sequenceOrder === currentSequence // Khóa milestone hiện tại
 
-    const resolvedLocked = isLockedBySequence || paymentLocked
+    // Rule: milestone hiện tại (sequenceOrder === currentSequence) luôn mở để staff thao tác
+    // Nếu currentSequence = 0 thì tất cả milestone đều mở (đã hoàn thành hết)
+    const isCurrent = typeof currentSequence === 'number' && milestone.sequenceOrder === currentSequence
+    
+    // Logic khóa: ưu tiên khóa thanh toán trước, sau đó mới check sequence
+    const resolvedLocked = paymentLocked || (!isCurrent && isLockedBySequence)
+
+    // Debug log để kiểm tra logic
+    console.log('Milestone Status Debug:', {
+      milestoneName: milestone.name,
+      sequenceOrder: milestone.sequenceOrder,
+      currentSequence,
+      orderStatus,
+      sortedMilestonesLength: sortedMilestones.length,
+      paymentLocked,
+      isLockedBySequence,
+      resolvedLocked
+    })
 
     // Bỏ sequential locking vì đã được xử lý trong logic currentSequence
     const hasInProgress = milestone.maternityDressTasks.some((task) => task.status === 'IN_PROGRESS')
@@ -433,10 +459,12 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
               const isQualityCheckWarranty = isQualityCheckWarrantyMilestone(milestone.name)
               const isQualityCheckFailed = isQualityCheckFailedMilestone(milestone.name)
 
-              // Khóa milestone tiếp theo nếu đang chờ khách thanh toán phần còn lại
+              // Khóa milestone hiện tại nếu đang chờ khách thanh toán phần còn lại
+              // Có độ ưu tiên cao hơn logic milestone hiện tại
               const isPaymentLocked =
                 orderStatus === OrderStatus.AWAITING_PAID_REST &&
                 typeof currentSequence === 'number' &&
+                currentSequence > 0 &&
                 milestone.sequenceOrder === currentSequence
 
               const completedTasks = milestone.maternityDressTasks.filter(
@@ -447,12 +475,10 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
               // Xử lý Quality Check Failed milestone
               if (isQualityCheckFailed) {
-                // Tìm task có note chứa danh sách failed tasks hoặc task đã hoàn thành
-                const failedTask = milestone.maternityDressTasks.find(
-                  (task) =>
-                    (task.note && task.note.includes('|')) ||
-                    (task.status === 'DONE' && task.note && task.note.includes('Đã hoàn thành sửa chữa'))
-                )
+                // Chọn task QC Failed: ưu tiên task có note, nếu không lấy task đầu tiên
+                const failedTask =
+                  milestone.maternityDressTasks.find((task) => !!task.note) ||
+                  milestone.maternityDressTasks[0]
 
                 // Nếu đã hoàn thành Quality Check Failed (status DONE)
                 if (failedTask && failedTask.status === 'DONE') {
@@ -521,13 +547,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                 }
 
                 // Nếu chưa hoàn thành Quality Check Failed - chỉ hiển thị form khi có note với "|" và không bị khóa
-                if (
-                  failedTask &&
-                  failedTask.status !== 'DONE' &&
-                  failedTask.note &&
-                  failedTask.note.includes('|') &&
-                  !isLocked
-                ) {
+                if (failedTask && failedTask.status !== 'DONE' && !isLocked) {
                   return (
                     <div key={`milestone-${milestone.sequenceOrder}`} className='relative'>
                       {/* Connector line */}
@@ -541,7 +561,8 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                           name: failedTask.name,
                           description: failedTask.description,
                           sequenceOrder: failedTask.sequenceOrder,
-                          note: failedTask.note || ''
+                          note: failedTask.note || '',
+                          deadline: failedTask.deadline
                         }}
                         orderItemId={orderItemId}
                         onSubmitSuccess={() => {
@@ -708,6 +729,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                           {taskItem.description && (
                                             <p className='text-sm text-gray-600 mt-1'>{taskItem.description}</p>
                                           )}
+                                          {/* Không hiển thị deadline cho tasks đã PASS/FAIL (readonly) */}
                                         </div>
                                         <Badge
                                           className={
@@ -779,7 +801,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                   id: task.id,
                   name: task.name,
                   description: task.description,
-                  sequenceOrder: task.sequenceOrder
+                  sequenceOrder: task.sequenceOrder,
+                  deadline: task.deadline,
+                  estimateTimeSpan: task.estimateTimeSpan
                 }))
 
                 return (
@@ -980,6 +1004,17 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                             <div className='flex-1'>
                                               <h4 className='font-semibold text-gray-900'>{task.name}</h4>
                                               <p className='text-sm text-gray-600 mt-0.5'>Bước #{task.sequenceOrder}</p>
+                                              {/* Deadline pill for active tasks (pending/in-progress) */}
+                                              {(task.deadline && (taskStatus === 'PENDING' || taskStatus === 'IN_PROGRESS')) && (
+                                                <div className='mt-1 flex flex-wrap items-center gap-2'>
+                                                  {renderDeadlinePill(task.deadline, minuteTick)}
+                                                  {typeof task.estimateTimeSpan === 'number' && (
+                                                    <Badge variant='outline' className='text-xs'>
+                                                      Ước tính: {task.estimateTimeSpan} phút
+                                                    </Badge>
+                                                  )}
+                                                </div>
+                                              )}
                                             </div>
                                             <Badge
                                               variant='outline'
@@ -1050,7 +1085,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                           <div className='flex gap-2 pl-11'>
                                             {taskStatus === 'PENDING' && canStart && (
                                               <>
-                                                {/* Logic cho task Create Shipping trong Waiting For Delivery */}
+                                                {/* Với Staff: không auto-complete Packing; hiển thị nút Bắt đầu như bình thường */}
                                                 {isCreateShippingTask(task.name) ? (
                                                   <Button
                                                     size='sm'
@@ -1062,18 +1097,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                     <Package className='h-4 w-4' />
                                                     {isCreatingShipping ? 'Đang tạo...' : 'Tạo đơn giao hàng'}
                                                   </Button>
-                                                ) : isPackingMilestone(milestone.name) ? (
-                                                  /* Logic cho Packing milestone - cho phép DONE trực tiếp */
-                                                  <TaskCompletionDialog
-                                                    taskId={task.id}
-                                                    taskName={task.name}
-                                                    onComplete={(taskId, image, note) =>
-                                                      handleTaskStatusChange(taskId, 'DONE', image, note)
-                                                    }
-                                                    isLoading={updateTaskStatusMutation.isPending}
-                                                  />
                                                 ) : (
-                                                  /* Logic thông thường cho các milestone khác */
                                                   <Button
                                                     size='sm'
                                                     variant='outline'

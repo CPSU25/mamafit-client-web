@@ -16,6 +16,8 @@ export interface MaternityDressTaskUI {
   sequenceOrder: number
   image: string | null
   note: string | null
+  deadline?: string
+  estimateTimeSpan?: number
   // Optional fields để debug
   uniqueKey?: string
   orderItemId?: string
