@@ -188,6 +188,7 @@ export const router = createBrowserRouter([
             path: 'manage-task',
             element: <ManageMilestonePage />
           },
+          { path: 'system-notifications', element: <NotificationSettingPage /> },
           {
             path: 'manage-warranty',
             element: <WarrantyManagementSystem />

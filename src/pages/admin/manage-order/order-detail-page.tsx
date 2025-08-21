@@ -35,7 +35,7 @@ import { useOrder, useOrdersByDesignRequest } from '@/services/admin/manage-orde
 import type { OrderItemType } from '@/@types/manage-order.types'
 import { useGetUserById } from '@/services/admin/manage-user.service'
 import GoongMap from '@/components/Goong/GoongMap'
-import { getStatusColor, getStatusLabel } from './data/data'
+import { getItemTypeLabel, getStatusColor, getStatusLabel } from './data/data'
 import StatusOrderTimeline from './components/milestone/status-timeline-orderItem'
 import { useAdminOrderItemsWithTasks } from '@/services/admin/admin-task.service'
 import { OrderAssignDialog } from './components/order-assign-dialog'
@@ -302,7 +302,7 @@ export default function OrderDetailPage() {
             <div className='flex items-center justify-between'>
               <div className='space-y-1'>
                 <h3 className='text-lg font-bold text-white drop-shadow-sm'>
-                  {order.data.items[0]?.itemType || 'Đơn hàng'}
+                  {getItemTypeLabel(order.data.items[0]?.itemType) || 'Đơn hàng'}
                 </h3>
                 <p className='text-violet-100 text-xs'>Loại đơn hàng</p>
               </div>
@@ -700,7 +700,13 @@ export default function OrderDetailPage() {
                       const items = (od as unknown as { items?: OrderItemType[] }).items || []
                       const first = items[0]
                       const previewImg = first?.preset?.images?.[0] || first?.maternityDressDetail?.image?.[0] || ''
-                      const title = first?.preset?.name || first?.maternityDressDetail?.name || first?.itemType
+                      const rawTitle = first?.preset?.name ?? first?.maternityDressDetail?.name
+                      const title =
+                        typeof rawTitle === 'string' && rawTitle.trim().length > 0
+                          ? rawTitle
+                          : first?.maternityDressDetail
+                            ? 'Váy bầu chưa có tên'
+                            : first?.itemType
                       const styleName = first?.preset?.styleName
                       const totalQty = items.reduce((sum, it) => sum + (it.quantity || 0), 0)
                       return (
@@ -783,73 +789,88 @@ export default function OrderDetailPage() {
                   ).length > 0 ? (
                   (orderDetail?.data?.items || order.data.items || [])
                     .filter((it) => it.itemType !== 'DESIGN_REQUEST')
-                    .map((item, index) => (
-                      <div key={index} className='space-y-3'>
-                        <div className='flex items-center space-x-4 p-4 bg-gradient-to-r from-violet-50 to-purple-50/50 dark:from-violet-950/30 dark:to-purple-950/20 rounded-xl border border-violet-200 dark:border-violet-700'>
-                          <ProductImageViewer
-                            src={item.preset?.images?.[0] || item.maternityDressDetail?.image?.[0] || ''}
-                            alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
-                            containerClassName='aspect-square w-16 rounded-lg border-2 border-violet-200 dark:border-violet-700'
-                            imgClassName='px-2'
-                            fit='cover'
-                          />
-                          <div className='flex-1 min-w-0 space-y-1'>
-                            <h4 className='font-semibold text-sm text-foreground truncate'>{item.preset.name}</h4>
-                            {item.preset?.styleName && (
-                              <p className='text-xs text-muted-foreground truncate flex items-center'>
-                                <span className='w-1 h-1 bg-violet-400 rounded-full mr-2'></span>
-                                Phong cách: {item.preset.styleName}
+                    .map((item, index) => {
+                      const rawTitle = item.preset?.name ?? item.maternityDressDetail?.name
+                      const titleText =
+                        typeof rawTitle === 'string' && rawTitle.trim().length > 0
+                          ? rawTitle
+                          : item.maternityDressDetail
+                            ? 'Váy bầu chưa có tên'
+                            : item.itemType
+                      const subtitleText = item.preset?.styleName
+                        ? `Phong cách: ${item.preset.styleName}`
+                        : item.maternityDressDetail
+                          ? [
+                              item.maternityDressDetail.color ? `Màu: ${item.maternityDressDetail.color}` : null,
+                              item.maternityDressDetail.size ? `Size: ${item.maternityDressDetail.size}` : null,
+                              item.maternityDressDetail.sku ? `SKU: ${item.maternityDressDetail.sku}` : null
+                            ]
+                              .filter(Boolean)
+                              .join(' • ')
+                          : null
+
+                      return (
+                        <div key={index} className='space-y-3'>
+                          <div className='flex items-center space-x-4 p-4 bg-gradient-to-r from-violet-50 to-purple-50/50 dark:from-violet-950/30 dark:to-purple-950/20 rounded-xl border border-violet-200 dark:border-violet-700'>
+                            <ProductImageViewer
+                              src={item.preset?.images?.[0] || item.maternityDressDetail?.image?.[0] || ''}
+                              alt={titleText}
+                              containerClassName='aspect-square w-16 rounded-lg border-2 border-violet-200 dark:border-violet-700'
+                              imgClassName='px-2'
+                              fit='cover'
+                            />
+                            <div className='flex-1 min-w-0 space-y-1'>
+                              <h4 className='font-semibold text-sm text-foreground truncate'>{titleText}</h4>
+                              {subtitleText && (
+                                <p className='text-xs text-muted-foreground truncate flex items-center'>
+                                  <span className='w-1 h-1 bg-violet-400 rounded-full mr-2'></span>
+                                  {subtitleText}
+                                </p>
+                              )}
+                              <p className='text-sm font-bold text-violet-600 dark:text-violet-400'>
+                                {formatCurrency(item.price)}
                               </p>
-                            )}
-                            {item.maternityDressDetail?.name && (
-                              <p className='text-xs text-muted-foreground truncate flex items-center'>
-                                <span className='w-1 h-1 bg-violet-400 rounded-full mr-2'></span>
-                                {item.maternityDressDetail.name}
-                              </p>
-                            )}
-                            <p className='text-sm font-bold text-violet-600 dark:text-violet-400'>
-                              {formatCurrency(item.price)}
-                            </p>
-                          </div>
-                          <div className='text-center'>
-                            <div className='w-10 h-10 bg-violet-100 dark:bg-violet-900/50 rounded-xl flex items-center justify-center border border-violet-200 dark:border-violet-700'>
-                              <span className='text-sm font-bold text-violet-600 dark:text-violet-400'>
-                                {item.quantity}
-                              </span>
+                            </div>
+                            <div className='text-center'>
+                              <div className='w-10 h-10 bg-violet-100 dark:bg-violet-900/50 rounded-xl flex items-center justify-center border border-violet-200 dark:border-violet-700'>
+                                <span className='text-sm font-bold text-violet-600 dark:text-violet-400'>
+                                  {item.quantity}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Status Timeline */}
-                        <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
-                          <div className='flex items-center space-x-2 mb-3'>
-                            <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
-                              <BarChart3 className='w-3 h-3 text-white' />
+                          {/* Status Timeline */}
+                          <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
+                            <div className='flex items-center space-x-2 mb-3'>
+                              <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
+                                <BarChart3 className='w-3 h-3 text-white' />
+                              </div>
+                              <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>Tiến độ</span>
                             </div>
-                            <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>Tiến độ</span>
+                            <StatusOrderTimeline orderItemId={item.id} />
                           </div>
-                          <StatusOrderTimeline orderItemId={item.id} />
-                        </div>
 
-                        {/* Assign button */}
-                        <div className='pt-2 border-t border-violet-200 dark:border-violet-700'>
-                          {(() => {
-                            const buttonProps = getAssignButtonProps(item.id, index)
-                            return (
-                              <Button
-                                size='sm'
-                                onClick={buttonProps.onClick}
-                                className='w-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25'
-                                disabled={buttonProps.disabled}
-                              >
-                                <UserCheck className='h-4 w-4 mr-2' />
-                                {buttonProps.text}
-                              </Button>
-                            )
-                          })()}
+                          {/* Assign button */}
+                          <div className='pt-2 border-t border-violet-200 dark:border-violet-700'>
+                            {(() => {
+                              const buttonProps = getAssignButtonProps(item.id, index)
+                              return (
+                                <Button
+                                  size='sm'
+                                  onClick={buttonProps.onClick}
+                                  className='w-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25'
+                                  disabled={buttonProps.disabled}
+                                >
+                                  <UserCheck className='h-4 w-4 mr-2' />
+                                  {buttonProps.text}
+                                </Button>
+                              )
+                            })()}
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      )
+                    })
                 ) : (
                   <div className='text-center py-8 text-muted-foreground'>
                     <div className='w-16 h-16 bg-violet-100 dark:bg-violet-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4'>

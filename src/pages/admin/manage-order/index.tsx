@@ -182,7 +182,7 @@ const OrderPageError = ({ error }: { error: unknown }) => {
 function ManageOrderContent() {
   const [queryParams] = useState({
     index: 0,
-    pageSize: DEFAULT_PAGE_SIZE
+    pageSize: DEFAULT_PAGE_SIZE,
   })
 
   const { open, setOpen, currentRow } = useOrdersContext()
@@ -196,10 +196,12 @@ function ManageOrderContent() {
   })
 
   // Memoized data transformations for performance
-  const orderList = useMemo(
-    () => ordersResponse?.data?.items?.map(transformOrderData) || [],
-    [ordersResponse?.data?.items]
-  )
+  const orderList = useMemo(() => {
+    const items = ordersResponse?.data?.items?.map(transformOrderData) || []
+    return items
+      .slice()
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }, [ordersResponse?.data?.items])
 
   const userList = useMemo(() => usersResponse?.data?.items || [], [usersResponse?.data?.items])
 
@@ -241,7 +243,7 @@ function ManageOrderContent() {
   return (
     <Main>
       {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ease-in-out ${isDetailOpen ? 'mr-80 lg:mr-96' : ''}`}>
+      <div className={`flex-1 transition-all duration-300 ease-in-out ${isDetailOpen ? 'sm:mr-96 lg:mr-[28rem] xl:mr-[32rem]' : ''}`}>
         <div className='space-y-6'>
           {/* Header theo pattern dự án */}
           <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>

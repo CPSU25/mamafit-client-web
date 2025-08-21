@@ -77,7 +77,7 @@ export const getTypeOrderLabel = (type: string) => {
 }
 
 export const itemTypeOptions = [
-  { value: 'PRESET', label: 'Sản phẩm template', color: 'bg-gray-100 text-gray-800' },
+  { value: 'PRESET', label: 'Sản phẩm mẫu', color: 'bg-gray-100 text-gray-800' },
   { value: 'DESIGN_REQUEST', label: 'Yêu cầu thiết kế', color: 'bg-purple-100 text-purple-800' },
   { value: 'READY_TO_BUY', label: 'Sản phẩm sẵn có', color: 'bg-green-100 text-green-800' }
 ]
