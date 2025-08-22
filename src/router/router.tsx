@@ -29,6 +29,7 @@ import {
   ManageBranchWarrantyPage
 } from '@/pages/branch'
 import { OrderItemDetailPage, StaffTasksPage } from '@/pages/staff'
+import StaffDashboardPage from '@/pages/staff/dashboard'
 
 export const router = createBrowserRouter([
   {
@@ -188,6 +189,7 @@ export const router = createBrowserRouter([
             path: 'manage-task',
             element: <ManageMilestonePage />
           },
+          { path: 'system-notifications', element: <NotificationSettingPage /> },
           {
             path: 'manage-warranty',
             element: <WarrantyManagementSystem />
@@ -204,10 +206,7 @@ export const router = createBrowserRouter([
           </AuthGuard>
         ),
         children: [
-          {
-            path: 'dashboard',
-            element: <div>Dashboard Page</div>
-          },
+          { path: 'dashboard', element: <StaffDashboardPage /> },
           {
             path: 'manage-task',
             element: <StaffTasksPage />

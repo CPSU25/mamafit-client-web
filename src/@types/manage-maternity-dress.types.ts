@@ -54,7 +54,7 @@ export interface MaternityDressType {
   description: string
   images: Array<string>
   slug: string
-  price: number
+  price: string[]
   globalStatus: GlobalStatus
   createdAt: Date | string
   updatedAt: Date | string

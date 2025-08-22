@@ -438,7 +438,19 @@ export function ExpandedMaternityDressDetails({ maternityDressId }: ExpandedMate
                             URL Slug
                           </span>
                         </div>
-                        <p className='text-sm font-mono'>{maternityDress.slug || 'Chưa có slug'}</p>
+                        <div className='relative group'>
+                          <p
+                            className='text-sm font-mono truncate cursor-pointer'
+                            title={maternityDress.slug || 'Chưa có slug'}
+                          >
+                            {maternityDress.slug || 'Chưa có slug'}
+                          </p>
+                          {maternityDress.slug && maternityDress.slug.length > 30 && (
+                            <div className='absolute top-0 left-0 right-0 bg-popover border rounded p-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none'>
+                              {maternityDress.slug}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 

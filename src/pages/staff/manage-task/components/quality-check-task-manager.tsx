@@ -1,5 +1,6 @@
 // components/quality-check-task-manager.tsx
 import React, { useState, useEffect } from 'react'
+import dayjs from 'dayjs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,8 @@ interface QualityCheckTask {
   name: string
   description?: string
   sequenceOrder: number
+  deadline?: string
+  estimateTimeSpan?: number
 }
 
 interface QualityCheckTaskManagerProps {
@@ -33,6 +36,12 @@ export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = (
 }) => {
   const [taskStatuses, setTaskStatuses] = useState<QualityCheckTaskStatus[]>([])
   const qualityCheckMutation = useQualityCheckSubmit()
+  // Tick every minute to update countdown badge
+  const [minuteTick, setMinuteTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setMinuteTick((t) => (t + 1) % 60000), 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   // Khởi tạo state cho các task
   useEffect(() => {
@@ -97,12 +106,36 @@ export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = (
   const failedTasks = taskStatuses.filter((status) => status.status === 'FAIL').length
   const severityTasks = taskStatuses.filter((status) => status.status === 'FAIL' && status.severity).length
 
+  // Tổng hợp deadline gần nhất trong danh sách QC để hiển thị cạnh tiêu đề milestone
+  void minuteTick
+  const nearestDeadline = tasks.reduce<dayjs.Dayjs | null>((min, t) => {
+    if (!t.deadline) return min
+    const d = dayjs(t.deadline)
+    if (!min) return d
+    return d.isBefore(min) ? d : min
+  }, null)
+  const minutesLeft = nearestDeadline ? nearestDeadline.diff(dayjs(), 'minute') : null
+  const deadlineBadge = minutesLeft !== null ? (
+    <Badge className='bg-violet-600 text-white'>
+      {minutesLeft < 0 ? 'Quá hạn' : 'Còn'}{' '}
+      {(() => {
+        const abs = Math.abs(minutesLeft!)
+        const h = Math.floor(abs / 60)
+        const m = abs % 60
+        return h > 0 ? `${h}h ${m}m` : `${m}m`
+      })()}
+      {' '}
+      • {nearestDeadline!.format('HH:mm DD/MM')}
+    </Badge>
+  ) : null
+
   return (
     <Card className='overflow-hidden border-orange-200'>
       <CardHeader className='bg-gradient-to-r from-orange-50 to-amber-50'>
         <CardTitle className='flex items-center gap-2 text-orange-800'>
           <ShieldCheck className='h-5 w-5' />
           {milestoneName}
+          {deadlineBadge && <span className='ml-2'>{deadlineBadge}</span>}
         </CardTitle>
         <div className='flex items-center gap-4 text-sm flex-wrap'>
           <Badge variant='outline' className='border-orange-200'>

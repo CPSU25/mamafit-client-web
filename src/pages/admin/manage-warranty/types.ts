@@ -85,6 +85,4 @@ export interface RequestTypeBadgeProps {
 export interface WarrantyFiltersProps {
   searchQuery: string
   onSearchChange: (query: string) => void
-  statusFilter: string
-  onStatusFilterChange: (status: string) => void
 }
