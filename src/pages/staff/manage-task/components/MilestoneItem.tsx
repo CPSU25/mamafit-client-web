@@ -108,7 +108,9 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
           </Badge>
         )}
         {typeof estimate === 'number' && (
-          <Badge variant='outline' className='text-xs'>Ước tính: {estimate} phút</Badge>
+          <Badge variant='outline' className='text-xs'>
+            Ước tính: {estimate} phút
+          </Badge>
         )}
       </div>
     )

@@ -115,19 +115,19 @@ export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = (
     return d.isBefore(min) ? d : min
   }, null)
   const minutesLeft = nearestDeadline ? nearestDeadline.diff(dayjs(), 'minute') : null
-  const deadlineBadge = minutesLeft !== null ? (
-    <Badge className='bg-violet-600 text-white'>
-      {minutesLeft < 0 ? 'Quá hạn' : 'Còn'}{' '}
-      {(() => {
-        const abs = Math.abs(minutesLeft!)
-        const h = Math.floor(abs / 60)
-        const m = abs % 60
-        return h > 0 ? `${h}h ${m}m` : `${m}m`
-      })()}
-      {' '}
-      • {nearestDeadline!.format('HH:mm DD/MM')}
-    </Badge>
-  ) : null
+  const deadlineBadge =
+    minutesLeft !== null ? (
+      <Badge className='bg-violet-600 text-white'>
+        {minutesLeft < 0 ? 'Quá hạn' : 'Còn'}{' '}
+        {(() => {
+          const abs = Math.abs(minutesLeft!)
+          const h = Math.floor(abs / 60)
+          const m = abs % 60
+          return h > 0 ? `${h}h ${m}m` : `${m}m`
+        })()}{' '}
+        • {nearestDeadline!.format('HH:mm DD/MM')}
+      </Badge>
+    ) : null
 
   return (
     <Card className='overflow-hidden border-orange-200'>

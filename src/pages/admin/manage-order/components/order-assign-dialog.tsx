@@ -36,30 +36,32 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
   const assignMutation = useAssignCharge()
 
   // Group milestones and merge all tasks with same milestone ID
-  const groupedMilestones = useMemo(() => (
-    orderItem?.milestones
-    ? orderItem.milestones
-        .reduce((acc: AdminMilestone[], current: AdminMilestone) => {
-          const existingIndex = acc.findIndex((m) => m.id === current.id)
+  const groupedMilestones = useMemo(
+    () =>
+      orderItem?.milestones
+        ? orderItem.milestones
+            .reduce((acc: AdminMilestone[], current: AdminMilestone) => {
+              const existingIndex = acc.findIndex((m) => m.id === current.id)
 
-          if (existingIndex >= 0) {
-            // Merge tasks into existing milestone
-            if (current.tasks && current.tasks.length > 0) {
-              const existingTasks = acc[existingIndex].tasks || []
-              acc[existingIndex].tasks = [...existingTasks, ...current.tasks]
-            }
-          } else {
-            // Add new milestone
-            acc.push({
-              ...current,
-              tasks: current.tasks || []
-            })
-          }
-          return acc
-        }, [])
-        .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
-    : []
-  ), [orderItem?.milestones])
+              if (existingIndex >= 0) {
+                // Merge tasks into existing milestone
+                if (current.tasks && current.tasks.length > 0) {
+                  const existingTasks = acc[existingIndex].tasks || []
+                  acc[existingIndex].tasks = [...existingTasks, ...current.tasks]
+                }
+              } else {
+                // Add new milestone
+                acc.push({
+                  ...current,
+                  tasks: current.tasks || []
+                })
+              }
+              return acc
+            }, [])
+            .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
+        : [],
+    [orderItem?.milestones]
+  )
 
   // Local view state to reflect assignments immediately without waiting for refetch
   const [localMilestones, setLocalMilestones] = useState<AdminMilestone[]>(groupedMilestones)

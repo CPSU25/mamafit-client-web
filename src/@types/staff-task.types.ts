@@ -4,9 +4,10 @@
 // API: /order-item-tasks - structure có maternityDressTasks, status/note/image nằm ngoài
 // =====================================================================
 
-import { MeasurementType } from '@/pages/staff/manage-task/tasks/types'
+import { AddOnOption, MeasurementType } from '@/pages/staff/manage-task/tasks/types'
 import { PresetType } from './designer.types'
-import { OrderStatus } from './manage-order.types'
+import { ItemType, OrderStatus } from './manage-order.types'
+import { MaternityDressDetailType } from './manage-maternity-dress.types'
 
 /**
  * Staff Task Status - Staff chỉ quản lý các status cơ bản
@@ -53,13 +54,13 @@ export interface StaffOrderItem {
   updatedBy: string
   createdAt: string
   updatedAt: string
-  maternityDressDetail?: unknown
+  maternityDressDetail?: MaternityDressDetailType
   orderId: string
-  addOnOptions?: string[]
+  addOnOptions?: AddOnOption[]
   preset?: PresetType
   maternityDressDetailId?: string
   presetId?: string
-  itemType: 'PRESET' | 'READY_TO_BUY' | 'CUSTOM'
+  itemType: ItemType
   price: number
   quantity: number
   warrantyDate?: string

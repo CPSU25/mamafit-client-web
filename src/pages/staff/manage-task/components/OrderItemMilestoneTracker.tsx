@@ -88,9 +88,7 @@ const renderDeadlinePill = (deadline?: string, forceRerenderTick?: number) => {
   const label = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
   const prefix = minutesLeft < 0 ? 'Quá hạn' : 'Còn'
   const when = d.format('HH:mm DD/MM')
-  return (
-    <Badge className='bg-violet-600 text-white hover:bg-violet-600'>{`${prefix} ${label} • ${when}`}</Badge>
-  )
+  return <Badge className='bg-violet-600 text-white hover:bg-violet-600'>{`${prefix} ${label} • ${when}`}</Badge>
 }
 
 const getQualityStatusBadge = (status: QualityCheckStatus) => {
@@ -382,7 +380,6 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
   // Cập nhật getMilestoneStatus để sử dụng logic currentSequence
   const getMilestoneStatus = (milestone: MilestoneUI) => {
-
     // Kiểm tra milestone có hoàn thành không
     const isCompleted = isMilestoneCompleted(milestone)
 
@@ -390,7 +387,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
     // Sử dụng logic mới để kiểm tra milestone có bị khóa không
     const isLockedBySequence = isMilestoneLocked(milestone)
-    
+
     // Logic khóa thanh toán: khóa milestone hiện tại khi chờ thanh toán
     // Có độ ưu tiên cao hơn logic milestone hiện tại
     const paymentLocked =
@@ -402,7 +399,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
     // Rule: milestone hiện tại (sequenceOrder === currentSequence) luôn mở để staff thao tác
     // Nếu currentSequence = 0 thì tất cả milestone đều mở (đã hoàn thành hết)
     const isCurrent = typeof currentSequence === 'number' && milestone.sequenceOrder === currentSequence
-    
+
     // Logic khóa: ưu tiên khóa thanh toán trước, sau đó mới check sequence
     const resolvedLocked = paymentLocked || (!isCurrent && isLockedBySequence)
 
@@ -477,8 +474,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
               if (isQualityCheckFailed) {
                 // Chọn task QC Failed: ưu tiên task có note, nếu không lấy task đầu tiên
                 const failedTask =
-                  milestone.maternityDressTasks.find((task) => !!task.note) ||
-                  milestone.maternityDressTasks[0]
+                  milestone.maternityDressTasks.find((task) => !!task.note) || milestone.maternityDressTasks[0]
 
                 // Nếu đã hoàn thành Quality Check Failed (status DONE)
                 if (failedTask && failedTask.status === 'DONE') {
@@ -1005,16 +1001,17 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                               <h4 className='font-semibold text-gray-900'>{task.name}</h4>
                                               <p className='text-sm text-gray-600 mt-0.5'>Bước #{task.sequenceOrder}</p>
                                               {/* Deadline pill for active tasks (pending/in-progress) */}
-                                              {(task.deadline && (taskStatus === 'PENDING' || taskStatus === 'IN_PROGRESS')) && (
-                                                <div className='mt-1 flex flex-wrap items-center gap-2'>
-                                                  {renderDeadlinePill(task.deadline, minuteTick)}
-                                                  {typeof task.estimateTimeSpan === 'number' && (
-                                                    <Badge variant='outline' className='text-xs'>
-                                                      Ước tính: {task.estimateTimeSpan} phút
-                                                    </Badge>
-                                                  )}
-                                                </div>
-                                              )}
+                                              {task.deadline &&
+                                                (taskStatus === 'PENDING' || taskStatus === 'IN_PROGRESS') && (
+                                                  <div className='mt-1 flex flex-wrap items-center gap-2'>
+                                                    {renderDeadlinePill(task.deadline, minuteTick)}
+                                                    {typeof task.estimateTimeSpan === 'number' && (
+                                                      <Badge variant='outline' className='text-xs'>
+                                                        Ước tính: {task.estimateTimeSpan} phút
+                                                      </Badge>
+                                                    )}
+                                                  </div>
+                                                )}
                                             </div>
                                             <Badge
                                               variant='outline'
