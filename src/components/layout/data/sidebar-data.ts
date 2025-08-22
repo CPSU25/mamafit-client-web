@@ -16,10 +16,8 @@ import {
   Ticket,
   CalendarDays,
   // FileText,
-  TrendingUp,
   // BarChart3,
   Clock,
-  CheckCircle,
   AlertCircle,
   Boxes,
   ClipboardList,
@@ -177,7 +175,7 @@ export const sidebarData: SidebarData = {
       name: 'Manager',
       navGroups: [
         {
-          title: 'Quản lý sản xuất',
+          title: 'Tổng quan',
           items: [
             { title: 'Tổng quan sản xuất', url: 'dashboard', icon: LayoutDashboard }
             // { title: 'Báo cáo sản xuất', url: 'production-reports', icon: BarChart3 }
@@ -190,38 +188,34 @@ export const sidebarData: SidebarData = {
               title: 'Quản lý sản phẩm',
               icon: Factory,
               items: [
-                { title: 'Sản phẩm', url: 'manage-production', icon: Scissors }
-                // { title: 'Kiểm tra chất lượng', url: 'manage-production/qc', icon: CheckCircle }
+                { title: 'Sản phẩm', url: 'manage-production', icon: Scissors },
+                { title: 'Quản lý mẫu', url: 'manage-template', icon: Palette }
               ]
             },
-            { title: 'Quản lý mẫu', url: 'manage-template', icon: Palette },
             // { title: 'Yêu cầu thiết kế', url: 'manage-design-request', icon: Award },
             // { title: 'Đơn hàng sản xuất', url: 'manage-order', icon: Package, badge: '15' },
             {
               title: 'Quản lý đơn hàng',
               icon: Package,
-              items: [
-                { title: 'Quản lý đơn hàng ', url: 'manage-order', icon: Package2 },
-                { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: PenTool },
-                { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: Shield }
-              ]
-            }
+              url: 'manage-order'
+            },
+            { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: PenTool }
           ]
         },
         {
-          title: 'Quản lý bảo hành',
-          items: [{ title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }]
-        },
-        {
-          title: 'Quản lý nhân sự',
+          title: 'Bảo hành',
           items: [
-            { title: 'Phân công công việc', url: 'manage-task', icon: FolderOpen }
-            // { title: 'Theo dõi tiến độ', url: 'track-progress', icon: TrendingUp }
+            { title: 'Yêu cầu bảo hành', url: 'manage-warranty', icon: Shield },
+            { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: Shield }
           ]
+        },
+        {
+          title: 'Quản lý nhiệm vụ',
+          items: [{ title: 'Quản lý mốc nhiệm vụ', url: 'manage-task', icon: FolderOpen }]
         },
         {
           title: 'Cài đặt',
-          items: [{ title: 'Thông tin cá nhân', url: 'profile', icon: User }]
+          items: [{ title: 'Thông báo hệ thống', url: 'system-notifications', icon: Bell }]
         }
       ]
     },
@@ -232,20 +226,12 @@ export const sidebarData: SidebarData = {
           title: 'Công việc',
           items: [
             { title: 'Bảng công việc', url: 'dashboard', icon: LayoutDashboard },
-            { title: 'Nhiệm vụ của tôi', url: 'manage-task', icon: ClipboardList, badge: '5' },
-            { title: 'Tiến độ công việc', url: 'work-progress', icon: TrendingUp }
-          ]
-        },
-        {
-          title: 'Bảo hành & Hỗ trợ',
-          items: [
-            { title: 'Yêu cầu bảo hành', url: 'warranty-requests', icon: Package2, badge: '2' },
-            { title: 'Cập nhật trạng thái', url: 'status-updates', icon: CheckCircle }
+            { title: 'Nhiệm vụ của tôi', url: 'manage-task', icon: ClipboardList, badge: '5' }
           ]
         },
         {
           title: 'Cài đặt',
-          items: [{ title: 'Thông tin cá nhân', url: 'profile', icon: User }]
+          items: [{ title: 'Thông báo hệ thống', url: 'system-notifications', icon: Bell }]
         }
       ]
     }

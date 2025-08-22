@@ -21,7 +21,6 @@ import { cn } from '@/lib/utils/utils'
 function WarrantyManagementSystem() {
   const [selectedTab, setSelectedTab] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<WarrantyRequestList | null>(null)
 
@@ -77,11 +76,6 @@ function WarrantyManagementSystem() {
     setCurrentPage(1)
   }
 
-  const handleStatusFilterChange = (status: string) => {
-    setStatusFilter(status)
-    setCurrentPage(1)
-  }
-
   const handleTabChange = (tab: string) => {
     setSelectedTab(tab)
     setCurrentPage(1)
@@ -89,7 +83,6 @@ function WarrantyManagementSystem() {
 
   const handleClearFilters = () => {
     setSearchQuery('')
-    setStatusFilter('all')
     setSelectedTab('all')
     setCurrentPage(1)
   }
@@ -104,10 +97,10 @@ function WarrantyManagementSystem() {
                 <Shield className='w-8 h-8 text-white' />
               </div>
               <div>
-                <h1 className='text-3xl font-bold bg-gradient-to-r from-purple-900 via-violet-700 to-purple-700 dark:from-gray-100 dark:via-violet-300 dark:to-purple-300 bg-clip-text text-transparent'>
+                <h1 className='text-2xl font-bold bg-gradient-to-r from-purple-900 via-violet-700 to-purple-700 dark:from-gray-100 dark:via-violet-300 dark:to-purple-300 bg-clip-text text-transparent'>
                   Yêu Cầu Bảo Hành
                 </h1>
-                <p className='text-gray-600 dark:text-gray-300 mt-1'>
+                <p className='text-sm text-gray-600 dark:text-gray-300 mt-1'>
                   Xử lý và theo dõi yêu cầu bảo hành từ khách hàng
                 </p>
               </div>
@@ -128,8 +121,8 @@ function WarrantyManagementSystem() {
               </CardTitle>
             </CardHeader>
             <CardContent className='relative'>
-              <div className='text-4xl font-bold mb-2'>{stats.total}</div>
-              <p className='text-violet-100 text-sm'>Tất cả yêu cầu bảo hành</p>
+              <div className='text-3xl font-bold mb-2'>{stats.total}</div>
+              <p className='text-violet-100 text-xs'>Tất cả yêu cầu bảo hành</p>
             </CardContent>
           </Card>
 
@@ -142,10 +135,10 @@ function WarrantyManagementSystem() {
               </CardTitle>
             </CardHeader>
             <CardContent className='relative'>
-              <div className='text-4xl font-bold mb-2'>{stats.pending}</div>
+              <div className='text-3xl font-bold mb-2'>{stats.pending}</div>
               <div className='flex items-center gap-2'>
                 <div className='w-2 h-2 bg-white rounded-full animate-pulse'></div>
-                <p className='text-amber-100 text-sm'>Cần xử lý ngay</p>
+                <p className='text-amber-100 text-xs'>Cần xử lý ngay</p>
               </div>
             </CardContent>
           </Card>
@@ -159,8 +152,8 @@ function WarrantyManagementSystem() {
               </CardTitle>
             </CardHeader>
             <CardContent className='relative'>
-              <div className='text-4xl font-bold mb-2'>{stats.approved}</div>
-              <p className='text-emerald-100 text-sm'>Đã chấp nhận xử lý</p>
+              <div className='text-3xl font-bold mb-2'>{stats.approved}</div>
+              <p className='text-emerald-100 text-xs'>Đã chấp nhận xử lý</p>
             </CardContent>
           </Card>
 
@@ -173,21 +166,16 @@ function WarrantyManagementSystem() {
               </CardTitle>
             </CardHeader>
             <CardContent className='relative'>
-              <div className='text-4xl font-bold mb-2'>{stats.completed}</div>
-              <p className='text-blue-100 text-sm'>Đã hoàn tất xử lý</p>
+              <div className='text-3xl font-bold mb-2'>{stats.completed}</div>
+              <p className='text-blue-100 text-xs'>Đã hoàn tất xử lý</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Modern Filters Section */}
-        <Card className='border-0 shadow-lg bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm'>
+        {/* Modern Search Section */}
+        <Card className='border-0 shadow-md bg-white dark:bg-gray-900'>
           <CardContent className='p-6'>
-            <WarrantyFilters
-              searchQuery={searchQuery}
-              onSearchChange={handleSearchChange}
-              statusFilter={statusFilter}
-              onStatusFilterChange={handleStatusFilterChange}
-            />
+            <WarrantyFilters searchQuery={searchQuery} onSearchChange={handleSearchChange} />
           </CardContent>
         </Card>
 
@@ -248,7 +236,7 @@ function WarrantyManagementSystem() {
                     / {stats.total} yêu cầu
                   </span>
                 </div>
-                {(searchQuery || statusFilter !== 'all') && (
+                {searchQuery && (
                   <Button
                     variant='ghost'
                     size='sm'
@@ -302,15 +290,15 @@ function WarrantyManagementSystem() {
                 <div className='mx-auto w-32 h-32 bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center mb-8'>
                   <Shield className='w-16 h-16 text-violet-400 dark:text-violet-500' />
                 </div>
-                <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4'>
+                <h3 className='text-xl font-bold text-gray-900 dark:text-gray-100 mb-4'>
                   {stats.total === 0 ? 'Chưa có yêu cầu bảo hành nào' : 'Không tìm thấy yêu cầu nào'}
                 </h3>
-                <p className='text-gray-600 dark:text-gray-300 max-w-md mx-auto mb-8 text-lg'>
+                <p className='text-gray-600 dark:text-gray-300 max-w-md mx-auto mb-8 text-sm'>
                   {stats.total === 0
                     ? 'Chưa có yêu cầu bảo hành nào được tạo. Các yêu cầu mới sẽ xuất hiện ở đây.'
                     : 'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm để xem thêm yêu cầu.'}
                 </p>
-                {(searchQuery || statusFilter !== 'all' || selectedTab !== 'all') && (
+                {(searchQuery || selectedTab !== 'all') && (
                   <Button
                     onClick={handleClearFilters}
                     className='gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 dark:from-violet-700 dark:to-purple-700 dark:hover:from-violet-800 dark:hover:to-purple-800 text-white shadow-lg'
@@ -376,10 +364,12 @@ function WarrantyManagementSystem() {
                 <Shield className='w-6 h-6 text-white' />
               </div>
               <div>
-                <h2 className='text-2xl font-bold bg-gradient-to-r from-gray-900 to-violet-700 dark:from-gray-100 dark:to-violet-300 bg-clip-text text-transparent'>
+                <h2 className='text-xl font-bold bg-gradient-to-r from-gray-900 to-violet-700 dark:from-gray-100 dark:to-violet-300 bg-clip-text text-transparent'>
                   Chi tiết yêu cầu bảo hành
                 </h2>
-                <p className='text-gray-600 dark:text-gray-300'>Đánh giá và xử lý yêu cầu bảo hành từ khách hàng</p>
+                <p className='text-sm text-gray-600 dark:text-gray-300'>
+                  Đánh giá và xử lý yêu cầu bảo hành từ khách hàng
+                </p>
               </div>
             </div>
           </div>

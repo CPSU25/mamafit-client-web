@@ -133,16 +133,9 @@ export const columns: ColumnDef<MaternityDress>[] = [
     cell: ({ row }) => {
       const name = row.getValue('name') as string
       return (
-        <div className='flex items-center text-center'>
-          <div className='flex flex-col'>
-            <span
-              className='font-semibold text-foreground'
-              style={{
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                maxWidth: '100%'
-              }}
-            >
+        <div className='flex items-center'>
+          <div className='max-w-[200px]'>
+            <span className='font-semibold text-foreground block truncate' title={name}>
               {name}
             </span>
           </div>
@@ -252,14 +245,21 @@ export const columns: ColumnDef<MaternityDress>[] = [
   {
     accessorKey: 'price',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Giá' className='text-violet-700 dark:text-violet-300' />
+      <DataTableColumnHeader column={column} title='Khoảng Giá' className='text-violet-700 dark:text-violet-300' />
     ),
     cell: ({ row }) => {
-      const price = row.getValue('price') as number
+      const price = row.getValue('price') as number | Array<number>
+
+      // Handle both single price and array of prices
+      const displayPrice = Array.isArray(price) ? (price.length > 0 ? price[0] : 0) : price || 0
 
       return (
-        <div className='flex items-center gap-2'>
-          <span className='font-semibold text-foreground'>{formatCurrency(price)}</span>
+        <div className='flex flex-col gap-1'>
+          <div className='flex items-center gap-1'>
+            <span className='text-xs text-muted-foreground'>Từ</span>
+            <span className='font-semibold text-orange-600 dark:text-orange-400'>{formatCurrency(displayPrice)}</span>
+          </div>
+          <span className='text-xs text-muted-foreground italic'>Giá theo biến thể</span>
         </div>
       )
     },

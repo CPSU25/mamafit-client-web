@@ -1,5 +1,5 @@
 // order-assign-dialog.tsx - Enhanced Assignment Dialog
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Package, User, Users, CheckCircle, Palette, Target, Clock } from 'lucide-react'
@@ -36,28 +36,39 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
   const assignMutation = useAssignCharge()
 
   // Group milestones and merge all tasks with same milestone ID
-  const groupedMilestones = orderItem?.milestones
-    ? orderItem.milestones
-        .reduce((acc: AdminMilestone[], current: AdminMilestone) => {
-          const existingIndex = acc.findIndex((m) => m.id === current.id)
+  const groupedMilestones = useMemo(
+    () =>
+      orderItem?.milestones
+        ? orderItem.milestones
+            .reduce((acc: AdminMilestone[], current: AdminMilestone) => {
+              const existingIndex = acc.findIndex((m) => m.id === current.id)
 
-          if (existingIndex >= 0) {
-            // Merge tasks into existing milestone
-            if (current.tasks && current.tasks.length > 0) {
-              const existingTasks = acc[existingIndex].tasks || []
-              acc[existingIndex].tasks = [...existingTasks, ...current.tasks]
-            }
-          } else {
-            // Add new milestone
-            acc.push({
-              ...current,
-              tasks: current.tasks || []
-            })
-          }
-          return acc
-        }, [])
-        .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
-    : []
+              if (existingIndex >= 0) {
+                // Merge tasks into existing milestone
+                if (current.tasks && current.tasks.length > 0) {
+                  const existingTasks = acc[existingIndex].tasks || []
+                  acc[existingIndex].tasks = [...existingTasks, ...current.tasks]
+                }
+              } else {
+                // Add new milestone
+                acc.push({
+                  ...current,
+                  tasks: current.tasks || []
+                })
+              }
+              return acc
+            }, [])
+            .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
+        : [],
+    [orderItem?.milestones]
+  )
+
+  // Local view state to reflect assignments immediately without waiting for refetch
+  const [localMilestones, setLocalMilestones] = useState<AdminMilestone[]>(groupedMilestones)
+
+  useEffect(() => {
+    setLocalMilestones(groupedMilestones)
+  }, [orderItem?.id, groupedMilestones])
 
   const handleAssignmentChange = (milestoneId: string, userId: string) => {
     setSelectedCharges((prev) => ({
@@ -81,11 +92,27 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
 
       await assignMutation.mutateAsync(assignments)
 
+      // Optimistically update local milestone tasks with assigned user information
+      setLocalMilestones((prev) =>
+        prev.map((ms) => {
+          const assignment = assignments.find((a) => a.milestoneId === ms.id)
+          if (!assignment) return ms
+          const chargeName = getUserName(assignment.chargeId)
+          return {
+            ...ms,
+            tasks: (ms.tasks || []).map((t) => ({
+              ...t,
+              detail: { ...(t.detail ?? {}), chargeId: assignment.chargeId, chargeName }
+            }))
+          }
+        })
+      )
+
       toast.success(`Đã giao thành công ${assignments.length} milestone`)
       queryClient.invalidateQueries({ queryKey: ['order-item', orderItem.id] })
 
       onSuccess?.()
-      onOpenChange(false)
+      // Giữ dialog mở để người dùng thấy kết quả gán; chỉ reset lựa chọn
       setSelectedCharges({})
     } catch (error) {
       console.error('Assignment error:', error)
@@ -165,7 +192,7 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
             <div className='flex items-center justify-between'>
               <Label className='text-lg font-semibold text-violet-700 dark:text-violet-300 flex items-center'>
                 <Target className='h-5 w-5 mr-2' />
-                Danh sách Milestones ({groupedMilestones.length} giai đoạn)
+                Danh sách Milestones ({localMilestones.length} giai đoạn)
               </Label>
               <div className='flex items-center gap-3'>
                 <div className='flex items-center gap-2'>
@@ -178,7 +205,7 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
             </div>
 
             <div className='space-y-6'>
-              {groupedMilestones.map((milestone) => {
+              {localMilestones.map((milestone) => {
                 const isAssigned = milestone.tasks?.some((task) => task.detail?.chargeId && task.detail?.chargeName)
 
                 return (
@@ -307,7 +334,7 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                                 onValueChange={(value) => handleAssignmentChange(milestone.id, value)}
                                 disabled={isLoadingUsers}
                               >
-                                <SelectTrigger className='border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400'>
+                                <SelectTrigger className='!h-12 border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400'>
                                   <SelectValue placeholder='Chọn Designer hoặc Staff...' />
                                 </SelectTrigger>
                                 <SelectContent className='border-violet-200 dark:border-violet-800'>
@@ -323,7 +350,7 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                                             variant='outline'
                                             className='text-xs bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-700'
                                           >
-                                            {user.roleName}
+                                            {user.jobTitle}
                                           </Badge>
                                         </div>
                                       </div>
@@ -378,7 +405,7 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                   </div>
                   <div className='grid gap-3'>
                     {Object.entries(selectedCharges).map(([milestoneId, userId]) => {
-                      const milestone = groupedMilestones.find((m) => m.id === milestoneId)
+                      const milestone = localMilestones.find((m) => m.id === milestoneId)
                       return (
                         <div
                           key={milestoneId}

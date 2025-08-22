@@ -8,7 +8,7 @@ const maternityDressSchema = z.object({
   description: z.string(),
   images: z.array(z.string()),
   slug: z.string(),
-  price: z.number(),
+  price: z.array(z.string()),
   sku: z.string().optional(),
   createdAt: z.union([z.string(), z.date()]),
   updatedAt: z.union([z.string(), z.date()]),

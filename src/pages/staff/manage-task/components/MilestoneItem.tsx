@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import dayjs from 'dayjs'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -70,6 +71,49 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
       default:
         return 'Không xác định'
     }
+  }
+
+  const renderSLA = (task: MilestoneUI['maternityDressTasks'][number]) => {
+    const deadline = task.deadline
+    const estimate = task.estimateTimeSpan
+    if (!deadline && !estimate) return null
+
+    let badgeClass = 'bg-gray-100 text-gray-800 border-gray-200'
+    let label = 'Không có deadline'
+    if (deadline) {
+      const minutesLeft = dayjs(deadline).diff(dayjs(), 'minute')
+      if (minutesLeft < 0) {
+        badgeClass = 'bg-red-100 text-red-800 border-red-200'
+        label = `Quá hạn ${Math.abs(minutesLeft)} phút`
+      } else if (minutesLeft <= 60) {
+        badgeClass = 'bg-yellow-100 text-yellow-800 border-yellow-200'
+        label = `Còn ${minutesLeft} phút`
+      } else if (minutesLeft <= 240) {
+        badgeClass = 'bg-orange-100 text-orange-800 border-orange-200'
+        const h = Math.floor(minutesLeft / 60)
+        const m = minutesLeft % 60
+        label = `Còn ${h} giờ ${m} phút`
+      } else {
+        badgeClass = 'bg-blue-50 text-blue-700 border-blue-200'
+        const h = Math.floor(minutesLeft / 60)
+        label = `Còn ~${h} giờ`
+      }
+    }
+
+    return (
+      <div className='flex items-center gap-2'>
+        {deadline && (
+          <Badge variant='outline' className={`text-xs ${badgeClass}`}>
+            {dayjs(deadline).format('DD/MM/YYYY HH:mm')} • {label}
+          </Badge>
+        )}
+        {typeof estimate === 'number' && (
+          <Badge variant='outline' className='text-xs'>
+            Ước tính: {estimate} phút
+          </Badge>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -168,6 +212,7 @@ export const MilestoneItem: React.FC<MilestoneItemProps> = ({
                             <div>
                               <p className='font-medium'>{task.name}</p>
                               <p className='text-sm text-muted-foreground'>{task.description}</p>
+                              <div className='mt-1'>{renderSLA(task)}</div>
                               {task.note && <p className='text-xs text-blue-600 mt-1'>Ghi chú: {task.note}</p>}
                             </div>
                           </div>

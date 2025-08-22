@@ -6,7 +6,6 @@ import {
   DollarSign,
   ShoppingCart,
   Building,
-  UserCheck,
   Clock,
   AlertCircle,
   CheckCircle,
@@ -18,13 +17,14 @@ import {
   FileText,
   Filter
 } from 'lucide-react'
+import dayjs from 'dayjs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils/utils'
 import {
@@ -37,133 +37,269 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  Area,
-  AreaChart
+  ComposedChart,
+  Bar,
+  Line
 } from 'recharts'
+import {
+  useDashboardSummary,
+  useRevenueAnalytics,
+  useOrderStatus,
+  useBranchTop,
+  useRecentOrders,
+  useNotifications
+} from '@/services/admin/dashboard.service'
+import { ErrorAlert } from './component/error-fallback'
+import { toast } from 'sonner'
 
-// Mock data for charts
-const revenueData = [
-  { month: 'T1', revenue: 180000000, orders: 45, lastYear: 150000000 },
-  { month: 'T2', revenue: 220000000, orders: 62, lastYear: 180000000 },
-  { month: 'T3', revenue: 195000000, orders: 51, lastYear: 170000000 },
-  { month: 'T4', revenue: 280000000, orders: 78, lastYear: 210000000 },
-  { month: 'T5', revenue: 320000000, orders: 95, lastYear: 250000000 },
-  { month: 'T6', revenue: 310000000, orders: 89, lastYear: 260000000 }
-]
+// Color mapping for order status charts
+const statusColors = ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444']
 
-const orderStatusData = [
-  { name: 'Chờ xác nhận', value: 12, color: '#f59e0b' },
-  { name: 'Đang sản xuất', value: 28, color: '#3b82f6' },
-  { name: 'Đang giao', value: 8, color: '#8b5cf6' },
-  { name: 'Hoàn thành', value: 45, color: '#10b981' },
-  { name: 'Đã hủy', value: 3, color: '#ef4444' }
-]
+// Status translation mapping
+const getVietnameseStatus = (status: string): string => {
+  const statusMapping: Record<string, string> = {
+    CREATED: 'Đã tạo',
+    PENDING: 'Chờ xử lý',
+    PRODUCTION: 'Đang sản xuất',
+    SHIPPING: 'Đang giao hàng',
+    COMPLETED: 'Hoàn thành',
+    CANCELLED: 'Đã hủy',
+    CONFIRMED: 'Đã xác nhận',
+    PROCESSING: 'Đang xử lý',
+    DELIVERED: 'Đã giao',
+    REJECTED: 'Từ chối'
+  }
 
-const branchPerformance = [
-  { branch: 'Q1', revenue: 120000000, orders: 32, growth: 15 },
-  { branch: 'Q3', revenue: 95000000, orders: 28, growth: 8 },
-  { branch: 'Q7', revenue: 85000000, orders: 24, growth: -5 },
-  { branch: 'Bình Thạnh', revenue: 75000000, orders: 19, growth: 12 },
-  { branch: 'Thủ Đức', revenue: 65000000, orders: 15, growth: 20 }
-]
+  return statusMapping[status.toUpperCase()] || status
+}
+
+// Notification helper functions
+const getNotificationIcon = (type?: string) => {
+  const iconMapping: Record<string, React.ComponentType<{ className?: string }>> = {
+    PAYMENT: DollarSign,
+    ORDER_PROGRESS: Package,
+    WARRANTY: AlertCircle,
+    SYSTEM: TrendingUp
+  }
+
+  return iconMapping[type || 'SYSTEM'] || AlertCircle
+}
+
+const getNotificationColor = (type?: string) => {
+  const colorMapping: Record<string, string> = {
+    PAYMENT: 'text-green-500',
+    ORDER_PROGRESS: 'text-blue-500',
+    WARRANTY: 'text-yellow-500',
+    SYSTEM: 'text-violet-500'
+  }
+
+  return colorMapping[type || 'SYSTEM'] || 'text-gray-500'
+}
+
+const formatTimeAgo = (dateString: string): string => {
+  const date = dayjs(dateString)
+  const now = dayjs()
+  const diffMinutes = now.diff(date, 'minute')
+
+  if (diffMinutes < 1) return 'Vừa xong'
+  if (diffMinutes < 60) return `${diffMinutes} phút trước`
+
+  const diffHours = now.diff(date, 'hour')
+  if (diffHours < 24) return `${diffHours} giờ trước`
+
+  const diffDays = now.diff(date, 'day')
+  if (diffDays < 7) return `${diffDays} ngày trước`
+
+  return date.format('DD/MM/YYYY')
+}
+
+// Format currency helper
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount)
+}
 
 export default function AdminDashboard() {
   const [timeRange, setTimeRange] = useState('month')
-  const [loading, setLoading] = useState(true)
 
+  // Calculate date range based on timeRange
+  const getDateRange = () => {
+    const today = dayjs()
+    let startTime: string
+    const endTime: string = today.endOf('day').toISOString()
+
+    switch (timeRange) {
+      case 'today':
+        startTime = today.startOf('day').toISOString()
+        break
+      case 'week':
+        startTime = today.startOf('week').toISOString()
+        break
+      case 'month':
+        startTime = today.startOf('month').toISOString()
+        break
+      case 'quarter':
+        startTime = today.startOf('month').subtract(2, 'month').toISOString()
+        break
+      case 'year':
+        startTime = today.startOf('year').toISOString()
+        break
+      default:
+        startTime = today.startOf('month').toISOString()
+    }
+
+    return { startTime, endTime }
+  }
+
+  const { startTime, endTime } = getDateRange()
+
+  // API calls
+  const {
+    data: summaryData,
+    isLoading: summaryLoading,
+    error: summaryError,
+    refetch: refetchSummary
+  } = useDashboardSummary({ startTime, endTime })
+  const {
+    data: revenueData,
+    isLoading: revenueLoading,
+    error: revenueError,
+    refetch: refetchRevenue
+  } = useRevenueAnalytics({
+    range: timeRange === 'year' ? 'this_year' : 'this_month',
+    compare: ''
+  })
+  const {
+    data: orderStatusData,
+    isLoading: orderStatusLoading,
+    error: orderStatusError,
+    refetch: refetchOrderStatus
+  } = useOrderStatus({ range: timeRange })
+  const {
+    data: branchData,
+    isLoading: branchLoading,
+    error: branchError,
+    refetch: refetchBranch
+  } = useBranchTop({
+    metric: 'revenue',
+    limit: 5,
+    range: timeRange
+  })
+  const {
+    data: recentOrdersData,
+    isLoading: recentOrdersLoading,
+    error: recentOrdersError,
+    refetch: refetchRecentOrders
+  } = useRecentOrders({ limit: 4 })
+  const {
+    data: notificationsData,
+    isLoading: notificationsLoading,
+    error: notificationsError,
+    refetch: refetchNotifications
+  } = useNotifications({ index: 1, pageSize: 5 })
+
+  const loading =
+    summaryLoading ||
+    revenueLoading ||
+    orderStatusLoading ||
+    branchLoading ||
+    recentOrdersLoading ||
+    notificationsLoading
+  const hasErrors =
+    summaryError || revenueError || orderStatusError || branchError || recentOrdersError || notificationsError
+
+  // Handle API errors with toast notifications
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => setLoading(false), 1000)
-  }, [])
+    if (summaryError) {
+      toast.error('Không thể tải thống kê tổng quan', {
+        description: 'Vui lòng kiểm tra kết nối và thử lại.'
+      })
+    }
+    if (revenueError) {
+      toast.error('Không thể tải dữ liệu doanh thu', {
+        description: 'Biểu đồ doanh thu có thể không chính xác.'
+      })
+    }
+    if (orderStatusError) {
+      toast.error('Không thể tải trạng thái đơn hàng', {
+        description: 'Biểu đồ trạng thái đơn hàng có thể không chính xác.'
+      })
+    }
+    if (branchError) {
+      toast.error('Không thể tải hiệu suất chi nhánh', {
+        description: 'Dữ liệu chi nhánh có thể không chính xác.'
+      })
+    }
+    if (recentOrdersError) {
+      toast.error('Không thể tải đơn hàng gần đây', {
+        description: 'Danh sách đơn hàng có thể không cập nhật.'
+      })
+    }
+    if (notificationsError) {
+      toast.error('Không thể tải thông báo', {
+        description: 'Danh sách thông báo có thể không cập nhật.'
+      })
+    }
+  }, [summaryError, revenueError, orderStatusError, branchError, recentOrdersError, notificationsError])
 
-  // Calculate statistics
-  const totalRevenue = revenueData.reduce((sum, item) => sum + item.revenue, 0)
-  const totalOrders = revenueData.reduce((sum, item) => sum + item.orders, 0)
-  const avgOrderValue = totalRevenue / totalOrders
+  // Retry all failed requests
+  const retryAll = () => {
+    if (summaryError) refetchSummary()
+    if (revenueError) refetchRevenue()
+    if (orderStatusError) refetchOrderStatus()
+    if (branchError) refetchBranch()
+    if (recentOrdersError) refetchRecentOrders()
+    if (notificationsError) refetchNotifications()
+  }
+
+  // Process summary data for stats cards
+  const totals = summaryData?.data?.totals
+  const trends = summaryData?.data?.trends
 
   const statsCards = [
     {
       title: 'Tổng doanh thu',
-      value: `${(totalRevenue / 1000000).toFixed(0)}M`,
-      description: 'Tháng này',
+      value: totals ? formatCurrency(totals.revenue) : formatCurrency(0),
+      description: 'Kỳ này',
       icon: DollarSign,
-      trend: 12.5,
+      trend: trends?.revenuePct || 0,
       bgColor: 'bg-violet-50 dark:bg-violet-950/30',
       iconColor: 'text-violet-600 dark:text-violet-400',
-      trendUp: true
+      trendUp: (trends?.revenuePct || 0) >= 0
     },
     {
       title: 'Tổng đơn hàng',
-      value: totalOrders.toString(),
-      description: '6 tháng qua',
+      value: totals?.orders?.toString() || '0',
+      description: 'Kỳ này',
       icon: ShoppingCart,
-      trend: 8.2,
+      trend: trends?.ordersPct || 0,
       bgColor: 'bg-blue-50 dark:bg-blue-950/30',
       iconColor: 'text-blue-600 dark:text-blue-400',
-      trendUp: true
+      trendUp: (trends?.ordersPct || 0) >= 0
     },
     {
       title: 'Khách hàng mới',
-      value: '256',
-      description: 'Tháng này',
+      value: totals?.newCustomer?.toString() || '0',
+      description: 'Kỳ này',
       icon: Users,
-      trend: 15.3,
+      trend: trends?.newCustomersPct || 0,
       bgColor: 'bg-green-50 dark:bg-green-950/30',
       iconColor: 'text-green-600 dark:text-green-400',
-      trendUp: true
+      trendUp: (trends?.newCustomersPct || 0) >= 0
     },
     {
       title: 'Giá trị TB/đơn',
-      value: `${(avgOrderValue / 1000000).toFixed(1)}M`,
-      description: 'Tăng so với tháng trước',
+      value: totals ? formatCurrency(totals.avgOrderValue) : formatCurrency(0),
+      description: 'So với kỳ trước',
       icon: TrendingUp,
-      trend: 5.4,
+      trend: trends?.aovPct || 0,
       bgColor: 'bg-orange-50 dark:bg-orange-950/30',
       iconColor: 'text-orange-600 dark:text-orange-400',
-      trendUp: false
-    }
-  ]
-
-  const recentOrders = [
-    {
-      id: '#ORD-2024-001',
-      customer: 'Nguyễn Thị Mai',
-      avatar: '/avatars/01.png',
-      product: 'Váy bầu cổ tròn',
-      branch: 'Chi nhánh Q1',
-      amount: 2500000,
-      status: 'processing',
-      date: '2024-01-15'
-    },
-    {
-      id: '#ORD-2024-002',
-      customer: 'Trần Thị Hoa',
-      avatar: '/avatars/02.png',
-      product: 'Váy bầu dự tiệc',
-      branch: 'Chi nhánh Q3',
-      amount: 3800000,
-      status: 'completed',
-      date: '2024-01-14'
-    },
-    {
-      id: '#ORD-2024-003',
-      customer: 'Lê Thị Lan',
-      avatar: '/avatars/03.png',
-      product: 'Set váy bầu công sở',
-      branch: 'Chi nhánh Q7',
-      amount: 4200000,
-      status: 'pending',
-      date: '2024-01-14'
-    },
-    {
-      id: '#ORD-2024-004',
-      customer: 'Phạm Thị Hương',
-      avatar: '/avatars/04.png',
-      product: 'Váy bầu maxi',
-      branch: 'Chi nhánh Bình Thạnh',
-      amount: 2900000,
-      status: 'shipping',
-      date: '2024-01-13'
+      trendUp: (trends?.aovPct || 0) >= 0
     }
   ]
 
@@ -176,7 +312,7 @@ export default function AdminDashboard() {
       cancelled: { label: 'Đã hủy', variant: 'destructive' as const, icon: AlertCircle }
     }
 
-    const config = statusConfig[status as keyof typeof statusConfig]
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
     const Icon = config.icon
 
     return (
@@ -197,6 +333,15 @@ export default function AdminDashboard() {
 
   return (
     <div className='space-y-6 p-6'>
+      {/* Error Alert */}
+      {hasErrors && (
+        <ErrorAlert
+          title='Một số dữ liệu không thể tải'
+          description='Một phần dashboard có thể không hiển thị chính xác do lỗi kết nối.'
+          onRetry={retryAll}
+        />
+      )}
+
       {/* Header */}
       <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
         <div>
@@ -269,7 +414,6 @@ export default function AdminDashboard() {
             <div className='flex items-center justify-between'>
               <div>
                 <CardTitle>Doanh thu theo tháng</CardTitle>
-                <CardDescription>So sánh với năm trước</CardDescription>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -291,47 +435,115 @@ export default function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width='100%' height={300}>
-              <AreaChart data={revenueData}>
+            {/* Mini Stats Row */}
+            <div className='grid grid-cols-3 gap-4 mb-6'>
+              <div className='text-center p-3 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-lg'>
+                <div className='text-2xl font-bold text-violet-600 dark:text-violet-400'>
+                  {totals ? formatCurrency(totals.revenue) : formatCurrency(0)}
+                </div>
+                <div className='text-xs text-muted-foreground'>Tổng doanh thu</div>
+              </div>
+
+              <div className='text-center p-3 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 rounded-lg'>
+                <div className='text-2xl font-bold text-blue-600 dark:text-blue-400'>{totals?.orders || 0}</div>
+                <div className='text-xs text-muted-foreground'>Tổng đơn hàng</div>
+              </div>
+
+              <div className='text-center p-3 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 rounded-lg'>
+                <div className='text-2xl font-bold text-emerald-600 dark:text-emerald-400'>
+                  {totals ? formatCurrency(totals.avgOrderValue) : formatCurrency(0)}
+                </div>
+                <div className='text-xs text-muted-foreground'>Giá trị TB/đơn</div>
+              </div>
+            </div>
+
+            {/* Enhanced Combo Chart */}
+            <ResponsiveContainer width='100%' height={320}>
+              <ComposedChart data={revenueData?.data?.data || []} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <defs>
                   <linearGradient id='colorRevenue' x1='0' y1='0' x2='0' y2='1'>
                     <stop offset='5%' stopColor='#8b5cf6' stopOpacity={0.8} />
-                    <stop offset='95%' stopColor='#8b5cf6' stopOpacity={0} />
+                    <stop offset='95%' stopColor='#8b5cf6' stopOpacity={0.1} />
                   </linearGradient>
-                  <linearGradient id='colorLastYear' x1='0' y1='0' x2='0' y2='1'>
-                    <stop offset='5%' stopColor='#94a3b8' stopOpacity={0.8} />
-                    <stop offset='95%' stopColor='#94a3b8' stopOpacity={0} />
+                  <linearGradient id='colorOrders' x1='0' y1='0' x2='0' y2='1'>
+                    <stop offset='5%' stopColor='#3b82f6' stopOpacity={0.8} />
+                    <stop offset='95%' stopColor='#3b82f6' stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
-                <XAxis dataKey='month' className='text-xs' />
-                <YAxis className='text-xs' tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} />
+                <CartesianGrid strokeDasharray='3 3' className='stroke-muted/50' />
+                <XAxis dataKey='month' className='text-xs' tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                <YAxis
+                  yAxisId='revenue'
+                  className='text-xs'
+                  tick={{ fontSize: 10 }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => formatCurrency(value)}
+                />
+                <YAxis
+                  yAxisId='orders'
+                  orientation='right'
+                  className='text-xs'
+                  tick={{ fontSize: 10 }}
+                  tickLine={false}
+                  axisLine={false}
+                />
                 <Tooltip
-                  formatter={(value: number) => `${(value / 1000000).toFixed(0)}M VNĐ`}
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className='bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg p-3'>
+                          <p className='font-medium text-sm mb-2'>{`Tháng ${label}`}</p>
+                          {payload.map((entry, index) => (
+                            <div key={index} className='flex items-center gap-2 text-xs'>
+                              <div className='w-3 h-3 rounded-full' style={{ backgroundColor: entry.color }} />
+                              <span className='text-muted-foreground'>{entry.name}:</span>
+                              <span className='font-medium'>
+                                {entry.dataKey === 'revenue'
+                                  ? formatCurrency(entry.value as number)
+                                  : `${entry.value} đơn`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    }
+                    return null
                   }}
                 />
-                <Legend />
-                <Area
-                  type='monotone'
+                <Legend wrapperStyle={{ paddingTop: '20px' }} iconType='circle' />
+                <Bar
+                  yAxisId='revenue'
                   dataKey='revenue'
-                  stroke='#8b5cf6'
-                  fillOpacity={1}
                   fill='url(#colorRevenue)'
-                  name='Năm nay'
+                  stroke='#8b5cf6'
+                  strokeWidth={1}
+                  radius={[4, 4, 0, 0]}
+                  name='Doanh thu'
                 />
-                <Area
+                <Line
+                  yAxisId='orders'
                   type='monotone'
-                  dataKey='lastYear'
-                  stroke='#94a3b8'
-                  fillOpacity={1}
-                  fill='url(#colorLastYear)'
-                  name='Năm trước'
+                  dataKey='orders'
+                  stroke='#3b82f6'
+                  strokeWidth={3}
+                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, fill: '#ffffff' }}
+                  name='Số đơn hàng'
                 />
-              </AreaChart>
+                {revenueData?.data?.data?.[0]?.lastYear && (
+                  <Line
+                    yAxisId='revenue'
+                    type='monotone'
+                    dataKey='lastYear'
+                    stroke='#94a3b8'
+                    strokeWidth={2}
+                    strokeDasharray='5 5'
+                    dot={{ fill: '#94a3b8', strokeWidth: 2, r: 3 }}
+                    name='Năm trước'
+                  />
+                )}
+              </ComposedChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -343,35 +555,59 @@ export default function AdminDashboard() {
             <CardDescription>Tổng quan đơn hàng hiện tại</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width='100%' height={300}>
+            <ResponsiveContainer width='100%' height={250}>
               <PieChart>
                 <Pie
-                  data={orderStatusData}
+                  data={
+                    orderStatusData?.data?.counts?.map((item, index) => ({
+                      ...item,
+                      name: getVietnameseStatus(item.status),
+                      color: statusColors[index % statusColors.length]
+                    })) || []
+                  }
                   cx='50%'
                   cy='50%'
                   labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  label={false}
+                  outerRadius={90}
+                  innerRadius={30}
                   fill='#8884d8'
                   dataKey='value'
                 >
-                  {orderStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {(orderStatusData?.data?.counts || []).map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={statusColors[index % statusColors.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  formatter={(value: number, name: string) => [`${value} đơn`, name]}
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
 
             {/* Legend */}
-            <div className='mt-4 space-y-2'>
-              {orderStatusData.map((item, index) => (
-                <div key={index} className='flex items-center justify-between'>
+            <div className='mt-6 grid grid-cols-2 gap-3'>
+              {(orderStatusData?.data?.counts || []).map((item, index) => (
+                <div key={index} className='flex items-center justify-between p-2 rounded-lg bg-muted/30'>
                   <div className='flex items-center gap-2'>
-                    <div className='w-3 h-3 rounded-full' style={{ backgroundColor: item.color }} />
-                    <span className='text-sm'>{item.name}</span>
+                    <div
+                      className='w-3 h-3 rounded-full'
+                      style={{ backgroundColor: statusColors[index % statusColors.length] }}
+                    />
+                    <span className='text-sm font-medium'>{getVietnameseStatus(item.status)}</span>
                   </div>
-                  <span className='text-sm font-medium'>{item.value}</span>
+                  <div className='text-right'>
+                    <div className='text-sm font-bold'>{item.value}</div>
+                    <div className='text-xs text-muted-foreground'>
+                      {orderStatusData?.data?.counts
+                        ? `${((item.value / orderStatusData.data.counts.reduce((sum, i) => sum + i.value, 0)) * 100).toFixed(0)}%`
+                        : '0%'}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -384,27 +620,62 @@ export default function AdminDashboard() {
         {/* Branch Performance */}
         <Card className='col-span-3'>
           <CardHeader>
-            <CardTitle>Hiệu suất chi nhánh</CardTitle>
+            <CardTitle className='flex items-center gap-2'>
+              <Building className='h-5 w-5 text-violet-600' />
+              Hiệu suất chi nhánh
+            </CardTitle>
             <CardDescription>Top 5 chi nhánh theo doanh thu</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='space-y-4'>
-              {branchPerformance.map((branch, index) => (
-                <div key={index} className='space-y-2'>
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-2'>
-                      <Building className='h-4 w-4 text-muted-foreground' />
-                      <span className='font-medium'>{branch.branch}</span>
+            <div className='space-y-3'>
+              {(branchData?.data?.items || []).map((branch, index) => (
+                <div
+                  key={index}
+                  className='relative p-4 rounded-lg border bg-gradient-to-r from-gray-50/50 to-gray-100/50 hover:from-violet-50/50 hover:to-purple-50/50 transition-all duration-200 hover:shadow-sm'
+                >
+                  {/* Ranking Badge */}
+                  <div className='absolute -left-2 -top-2 w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center'>
+                    {index + 1}
+                  </div>
+
+                  <div className='space-y-3'>
+                    <div className='flex items-center justify-between'>
+                      <div className='flex items-center gap-3'>
+                        <div className='w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center'>
+                          <Building className='h-4 w-4 text-violet-600 dark:text-violet-400' />
+                        </div>
+                        <div>
+                          <div className='font-semibold text-sm'>{branch.branchName}</div>
+                          <div className='text-xs text-muted-foreground'>{branch.orders} đơn hàng</div>
+                        </div>
+                      </div>
+
+                      <div className='text-right'>
+                        <div className='font-bold text-sm'>{formatCurrency(branch.revenue)}</div>
+                        <Badge variant={branch.growthPct > 0 ? 'default' : 'destructive'} className='text-xs mt-1'>
+                          {branch.growthPct > 0 ? '↗' : '↘'} {Math.abs(branch.growthPct).toFixed(1)}%
+                        </Badge>
+                      </div>
                     </div>
-                    <div className='flex items-center gap-2'>
-                      <span className='text-sm text-muted-foreground'>{(branch.revenue / 1000000).toFixed(0)}M</span>
-                      <Badge variant={branch.growth > 0 ? 'default' : 'destructive'} className='text-xs'>
-                        {branch.growth > 0 ? '+' : ''}
-                        {branch.growth}%
-                      </Badge>
+
+                    <div className='space-y-1'>
+                      <div className='flex justify-between text-xs text-muted-foreground'>
+                        <span>Hiệu suất</span>
+                        <span>
+                          {branchData?.data?.items?.[0]
+                            ? Math.round((branch.revenue / branchData.data.items[0].revenue) * 100)
+                            : 0}
+                          %
+                        </span>
+                      </div>
+                      <Progress
+                        value={
+                          branchData?.data?.items?.[0] ? (branch.revenue / branchData.data.items[0].revenue) * 100 : 0
+                        }
+                        className='h-2'
+                      />
                     </div>
                   </div>
-                  <Progress value={(branch.revenue / branchPerformance[0].revenue) * 100} className='h-2' />
                 </div>
               ))}
             </div>
@@ -416,117 +687,140 @@ export default function AdminDashboard() {
           <CardHeader>
             <div className='flex items-center justify-between'>
               <div>
-                <CardTitle>Đơn hàng gần đây</CardTitle>
-                <CardDescription>Cập nhật realtime</CardDescription>
+                <CardTitle className='flex items-center gap-2'>
+                  <ShoppingCart className='h-5 w-5 text-blue-600' />
+                  Đơn hàng gần đây
+                </CardTitle>
+                <CardDescription className='flex items-center gap-1'>
+                  <div className='h-2 w-2 rounded-full bg-green-500 animate-pulse' />
+                  Cập nhật realtime
+                </CardDescription>
               </div>
-              <Button variant='outline' size='sm'>
+              <Button variant='outline' size='sm' className='gap-2'>
+                <FileText className='h-4 w-4' />
                 Xem tất cả
               </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Khách hàng</TableHead>
-                  <TableHead>Sản phẩm</TableHead>
-                  <TableHead>Chi nhánh</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className='text-right'>Giá trị</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell>
-                      <div className='flex items-center gap-2'>
-                        <Avatar className='h-8 w-8'>
-                          <AvatarImage src={order.avatar} />
-                          <AvatarFallback>
-                            {order.customer
+            <div className='space-y-3'>
+              {(recentOrdersData?.data?.items || []).map((order, index) => (
+                <div
+                  key={order.id}
+                  className='p-4 rounded-lg border bg-gradient-to-r from-blue-50/30 to-cyan-50/30 hover:from-blue-50/50 hover:to-cyan-50/50 transition-all duration-200 hover:shadow-sm'
+                >
+                  <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-3 flex-1'>
+                      <div className='relative'>
+                        <Avatar className='h-10 w-10 border-2 border-blue-200'>
+                          <AvatarImage src={order.customer.avatar} />
+                          <AvatarFallback className='bg-blue-100 text-blue-700 font-semibold'>
+                            {order.customer.name
                               .split(' ')
                               .map((n) => n[0])
                               .join('')}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className='text-sm font-medium'>{order.customer}</p>
-                          <p className='text-xs text-muted-foreground'>{order.id}</p>
+                        <div className='absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center'>
+                          {index + 1}
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell className='text-sm'>{order.product}</TableCell>
-                    <TableCell className='text-sm'>{order.branch}</TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
-                    <TableCell className='text-right font-medium'>{(order.amount / 1000000).toFixed(1)}M</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+
+                      <div className='flex-1 min-w-0'>
+                        <div className='flex items-center gap-2 mb-1'>
+                          <p className='font-semibold text-sm truncate'>{order.customer.name}</p>
+                          <Badge variant='outline' className='text-xs'>
+                            {order.code}
+                          </Badge>
+                        </div>
+
+                        <div className='grid grid-cols-2 gap-4 text-xs text-muted-foreground'>
+                          <div className='flex items-center gap-1'>
+                            <Package className='h-3 w-3' />
+                            <span className='truncate'>
+                              {order.primaryItem.maternityDressName || order.primaryItem.presetName || 'Sản phẩm'}
+                            </span>
+                          </div>
+                          <div className='flex items-center gap-1'>
+                            <Building className='h-3 w-3' />
+                            <span className='truncate'>{order.branch?.name || 'Online'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className='text-right flex flex-col items-end gap-2'>
+                      <div className='font-bold text-sm'>{formatCurrency(order.amount)}</div>
+                      {getStatusBadge(order.status || 'pending')}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Empty state */}
+              {(!recentOrdersData?.data?.items || recentOrdersData.data.items.length === 0) && (
+                <div className='text-center py-8'>
+                  <ShoppingCart className='h-12 w-12 text-muted-foreground mx-auto mb-4' />
+                  <p className='text-sm text-muted-foreground'>Không có đơn hàng nào</p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Activity Timeline */}
+      {/* Notification Timeline */}
       <Card>
         <CardHeader>
           <div className='flex items-center justify-between'>
             <div>
-              <CardTitle>Hoạt động gần đây</CardTitle>
-              <CardDescription>Các hoạt động quan trọng trong hệ thống</CardDescription>
+              <CardTitle>Thông báo gần đây</CardTitle>
+              <CardDescription>Các thông báo mới nhất trong hệ thống</CardDescription>
             </div>
-            <Badge variant='outline' className='gap-1'>
-              <div className='h-2 w-2 rounded-full bg-green-500 animate-pulse' />
-              Live
-            </Badge>
+            <div className='flex items-center gap-2'>
+              <Badge variant='outline' className='gap-1'>
+                <div className='h-2 w-2 rounded-full bg-green-500 animate-pulse' />
+                Live
+              </Badge>
+              <Button variant='outline' size='sm'>
+                Xem tất cả
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            {[
-              {
-                icon: UserCheck,
-                title: 'Nhân viên mới được thêm',
-                description: 'Nguyễn Văn A vừa được thêm vào chi nhánh Q1',
-                time: '5 phút trước',
-                color: 'text-blue-500'
-              },
-              {
-                icon: Package,
-                title: 'Đơn hàng #2024-001 hoàn thành',
-                description: 'Khách hàng Nguyễn Thị Mai đã nhận hàng thành công',
-                time: '15 phút trước',
-                color: 'text-green-500'
-              },
-              {
-                icon: AlertCircle,
-                title: 'Cảnh báo tồn kho',
-                description: 'Vải lụa tại chi nhánh Q3 sắp hết',
-                time: '30 phút trước',
-                color: 'text-yellow-500'
-              },
-              {
-                icon: TrendingUp,
-                title: 'Mục tiêu doanh thu đạt được',
-                description: 'Chi nhánh Bình Thạnh đã đạt 120% mục tiêu tháng',
-                time: '1 giờ trước',
-                color: 'text-violet-500'
-              }
-            ].map((activity, index) => {
-              const Icon = activity.icon
+            {(notificationsData?.data?.items || []).map((notification) => {
+              const Icon = getNotificationIcon(notification.type)
+              const colorClass = getNotificationColor(notification.type)
+
               return (
-                <div key={index} className='flex gap-4'>
-                  <div className={cn('p-2 rounded-lg bg-muted', activity.color)}>
+                <div key={notification.id} className='flex gap-4'>
+                  <div className={cn('p-2 rounded-lg bg-muted', colorClass)}>
                     <Icon className='h-4 w-4' />
                   </div>
                   <div className='flex-1 space-y-1'>
-                    <p className='text-sm font-medium'>{activity.title}</p>
-                    <p className='text-xs text-muted-foreground'>{activity.description}</p>
-                    <p className='text-xs text-muted-foreground'>{activity.time}</p>
+                    <div className='flex items-start justify-between'>
+                      <p className='text-sm font-medium pr-2'>{notification.notificationTitle}</p>
+                      {!notification.isRead && <div className='h-2 w-2 rounded-full bg-blue-500 mt-1 flex-shrink-0' />}
+                    </div>
+                    <p className='text-xs text-muted-foreground'>{notification.notificationContent}</p>
+                    <div className='flex items-center justify-between'>
+                      <p className='text-xs text-muted-foreground'>{formatTimeAgo(notification.createdAt)}</p>
+                      <span className='text-xs text-muted-foreground'>bởi {notification.createdBy}</span>
+                    </div>
                   </div>
                 </div>
               )
             })}
+
+            {/* Empty state */}
+            {(!notificationsData?.data?.items || notificationsData.data.items.length === 0) && (
+              <div className='text-center py-8'>
+                <AlertCircle className='h-12 w-12 text-muted-foreground mx-auto mb-4' />
+                <p className='text-sm text-muted-foreground'>Không có thông báo nào</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

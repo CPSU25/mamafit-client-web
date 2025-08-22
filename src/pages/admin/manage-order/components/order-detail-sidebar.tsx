@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
-import { getStatusColor, getStatusLabel } from '../data/data'
+import { getItemTypeLabel, getStatusColor, getStatusLabel } from '../data/data'
 import {
   MapPin,
   Package,
@@ -31,6 +31,8 @@ import { useOrder } from '@/services/admin/manage-order.service'
 import { useAdminOrderItemsWithTasks } from '@/services/admin/admin-task.service'
 import GoongMap from '@/components/Goong/GoongMap'
 import dayjs from 'dayjs'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/auth-context'
 import { useState } from 'react'
 import { OrderAssignDialog } from './order-assign-dialog'
 import StatusOrderTimeline from './milestone/status-timeline-orderItem'
@@ -45,6 +47,8 @@ interface OrderDetailSidebarProps {
 }
 
 export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSidebarProps) {
+  const navigate = useNavigate()
+  const { hasRole } = useAuth()
   const { data: user } = useGetUserById(isOpen ? (order?.userId ?? '') : '')
   const { data: orderDetail } = useOrder(isOpen ? (order?.id ?? '') : '')
   const [selectedItemForAssign, setSelectedItemForAssign] = useState<string>('')
@@ -222,7 +226,9 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
 
             <div className='flex items-center justify-between'>
               <div className='space-y-1'>
-                <h3 className='text-xl font-bold text-white drop-shadow-sm'>{orderDetail?.data.items[0].itemType}</h3>
+                <h3 className='text-xl font-bold text-white drop-shadow-sm'>
+                  {getItemTypeLabel(orderDetail?.data.items?.[0]?.itemType ?? '')}
+                </h3>
                 <p className='text-violet-100 text-sm'>Order Type</p>
               </div>
               <div className='flex items-center space-x-3'>
@@ -466,7 +472,7 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                                 <div className='w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm'>
                                   <Palette className='w-4 h-4' />
                                 </div>
-                                <span className='font-semibold text-sm'>Design Request</span>
+                                <span className='font-semibold text-sm'>Yêu cầu thiết kế</span>
                               </div>
                               <div className='flex items-center space-x-4'>
                                 <span className='text-xl font-bold'>{formatCurrency(item.price)}</span>
@@ -567,27 +573,39 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
                         </div>
                       )
                     } else {
+                      const rawTitle = item.preset?.name ?? item.maternityDressDetail?.name
+                      const titleText =
+                        typeof rawTitle === 'string' && rawTitle.trim().length > 0
+                          ? rawTitle
+                          : item.maternityDressDetail
+                            ? 'Váy bầu chưa có tên'
+                            : item.itemType
+                      const subtitleText = item.preset?.styleName
+                        ? `Style: ${item.preset.styleName}`
+                        : item.maternityDressDetail
+                          ? [
+                              item.maternityDressDetail.color ? `Color: ${item.maternityDressDetail.color}` : null,
+                              item.maternityDressDetail.size ? `Size: ${item.maternityDressDetail.size}` : null,
+                              item.maternityDressDetail.sku ? `SKU: ${item.maternityDressDetail.sku}` : null
+                            ]
+                              .filter(Boolean)
+                              .join(' • ')
+                          : null
                       return (
                         <div key={index} className='space-y-4'>
                           <div className='flex items-center space-x-4 p-4 bg-gradient-to-r from-violet-50 to-purple-50/50 dark:from-violet-950/30 dark:to-purple-950/20 rounded-xl border border-violet-200 dark:border-violet-700'>
                             <ProductImageViewer
                               src={item.preset?.images?.[0] || item.maternityDressDetail?.image?.[0] || ''}
-                              alt={item.preset?.styleName || item.maternityDressDetail?.name || item.itemType}
+                              alt={titleText}
                               containerClassName='aspect-square w-16 rounded-lg border-2 border-violet-200 dark:border-violet-700'
                               imgClassName='px-2'
                             />
                             <div className='flex-1 min-w-0 space-y-1'>
-                              <h4 className='font-semibold text-sm text-foreground truncate'>{item.preset.name}</h4>
-                              {item.preset?.styleName && (
+                              <h4 className='font-semibold text-sm text-foreground truncate'>{titleText}</h4>
+                              {subtitleText && (
                                 <p className='text-xs text-muted-foreground truncate flex items-center'>
                                   <span className='w-1 h-1 bg-violet-400 rounded-full mr-2'></span>
-                                  Style: {item.preset.styleName}
-                                </p>
-                              )}
-                              {item.maternityDressDetail?.name && (
-                                <p className='text-xs text-muted-foreground truncate flex items-center'>
-                                  <span className='w-1 h-1 bg-violet-400 rounded-full mr-2'></span>
-                                  {item.maternityDressDetail.name}
+                                  {subtitleText}
                                 </p>
                               )}
                               <p className='text-sm font-bold text-violet-600 dark:text-violet-400'>
@@ -872,27 +890,48 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
           <div className='absolute inset-0 bg-gradient-to-r from-violet-50 via-white to-violet-50 dark:from-violet-950/30 dark:via-background dark:to-violet-950/30' />
 
           {/* Content */}
-          {canCreateShipping && (
-            <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800'>
+          <div className='relative p-6 border-t-2 border-violet-200 dark:border-violet-800'>
+            <div className='grid gap-2'>
               <Button
-                onClick={handleCreateShipping}
-                disabled={createShippingMutation.isPending}
-                className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                variant='outline'
+                onClick={() => {
+                  const roleBasePath = hasRole('Admin')
+                    ? '/system/admin'
+                    : hasRole('Manager')
+                      ? '/system/manager'
+                      : '/system/admin'
+                  navigate(`${roleBasePath}/manage-order/${order.id}`)
+                }}
+                className='w-full border-violet-300 text-violet-700 dark:text-violet-300'
                 size='sm'
               >
-                <Truck className='h-4 w-4 mr-2' />
-                {createShippingMutation.isPending ? 'Đang tạo đơn...' : 'Tạo đơn shipping'}
+                <Package className='h-4 w-4 mr-2' />
+                Xem chi tiết đơn hàng
               </Button>
-              <p className='text-xs text-center text-muted-foreground mt-2'>
-                {createShippingMutation.isPending
-                  ? 'Đang xử lý yêu cầu tạo đơn giao hàng...'
-                  : 'Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng'}
-              </p>
-              {createShippingMutation.isError && (
-                <p className='text-xs text-center text-red-500 mt-1'>Có lỗi xảy ra, vui lòng thử lại</p>
+
+              {canCreateShipping && (
+                <div>
+                  <Button
+                    onClick={handleCreateShipping}
+                    disabled={createShippingMutation.isPending}
+                    className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                    size='sm'
+                  >
+                    <Truck className='h-4 w-4 mr-2' />
+                    {createShippingMutation.isPending ? 'Đang tạo đơn...' : 'Tạo đơn shipping'}
+                  </Button>
+                  <p className='text-xs text-center text-muted-foreground mt-2'>
+                    {createShippingMutation.isPending
+                      ? 'Đang xử lý yêu cầu tạo đơn giao hàng...'
+                      : 'Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng'}
+                  </p>
+                  {createShippingMutation.isError && (
+                    <p className='text-xs text-center text-red-500 mt-1'>Có lỗi xảy ra, vui lòng thử lại</p>
+                  )}
+                </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 

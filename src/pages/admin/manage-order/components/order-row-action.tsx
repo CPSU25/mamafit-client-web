@@ -1,7 +1,7 @@
 // order-row-action.tsx - Enhanced Row Actions
 import { Row } from '@tanstack/react-table'
 import { OrderType } from '@/@types/manage-order.types'
-import { MoreHorizontal, Eye, Edit, Trash2, CheckCircle, ExternalLink, Users } from 'lucide-react'
+import { MoreHorizontal, Eye, Trash2, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useOrders } from '../contexts/order-context'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/auth-context'
 
 interface OrderTableRowActionProps<TData> {
   row: Row<TData>
@@ -21,6 +22,8 @@ interface OrderTableRowActionProps<TData> {
 export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TData>) {
   const order = row.original as OrderType
   const { setOpen, setCurrentRow } = useOrders()
+  const { hasRole } = useAuth()
+  const roleBasePath = hasRole('Admin') ? '/system/admin' : hasRole('Manager') ? '/system/manager' : '/system/admin'
   const navigate = useNavigate()
 
   const handleViewDetails = () => {
@@ -29,32 +32,30 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
   }
 
   const handleViewDetailPage = () => {
-    navigate(`/system/admin/manage-order/${order.id}`)
+    navigate(`${roleBasePath}/manage-order/${order.id}`)
   }
-
-  const handleEdit = () => {
-    setCurrentRow(order)
-    setOpen('edit')
-  }
-
-  const handleUpdateStatus = () => {
-    setCurrentRow(order)
-    setOpen('update')
-  }
-
   const handleDelete = () => {
     setCurrentRow(order)
     setOpen('delete')
   }
+  // const handleEdit = () => {
+  //   setCurrentRow(order)
+  //   setOpen('edit')
+  // }
 
-  const handleAssignTask = () => {
-    setCurrentRow(order)
-    setOpen('assign-task')
-  }
+  // const handleUpdateStatus = () => {
+  //   setCurrentRow(order)
+  //   setOpen('update')
+  // }
 
-  const canEdit = !['COMPLETED', 'CANCELLED', 'RETURNED'].includes(order.status)
+  // const handleAssignTask = () => {
+  //   setCurrentRow(order)
+  //   setOpen('assign-task')
+  // }
+
+  // const canEdit = !['COMPLETED', 'CANCELLED', 'RETURNED'].includes(order.status)
   const canDelete = ['CREATED', 'CONFIRMED'].includes(order.status)
-  const canAssignTask = ['CONFIRMED', 'IN_DESIGN', 'IN_PRODUCTION', 'CREATED'].includes(order.status)
+  // const canAssignTask = ['CONFIRMED', 'IN_DESIGN', 'IN_PRODUCTION', 'CREATED'].includes(order.status)
 
   return (
     <DropdownMenu>
@@ -98,7 +99,7 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
           </div>
         </DropdownMenuItem>
 
-        {canEdit && (
+        {/* {canEdit && (
           <DropdownMenuItem
             onClick={handleEdit}
             className='hover:bg-violet-50 dark:hover:bg-violet-950/30 focus:bg-violet-50 dark:focus:bg-violet-950/30 cursor-pointer'
@@ -109,9 +110,9 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
               <div className='text-xs text-muted-foreground'>Sửa thông tin đơn hàng</div>
             </div>
           </DropdownMenuItem>
-        )}
+        )} */}
 
-        <DropdownMenuItem
+        {/* <DropdownMenuItem
           onClick={handleUpdateStatus}
           className='hover:bg-violet-50 dark:hover:bg-violet-950/30 focus:bg-violet-50 dark:focus:bg-violet-950/30 cursor-pointer'
         >
@@ -120,9 +121,9 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
             <div className='font-medium'>Cập nhật trạng thái</div>
             <div className='text-xs text-muted-foreground'>Thay đổi trạng thái đơn hàng</div>
           </div>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
 
-        {canAssignTask && (
+        {/* {canAssignTask && (
           <DropdownMenuItem
             onClick={handleAssignTask}
             className='hover:bg-violet-50 dark:hover:bg-violet-950/30 focus:bg-violet-50 dark:focus:bg-violet-950/30 cursor-pointer'
@@ -133,7 +134,7 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
               <div className='text-xs text-muted-foreground'>Phân công cho nhân viên</div>
             </div>
           </DropdownMenuItem>
-        )}
+        )} */}
 
         <DropdownMenuSeparator className='bg-violet-200 dark:bg-violet-800' />
 
@@ -145,7 +146,7 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
             <Trash2 className='mr-3 h-4 w-4' />
             <div>
               <div className='font-medium'>Xóa đơn hàng</div>
-              <div className='text-xs text-muted-foreground'>Xóa vĩnh viễn đơn hàng</div>
+              <div className='text-xs text-muted-foreground'>Xóa đơn hàng</div>
             </div>
           </DropdownMenuItem>
         )}

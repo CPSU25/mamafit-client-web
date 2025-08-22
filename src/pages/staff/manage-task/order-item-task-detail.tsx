@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Package, DollarSign, MapPin, Ruler } from 'lucide-react'
+import { ArrowLeft, Package, DollarSign, MapPin, Ruler, Clock, Tag, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,6 +8,11 @@ import { useStaffGetOrderTaskByOrderItemId } from '@/services/staff/staff-task.s
 import globalAPI from '@/apis/global.api'
 import { useQuery } from '@tanstack/react-query'
 import { OrderItemMilestoneTracker } from '@/pages/staff/manage-task/components/OrderItemMilestoneTracker'
+import dayjs from 'dayjs'
+
+// Import type từ file types.ts
+import { AddOnOption } from './tasks/types'
+import { ProductImageViewer } from '@/components/ui/image-viewer'
 
 export default function OrderItemDetailPage() {
   const { orderItemId } = useParams<{ orderItemId: string }>()
@@ -66,7 +71,7 @@ export default function OrderItemDetailPage() {
     )
   }
 
-  const { preset, milestones, orderId, orderCode, measurement } = orderItemData
+  const { preset, milestones, orderId, orderCode, measurement, orderItem } = orderItemData
 
   const totalTasks = milestones.reduce((sum, milestone) => sum + milestone.maternityDressTasks.length, 0)
   const completedTasks = milestones.reduce(
@@ -79,244 +84,395 @@ export default function OrderItemDetailPage() {
   )
   const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
+  // Tính tổng giá trị add-ons từ orderItem.addOnOptions
+  const totalAddOnPrice =
+    orderItem?.addOnOptions?.reduce((sum: number, addon: AddOnOption) => sum + addon.price, 0) || 0
+  const totalPrice = preset.price + totalAddOnPrice
+
+  // Lấy status badge color
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'PACKAGING':
+        return 'default'
+      case 'COMPLETED':
+        return 'default'
+      case 'IN_PROGRESS':
+        return 'secondary'
+      case 'PENDING':
+        return 'outline'
+      default:
+        return 'secondary'
+    }
+  }
+
   return (
     <div className='container mx-auto p-4 md:p-8 space-y-6'>
-      {/* Header */}
-      <div className='flex items-center gap-4'>
-        <Button
-          variant='ghost'
-          size='sm'
-          onClick={() => navigate('/system/staff/manage-task')}
-          className='flex items-center gap-2'
-        >
-          <ArrowLeft className='h-4 w-4' />
-          Quay lại
-        </Button>
-        <div>
-          <h1 className='text-2xl font-bold'>Chi tiết Order Item</h1>
-          <p className='text-muted-foreground'>
-            {completedTasks}/{totalTasks} nhiệm vụ hoàn thành • {overallProgress}% tiến độ
-          </p>
+      {/* Header với thông tin tổng quan */}
+      <div className='bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-4'>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => navigate('/system/staff/manage-task')}
+              className='flex items-center gap-2 hover:bg-blue-100'
+            >
+              <ArrowLeft className='h-4 w-4' />
+              Quay lại
+            </Button>
+            <div>
+              <h1 className='text-3xl font-bold text-gray-900'>Chi tiết Order Item</h1>
+              <div className='flex items-center gap-4 mt-2'>
+                <Badge variant={getStatusBadgeVariant(orderItemData.orderStatus)} className='text-sm px-3 py-1'>
+                  {orderItemData.orderStatus}
+                </Badge>
+                <span className='text-muted-foreground'>
+                  {completedTasks}/{totalTasks} nhiệm vụ hoàn thành
+                </span>
+                <span className='text-muted-foreground'>•</span>
+                <span className='text-muted-foreground'>{overallProgress}% tiến độ</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Circle */}
+          <div className='relative'>
+            <div className='w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center'>
+              <div className='w-16 h-16 rounded-full bg-white flex items-center justify-center'>
+                <span className='text-xl font-bold text-blue-600'>{overallProgress}%</span>
+              </div>
+            </div>
+            <div
+              className='absolute inset-0 rounded-full border-4 border-blue-500'
+              style={{
+                background: `conic-gradient(from 0deg, #3b82f6 ${overallProgress * 3.6}deg, #e5e7eb ${overallProgress * 3.6}deg)`
+              }}
+            />
+          </div>
         </div>
       </div>
 
       <div className='space-y-6'>
-        {/* Top Row: Product Info, Measurements, Address */}
+        {/* Top Row: Product Info, Order Details, Measurements */}
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-          {/* Product Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Package className='h-5 w-5' />
+          {/* Product Info - Cải thiện layout */}
+          <Card className='shadow-lg border-0 bg-gradient-to-br from-white to-gray-50'>
+            <CardHeader className='pb-4'>
+              <CardTitle className='flex items-center gap-2 text-lg'>
+                <Package className='h-5 w-5 text-blue-600' />
                 Thông tin sản phẩm
               </CardTitle>
             </CardHeader>
             <CardContent className='space-y-4'>
-              <div className='aspect-square w-full'>
-                <img src={preset.images[0]} alt={preset.styleName} className='w-full h-full object-cover rounded-lg' />
+              <div className='aspect-square w-full rounded-xl overflow-hidden shadow-md '>
+                <ProductImageViewer
+                  src={preset?.images?.[0] || orderItem?.maternityDressDetail?.image?.[0] || ''}
+                  alt={preset.styleName}
+                  containerClassName='aspect-square w-110 rounded-lg border-2 border-violet-200 dark:border-violet-700'
+                  imgClassName='px-2'
+                  fit='contain'
+                />
               </div>
 
-              <div className='space-y-3'>
-                <div>
-                  <h3 className='font-semibold text-lg'>{preset.styleName}</h3>
-                  <Badge variant='secondary' className='mt-1'>
-                    {preset.type}
-                  </Badge>
+              <div className='space-y-4'>
+                <div className='text-center'>
+                  <h3 className='font-bold text-xl text-gray-900 mb-2'>{preset.styleName}</h3>
+                  <div className='flex items-center justify-center gap-2'>
+                    <Badge variant='secondary' className='px-3 py-1'>
+                      {preset.type}
+                    </Badge>
+                    <Badge variant='outline' className='px-3 py-1'>
+                      SKU: {preset.sku}
+                    </Badge>
+                  </div>
                 </div>
 
-                <div className='space-y-2 text-sm'>
+                {/* Price Section */}
+                <div className='bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200'>
+                  <div className='text-center'>
+                    <div className='flex items-center justify-center gap-2 mb-2'>
+                      <DollarSign className='h-5 w-5 text-green-600' />
+                      <span className='text-2xl font-bold text-green-700'>
+                        {new Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND'
+                        }).format(totalPrice)}
+                      </span>
+                    </div>
+                    {totalAddOnPrice > 0 && (
+                      <div className='text-sm text-green-600'>
+                        <span>
+                          Giá gốc:{' '}
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(preset.price)}
+                        </span>
+                        <br />
+                        <span>
+                          Add-ons: +
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                            totalAddOnPrice
+                          )}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Order Details */}
+                <div className='space-y-3 text-sm bg-gray-50 p-3 rounded-lg'>
                   <div className='flex items-center gap-2'>
-                    <DollarSign className='h-4 w-4 text-muted-foreground' />
-                    <span className='font-medium'>
-                      {new Intl.NumberFormat('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND'
-                      }).format(preset.price)}
+                    <Package className='h-4 w-4 text-muted-foreground' />
+                    <span className='font-medium'>Mã đơn hàng:</span>
+                    <code className='text-xs bg-white px-2 py-1 rounded border'>{orderCode}</code>
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <Tag className='h-4 w-4 text-muted-foreground' />
+                    <span className='font-medium'>Số lượng:</span>
+                    <Badge variant='outline'>{orderItemData.orderItem?.quantity || 1}</Badge>
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <Clock className='h-4 w-4 text-muted-foreground' />
+                    <span className='font-medium'>Ngày tạo:</span>
+                    <span className='text-xs'>
+                      {dayjs(orderItemData.orderItem?.createdAt).format('DD/MM/YYYY HH:mm')}
                     </span>
-                  </div>
-
-                  <div className='flex items-center gap-2'>
-                    <Package className='h-4 w-4 text-muted-foreground' />
-                    <span>Mã đơn hàng:</span>
-                    <code className='text-xs bg-muted px-1 rounded'>{orderCode}</code>
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <Package className='h-4 w-4 text-muted-foreground' />
-                    <span>Status</span>
-                    <code className='text-xs bg-muted px-1 rounded'>{orderItemData?.orderStatus}</code>
-                  </div>
-
-                  <div className='flex items-center gap-2'>
-                    <Package className='h-4 w-4 text-muted-foreground' />
-                    <span>Tên sản phẩm:</span>
-                    <code className='text-xs bg-muted px-1 rounded'>{preset.styleName}</code>
-                  </div>
-                </div>
-
-                <div className='pt-2 border-t'>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-sm text-muted-foreground'>Tiến độ tổng thể</span>
-                    <Badge variant={overallProgress === 100 ? 'default' : 'secondary'}>{overallProgress}%</Badge>
-                  </div>
-                  <div className='w-full bg-muted rounded-full h-2 mt-2'>
-                    <div
-                      className='bg-primary h-2 rounded-full transition-all duration-300'
-                      style={{ width: `${overallProgress}%` }}
-                    />
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Measurements */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Ruler className='h-5 w-5' />
+          {/* Add-On Options - Mới thêm */}
+          <Card className='shadow-lg border-0 bg-gradient-to-br from-white to-purple-50'>
+            <CardHeader className='pb-4'>
+              <CardTitle className='flex items-center gap-2 text-lg'>
+                <Tag className='h-5 w-5 text-purple-600' />
+                Tùy chọn bổ sung
+                {orderItem?.addOnOptions && orderItem.addOnOptions.length > 0 && (
+                  <Badge variant='secondary' className='ml-auto'>
+                    {orderItem.addOnOptions.length}
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-4'>
+              {orderItem?.addOnOptions && orderItem.addOnOptions.length > 0 ? (
+                <div className='space-y-4'>
+                  {orderItem.addOnOptions.map((addon) => (
+                    <div
+                      key={addon.id}
+                      className='bg-white p-4 rounded-lg border border-purple-200 shadow-md hover:shadow-lg transition-shadow duration-200'
+                    >
+                      {/* Header với tên và giá */}
+                      <div className='flex items-start justify-between mb-3'>
+                        <div className='flex-1'>
+                          <h4 className='font-bold text-gray-900 text-base mb-1'>{addon.name}</h4>
+                          <p className='text-sm text-gray-600 leading-relaxed'>{addon.description}</p>
+                        </div>
+                        <Badge
+                          variant='outline'
+                          className='ml-3 px-3 py-1 bg-green-50 text-green-700 border-green-200 font-semibold'
+                        >
+                          +{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(addon.price)}
+                        </Badge>
+                      </div>
+
+                      {/* Thông tin chi tiết */}
+                      <div className='space-y-2'>
+                        {/* Position */}
+                        <div className='flex items-center gap-2'>
+                          <span className='text-xs font-medium text-gray-500'>Vị trí:</span>
+                          <Badge
+                            variant='secondary'
+                            className='px-2 py-1 text-xs bg-purple-100 text-purple-700 border-purple-200'
+                          >
+                            {addon.position.name}
+                          </Badge>
+                        </div>
+
+                        {/* Size */}
+                        <div className='flex items-center gap-2'>
+                          <span className='text-xs font-medium text-gray-500'>Kích thước:</span>
+                          <Badge
+                            variant='secondary'
+                            className='px-2 py-1 text-xs bg-blue-100 text-blue-700 border-blue-200'
+                          >
+                            {addon.size.name}
+                          </Badge>
+                        </div>
+
+                        {/* Service Type */}
+                        <div className='flex items-center gap-2'>
+                          <span className='text-xs font-medium text-gray-500'>Loại dịch vụ:</span>
+                          <Badge
+                            variant='outline'
+                            className='px-2 py-1 text-xs bg-gray-100 text-gray-700 border-gray-200'
+                          >
+                            {addon.itemServiceType}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Footer với thông tin hệ thống */}
+                      <div className='mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400'>
+                        <div className='flex items-center justify-between'>
+                          <span>Tạo bởi: {addon.createdBy}</span>
+                          <span>Cập nhật: {dayjs(addon.updatedAt).format('DD/MM/YYYY')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className='text-center py-8 text-muted-foreground'>
+                  <Tag className='h-12 w-12 mx-auto mb-3 opacity-50' />
+                  <p className='text-sm'>Không có tùy chọn bổ sung</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Measurements - Cải thiện layout */}
+          <Card className='shadow-lg border-0 bg-gradient-to-br from-white to-orange-50'>
+            <CardHeader className='pb-4'>
+              <CardTitle className='flex items-center gap-2 text-lg'>
+                <Ruler className='h-5 w-5 text-orange-600' />
                 Thông số đo cơ thể
               </CardTitle>
             </CardHeader>
-            <CardContent className='space-y-3'>
+            <CardContent className='space-y-4'>
               {measurement ? (
                 <>
-                  <div className='grid grid-cols-2 gap-2 text-sm'>
+                  <div className='grid grid-cols-2 gap-3 text-sm'>
                     <div className='space-y-2'>
-                      <div className='flex justify-between'>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
                         <span className='text-muted-foreground'>Tuần thai:</span>
-                        <span className='font-medium'>{measurement.weekOfPregnancy} tuần</span>
+                        <span className='font-semibold text-orange-700'>{measurement.weekOfPregnancy} tuần</span>
                       </div>
-                      <div className='flex justify-between'>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
                         <span className='text-muted-foreground'>Cân nặng:</span>
-                        <span className='font-medium'>{measurement.weight} kg</span>
+                        <span className='font-semibold text-orange-700'>{measurement.weight} kg</span>
                       </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Cổ:</span>
-                        <span className='font-medium'>{measurement.neck} cm</span>
-                      </div>
-                      <div className='flex justify-between'>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
                         <span className='text-muted-foreground'>Ngực:</span>
-                        <span className='font-medium'>{measurement.bust} cm</span>
+                        <span className='font-semibold text-orange-700'>{measurement.bust} cm</span>
                       </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Vòng ngực:</span>
-                        <span className='font-medium'>{measurement.chestAround} cm</span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Áo khoác:</span>
-                        <span className='font-medium'>{measurement.coat} cm</span>
-                      </div>
-                      <div className='flex justify-between'>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
                         <span className='text-muted-foreground'>Bụng:</span>
-                        <span className='font-medium'>{measurement.stomach} cm</span>
+                        <span className='font-semibold text-orange-700'>{measurement.stomach} cm</span>
+                      </div>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
+                        <span className='text-muted-foreground'>Eo:</span>
+                        <span className='font-semibold text-orange-700'>{measurement.waist} cm</span>
+                      </div>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
+                        <span className='text-muted-foreground'>Hông:</span>
+                        <span className='font-semibold text-orange-700'>{measurement.hip} cm</span>
                       </div>
                     </div>
                     <div className='space-y-2'>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Eo:</span>
-                        <span className='font-medium'>{measurement.waist} cm</span>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
+                        <span className='text-muted-foreground'>Cổ:</span>
+                        <span className='font-semibold text-orange-700'>{measurement.neck} cm</span>
                       </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Eo quần:</span>
-                        <span className='font-medium'>{measurement.pantsWaist} cm</span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Hông:</span>
-                        <span className='font-medium'>{measurement.hip} cm</span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Đùi:</span>
-                        <span className='font-medium'>{measurement.thigh} cm</span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Chiều dài váy:</span>
-                        <span className='font-medium'>{measurement.dressLength} cm</span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Dài tay:</span>
-                        <span className='font-medium'>{measurement.sleeveLength} cm</span>
-                      </div>
-                      <div className='flex justify-between'>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
                         <span className='text-muted-foreground'>Vai:</span>
-                        <span className='font-medium'>{measurement.shoulderWidth} cm</span>
+                        <span className='font-semibold text-orange-700'>{measurement.shoulderWidth} cm</span>
+                      </div>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
+                        <span className='text-muted-foreground'>Dài tay:</span>
+                        <span className='font-semibold text-orange-700'>{measurement.sleeveLength} cm</span>
+                      </div>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
+                        <span className='text-muted-foreground'>Chiều dài váy:</span>
+                        <span className='font-semibold text-orange-700'>{measurement.dressLength} cm</span>
+                      </div>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
+                        <span className='text-muted-foreground'>Đùi:</span>
+                        <span className='font-semibold text-orange-700'>{measurement.thigh} cm</span>
+                      </div>
+                      <div className='flex justify-between items-center p-2 bg-orange-50 rounded'>
+                        <span className='text-muted-foreground'>Eo quần:</span>
+                        <span className='font-semibold text-orange-700'>{measurement.pantsWaist} cm</span>
                       </div>
                     </div>
                   </div>
 
                   {measurement.isLocked && (
-                    <div className='mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-md'>
-                      <p className='text-xs text-yellow-700 flex items-center gap-1'>
-                        <span>🔒</span>
-                        Thông số đã được khóa và không thể chỉnh sửa
-                      </p>
+                    <div className='mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg'>
+                      <div className='flex items-center gap-2'>
+                        <AlertCircle className='h-4 w-4 text-yellow-600' />
+                        <p className='text-xs text-yellow-700 font-medium'>
+                          Thông số đã được khóa và không thể chỉnh sửa
+                        </p>
+                      </div>
                     </div>
                   )}
                 </>
               ) : (
-                <div className='text-center py-4 text-muted-foreground'>
-                  <Ruler className='h-8 w-8 mx-auto mb-2 opacity-50' />
+                <div className='text-center py-8 text-muted-foreground'>
+                  <Ruler className='h-12 w-12 mx-auto mb-3 opacity-50' />
                   <p className='text-sm'>Chưa có thông số đo cơ thể</p>
                 </div>
               )}
             </CardContent>
           </Card>
-
-          {/* Address */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <MapPin className='h-5 w-5' />
-                Địa chỉ giao hàng
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingAddress ? (
-                <div className='space-y-2'>
-                  <Skeleton className='h-4 w-full' />
-                  <Skeleton className='h-4 w-3/4' />
-                  <Skeleton className='h-4 w-1/2' />
-                </div>
-              ) : addressData ? (
-                <div className='space-y-3 text-sm'>
-                  <div>
-                    <p className='font-medium text-gray-900'>{addressData.street}</p>
-                  </div>
-                  <div className='space-y-1'>
-                    <p className='text-gray-600'>
-                      <span className='font-medium'>Phường/Xã:</span> {addressData.ward}
-                    </p>
-                    <p className='text-gray-600'>
-                      <span className='font-medium'>Quận/Huyện:</span> {addressData.district}
-                    </p>
-                    <p className='text-gray-600'>
-                      <span className='font-medium'>Tỉnh/Thành phố:</span> {addressData.province}
-                    </p>
-                  </div>
-
-                  {addressData.isDefault && (
-                    <div className='mt-3 p-2 bg-blue-50 border border-blue-200 rounded-md'>
-                      <p className='text-xs text-blue-700 flex items-center gap-1'>
-                        <span>⭐</span>
-                        Địa chỉ mặc định
-                      </p>
-                    </div>
-                  )}
-
-                  <div className='mt-3 pt-3 border-t text-xs text-muted-foreground'>
-                    <p>
-                      Tọa độ: {addressData.latitude}, {addressData.longitude}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className='text-center py-4 text-muted-foreground'>
-                  <MapPin className='h-8 w-8 mx-auto mb-2 opacity-50' />
-                  <p className='text-sm'>Không có thông tin địa chỉ</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Address Section - Cải thiện layout */}
+        <Card className='shadow-lg border-0 bg-gradient-to-br from-white to-green-50'>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2 text-lg'>
+              <MapPin className='h-5 w-5 text-green-600' />
+              Địa chỉ giao hàng
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingAddress ? (
+              <div className='space-y-2'>
+                <Skeleton className='h-4 w-full' />
+                <Skeleton className='h-4 w-3/4' />
+                <Skeleton className='h-4 w-1/2' />
+              </div>
+            ) : addressData ? (
+              <div className='space-y-4'>
+                <div className='bg-green-50 p-4 rounded-lg border border-green-200'>
+                  <p className='font-semibold text-gray-900 text-lg mb-2'>{addressData.street}</p>
+                  <div className='grid grid-cols-1 md:grid-cols-3 gap-3 text-sm'>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-muted-foreground'>Phường/Xã:</span>
+                      <span className='font-medium text-green-700'>{addressData.ward}</span>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-muted-foreground'>Quận/Huyện:</span>
+                      <span className='font-medium text-green-700'>{addressData.district}</span>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-muted-foreground'>Tỉnh/Thành phố:</span>
+                      <span className='font-medium text-green-700'>{addressData.province}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='flex items-center justify-between'>
+                  {addressData.isDefault && (
+                    <Badge className='bg-blue-100 text-blue-700 border-blue-200 px-3 py-1'>
+                      <span className='mr-1'>⭐</span>
+                      Địa chỉ mặc định
+                    </Badge>
+                  )}
+                  <div className='text-xs text-muted-foreground'>
+                    Tọa độ: {addressData.latitude}, {addressData.longitude}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className='text-center py-8 text-muted-foreground'>
+                <MapPin className='h-12 w-12 mx-auto mb-3 opacity-50' />
+                <p className='text-sm'>Không có thông tin địa chỉ</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Bottom Row: Milestone Tracker */}
         <div className='w-full'>
