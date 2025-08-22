@@ -22,8 +22,8 @@ interface OrderTableRowActionProps<TData> {
 export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TData>) {
   const order = row.original as OrderType
   const { setOpen, setCurrentRow } = useOrders()
-  const {hasRole} = useAuth()
-    const roleBasePath = hasRole('Admin') ? '/system/admin' : hasRole('Manager') ? '/system/manager' : '/system/admin'
+  const { hasRole } = useAuth()
+  const roleBasePath = hasRole('Admin') ? '/system/admin' : hasRole('Manager') ? '/system/manager' : '/system/admin'
   const navigate = useNavigate()
 
   const handleViewDetails = () => {
@@ -47,8 +47,6 @@ export function OrderTableRowAction<TData>({ row }: OrderTableRowActionProps<TDa
   //   setCurrentRow(order)
   //   setOpen('update')
   // }
-
- 
 
   // const handleAssignTask = () => {
   //   setCurrentRow(order)

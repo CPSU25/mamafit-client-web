@@ -16,10 +16,8 @@ import {
   Ticket,
   CalendarDays,
   // FileText,
-  TrendingUp,
   // BarChart3,
   Clock,
-  CheckCircle,
   AlertCircle,
   Boxes,
   ClipboardList,
@@ -213,15 +211,11 @@ export const sidebarData: SidebarData = {
         },
         {
           title: 'Quản lý nhiệm vụ',
-          items: [
-            { title: 'Quản lý mốc nhiệm vụ', url: 'manage-task', icon: FolderOpen }
-          ]
+          items: [{ title: 'Quản lý mốc nhiệm vụ', url: 'manage-task', icon: FolderOpen }]
         },
         {
           title: 'Cài đặt',
-          items: [
-            { title: 'Thông báo hệ thống', url: 'system-notifications', icon: Bell }
-          ]
+          items: [{ title: 'Thông báo hệ thống', url: 'system-notifications', icon: Bell }]
         }
       ]
     },
@@ -232,20 +226,12 @@ export const sidebarData: SidebarData = {
           title: 'Công việc',
           items: [
             { title: 'Bảng công việc', url: 'dashboard', icon: LayoutDashboard },
-            { title: 'Nhiệm vụ của tôi', url: 'manage-task', icon: ClipboardList, badge: '5' },
-            { title: 'Tiến độ công việc', url: 'work-progress', icon: TrendingUp }
-          ]
-        },
-        {
-          title: 'Bảo hành & Hỗ trợ',
-          items: [
-            { title: 'Yêu cầu bảo hành', url: 'warranty-requests', icon: Package2, badge: '2' },
-            { title: 'Cập nhật trạng thái', url: 'status-updates', icon: CheckCircle }
+            { title: 'Nhiệm vụ của tôi', url: 'manage-task', icon: ClipboardList, badge: '5' }
           ]
         },
         {
           title: 'Cài đặt',
-          items: [{ title: 'Thông tin cá nhân', url: 'profile', icon: User }]
+          items: [{ title: 'Thông báo hệ thống', url: 'system-notifications', icon: Bell }]
         }
       ]
     }

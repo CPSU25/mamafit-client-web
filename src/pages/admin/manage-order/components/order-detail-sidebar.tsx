@@ -895,7 +895,11 @@ export function OrderDetailSidebar({ order, isOpen, onClose }: OrderDetailSideba
               <Button
                 variant='outline'
                 onClick={() => {
-                  const roleBasePath = hasRole('Admin') ? '/system/admin' : hasRole('Manager') ? '/system/manager' : '/system/admin'
+                  const roleBasePath = hasRole('Admin')
+                    ? '/system/admin'
+                    : hasRole('Manager')
+                      ? '/system/manager'
+                      : '/system/admin'
                   navigate(`${roleBasePath}/manage-order/${order.id}`)
                 }}
                 className='w-full border-violet-300 text-violet-700 dark:text-violet-300'

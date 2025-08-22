@@ -7,47 +7,31 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, Filter, Eye, Clock, CheckCircle, AlertCircle, FileText, Package, ExternalLink, Flame } from 'lucide-react'
-import { TaskStatus as StaffTaskStatus, ProductTaskGroup } from '@/pages/staff/manage-task/tasks/types'
-import { useStaffGetOrderTasks, useStaffUpdateTaskStatus } from '@/services/staff/staff-task.service'
-import { TaskDetailDialog } from './components/task-detail-dialog'
+import {
+  Search,
+  Filter,
+  Eye,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  Package,
+  Flame,
+  ShoppingBag,
+  Tag
+} from 'lucide-react'
+import { ProductTaskGroup } from '@/pages/staff/manage-task/tasks/types'
+import { useStaffGetOrderTasks } from '@/services/staff/staff-task.service'
 import { useNavigate } from 'react-router-dom'
 
 export default function StaffTasksPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [priorityOnly, setPriorityOnly] = useState<boolean>(false)
-  const [selectedOrderItemId, setSelectedOrderItemId] = useState<string | null>(null)
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
 
   const navigate = useNavigate()
   const { data: orderItems, isLoading, isError } = useStaffGetOrderTasks()
   console.log('Order Items:', orderItems)
-  const updateTaskStatusMutation = useStaffUpdateTaskStatus()
-
-  const handleTaskStatusChange = (
-    taskId: string,
-    status: StaffTaskStatus,
-    orderItemId?: string,
-    options?: {
-      image?: string
-      note?: string
-    }
-  ) => {
-    if (!orderItemId) {
-      console.error('orderItemId is required for updating task status')
-      return
-    }
-
-    console.log(`Cập nhật task ${taskId} thành trạng thái ${status} cho orderItem ${orderItemId}`, options)
-
-    updateTaskStatusMutation.mutate({
-      dressTaskId: taskId,
-      orderItemId: orderItemId,
-      status: status,
-      ...options
-    })
-  }
 
   const getTaskStatus = (milestones: ProductTaskGroup['milestones']) => {
     if (!milestones || milestones.length === 0) return 'PENDING'
@@ -63,14 +47,14 @@ export default function StaffTasksPage() {
     switch (status) {
       case 'COMPLETED':
         return (
-          <Badge variant='default' className='bg-green-500'>
+          <Badge variant='default' className='bg-green-500 hover:bg-green-600'>
             <CheckCircle className='w-3 h-3 mr-1' />
             Hoàn thành
           </Badge>
         )
       case 'IN_PROGRESS':
         return (
-          <Badge variant='default' className='bg-blue-500'>
+          <Badge variant='default' className='bg-blue-500 hover:bg-blue-600'>
             <Clock className='w-3 h-3 mr-1' />
             Đang thực hiện
           </Badge>
@@ -93,15 +77,13 @@ export default function StaffTasksPage() {
       const allTasks = oi.milestones.flatMap((m) => m.maternityDressTasks || [])
       const isCompleted = allTasks.every((t) => ['DONE', 'PASS', 'FAIL'].includes(t.status))
       const pendingTasks = allTasks.filter((t) => !['DONE', 'PASS', 'FAIL'].includes(t.status))
-      const nextTask = pendingTasks
-        .slice()
-        .sort((a, b) => {
-          const seq = (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0)
-          if (seq !== 0) return seq
-          const da = a.deadline ? dayjs(a.deadline).valueOf() : Infinity
-          const db = b.deadline ? dayjs(b.deadline).valueOf() : Infinity
-          return da - db
-        })[0]
+      const nextTask = pendingTasks.slice().sort((a, b) => {
+        const seq = (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0)
+        if (seq !== 0) return seq
+        const da = a.deadline ? dayjs(a.deadline).valueOf() : Infinity
+        const db = b.deadline ? dayjs(b.deadline).valueOf() : Infinity
+        return da - db
+      })[0]
 
       const nearest = pendingTasks.reduce<dayjs.Dayjs | null>((min, t) => {
         if (!t.deadline) return min
@@ -138,52 +120,64 @@ export default function StaffTasksPage() {
     })
   }, [orderItems])
 
+  // Group items by order code
+  const groupedByOrder = useMemo(() => {
+    const grouped = new Map<string, typeof itemsWithSLA>()
+
+    itemsWithSLA.forEach((item) => {
+      const orderCode = item.base.orderCode || 'Unknown'
+      if (!grouped.has(orderCode)) {
+        grouped.set(orderCode, [])
+      }
+      grouped.get(orderCode)!.push(item)
+    })
+
+    return Array.from(grouped.entries()).map(([orderCode, items]) => ({
+      orderCode,
+      items,
+      totalItems: items.length,
+      completedItems: items.filter((item) => item.isCompleted).length,
+      inProgressItems: items.filter((item) => getTaskStatus(item.base.milestones) === 'IN_PROGRESS').length
+    }))
+  }, [itemsWithSLA])
+
   const filteredOrderItems = useMemo(() => {
     const search = searchTerm.trim().toLowerCase()
     const status = statusFilter
     const urgencyRank: Record<string, number> = { overdue: 0, hour: 1, fourHours: 2, none: 3 }
 
-    const filtered = itemsWithSLA.filter((it) => {
-      const oi = it.base
-      const styleName = oi.preset.styleName || ''
-      const orderItemId = oi.orderItemId || ''
-      const matchesSearch = styleName.toLowerCase().includes(search) || orderItemId.toLowerCase().includes(search)
+    const filtered = groupedByOrder.filter((group) => {
+      const hasMatchingItems = group.items.some((it) => {
+        const oi = it.base
+        const styleName = oi.preset.styleName || ''
+        const orderItemId = oi.orderItemId || ''
+        const matchesSearch = styleName.toLowerCase().includes(search) || orderItemId.toLowerCase().includes(search)
+        const statusOk = status === 'all' ? true : getTaskStatus(oi.milestones) === status
+        const priorityOk = !priorityOnly || it.sla.urgency !== 'none'
+        return matchesSearch && statusOk && priorityOk
+      })
 
-      const statusOk = status === 'all' ? true : getTaskStatus(oi.milestones) === status
-      const priorityOk = !priorityOnly || it.sla.urgency !== 'none'
-      return matchesSearch && statusOk && priorityOk
+      return hasMatchingItems
     })
 
     return filtered.sort((a, b) => {
-      const ua = urgencyRank[a.sla.urgency]
-      const ub = urgencyRank[b.sla.urgency]
-      if (ua !== ub) return ua - ub
-      const ma = a.sla.minutesLeft ?? Number.POSITIVE_INFINITY
-      const mb = b.sla.minutesLeft ?? Number.POSITIVE_INFINITY
-      return ma - mb
-    })
-  }, [itemsWithSLA, searchTerm, statusFilter, priorityOnly])
+      // Sort by urgency (highest first)
+      const maxUrgencyA = Math.min(...a.items.map((item) => urgencyRank[item.sla.urgency]))
+      const maxUrgencyB = Math.min(...b.items.map((item) => urgencyRank[item.sla.urgency]))
+      if (maxUrgencyA !== maxUrgencyB) return maxUrgencyA - maxUrgencyB
 
-  const handleViewDetail = (orderItem: ProductTaskGroup) => {
-    setSelectedOrderItemId(orderItem.orderItemId)
-    setIsDetailDialogOpen(true)
-  }
+      // Then by nearest deadline
+      const minDeadlineA = Math.min(...a.items.map((item) => item.sla.minutesLeft ?? Number.POSITIVE_INFINITY))
+      const minDeadlineB = Math.min(...b.items.map((item) => item.sla.minutesLeft ?? Number.POSITIVE_INFINITY))
+      return minDeadlineA - minDeadlineB
+    })
+  }, [groupedByOrder, searchTerm, statusFilter, priorityOnly])
 
   const totalOrderItems = orderItems?.length || 0
   const completedItems = orderItems?.filter((item) => getTaskStatus(item.milestones) === 'COMPLETED').length || 0
   const inProgressItems = orderItems?.filter((item) => getTaskStatus(item.milestones) === 'IN_PROGRESS').length || 0
   const overdueCount = itemsWithSLA.filter((it) => it.sla.urgency === 'overdue').length
   const dueSoonCount = itemsWithSLA.filter((it) => it.sla.urgency === 'hour').length
-  const groupedItems = useMemo(() => {
-    const overdue = filteredOrderItems.filter((it) => it.sla.urgency === 'overdue')
-    const soon = filteredOrderItems.filter((it) => it.sla.urgency === 'hour' || it.sla.urgency === 'fourHours')
-    const others = filteredOrderItems.filter((it) => it.sla.urgency === 'none')
-    return [
-      { key: 'overdue', label: 'Quá hạn', color: 'text-red-600', items: overdue },
-      { key: 'soon', label: 'Sắp tới', color: 'text-amber-600', items: soon },
-      { key: 'others', label: 'Khác', color: 'text-muted-foreground', items: others }
-    ]
-  }, [filteredOrderItems])
 
   if (isLoading) {
     return (
@@ -319,116 +313,177 @@ export default function StaffTasksPage() {
           <TabsTrigger value='list'>Dạng danh sách</TabsTrigger>
         </TabsList>
 
-        <TabsContent value='grid' className='space-y-4'>
-          <div className='space-y-6'>
-            {groupedItems.map((group) =>
-              group.items.length > 0 && (
-                <div key={group.key} className='space-y-3'>
-                  <div className='flex items-center gap-2'>
-                    <span className={`font-semibold ${group.color}`}>{group.label}</span>
-                    <Badge variant='outline'>{group.items.length}</Badge>
+        <TabsContent value='grid' className='space-y-6'>
+          <div className='space-y-8'>
+            {filteredOrderItems.map((orderGroup) => (
+              <div key={orderGroup.orderCode} className='space-y-4'>
+                {/* Order Group Header */}
+                <div className='flex items-center justify-between p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg border border-violet-200'>
+                  <div className='flex items-center gap-3'>
+                    <div className='p-2 bg-violet-100 rounded-lg'>
+                      <ShoppingBag className='h-5 w-5 text-violet-600' />
+                    </div>
+                    <div>
+                      <h3 className='text-lg font-semibold text-violet-900'>Order: {orderGroup.orderCode}</h3>
+                      <p className='text-sm text-violet-700'>
+                        {orderGroup.totalItems} sản phẩm • {orderGroup.completedItems} hoàn thành •{' '}
+                        {orderGroup.inProgressItems} đang thực hiện
+                      </p>
+                    </div>
                   </div>
-                  <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                    {group.items.map((it) => {
-              const orderItem = it.base
-              const totalTasks = orderItem.milestones.reduce(
-                (sum, milestone) => sum + milestone.maternityDressTasks.length,
-                0
-              )
-              const completedTasks = orderItem.milestones.reduce(
-                (sum, milestone) =>
-                  sum +
-                  milestone.maternityDressTasks.filter(
-                    (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
-                  ).length,
-                0
-              )
-              const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
-
-                      return (
-                <Card key={`grid-${orderItem.orderItemId}`} className='hover:shadow-lg transition-shadow'>
-                  <CardHeader>
-                    <div className='flex items-center justify-between'>
-                      <CardTitle className='text-lg'>{orderItem.preset.styleName}</CardTitle>
-                      {getStatusBadge(getTaskStatus(orderItem.milestones))}
-                    </div>
-                    <CardDescription>Order Code: {orderItem.orderCode}</CardDescription>
-                  </CardHeader>
-                  <CardContent className='space-y-4'>
-                    {/* Product Image */}
-                    <div className='flex items-center gap-3'>
-                      <img
-                        src={orderItem.preset.images[0]}
-                        alt={orderItem.preset.styleName}
-                        className='w-16 h-16 rounded-lg object-cover shadow-sm'
-                      />
-                      <div className='flex-1'>
-                        <p className='text-lg font-semibold text-primary'>
-                          {new Intl.NumberFormat('vi-VN', {
-                            style: 'currency',
-                            currency: 'VND'
-                          }).format(orderItem.preset.price)}
-                        </p>
-                        <p className='text-sm text-muted-foreground'>{progress}% hoàn thành</p>
-                        <div className='w-full bg-gray-200 rounded-full h-2 mt-2'>
-                          <div
-                            className='bg-blue-600 h-2 rounded-full transition-all duration-300'
-                            style={{ width: `${progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Next task (deadline is shown inside detail page) */}
-                    <div className='flex flex-wrap items-center gap-2'>
-                      {it.sla.estimateTotal > 0 && (
-                        <Badge variant='outline'>Ước lượng: {it.sla.estimateTotal} phút</Badge>
-                      )}
-                      {it.nextTask && <Badge variant='outline'>Tiếp theo: {it.nextTask.name}</Badge>}
-                    </div>
-
-                    {/* Task Info */}
-                    <div className='space-y-2'>
-                      <div className='flex items-center gap-2 text-sm'>
-                        <FileText className='h-4 w-4 text-muted-foreground' />
-                        <span>{orderItem.milestones.length} giai đoạn</span>
-                      </div>
-                      <div className='flex items-center gap-2 text-sm'>
-                        <Package className='h-4 w-4 text-muted-foreground' />
-                        <span>
-                          {completedTasks}/{totalTasks} nhiệm vụ hoàn thành
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className='flex gap-2'>
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => handleViewDetail(orderItem)}
-                        className='flex-1'
-                      >
-                        <Eye className='h-4 w-4 mr-2' />
-                        Xem chi tiết
-                      </Button>
-                      <Button
-                        size='sm'
-                        onClick={() => navigate(`/system/staff/order-item/${orderItem.orderItemId}`)}
-                        className='flex-1'
-                      >
-                        <ExternalLink className='h-4 w-4 mr-2' />
-                        Mở trang
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-                    })}
-                  </div>
+                  <Badge variant='outline' className='bg-white border-violet-300 text-violet-700'>
+                    {orderGroup.totalItems} items
+                  </Badge>
                 </div>
-              )
-            )}
+
+                {/* Product Cards Grid */}
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                  {orderGroup.items.map((it) => {
+                    const orderItem = it.base
+                    const totalTasks = orderItem.milestones.reduce(
+                      (sum, milestone) => sum + milestone.maternityDressTasks.length,
+                      0
+                    )
+                    const completedTasks = orderItem.milestones.reduce(
+                      (sum, milestone) =>
+                        sum +
+                        milestone.maternityDressTasks.filter(
+                          (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+                        ).length,
+                      0
+                    )
+                    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
+                    return (
+                      <Card
+                        key={`grid-${orderItem.orderItemId}`}
+                        className='hover:shadow-lg transition-all duration-300 border-2 hover:border-violet-300'
+                      >
+                        <CardHeader className='pb-3'>
+                          <div className='flex items-start justify-between'>
+                            <div className='flex-1'>
+                              <CardTitle className='text-lg text-gray-900 mb-1'>{orderItem.preset.styleName}</CardTitle>
+                              <div className='flex items-center gap-2 text-sm text-gray-600'>
+                                <Tag className='h-3 w-3' />
+                                <span>SKU: {orderItem.preset.sku}</span>
+                              </div>
+                            </div>
+                            {getStatusBadge(getTaskStatus(orderItem.milestones))}
+                          </div>
+                        </CardHeader>
+
+                        <CardContent className='space-y-4'>
+                          {/* Product Image and Price */}
+                          <div className='flex items-center gap-4'>
+                            <div className='relative'>
+                              <img
+                                src={orderItem.preset.images[0]}
+                                alt={orderItem.preset.styleName}
+                                className='w-20 h-20 rounded-lg object-cover shadow-md border-2 border-gray-100'
+                              />
+                              {it.sla.urgency === 'overdue' && (
+                                <div className='absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center'>
+                                  <span className='text-white text-xs font-bold'>!</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className='flex-1'>
+                              <p className='text-xl font-bold text-primary mb-1'>
+                                {new Intl.NumberFormat('vi-VN', {
+                                  style: 'currency',
+                                  currency: 'VND'
+                                }).format(orderItem.preset.price)}
+                              </p>
+                              <p className='text-sm text-muted-foreground mb-2'>{progress}% hoàn thành</p>
+                              <div className='w-full bg-gray-200 rounded-full h-2'>
+                                <div
+                                  className='bg-gradient-to-r from-violet-500 to-purple-600 h-2 rounded-full transition-all duration-300'
+                                  style={{ width: `${progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Task Progress Info */}
+                          <div className='space-y-2 bg-violet-50 p-3 rounded-lg'>
+                            <div className='flex items-center justify-between text-sm'>
+                              <div className='flex items-center gap-2'>
+                                <FileText className='h-4 w-4 text-violet-600' />
+                                <span className='font-medium'>{orderItem.milestones.length} giai đoạn</span>
+                              </div>
+                              <Badge variant='secondary' className='text-xs'>
+                                {completedTasks}/{totalTasks}
+                              </Badge>
+                            </div>
+                            <div className='flex items-center gap-2 text-sm text-violet-600'>
+                              <Package className='h-4 w-4 text-purple-600' />
+                              <span>
+                                {completedTasks}/{totalTasks} nhiệm vụ hoàn thành
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* SLA and Next Task */}
+                          <div className='space-y-2'>
+                            {it.sla.estimateTotal > 0 && (
+                              <Badge
+                                variant='outline'
+                                className='w-full justify-center bg-amber-50 text-amber-700 border-amber-200'
+                              >
+                                ⏱️ Ước lượng: {it.sla.estimateTotal} phút
+                              </Badge>
+                            )}
+                            {it.nextTask && (
+                              <Badge
+                                variant='outline'
+                                className='w-full justify-center bg-violet-50 text-violet-700 border-violet-200'
+                              >
+                                📋 Tiếp theo: {it.nextTask.name}
+                              </Badge>
+                            )}
+                            {it.sla.minutesLeft !== null && (
+                              <Badge
+                                variant={
+                                  it.sla.urgency === 'overdue'
+                                    ? 'destructive'
+                                    : it.sla.urgency === 'hour'
+                                      ? 'default'
+                                      : 'secondary'
+                                }
+                                className={`w-full justify-center ${
+                                  it.sla.urgency === 'fourHours' ? 'bg-amber-100 text-amber-800 border-amber-200' : ''
+                                }`}
+                              >
+                                {(() => {
+                                  const m = it.sla.minutesLeft as number
+                                  const abs = Math.abs(m)
+                                  const hours = Math.floor(abs / 60)
+                                  const mins = abs % 60
+                                  const label = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+                                  return m < 0 ? `⏰ Quá hạn ${label}` : `⏰ Còn ${label}`
+                                })()}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className='pt-2'>
+                            <Button
+                              size='sm'
+                              onClick={() => navigate(`/system/staff/order-item/${orderItem.orderItemId}`)}
+                              className='w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700'
+                            >
+                              <Eye className='h-4 w-4 mr-2' />
+                              Xem chi tiết
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </TabsContent>
 
@@ -440,84 +495,113 @@ export default function StaffTasksPage() {
             </CardHeader>
             <CardContent>
               <div className='space-y-6'>
-                {groupedItems.map((group) =>
-                  group.items.length > 0 && (
-                    <div key={group.key} className='space-y-3'>
-                      <div className='flex items-center gap-2'>
-                        <span className={`font-semibold ${group.color}`}>{group.label}</span>
-                        <Badge variant='outline'>{group.items.length}</Badge>
-                      </div>
-                      <div className='space-y-4'>
-                        {group.items.map((it) => {
-                  const orderItem = it.base
-                  const totalTasks = orderItem.milestones.reduce(
-                    (sum, milestone) => sum + milestone.maternityDressTasks.length,
-                    0
-                  )
-                  const completedTasks = orderItem.milestones.reduce(
-                    (sum, milestone) =>
-                      sum +
-                      milestone.maternityDressTasks.filter(
-                        (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
-                      ).length,
-                    0
-                  )
-                  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+                {filteredOrderItems.map((orderGroup) => (
+                  <div key={orderGroup.orderCode} className='space-y-3'>
+                    {/* Order Group Header for List View */}
+                    <div className='flex items-center gap-2 p-3 bg-violet-50 rounded-lg border border-violet-200'>
+                      <ShoppingBag className='h-5 w-5 text-violet-600' />
+                      <span className='font-semibold text-violet-900'>Order: {orderGroup.orderCode}</span>
+                      <Badge variant='outline' className='bg-white border-violet-300 text-violet-700'>
+                        {orderGroup.totalItems} items
+                      </Badge>
+                    </div>
 
-                          return (
-                            <div
-                              key={`list-${orderItem.orderItemId}`}
-                              className='flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors'
-                            >
-                              <div className='flex items-center gap-4'>
+                    <div className='space-y-4'>
+                      {orderGroup.items.map((it) => {
+                        const orderItem = it.base
+                        const totalTasks = orderItem.milestones.reduce(
+                          (sum, milestone) => sum + milestone.maternityDressTasks.length,
+                          0
+                        )
+                        const completedTasks = orderItem.milestones.reduce(
+                          (sum, milestone) =>
+                            sum +
+                            milestone.maternityDressTasks.filter(
+                              (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+                            ).length,
+                          0
+                        )
+                        const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
+                        return (
+                          <div
+                            key={`list-${orderItem.orderItemId}`}
+                            className='flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors bg-white'
+                          >
+                            <div className='flex items-center gap-4'>
+                              <div className='relative'>
                                 <img
                                   src={orderItem.preset.images[0]}
                                   alt={orderItem.preset.styleName}
-                                  className='w-12 h-12 rounded-lg object-cover shadow-sm'
+                                  className='w-16 h-16 rounded-lg object-cover shadow-sm border-2 border-gray-100'
                                 />
-                                <div>
-                                  <h3 className='font-medium'>{orderItem.preset.styleName}</h3>
-                                  <p className='text-sm text-muted-foreground'>Order Item: {orderItem.orderItemId}</p>
-                                  <div className='flex flex-wrap items-center gap-2 mt-1'>
-                                    <span className='text-sm text-muted-foreground'>
-                                      {completedTasks}/{totalTasks} nhiệm vụ • {progress}% hoàn thành
-                                    </span>
-                                    {it.sla.minutesLeft !== null && (
-                                      <Badge
-                                        variant={it.sla.urgency === 'overdue' ? 'destructive' : it.sla.urgency === 'hour' ? 'default' : 'secondary'}
-                                        className={`${it.sla.urgency === 'fourHours' ? 'bg-amber-100 text-amber-800 border-amber-200' : ''}`}
-                                      >
-                                        {(() => {
-                                          const m = it.sla.minutesLeft as number
-                                          const abs = Math.abs(m)
-                                          const hours = Math.floor(abs / 60)
-                                          const mins = abs % 60
-                                          const label = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
-                                          return m < 0 ? `Quá hạn ${label}` : `Còn ${label}`
-                                        })()}
-                                      </Badge>
-                                    )}
-                                    {it.sla.estimateTotal > 0 && (
-                                      <Badge variant='outline'>Ước lượng: {it.sla.estimateTotal} phút</Badge>
-                                    )}
-                                    {it.nextTask && <Badge variant='outline'>Tiếp theo: {it.nextTask.name}</Badge>}
+                                {it.sla.urgency === 'overdue' && (
+                                  <div className='absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center'>
+                                    <span className='text-white text-xs font-bold'>!</span>
                                   </div>
+                                )}
+                              </div>
+                              <div>
+                                <h3 className='font-semibold text-gray-900'>{orderItem.preset.styleName}</h3>
+                                <p className='text-sm text-gray-600 mb-1'>SKU: {orderItem.preset.sku}</p>
+                                <p className='text-sm text-gray-600 mb-2'>Order Item: {orderItem.orderItemId}</p>
+                                <div className='flex flex-wrap items-center gap-2'>
+                                  <span className='text-sm text-muted-foreground'>
+                                    {completedTasks}/{totalTasks} nhiệm vụ • {progress}% hoàn thành
+                                  </span>
+                                  {it.sla.minutesLeft !== null && (
+                                    <Badge
+                                      variant={
+                                        it.sla.urgency === 'overdue'
+                                          ? 'destructive'
+                                          : it.sla.urgency === 'hour'
+                                            ? 'default'
+                                            : 'secondary'
+                                      }
+                                      className={`${it.sla.urgency === 'fourHours' ? 'bg-amber-100 text-amber-800 border-amber-200' : ''}`}
+                                    >
+                                      {(() => {
+                                        const m = it.sla.minutesLeft as number
+                                        const abs = Math.abs(m)
+                                        const hours = Math.floor(abs / 60)
+                                        const mins = abs % 60
+                                        const label = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+                                        return m < 0 ? `Quá hạn ${label}` : `Còn ${label}`
+                                      })()}
+                                    </Badge>
+                                  )}
+                                  {it.sla.estimateTotal > 0 && (
+                                    <Badge variant='outline'>Ước lượng: {it.sla.estimateTotal} phút</Badge>
+                                  )}
+                                  {it.nextTask && <Badge variant='outline'>Tiếp theo: {it.nextTask.name}</Badge>}
                                 </div>
                               </div>
-                              <div className='flex items-center gap-3'>
-                                {getStatusBadge(getTaskStatus(orderItem.milestones))}
-                                <Button variant='outline' size='sm' onClick={() => handleViewDetail(orderItem)}>
-                                  <Eye className='h-4 w-4 mr-2' />
-                                  Xem
-                                </Button>
-                              </div>
                             </div>
-                          )
-                        })}
-                      </div>
+                            <div className='flex items-center gap-3'>
+                              <div className='text-right'>
+                                <p className='text-lg font-bold text-primary'>
+                                  {new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                  }).format(orderItem.preset.price)}
+                                </p>
+                                {getStatusBadge(getTaskStatus(orderItem.milestones))}
+                              </div>
+                              <Button
+                                variant='outline'
+                                size='sm'
+                                onClick={() => navigate(`/system/staff/order-item/${orderItem.orderItemId}`)}
+                              >
+                                <Eye className='h-4 w-4 mr-2' />
+                                Xem
+                              </Button>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
-                  )
-                )}
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -538,15 +622,6 @@ export default function StaffTasksPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Task Detail Dialog */}
-      <TaskDetailDialog
-        orderItemId={selectedOrderItemId}
-        open={isDetailDialogOpen}
-        onOpenChange={setIsDetailDialogOpen}
-        onTaskStatusChange={handleTaskStatusChange}
-        isUpdating={updateTaskStatusMutation.isPending}
-      />
     </div>
   )
 }

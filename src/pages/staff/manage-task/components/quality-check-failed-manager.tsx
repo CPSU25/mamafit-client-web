@@ -116,21 +116,19 @@ export const QualityCheckFailedManager: React.FC<QualityCheckFailedManagerProps>
 
   // Deadline tổng (nếu task QC Failed có deadline riêng)
   void minuteTick
-  const headerDeadline = task.deadline
-    ? (
-        <Badge className='bg-violet-600 text-white ml-2'>
-          {(() => {
-            const d = dayjs(task.deadline!)
-            const diff = d.diff(dayjs(), 'minute')
-            const abs = Math.abs(diff)
-            const h = Math.floor(abs / 60)
-            const m = abs % 60
-            const label = h > 0 ? `${h}h ${m}m` : `${m}m`
-            return `${diff < 0 ? 'Quá hạn' : 'Còn'} ${label} • ${d.format('HH:mm DD/MM')}`
-          })()}
-        </Badge>
-      )
-    : null
+  const headerDeadline = task.deadline ? (
+    <Badge className='bg-violet-600 text-white ml-2'>
+      {(() => {
+        const d = dayjs(task.deadline!)
+        const diff = d.diff(dayjs(), 'minute')
+        const abs = Math.abs(diff)
+        const h = Math.floor(abs / 60)
+        const m = abs % 60
+        const label = h > 0 ? `${h}h ${m}m` : `${m}m`
+        return `${diff < 0 ? 'Quá hạn' : 'Còn'} ${label} • ${d.format('HH:mm DD/MM')}`
+      })()}
+    </Badge>
+  ) : null
 
   return (
     <Card className='overflow-hidden border-orange-200'>

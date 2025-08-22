@@ -78,7 +78,9 @@ const transformStaffDataForUI = (data: StaffOrderTaskItem[]): ProductTaskGroup[]
         orderStatus: staffOrderTaskItem.orderStatus,
         orderCode: staffOrderTaskItem.orderCode, // Thêm orderCode vào kết quả
         measurement: staffOrderTaskItem.measurement, // Thêm measurement
-        addressId: staffOrderTaskItem.addressId // Thêm addressId
+        addressId: staffOrderTaskItem.addressId, // Thêm addressId
+        orderItem: staffOrderTaskItem.orderItem, // Thêm orderItem để component có thể truy cập addOnOptions
+        maternityDressDetail: staffOrderTaskItem.orderItem.maternityDressDetail // Thêm maternityDressDetail
       }
 
       return result
