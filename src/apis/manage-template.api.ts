@@ -53,7 +53,7 @@ export const presetApi = {
   // Send preset to design request
   sendPresetToDesignRequest: async (data: {
     images: string[]
-    type: 'USER'
+    type: 'SYSTEM'
     isDefault: boolean
     price: number
     designRequestId: string

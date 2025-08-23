@@ -69,7 +69,7 @@ export const createOrderColumns = ({ user = [] }: OrderColumnsProps = {}): Colum
             <AvatarFallback className='text-sm bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-300 font-semibold'>
               {customer?.fullName?.charAt(0)?.toUpperCase() || 'U'}
             </AvatarFallback>
-            <AvatarImage src={customer?.profilePicture} />
+            <AvatarImage src={customer?.profilePicture || ""} />
           </Avatar>
           <div className='min-w-0 flex-1'>
             <p className='font-semibold text-sm text-foreground truncate'>{customer?.fullName || 'N/A'}</p>

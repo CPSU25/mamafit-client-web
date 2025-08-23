@@ -18,9 +18,10 @@ export interface SendPresetInChatProps {
   designRequestId: string
   orderCode: string
   roomId: string | null
+  orderId?: string
 }
 
-export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, roomId }: SendPresetInChatProps) {
+export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, roomId, orderId }: SendPresetInChatProps) {
   const [activeTab, setActiveTab] = useState('existing')
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -28,6 +29,7 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, 
   // Custom preset states
   const [customPreset, setCustomPreset] = useState({
     name: '',
+    price: '',
     description: '',
     imageUrls: [] as string[]
   })
@@ -56,11 +58,11 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, 
 
       await sendPresetMutation.mutateAsync({
         images: selectedPreset.images || [],
-        type: 'USER' as const,
+        type: 'SYSTEM' as const,
         isDefault: false,
         price: selectedPreset.price || 0,
         designRequestId,
-        orderId: '' // We don't have orderId from context, will use empty string
+        orderId: orderId || ''
       })
 
       toast.success('Đã gửi preset thành công!')
@@ -74,8 +76,8 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, 
   }
 
   const handleSendCustomPreset = async () => {
-    if (!customPreset.name.trim() || customPreset.imageUrls.length === 0 || !roomId) {
-      toast.error('Vui lòng điền đầy đủ thông tin preset')
+    if (!customPreset.name.trim() || !customPreset.price.trim() || Number(customPreset.price) <= 0 || customPreset.imageUrls.length === 0 || !roomId) {
+      toast.error('Vui lòng điền đầy đủ thông tin preset (tên, giá hợp lệ và hình ảnh)')
       return
     }
 
@@ -83,11 +85,11 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, 
     try {
       await sendPresetMutation.mutateAsync({
         images: customPreset.imageUrls,
-        type: 'USER' as const,
+        type: 'SYSTEM' as const,
         isDefault: false,
-        price: 0,
+        price: Number(customPreset.price),
         designRequestId,
-        orderId: '' // We don't have orderId from context, will use empty string
+        orderId: orderId || ''
       })
 
       toast.success('Đã gửi preset tùy chỉnh thành công!')
@@ -188,6 +190,19 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, 
               </div>
 
               <div className='grid gap-2'>
+                <Label htmlFor='preset-price'>Giá Preset (VNĐ)</Label>
+                <Input
+                  id='preset-price'
+                  type='number'
+                  min='0'
+                  placeholder='Nhập giá preset...'
+                  value={customPreset.price}
+                  onChange={(e) => setCustomPreset((prev) => ({ ...prev, price: e.target.value }))}
+                />
+                <p className='text-xs text-muted-foreground'>Giá preset sẽ được hiển thị cho khách hàng</p>
+              </div>
+
+              <div className='grid gap-2'>
                 <Label htmlFor='preset-description'>Mô Tả</Label>
                 <Textarea
                   id='preset-description'
@@ -219,7 +234,7 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, 
               </Button>
               <Button
                 onClick={handleSendCustomPreset}
-                disabled={!customPreset.name.trim() || customPreset.imageUrls.length === 0 || isSubmitting}
+                disabled={!customPreset.name.trim() || !customPreset.price.trim() || Number(customPreset.price) <= 0 || customPreset.imageUrls.length === 0 || isSubmitting}
               >
                 {isSubmitting ? (
                   <LoaderCircle className='h-4 w-4 animate-spin mr-2' />

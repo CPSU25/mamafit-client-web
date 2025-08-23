@@ -32,12 +32,17 @@ export default function ManageUserPage() {
   const utilizationRate = totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0
 
   // Split lists for tabs
-  const customerUsers = useMemo(() => userList.filter((u) => u.roleName?.toLowerCase() === 'user'), [userList])
+  const customerUsers = useMemo(() => userList.filter((u) => {
+    const roleName = u.roleName?.toLowerCase() || ''
+    return roleName === 'user'
+  }), [userList])
+  
   const systemUsers = useMemo(
     () =>
-      userList.filter((u) =>
-        ['admin', 'designer', 'staff', 'manager', 'branchmanager'].includes(u.roleName?.toLowerCase())
-      ),
+      userList.filter((u) => {
+        const roleName = u.roleName?.toLowerCase() || ''
+        return ['admin', 'designer', 'staff', 'manager', 'branchmanager'].includes(roleName)
+      }),
     [userList]
   )
 

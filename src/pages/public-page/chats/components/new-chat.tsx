@@ -44,10 +44,10 @@ export function NewChat({ onOpenChange, open, onRoomCreated }: Props) {
     usersResponse?.data?.items
       ?.map((user: ManageUserType) => ({
         id: user.id,
-        username: user.userName,
-        fullName: user.fullName,
-        profile: user.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${user.fullName}`,
-        title: user.roleName
+        username: user.userName || 'Không có tên', // Fallback cho null
+        fullName: user.fullName || 'Không có tên đầy đủ', // Fallback cho null
+        profile: user.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${user.fullName || 'U'}`,
+        title: user.roleName || 'Không có vai trò' // Fallback cho null
       }))
       .filter((user: User) => user.id !== currentUser?.userId) || [] // Exclude current user
 
