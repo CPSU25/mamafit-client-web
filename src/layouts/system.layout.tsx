@@ -8,7 +8,7 @@ import { SearchProvider } from '@/context/search-context'
 import { Header } from '@/components/layout/header'
 // import { Search } from '@/components/search'
 // import { ModeToggle } from '@/components/mode-toggle'
-import { NotificationDropdown } from '@/components/notification-dropdown'
+// import { NotificationDropdown } from '@/components/notification-dropdown'
 import { Search } from '@/components/search'
 
 interface Props {
@@ -28,9 +28,9 @@ function SystemLayout({ role, children }: Props) {
               <div className='flex-1 max-w-sm'>
                 <Search placeholder='Search...' />
               </div>
-              <div className='flex items-center gap-2'>
+              {/* <div className='flex items-center gap-2'>
                 <NotificationDropdown />
-              </div>
+              </div> */}
             </div>
           </Header>
 

@@ -1,15 +1,8 @@
 // categories-primary-buttons.tsx - Enhanced Primary Action Buttons
-import { Plus, Download, Upload, Filter } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCategories } from '../context/categories-context'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
+
 import { cn } from '@/lib/utils/utils'
 
 export function CategoriesPrimaryButtons() {
@@ -18,7 +11,7 @@ export function CategoriesPrimaryButtons() {
   return (
     <div className='flex items-center gap-2'>
       {/* Export/Import Dropdown */}
-      <DropdownMenu>
+      {/* <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant='outline'
@@ -50,16 +43,16 @@ export function CategoriesPrimaryButtons() {
             Nhập từ CSV
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu> */}
 
       {/* Filter Button */}
-      <Button
+      {/* <Button
         variant='outline'
         size='icon'
         className='border-violet-200 dark:border-violet-800 hover:bg-violet-50 dark:hover:bg-violet-950/30 hover:border-violet-300 dark:hover:border-violet-700 transition-all duration-200'
       >
         <Filter className='h-4 w-4' />
-      </Button>
+      </Button> */}
 
       {/* Main Add Button with Enhanced Styling */}
       <Button

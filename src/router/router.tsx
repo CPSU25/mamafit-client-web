@@ -214,7 +214,8 @@ export const router = createBrowserRouter([
           {
             path: 'order-item/:orderItemId',
             element: <OrderItemDetailPage />
-          }
+          },
+          { path: 'system-notifications', element: <NotificationSettingPage /> }
         ]
       },
 

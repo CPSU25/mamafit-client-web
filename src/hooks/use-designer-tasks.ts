@@ -36,7 +36,7 @@ export function useUpdateTaskStatus() {
       // Optimistic update
       queryClient.setQueryData(['designer-tasks'], (old: unknown) => {
         if (!old || typeof old !== 'object' || !('data' in old)) return old
-        
+
         const oldData = old as { data: { data: unknown[] } }
         if (!oldData.data?.data || !Array.isArray(oldData.data.data)) return old
 
@@ -46,15 +46,16 @@ export function useUpdateTaskStatus() {
             ...oldData.data,
             data: oldData.data.data.map((request: unknown) => {
               if (!request || typeof request !== 'object' || !('milestones' in request)) return request
-              
+
               const requestData = request as { milestones: unknown[] }
               if (!Array.isArray(requestData.milestones)) return request
 
               return {
                 ...requestData,
                 milestones: requestData.milestones.map((milestone: unknown) => {
-                  if (!milestone || typeof milestone !== 'object' || !('maternityDressTasks' in milestone)) return milestone
-                  
+                  if (!milestone || typeof milestone !== 'object' || !('maternityDressTasks' in milestone))
+                    return milestone
+
                   const milestoneData = milestone as { maternityDressTasks: unknown[] }
                   if (!Array.isArray(milestoneData.maternityDressTasks)) return milestone
 
@@ -62,7 +63,7 @@ export function useUpdateTaskStatus() {
                     ...milestoneData,
                     maternityDressTasks: milestoneData.maternityDressTasks.map((task: unknown) => {
                       if (!task || typeof task !== 'object' || !('id' in task)) return task
-                      
+
                       const taskData = task as { id: string; status: string }
                       if (taskData.id === taskId) {
                         return { ...taskData, status: body.status }
@@ -81,23 +82,23 @@ export function useUpdateTaskStatus() {
     },
     onSuccess: (data, variables) => {
       console.log('✅ Task status updated successfully:', { data, variables })
-      
+
       // Invalidate và refetch designer tasks
       queryClient.invalidateQueries({ queryKey: ['designer-tasks'] })
-      
+
       // Force refetch để đảm bảo data fresh
       queryClient.refetchQueries({ queryKey: ['designer-tasks'] })
-      
+
       toast.success('Cập nhật trạng thái task thành công!')
     },
     onError: (error: Error, _variables, context) => {
       console.error('❌ Error updating task status:', error)
-      
+
       // Revert optimistic update
       if (context?.previousData) {
         queryClient.setQueryData(['designer-tasks'], context.previousData)
       }
-      
+
       toast.error(`Lỗi cập nhật task: ${error.message}`)
     },
     onSettled: () => {
@@ -113,7 +114,7 @@ export function useSendPresetToCustomer() {
   return useMutation({
     mutationFn: (data: {
       images: string[]
-      type: 'SYSTEM' 
+      type: 'SYSTEM'
       isDefault: boolean
       price: number
       designRequestId: string
