@@ -1,0 +1,256 @@
+@startuml Admin_Screen_Flow_MamaFit
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontSize 12
+skinparam defaultFontName Arial
+
+!define ENTRY_COLOR #E8F5E8
+!define DASHBOARD_COLOR #E1F5FE
+!define MODULE_COLOR #F3E5F5
+!define LIST_COLOR #FFF3E0
+!define ACTION_COLOR #FCE4EC
+
+' Start state
+state "Login" as Start <<start>> #ENTRY_COLOR
+
+' Dashboard
+state "Dashboard Admin" as Dashboard #DASHBOARD_COLOR
+
+' Main Modules
+state "User Management" as UserManagement #MODULE_COLOR
+state "Branch Management" as BranchManagement #MODULE_COLOR
+state "Category Management" as CategoryManagement #MODULE_COLOR
+state "Component Management" as ComponentManagement #MODULE_COLOR
+state "Maternity Dress Management" as MaternityDressManagement #MODULE_COLOR
+state "Milestone Management" as MilestoneManagement #MODULE_COLOR
+state "Order Management" as OrderManagement #MODULE_COLOR
+state "Transaction Management" as TransactionManagement #MODULE_COLOR
+state "Voucher Management" as VoucherManagement #MODULE_COLOR
+state "Warranty Management" as WarrantyManagement #MODULE_COLOR
+state "System Config" as SystemConfig #MODULE_COLOR
+state "Style Management" as StyleManagement #MODULE_COLOR
+
+' User Management States
+state "User List" as UserList #LIST_COLOR
+state "Add User" as AddUser #ACTION_COLOR
+state "Edit User" as EditUser #ACTION_COLOR
+state "Delete User" as DeleteUser #ACTION_COLOR
+state "Invite User" as InviteUser #ACTION_COLOR
+
+' Branch Management States
+state "Branch List" as BranchList #LIST_COLOR
+state "Add Branch" as AddBranch #ACTION_COLOR
+state "Edit Branch" as EditBranch #ACTION_COLOR
+state "Delete Branch" as DeleteBranch #ACTION_COLOR
+state "View Branch Details" as ViewBranch #ACTION_COLOR
+
+' Category Management States
+state "Category List" as CategoryList #LIST_COLOR
+state "Add Category" as AddCategory #ACTION_COLOR
+state "Edit Category" as EditCategory #ACTION_COLOR
+state "Delete Category" as DeleteCategory #ACTION_COLOR
+state "View Category Details" as ViewCategory #ACTION_COLOR
+
+' Component Management States
+state "Component List" as ComponentList #LIST_COLOR
+state "Add Component" as AddComponent #ACTION_COLOR
+state "Edit Component" as EditComponent #ACTION_COLOR
+state "Delete Component" as DeleteComponent #ACTION_COLOR
+state "View Component Details" as ViewComponent #ACTION_COLOR
+
+' Maternity Dress Management States
+state "Dress List" as DressList #LIST_COLOR
+state "Add Dress" as AddDress #ACTION_COLOR
+state "Edit Dress" as EditDress #ACTION_COLOR
+state "Delete Dress" as DeleteDress #ACTION_COLOR
+state "View Dress Details" as ViewDress #ACTION_COLOR
+state "Allocate to Branch" as AllocateDress #ACTION_COLOR
+
+' Milestone Management States
+state "Milestone List" as MilestoneList #LIST_COLOR
+state "Add Milestone" as AddMilestone #ACTION_COLOR
+state "Edit Milestone" as EditMilestone #ACTION_COLOR
+state "Delete Milestone" as DeleteMilestone #ACTION_COLOR
+state "View Milestone Details" as ViewMilestone #ACTION_COLOR
+
+' Order Management States
+state "Order List" as OrderList #LIST_COLOR
+state "Add Order" as AddOrder #ACTION_COLOR
+state "Edit Order" as EditOrder #ACTION_COLOR
+state "Delete Order" as DeleteOrder #ACTION_COLOR
+state "View Order Details" as ViewOrder #ACTION_COLOR
+state "Assign Order" as AssignOrder #ACTION_COLOR
+state "Update Status" as UpdateStatus #ACTION_COLOR
+state "Design Request" as DesignRequest #ACTION_COLOR
+state "Order Warranty" as OrderWarranty #ACTION_COLOR
+state "Order Statistics" as OrderStatistics #ACTION_COLOR
+state "Track Progress" as TrackOrder #ACTION_COLOR
+state "Order Detail Sidebar" as OrderSidebar #ACTION_COLOR
+
+' Transaction Management States
+state "Transaction List" as TransactionList #LIST_COLOR
+state "View Transaction Details" as ViewTransaction #ACTION_COLOR
+
+' Voucher Management States
+state "Voucher List" as VoucherList #LIST_COLOR
+state "Add Voucher" as AddVoucher #ACTION_COLOR
+state "Edit Voucher" as EditVoucher #ACTION_COLOR
+state "Delete Voucher" as DeleteVoucher #ACTION_COLOR
+state "Assign Voucher" as AssignVoucher #ACTION_COLOR
+state "Voucher Batch" as VoucherBatch #ACTION_COLOR
+state "Voucher Discount" as VoucherDiscount #ACTION_COLOR
+
+' Warranty Management States
+state "Warranty Request List" as WarrantyList #LIST_COLOR
+state "View Warranty Details" as ViewWarranty #ACTION_COLOR
+state "Warranty Decision" as WarrantyDecision #ACTION_COLOR
+state "Warranty Filters" as WarrantyFilters #ACTION_COLOR
+state "Request Type Badge" as RequestTypeBadge #ACTION_COLOR
+state "Status Badge" as StatusBadge #ACTION_COLOR
+
+' System Config States
+state "View/Update Config" as ConfigSettings #ACTION_COLOR
+
+' Style Management States
+state "Style Form" as StyleForm #ACTION_COLOR
+
+' Main Navigation from Dashboard
+Start --> Dashboard
+Dashboard --> UserManagement
+Dashboard --> BranchManagement
+Dashboard --> CategoryManagement
+Dashboard --> ComponentManagement
+Dashboard --> MaternityDressManagement
+Dashboard --> MilestoneManagement
+Dashboard --> OrderManagement
+Dashboard --> TransactionManagement
+Dashboard --> VoucherManagement
+Dashboard --> WarrantyManagement
+Dashboard --> SystemConfig
+Dashboard --> StyleManagement
+
+' User Management Flow
+UserManagement --> UserList
+UserList --> AddUser
+UserList --> EditUser
+UserList --> DeleteUser
+UserList --> InviteUser
+AddUser --> UserList
+EditUser --> UserList
+DeleteUser --> UserList
+InviteUser --> UserList
+
+' Branch Management Flow
+BranchManagement --> BranchList
+BranchList --> AddBranch
+BranchList --> EditBranch
+BranchList --> DeleteBranch
+BranchList --> ViewBranch
+AddBranch --> BranchList
+EditBranch --> BranchList
+DeleteBranch --> BranchList
+ViewBranch --> BranchList
+
+' Category Management Flow
+CategoryManagement --> CategoryList
+CategoryList --> AddCategory
+CategoryList --> EditCategory
+CategoryList --> DeleteCategory
+CategoryList --> ViewCategory
+AddCategory --> CategoryList
+EditCategory --> CategoryList
+DeleteCategory --> CategoryList
+ViewCategory --> CategoryList
+
+' Component Management Flow
+ComponentManagement --> ComponentList
+ComponentList --> AddComponent
+ComponentList --> EditComponent
+ComponentList --> DeleteComponent
+ComponentList --> ViewComponent
+AddComponent --> ComponentList
+EditComponent --> ComponentList
+DeleteComponent --> ComponentList
+ViewComponent --> ComponentList
+
+' Maternity Dress Management Flow
+MaternityDressManagement --> DressList
+DressList --> AddDress
+DressList --> EditDress
+DressList --> DeleteDress
+DressList --> ViewDress
+DressList --> AllocateDress
+AddDress --> DressList
+EditDress --> DressList
+DeleteDress --> DressList
+ViewDress --> DressList
+AllocateDress --> DressList
+
+' Milestone Management Flow
+MilestoneManagement --> MilestoneList
+MilestoneList --> AddMilestone
+MilestoneList --> EditMilestone
+MilestoneList --> DeleteMilestone
+MilestoneList --> ViewMilestone
+AddMilestone --> MilestoneList
+EditMilestone --> MilestoneList
+DeleteMilestone --> MilestoneList
+ViewMilestone --> MilestoneList
+
+' Order Management Flow
+OrderManagement --> OrderList
+OrderList --> AddOrder
+OrderList --> EditOrder
+OrderList --> DeleteOrder
+OrderList --> ViewOrder
+OrderList --> AssignOrder
+OrderList --> UpdateStatus
+OrderManagement --> DesignRequest
+OrderManagement --> OrderWarranty
+OrderManagement --> OrderStatistics
+ViewOrder --> TrackOrder
+ViewOrder --> OrderSidebar
+AddOrder --> OrderList
+EditOrder --> OrderList
+DeleteOrder --> OrderList
+ViewOrder --> OrderList
+AssignOrder --> OrderList
+UpdateStatus --> OrderList
+
+' Transaction Management Flow
+TransactionManagement --> TransactionList
+TransactionList --> ViewTransaction
+ViewTransaction --> TransactionList
+
+' Voucher Management Flow
+VoucherManagement --> VoucherList
+VoucherList --> AddVoucher
+VoucherList --> EditVoucher
+VoucherList --> DeleteVoucher
+VoucherList --> AssignVoucher
+VoucherManagement --> VoucherBatch
+VoucherManagement --> VoucherDiscount
+AddVoucher --> VoucherList
+EditVoucher --> VoucherList
+DeleteVoucher --> VoucherList
+AssignVoucher --> VoucherList
+
+' Warranty Management Flow
+WarrantyManagement --> WarrantyList
+WarrantyList --> ViewWarranty
+WarrantyList --> WarrantyDecision
+WarrantyManagement --> WarrantyFilters
+ViewWarranty --> RequestTypeBadge
+ViewWarranty --> StatusBadge
+ViewWarranty --> WarrantyList
+WarrantyDecision --> WarrantyList
+
+' System Config Flow
+SystemConfig --> ConfigSettings
+ConfigSettings --> SystemConfig
+
+' Style Management Flow
+StyleManagement --> StyleForm
+StyleForm --> StyleManagement
+
+@enduml
