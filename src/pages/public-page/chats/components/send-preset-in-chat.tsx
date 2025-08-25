@@ -57,7 +57,7 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderId, cu
     try {
       await sendPresetMutation.mutateAsync({
         images: customImages,
-        type: 'USER' as const,
+        type: 'SYSTEM' as const,
         isDefault: false,
         price: Number(customPrice),
         designRequestId,

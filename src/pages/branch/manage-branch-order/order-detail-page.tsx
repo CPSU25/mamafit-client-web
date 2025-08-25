@@ -227,7 +227,7 @@ export default function OrderDetailPage() {
                       <AvatarFallback className='text-sm'>
                         {user.data.fullName?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
-                      <AvatarImage src={user.data.profilePicture} />
+                      <AvatarImage src={user.data.profilePicture || ""} />
                     </Avatar>
                     <div className='flex-1 space-y-1'>
                       <h3 className='font-semibold text-lg'>{user.data.fullName}</h3>

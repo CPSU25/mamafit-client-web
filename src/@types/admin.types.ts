@@ -131,17 +131,19 @@ export interface BulkAction {
 // Manage User Type
 export type ManageUserType = {
   id: string
-  userName: string
+  userName: string | null
   userEmail: string
-  dateOfBirth: string
-  profilePicture: string
+  dateOfBirth: string | null
+  profilePicture: string | null
   phoneNumber: string
-  roleName: string
-  jobTitle: string
-  fullName: string
+  roleName: string | null
+  jobTitle: string | null
+  fullName: string | null
   createdAt: string
   updatedAt: string
   isVerify: boolean
+  createdBy?: string | null
+  updatedBy?: string | null
 }
 
 //Milestone Type

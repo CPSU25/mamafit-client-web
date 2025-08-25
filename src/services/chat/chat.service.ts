@@ -32,8 +32,43 @@ function convertSignalRTypeToMessageType(signalRType: number): MessageType {
       return MessageType.Image
     case 2:
       return MessageType.File
+    case 3:
+      return MessageType.Design_Request
+    case 4:
+      return MessageType.Preset
     default:
       return MessageType.Text // Default fallback
+  }
+}
+
+// Helper function to convert API string type to MessageType enum
+function convertAPIStringTypeToMessageType(apiType: string): MessageType {
+  switch (apiType?.toLowerCase()) {
+    case 'text':
+      return MessageType.Text
+    case 'image':
+      return MessageType.Image
+    case 'file':
+      return MessageType.File
+    case 'design_request':
+    case 'designrequest':
+      return MessageType.Design_Request
+    case 'preset':
+      return MessageType.Preset
+    default:
+      return MessageType.Text // Default fallback
+  }
+}
+
+// Universal helper function to normalize message type from any source
+function normalizeMessageType(type: any): MessageType {
+  if (typeof type === 'number') {
+    return convertSignalRTypeToMessageType(type)
+  } else if (typeof type === 'string') {
+    return convertAPIStringTypeToMessageType(type)
+  } else {
+    console.warn('⚠️ Unknown message type format:', type, 'fallback to Text')
+    return MessageType.Text
   }
 }
 
@@ -370,10 +405,69 @@ export class ChatService {
         throw new Error('Invalid response from get messages API')
       }
 
-      const messages = response.data.data
-      console.log('✅ Đã lấy tin nhắn lịch sử qua REST API:', messages.length, 'messages')
+      const rawMessages = response.data.data
+      console.log('🔍 Raw messages từ API:', rawMessages)
 
-      return messages
+      // Transform và normalize messages từ API
+      const normalizedMessages: ChatMessage[] = rawMessages.map((msg: any, index: number) => {
+        // Debug log cho message đầu tiên
+        if (index === 0) {
+          console.log('🔍 Debug raw message từ API:', {
+            id: msg.id,
+            type: msg.type,
+            typeOfType: typeof msg.type,
+            message: msg.message?.substring(0, 50) + '...',
+            senderId: msg.senderId,
+            messageTimestamp: msg.messageTimestamp
+          })
+        }
+
+        // Convert type từ API response thành MessageType enum
+        const normalizedType = normalizeMessageType(msg.type)
+
+        const normalized: ChatMessage = {
+          id: msg.id,
+          message: msg.message || '',
+          senderId: msg.senderId,
+          senderName: msg.senderName || 'Unknown',
+          chatRoomId: msg.chatRoomId || roomId,
+          senderAvatar: msg.senderAvatar,
+          type: normalizedType,
+          messageTimestamp: new Date(msg.messageTimestamp),
+          isRead: msg.isRead || false
+        }
+
+        // Debug log cho message preset
+        if (normalizedType === MessageType.Preset) {
+          console.log('🎆 PRESET MESSAGE DETECTED từ API:', {
+            id: normalized.id,
+            type: normalizedType,
+            originalType: msg.type,
+            message: normalized.message.substring(0, 100) + '...',
+            parsedMessage: (() => {
+              try {
+                return JSON.parse(normalized.message)
+              } catch {
+                return 'Failed to parse'
+              }
+            })()
+          })
+        }
+
+        return normalized
+      })
+
+      console.log('✅ Đã lấy và normalize tin nhắn lịch sử:', normalizedMessages.length, 'messages')
+      console.log(
+        '🔍 Preview normalized messages:',
+        normalizedMessages.slice(0, 3).map((m) => ({
+          id: m.id,
+          type: m.type,
+          isPreset: m.type === MessageType.Preset
+        }))
+      )
+
+      return normalizedMessages
     } catch (error) {
       console.error('❌ Lỗi khi lấy tin nhắn lịch sử qua REST API:', error)
       throw error

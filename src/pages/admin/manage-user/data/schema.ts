@@ -16,14 +16,14 @@ const userRoleSchema = z.union([
 // Updated schema to match ManageUserType from API
 const userSchema = z.object({
   id: z.string(),
-  userName: z.string(),
+  userName: z.string().nullable(),
   userEmail: z.string(),
-  dateOfBirth: z.string(),
-  profilePicture: z.string(),
+  dateOfBirth: z.string().nullable(),
+  profilePicture: z.string().nullable(),
   phoneNumber: z.string(),
-  roleName: z.string(),
-  jobTitle: z.string().optional(),
-  fullName: z.string(),
+  roleName: z.string().nullable(),
+  jobTitle: z.string().nullable(),
+  fullName: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
   isVerify: z.boolean(),
@@ -38,21 +38,38 @@ export const userListSchema = z.array(userSchema)
 // Helper function to transform ManageUserType to User format
 export const transformManageUserToUser = (apiUser: ManageUserType): User => {
   const status: UserStatus = apiUser.isVerify ? 'active' : 'inactive'
+  
+  // Safely handle all nullable fields with fallbacks
+  const userName = apiUser.userName || 'N/A'
+  const dateOfBirth = apiUser.dateOfBirth || 'N/A'
+  const profilePicture = apiUser.profilePicture || ''
+  const roleName = apiUser.roleName || 'N/A'
+  const jobTitle = apiUser.jobTitle || 'N/A'
+  const fullName = apiUser.fullName || 'N/A'
+  
+  // Map roleName to role enum, default to 'user' if unknown
+  const role = (() => {
+    const normalizedRole = roleName.toLowerCase()
+    if (['admin', 'manager', 'user', 'staff', 'designer', 'branchmanager'].includes(normalizedRole)) {
+      return normalizedRole as 'admin' | 'manager' | 'user' | 'staff' | 'designer' | 'branchmanager'
+    }
+    return 'user' as const
+  })()
 
   return {
     id: apiUser.id,
-    userName: apiUser.userName,
+    userName,
     userEmail: apiUser.userEmail,
-    dateOfBirth: apiUser.dateOfBirth,
-    profilePicture: apiUser.profilePicture,
+    dateOfBirth,
+    profilePicture,
     phoneNumber: apiUser.phoneNumber,
-    roleName: apiUser.roleName,
-    jobTitle: apiUser.jobTitle,
-    fullName: apiUser.fullName,
+    roleName,
+    jobTitle,
+    fullName,
     createdAt: apiUser.createdAt,
     updatedAt: apiUser.updatedAt,
     isVerify: apiUser.isVerify,
     status,
-    role: apiUser.roleName.toLowerCase() as 'admin' | 'manager' | 'user' | 'staff' | 'designer'
+    role
   }
 }
