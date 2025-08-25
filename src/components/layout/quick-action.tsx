@@ -56,7 +56,12 @@ export function QuickActions({ role }: QuickActionsProps) {
         ]
       case 'Designer':
         return [
-          { icon: Plus, label: 'Mẫu mới', action: () => navigate('manage-template/new'), color: 'text-purple-500' },
+          {
+            icon: Package,
+            label: 'Yêu cầu thiết kế mới',
+            action: () => navigate('manage-design-request'),
+            color: 'text-purple-500'
+          },
           { icon: MessageCircle, label: 'Tin nhắn', action: () => navigate('messages'), color: 'text-blue-500' }
         ]
       case 'Manager':

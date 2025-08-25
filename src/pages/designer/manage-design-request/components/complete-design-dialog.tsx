@@ -1,23 +1,10 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { 
-  CheckCircle, 
-  Calendar, 
-  Camera, 
-  User, 
-  DollarSign,
-  AlertCircle
-} from 'lucide-react'
+import { CheckCircle, Calendar, Camera, User, DollarSign, AlertCircle } from 'lucide-react'
 import dayjs from 'dayjs'
 import { CompleteDesignDialogProps } from '../types'
 
@@ -74,19 +61,17 @@ export const CompleteDesignDialog = ({
                   <span className='text-muted-foreground'>Khách hàng:</span>
                   <span className='font-medium'>{request.orderItem.designRequest.username || 'N/A'}</span>
                 </div>
-                
+
                 <div className='flex items-center gap-2 text-sm'>
                   <Calendar className='w-4 h-4 text-muted-foreground' />
                   <span className='text-muted-foreground'>Ngày tạo:</span>
                   <span className='font-medium'>{dayjs(request.orderItem.createdAt).format('DD/MM/YYYY')}</span>
                 </div>
-                
+
                 <div className='flex items-center gap-2 text-sm'>
                   <DollarSign className='w-4 h-4 text-muted-foreground' />
                   <span className='text-muted-foreground'>Giá trị:</span>
-                  <span className='font-medium'>
-                    {request.orderItem.price?.toLocaleString('vi-VN')} ₫
-                  </span>
+                  <span className='font-medium'>{request.orderItem.price?.toLocaleString('vi-VN')} ₫</span>
                 </div>
               </div>
 
@@ -161,7 +146,7 @@ export const CompleteDesignDialog = ({
             <Button variant='outline' onClick={onClose}>
               Hủy
             </Button>
-            <Button 
+            <Button
               onClick={onConfirm}
               disabled={!note.trim() || !image}
               className='bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'

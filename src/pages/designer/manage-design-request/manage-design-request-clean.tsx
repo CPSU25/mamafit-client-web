@@ -6,13 +6,14 @@ import { useCreateRoom, useMyRooms, useRoomMessages, chatService, useChatCache }
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { SendPresetInChat } from './components/send-preset-in-chat'
 import { ChatMessage as ApiChatMessage } from '@/@types/chat.types'
-import { 
+import {
   DesignRequestHeader,
   DesignRequestStats,
   DesignRequestGrid,
   ChatPanel,
   QuickStartDialog,
-  CompleteDesignDialog
+  CompleteDesignDialog,
+  DesignRequestDetailDialog
 } from './components'
 import { ExtendedOrderTaskItem, ChatMessage } from './types'
 
@@ -58,15 +59,15 @@ const ManageDesignRequestPage = () => {
     if (!designRequests) {
       return []
     }
-    
+
     // API response structure: { data: [...], message: "...", statusCode: 200, code: "SUCCESS" }
     // So we need to access designRequests.data.data (nested data property)
     const requestsArray = designRequests.data?.data || []
-    
+
     if (!Array.isArray(requestsArray)) {
       return []
     }
-    
+
     return requestsArray as ExtendedOrderTaskItem[]
   }, [designRequests])
 
@@ -106,7 +107,6 @@ const ManageDesignRequestPage = () => {
         await chatService.connect()
 
         if (!isMounted) return
-
       } catch (error) {
         console.error('❌ Failed to connect SignalR:', error)
       }
@@ -128,12 +128,11 @@ const ManageDesignRequestPage = () => {
     // Handle new message from SignalR
     const handleNewMessage = (...args: unknown[]) => {
       const message = args[0] as ApiChatMessage
-      
+
       if (message.chatRoomId === chatRoomId) {
-        
         // Update room last message
         updateRoomLastMessage(chatRoomId, message.message, message.senderId, message.senderName)
-        
+
         // Invalidate messages để refetch
         invalidateRoomMessages(chatRoomId)
 
@@ -175,10 +174,11 @@ const ManageDesignRequestPage = () => {
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter((request) =>
-        request.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.orderItem.designRequest.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.orderItem.designRequest.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (request) =>
+          request.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          request.orderItem.designRequest.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          request.orderItem.designRequest.description?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -207,7 +207,6 @@ const ManageDesignRequestPage = () => {
   // Event handlers
   const handleViewDetail = (request: ExtendedOrderTaskItem) => {
     setSelectedRequest(request)
-    // TODO: Implement detail view dialog
   }
 
   const handleStartChat = async (request: ExtendedOrderTaskItem) => {
@@ -217,8 +216,8 @@ const ManageDesignRequestPage = () => {
       setIsChatMinimized(false)
 
       // Find existing room or create new one
-      const existingRoom = rooms?.find(room => 
-        room.members?.some(member => member.memberId === request.orderItem.designRequest.userId)
+      const existingRoom = rooms?.find((room) =>
+        room.members?.some((member) => member.memberId === request.orderItem.designRequest.userId)
       )
 
       if (existingRoom) {
@@ -302,12 +301,11 @@ const ManageDesignRequestPage = () => {
     }
 
     try {
-      
       // Check if SignalR is connected
       if (!chatService.isConnected) {
         await chatService.connect()
       }
-      
+
       await chatService.sendMessage(chatRoomId, message)
       setNewMessage('')
     } catch (error) {
@@ -409,7 +407,14 @@ const ManageDesignRequestPage = () => {
         onConfirm={handleCompleteConfirm}
       />
 
-      {/* Preset Dialog */}
+      {/* Design Request Detail Dialog */}
+      {selectedRequest && (
+        <DesignRequestDetailDialog
+          isOpen={!!selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+          designRequest={selectedRequest}
+        />
+      )}
       <SendPresetInChat
         isOpen={isPresetDialogOpen}
         onClose={() => setIsPresetDialogOpen(false)}

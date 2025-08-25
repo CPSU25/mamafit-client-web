@@ -24,7 +24,7 @@ import {
   Send
 } from 'lucide-react'
 import dayjs from 'dayjs'
-import { DesignerOrderTaskItemList, OrderItemOfDesigner } from '@/@types/designer-task.types'
+// import { DesignerOrderTaskItemList, OrderItemOfDesigner } from '@/@types/designer-task.types'
 import { useUpdateTaskStatus } from '@/hooks/use-designer-tasks'
 import { CloudinarySingleImageUpload } from '@/components/cloudinary-single-image-upload'
 import { useNavigate } from 'react-router-dom'
@@ -32,13 +32,14 @@ import { useCreateRoom } from '@/services/chat/chat.service'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { toast } from 'sonner'
 import { getItemTypeColor, getItemTypeLabel } from '@/pages/admin/manage-order/data/data'
+import { ExtendedOrderTaskItem } from '../types'
 
 // Interface mở rộng từ DesignerOrderTaskItemList để handle API response mới
-interface ExtendedOrderTaskItem extends Omit<DesignerOrderTaskItemList, 'orderItem'> {
-  orderItem: OrderItemOfDesigner // Thay đổi từ array thành object duy nhất
-  measurement?: unknown
-  addressId?: string | null
-}
+// interface ExtendedOrderTaskItem extends Omit<DesignerOrderTaskItemList, 'orderItem'> {
+//   orderItem: OrderItemOfDesigner // Thay đổi từ array thành object duy nhất
+//   measurement?: unknown
+//   addressId?: string | null
+// }
 
 interface DesignRequestDetailDialogProps {
   isOpen: boolean
@@ -145,7 +146,7 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
   }
 
   const calculateProgress = () => {
-    const allTasks = designRequest.milestones.flatMap((m) => m.maternityDressTasks)
+    const allTasks = designRequest.milestones?.flatMap((m) => m.maternityDressTasks) || []
     if (allTasks.length === 0) return 0
     const completedTasks = allTasks.filter((task) => task.status === 'COMPLETED').length
     return Math.round((completedTasks / allTasks.length) * 100)
@@ -305,10 +306,10 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                     <span>
                       {
                         designRequest.milestones
-                          .flatMap((m) => m.maternityDressTasks)
+                          ?.flatMap((m) => m.maternityDressTasks)
                           .filter((t) => t.status === 'COMPLETED').length
                       }{' '}
-                      /{designRequest.milestones.flatMap((m) => m.maternityDressTasks).length} công việc đã hoàn thành
+                      /{designRequest.milestones?.flatMap((m) => m.maternityDressTasks).length} công việc đã hoàn thành
                     </span>
                   </div>
                 </div>
@@ -373,7 +374,7 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
 
           <TabsContent value='progress' className='space-y-4'>
             <div className='space-y-4'>
-              {designRequest.milestones.map((milestone) => (
+              {designRequest.milestones?.map((milestone) => (
                 <Card key={milestone.sequenceOrder}>
                   <CardHeader>
                     <CardTitle className='flex items-center justify-between'>
@@ -388,7 +389,7 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                   </CardHeader>
                   <CardContent>
                     <div className='space-y-3'>
-                      {milestone.maternityDressTasks.map((task) => (
+                      {milestone.maternityDressTasks?.map((task) => (
                         <div key={task.id} className='p-3 border rounded-lg'>
                           {editingTask === task.id ? (
                             // Edit Mode

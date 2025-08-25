@@ -5,12 +5,12 @@ import {
   // CreditCard,
   LogOut,
   // Sparkles,
-  User,
-  Heart,
-  Settings,
-  HelpCircle,
-  Moon,
-  Sun
+  // User,
+  Heart
+  // Settings,
+  // HelpCircle,
+  // Moon,
+  // Sun
 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -24,14 +24,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 import { useLogout } from '@/services/auth/logout.service'
-import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils/utils'
 
 export function NavUser({ user }: { user: { username: string; email: string; avatar: string; role: string } | null }) {
   const { isMobile, state } = useSidebar()
   const isCollapsed = state === 'collapsed'
   const { logoutMutation, isPending } = useLogout()
-  const { theme, setTheme } = useTheme()
 
   // Logic handleLogout và getRoleDisplay của bạn được giữ nguyên
   const handleLogout = () => {
@@ -144,12 +142,12 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
             </DropdownMenuGroup> */}
             <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
             <DropdownMenuGroup>
-              <DropdownMenuItem asChild className='cursor-pointer'>
+              {/* <DropdownMenuItem asChild className='cursor-pointer'>
                 <Link to='/settings/account' className='flex items-center gap-2'>
                   <User className='size-4' />
                   <span>Thông tin cá nhân</span>
                 </Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem asChild className='cursor-pointer'>
                 <Link to='/settings/preferences' className='flex items-center gap-2'>
                   <Heart className='size-4' />
@@ -173,7 +171,7 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
-            <DropdownMenuGroup>
+            {/* <DropdownMenuGroup>
               <DropdownMenuItem asChild className='cursor-pointer'>
                 <Link to='/settings' className='flex items-center gap-2'>
                   <Settings className='size-4' />
@@ -202,7 +200,7 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
                   <span>Trợ giúp</span>
                 </Link>
               </DropdownMenuItem>
-            </DropdownMenuGroup>
+            </DropdownMenuGroup> */}
             <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
             <DropdownMenuItem
               onClick={handleLogout}

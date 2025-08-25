@@ -21,9 +21,9 @@ export function SystemStatus({ role }: SystemStatusProps) {
         return {
           title: 'Hệ thống',
           stats: [
-            { label: 'Đơn hôm nay', value: 24, icon: Package, color: 'text-blue-500' },
-            { label: 'Online', value: 156, icon: Users, color: 'text-green-500' },
-            { label: 'Doanh thu', value: '320M', icon: TrendingUp, color: 'text-violet-500' }
+            { label: 'Đơn hôm nay', value: 0, icon: Package, color: 'text-blue-500' },
+            { label: 'Online', value: 0, icon: Users, color: 'text-green-500' },
+            { label: 'Doanh thu', value: '0', icon: TrendingUp, color: 'text-violet-500' }
           ],
           systemHealth: 98
         }
@@ -31,9 +31,9 @@ export function SystemStatus({ role }: SystemStatusProps) {
         return {
           title: 'Chi nhánh Q1',
           stats: [
-            { label: 'Lịch hẹn', value: 8, icon: Package, color: 'text-blue-500' },
-            { label: 'Đang chờ', value: 5, icon: AlertCircle, color: 'text-yellow-500' },
-            { label: 'Hoàn thành', value: 12, icon: CheckCircle, color: 'text-green-500' }
+            { label: 'Lịch hẹn', value: 0, icon: Package, color: 'text-blue-500' },
+            { label: 'Đang chờ', value: 0, icon: AlertCircle, color: 'text-yellow-500' },
+            { label: 'Hoàn thành', value: 0, icon: CheckCircle, color: 'text-green-500' }
           ],
           systemHealth: 92
         }
@@ -41,9 +41,9 @@ export function SystemStatus({ role }: SystemStatusProps) {
         return {
           title: 'Sản xuất',
           stats: [
-            { label: 'Đang SX', value: 18, icon: Package, color: 'text-orange-500' },
-            { label: 'Chờ QC', value: 7, icon: AlertCircle, color: 'text-yellow-500' },
-            { label: 'Xong', value: 15, icon: CheckCircle, color: 'text-green-500' }
+            { label: 'Đang SX', value: 0, icon: Package, color: 'text-orange-500' },
+            { label: 'Chờ QC', value: 0, icon: AlertCircle, color: 'text-yellow-500' },
+            { label: 'Xong', value: 0, icon: CheckCircle, color: 'text-green-500' }
           ],
           systemHealth: 87
         }
