@@ -74,47 +74,47 @@ function DesignRequestMessage({ message }: { message: string }) {
     const designData = JSON.parse(message)
 
     return (
-      <Card className="max-w-sm border-0 shadow-sm bg-white">
-        <CardContent className="p-4 space-y-3">
+      <Card className='max-w-sm border-0 shadow-sm bg-white'>
+        <CardContent className='p-4 space-y-3'>
           {/* Header */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <Palette className="h-4 w-4 text-slate-600" />
+          <div className='flex items-center gap-3'>
+            <div className='p-2 bg-slate-100 rounded-lg'>
+              <Palette className='h-4 w-4 text-slate-600' />
             </div>
             <div>
-              <h3 className="font-medium text-slate-900">Yêu cầu thiết kế</h3>
-              <p className="text-sm text-slate-500">Thiết kế mới</p>
+              <h3 className='font-medium text-slate-900'>Yêu cầu thiết kế</h3>
+              <p className='text-sm text-slate-500'>Thiết kế mới</p>
             </div>
           </div>
 
           {/* Content */}
           {designData.title && (
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <p className="text-sm text-slate-800 font-medium">{designData.title}</p>
+            <div className='p-3 bg-slate-50 rounded-lg'>
+              <p className='text-sm text-slate-800 font-medium'>{designData.title}</p>
             </div>
           )}
-          
+
           {designData.messageContent && (
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <p className="text-sm text-slate-700">{designData.messageContent}</p>
+            <div className='p-3 bg-slate-50 rounded-lg'>
+              <p className='text-sm text-slate-700'>{designData.messageContent}</p>
             </div>
           )}
-          
+
           {designData.description && (
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <p className="text-sm text-slate-700">{designData.description}</p>
+            <div className='p-3 bg-slate-50 rounded-lg'>
+              <p className='text-sm text-slate-700'>{designData.description}</p>
             </div>
           )}
 
           {/* Requirements */}
           {designData.requirements && Array.isArray(designData.requirements) && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-slate-600 uppercase tracking-wide">Yêu cầu chi tiết</p>
-              <div className="space-y-2">
+            <div className='space-y-2'>
+              <p className='text-xs font-medium text-slate-600 uppercase tracking-wide'>Yêu cầu chi tiết</p>
+              <div className='space-y-2'>
                 {designData.requirements.map((req: string, index: number) => (
-                  <div key={index} className="flex items-start gap-2 p-2 bg-slate-50 rounded-md">
-                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-sm text-slate-700">{req}</span>
+                  <div key={index} className='flex items-start gap-2 p-2 bg-slate-50 rounded-md'>
+                    <div className='w-1.5 h-1.5 bg-slate-400 rounded-full mt-2 flex-shrink-0'></div>
+                    <span className='text-sm text-slate-700'>{req}</span>
                   </div>
                 ))}
               </div>
@@ -123,11 +123,9 @@ function DesignRequestMessage({ message }: { message: string }) {
 
           {/* Order Info */}
           {(designData.orderCode || designData.orderId) && (
-            <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-              <Package className="h-4 w-4 text-slate-500" />
-              <span className="text-sm text-slate-600">
-                Đơn hàng: #{designData.orderCode || designData.orderId}
-              </span>
+            <div className='flex items-center gap-2 p-2 bg-slate-50 rounded-lg'>
+              <Package className='h-4 w-4 text-slate-500' />
+              <span className='text-sm text-slate-600'>Đơn hàng: #{designData.orderCode || designData.orderId}</span>
             </div>
           )}
         </CardContent>
@@ -135,16 +133,16 @@ function DesignRequestMessage({ message }: { message: string }) {
     )
   } catch {
     return (
-      <Card className="max-w-sm border-0 shadow-sm bg-white">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <Palette className="h-4 w-4 text-slate-600" />
+      <Card className='max-w-sm border-0 shadow-sm bg-white'>
+        <CardContent className='p-4'>
+          <div className='flex items-center gap-3 mb-3'>
+            <div className='p-2 bg-slate-100 rounded-lg'>
+              <Palette className='h-4 w-4 text-slate-600' />
             </div>
-            <span className="font-medium text-slate-800">Yêu cầu thiết kế</span>
+            <span className='font-medium text-slate-800'>Yêu cầu thiết kế</span>
           </div>
-          <div className="p-3 bg-slate-50 rounded-lg">
-            <p className="text-sm text-slate-700">{message}</p>
+          <div className='p-3 bg-slate-50 rounded-lg'>
+            <p className='text-sm text-slate-700'>{message}</p>
           </div>
         </CardContent>
       </Card>
@@ -160,26 +158,24 @@ function ImageMessage({ message }: { message: string }) {
 
     if (Array.isArray(images) && images.length > 0) {
       return (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3 max-w-xs">
+        <div className='space-y-3'>
+          <div className='grid grid-cols-2 gap-3 max-w-xs'>
             {images.slice(0, 4).map((imageUrl: string, index: number) => (
-              <div key={index} className="group relative overflow-hidden rounded-lg">
+              <div key={index} className='group relative overflow-hidden rounded-lg'>
                 <ImageViewer
                   src={imageUrl}
                   alt={`Hình ảnh ${index + 1}`}
-                  containerClassName="w-full"
-                  thumbnailClassName="w-full h-28 object-cover transition-transform duration-200 group-hover:scale-105"
+                  containerClassName='w-full'
+                  thumbnailClassName='w-full h-28 object-cover transition-transform duration-200 group-hover:scale-105'
                   title={`Hình ảnh ${index + 1}`}
                 />
               </div>
             ))}
           </div>
           {images.length > 4 && (
-            <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-              <ImageIcon className="h-4 w-4 text-slate-500" />
-              <p className="text-xs text-slate-600">
-                +{images.length - 4} hình ảnh khác
-              </p>
+            <div className='flex items-center gap-2 p-2 bg-slate-50 rounded-lg'>
+              <ImageIcon className='h-4 w-4 text-slate-500' />
+              <p className='text-xs text-slate-600'>+{images.length - 4} hình ảnh khác</p>
             </div>
           )}
         </div>
@@ -189,13 +185,13 @@ function ImageMessage({ message }: { message: string }) {
     // Nếu không parse được JSON, coi như là URL đơn lẻ
     if (message.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
       return (
-        <div className="group relative overflow-hidden rounded-lg max-w-xs">
+        <div className='group relative overflow-hidden rounded-lg max-w-xs'>
           <ImageViewer
             src={message}
-            alt="Hình ảnh"
-            className="w-full"
-            thumbnailClassName="w-full h-40 object-cover transition-transform duration-200 group-hover:scale-105"
-            title="Hình ảnh"
+            alt='Hình ảnh'
+            className='w-full'
+            thumbnailClassName='w-full h-40 object-cover transition-transform duration-200 group-hover:scale-105'
+            title='Hình ảnh'
           />
         </div>
       )
@@ -203,7 +199,7 @@ function ImageMessage({ message }: { message: string }) {
   }
 
   // Fallback về text nếu không phải hình ảnh hợp lệ
-  return <span className="text-sm">{message}</span>
+  return <span className='text-sm'>{message}</span>
 }
 
 // Component hiển thị file đính kèm
@@ -217,46 +213,42 @@ function FileMessage({ message }: { message: string }) {
 
         switch (ext) {
           case 'pdf':
-            return <FileText className="h-5 w-5 text-red-500" />
+            return <FileText className='h-5 w-5 text-red-500' />
           case 'jpg':
           case 'jpeg':
           case 'png':
           case 'gif':
           case 'webp':
-            return <FileImage className="h-5 w-5 text-blue-500" />
+            return <FileImage className='h-5 w-5 text-blue-500' />
           default:
-            return <File className="h-5 w-5 text-slate-500" />
+            return <File className='h-5 w-5 text-slate-500' />
         }
       }
 
       return (
-        <Card className="max-w-sm border-0 shadow-sm bg-white">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-slate-100 rounded-lg">
-                {getFileIcon(fileData.name)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">{fileData.name}</p>
+        <Card className='max-w-sm border-0 shadow-sm bg-white'>
+          <CardContent className='p-4'>
+            <div className='flex items-center gap-3'>
+              <div className='p-2 bg-slate-100 rounded-lg'>{getFileIcon(fileData.name)}</div>
+              <div className='flex-1 min-w-0'>
+                <p className='text-sm font-medium text-slate-900 truncate'>{fileData.name}</p>
                 {fileData.size && (
-                  <p className="text-xs text-slate-500">
-                    {(fileData.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
+                  <p className='text-xs text-slate-500'>{(fileData.size / 1024 / 1024).toFixed(2)} MB</p>
                 )}
               </div>
-              <div className="flex gap-1">
+              <div className='flex gap-1'>
                 <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0 hover:bg-slate-100"
+                  size='sm'
+                  variant='ghost'
+                  className='h-8 w-8 p-0 hover:bg-slate-100'
                   onClick={() => window.open(fileData.url, '_blank')}
                 >
-                  <Eye className="h-4 w-4" />
+                  <Eye className='h-4 w-4' />
                 </Button>
                 <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0 hover:bg-slate-100"
+                  size='sm'
+                  variant='ghost'
+                  className='h-8 w-8 p-0 hover:bg-slate-100'
                   onClick={() => {
                     const a = document.createElement('a')
                     a.href = fileData.url
@@ -264,7 +256,7 @@ function FileMessage({ message }: { message: string }) {
                     a.click()
                   }}
                 >
-                  <Download className="h-4 w-4" />
+                  <Download className='h-4 w-4' />
                 </Button>
               </div>
             </div>
@@ -276,19 +268,15 @@ function FileMessage({ message }: { message: string }) {
     // Fallback về link đơn giản
     if (message.startsWith('http')) {
       return (
-        <Button
-          variant="outline"
-          className="gap-2 hover:bg-slate-50"
-          onClick={() => window.open(message, '_blank')}
-        >
-          <ExternalLink className="h-4 w-4" />
+        <Button variant='outline' className='gap-2 hover:bg-slate-50' onClick={() => window.open(message, '_blank')}>
+          <ExternalLink className='h-4 w-4' />
           Tải xuống file
         </Button>
       )
     }
   }
 
-  return <span className="text-sm">{message}</span>
+  return <span className='text-sm'>{message}</span>
 }
 
 // Component hiển thị yêu cầu thiết kế với API data
@@ -320,70 +308,70 @@ function EnhancedDesignRequestMessage({ message }: { message: string }) {
     const hasError = orderError || designError
 
     return (
-      <Card className="max-w-sm border-0 shadow-sm bg-white">
-        <CardContent className="p-4 space-y-4">
+      <Card className='max-w-sm border-0 shadow-sm bg-white'>
+        <CardContent className='p-4 space-y-4'>
           {/* Header */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <Palette className="h-4 w-4 text-slate-600" />
+          <div className='flex items-center gap-3'>
+            <div className='p-2 bg-slate-100 rounded-lg'>
+              <Palette className='h-4 w-4 text-slate-600' />
             </div>
-            <div className="flex-1">
-              <h3 className="font-medium text-slate-900">Yêu cầu thiết kế</h3>
-              <p className="text-sm text-slate-500">Thiết kế mới</p>
+            <div className='flex-1'>
+              <h3 className='font-medium text-slate-900'>Yêu cầu thiết kế</h3>
+              <p className='text-sm text-slate-500'>Thiết kế mới</p>
             </div>
             {isLoading && (
-              <div className="p-2 bg-slate-100 rounded-lg">
-                <RefreshCw className="h-4 w-4 animate-spin text-slate-600" />
+              <div className='p-2 bg-slate-100 rounded-lg'>
+                <RefreshCw className='h-4 w-4 animate-spin text-slate-600' />
               </div>
             )}
           </div>
 
           {/* Message Content */}
-          <div className="p-3 bg-slate-50 rounded-lg">
-            <p className="text-sm text-slate-700">{messageContent}</p>
+          <div className='p-3 bg-slate-50 rounded-lg'>
+            <p className='text-sm text-slate-700'>{messageContent}</p>
           </div>
 
           {isLoading ? (
-            <div className="space-y-2">
-              <div className="h-4 bg-slate-200 rounded animate-pulse"></div>
-              <div className="h-3 bg-slate-200 rounded animate-pulse w-3/4"></div>
+            <div className='space-y-2'>
+              <div className='h-4 bg-slate-200 rounded animate-pulse'></div>
+              <div className='h-3 bg-slate-200 rounded animate-pulse w-3/4'></div>
             </div>
           ) : hasError ? (
-            <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-              <p className="text-sm text-red-700 font-medium">❌ Không thể tải thông tin</p>
-              <div className="mt-2 space-y-1 text-xs text-red-600">
+            <div className='p-3 bg-red-50 rounded-lg border border-red-200'>
+              <p className='text-sm text-red-700 font-medium'>❌ Không thể tải thông tin</p>
+              <div className='mt-2 space-y-1 text-xs text-red-600'>
                 <p>Order ID: {orderId}</p>
                 <p>Design Request ID: {designRequestId}</p>
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className='space-y-3'>
               {/* Order Information */}
               {orderDetails?.data && (
-                <div className="p-3 bg-slate-50 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-slate-500" />
-                    <span className="text-sm font-medium text-slate-700">Thông tin đơn hàng</span>
+                <div className='p-3 bg-slate-50 rounded-lg space-y-3'>
+                  <div className='flex items-center gap-2'>
+                    <Package className='h-4 w-4 text-slate-500' />
+                    <span className='text-sm font-medium text-slate-700'>Thông tin đơn hàng</span>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between py-2 border-t border-slate-200">
-                      <span className="text-sm text-slate-600">Mã đơn:</span>
-                      <span className="text-sm font-medium text-slate-900">#{orderDetails.data.code}</span>
+
+                  <div className='space-y-2'>
+                    <div className='flex items-center justify-between py-2 border-t border-slate-200'>
+                      <span className='text-sm text-slate-600'>Mã đơn:</span>
+                      <span className='text-sm font-medium text-slate-900'>#{orderDetails.data.code}</span>
                     </div>
 
                     {orderDetails.data.totalPaid && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-600">Giá trị:</span>
-                        <span className="text-sm font-medium text-slate-900">
+                      <div className='flex items-center justify-between'>
+                        <span className='text-sm text-slate-600'>Giá trị:</span>
+                        <span className='text-sm font-medium text-slate-900'>
                           {Number(orderDetails.data.totalPaid).toLocaleString('vi-VN')}₫
                         </span>
                       </div>
                     )}
 
                     {orderDetails.data.status && (
-                      <div className="flex items-center gap-2 pt-2">
-                        <Badge variant="outline" className="text-xs border-slate-300 text-slate-700">
+                      <div className='flex items-center gap-2 pt-2'>
+                        <Badge variant='outline' className='text-xs border-slate-300 text-slate-700'>
                           {orderDetails.data.status}
                         </Badge>
                       </div>
@@ -394,12 +382,12 @@ function EnhancedDesignRequestMessage({ message }: { message: string }) {
 
               {/* Design Request Details */}
               {designRequestDetails && (
-                <div className="space-y-3">
+                <div className='space-y-3'>
                   {/* Description */}
                   {designRequestDetails.description && (
-                    <div className="p-3 bg-slate-50 rounded-lg">
-                      <p className="text-sm font-medium text-slate-700 mb-2">Mô tả yêu cầu:</p>
-                      <p className="text-sm text-slate-700">{designRequestDetails.description}</p>
+                    <div className='p-3 bg-slate-50 rounded-lg'>
+                      <p className='text-sm font-medium text-slate-700 mb-2'>Mô tả yêu cầu:</p>
+                      <p className='text-sm text-slate-700'>{designRequestDetails.description}</p>
                     </div>
                   )}
 
@@ -407,25 +395,25 @@ function EnhancedDesignRequestMessage({ message }: { message: string }) {
                   {designRequestDetails.images &&
                     Array.isArray(designRequestDetails.images) &&
                     designRequestDetails.images.length > 0 && (
-                      <div className="space-y-3">
-                        <p className="text-sm font-medium text-slate-700">Hình ảnh tham khảo:</p>
-                        <div className="grid grid-cols-2 gap-2">
+                      <div className='space-y-3'>
+                        <p className='text-sm font-medium text-slate-700'>Hình ảnh tham khảo:</p>
+                        <div className='grid grid-cols-2 gap-2'>
                           {designRequestDetails.images.slice(0, 4).map((imageUrl: string, index: number) => (
-                            <div key={index} className="group relative overflow-hidden rounded-lg">
+                            <div key={index} className='group relative overflow-hidden rounded-lg'>
                               <ImageViewer
                                 src={imageUrl}
                                 alt={`Thiết kế ${index + 1}`}
-                                className="w-full"
-                                thumbnailClassName="w-full h-20 object-cover transition-transform duration-200 group-hover:scale-105"
+                                className='w-full'
+                                thumbnailClassName='w-full h-20 object-cover transition-transform duration-200 group-hover:scale-105'
                                 title={`Thiết kế ${index + 1}`}
                               />
                             </div>
                           ))}
                         </div>
                         {designRequestDetails.images.length > 4 && (
-                          <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-                            <ImageIcon className="h-3 w-3 text-slate-500" />
-                            <p className="text-xs text-slate-600">
+                          <div className='flex items-center gap-2 p-2 bg-slate-50 rounded-lg'>
+                            <ImageIcon className='h-3 w-3 text-slate-500' />
+                            <p className='text-xs text-slate-600'>
                               +{designRequestDetails.images.length - 4} hình ảnh khác
                             </p>
                           </div>
@@ -435,22 +423,22 @@ function EnhancedDesignRequestMessage({ message }: { message: string }) {
 
                   {/* Creator Info */}
                   {designRequestDetails.username && (
-                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-                      <User className="h-3 w-3 text-slate-500" />
-                      <span className="text-xs text-slate-600">Tạo bởi: {designRequestDetails.username}</span>
+                    <div className='flex items-center gap-2 p-2 bg-slate-50 rounded-lg'>
+                      <User className='h-3 w-3 text-slate-500' />
+                      <span className='text-xs text-slate-600'>Tạo bởi: {designRequestDetails.username}</span>
                     </div>
                   )}
                 </div>
               )}
 
               {/* IDs Info */}
-              <div className="p-3 bg-slate-50 rounded-lg space-y-2">
-                <div className="flex items-center gap-2 text-xs text-slate-600">
-                  <Package className="h-3 w-3" />
+              <div className='p-3 bg-slate-50 rounded-lg space-y-2'>
+                <div className='flex items-center gap-2 text-xs text-slate-600'>
+                  <Package className='h-3 w-3' />
                   <span>Đơn hàng: #{orderId.substring(0, 8)}...</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-600">
-                  <Palette className="h-3 w-3" />
+                <div className='flex items-center gap-2 text-xs text-slate-600'>
+                  <Palette className='h-3 w-3' />
                   <span>Yêu cầu: #{designRequestId.substring(0, 8)}...</span>
                 </div>
               </div>
@@ -464,19 +452,19 @@ function EnhancedDesignRequestMessage({ message }: { message: string }) {
 
     // Fallback về component cũ nếu không parse được JSON
     return (
-      <Card className="max-w-sm border-0 shadow-sm bg-white">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <Palette className="h-4 w-4 text-slate-600" />
+      <Card className='max-w-sm border-0 shadow-sm bg-white'>
+        <CardContent className='p-4'>
+          <div className='flex items-center gap-3 mb-3'>
+            <div className='p-2 bg-slate-100 rounded-lg'>
+              <Palette className='h-4 w-4 text-slate-600' />
             </div>
-            <span className="font-medium text-slate-800">Yêu cầu thiết kế</span>
+            <span className='font-medium text-slate-800'>Yêu cầu thiết kế</span>
           </div>
-          <div className="p-3 bg-slate-50 rounded-lg">
-            <p className="text-sm text-slate-700">{message}</p>
+          <div className='p-3 bg-slate-50 rounded-lg'>
+            <p className='text-sm text-slate-700'>{message}</p>
           </div>
-          <div className="mt-2 p-2 bg-red-50 rounded-lg border border-red-200">
-            <p className="text-xs text-red-500">⚠️ Lỗi parse JSON</p>
+          <div className='mt-2 p-2 bg-red-50 rounded-lg border border-red-200'>
+            <p className='text-xs text-red-500'>⚠️ Lỗi parse JSON</p>
           </div>
         </CardContent>
       </Card>
@@ -500,81 +488,79 @@ function EnhancedPresetMessage({ message }: { message: string }) {
   try {
     console.log('🔍 Preset details from API:', { presetDetails, isLoading, error })
     return (
-      <Card className="max-w-sm border-0 shadow-sm bg-white">
-        <CardContent className="p-4 space-y-4">
+      <Card className='max-w-sm border-0 shadow-sm bg-white'>
+        <CardContent className='p-4 space-y-4'>
           {/* Header */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <Sparkles className="h-4 w-4 text-slate-600" />
+          <div className='flex items-center gap-3'>
+            <div className='p-2 bg-slate-100 rounded-lg'>
+              <Sparkles className='h-4 w-4 text-slate-600' />
             </div>
-            <div className="flex-1">
-              <h3 className="font-medium text-slate-900">Preset thiết kế</h3>
-              <p className="text-sm text-slate-500">Mẫu thiết kế</p>
+            <div className='flex-1'>
+              <h3 className='font-medium text-slate-900'>Preset thiết kế</h3>
+              <p className='text-sm text-slate-500'>Mẫu thiết kế</p>
             </div>
             {isLoading && (
-              <div className="p-2 bg-slate-100 rounded-lg">
-                <RefreshCw className="h-4 w-4 animate-spin text-slate-600" />
+              <div className='p-2 bg-slate-100 rounded-lg'>
+                <RefreshCw className='h-4 w-4 animate-spin text-slate-600' />
               </div>
             )}
           </div>
 
           {isLoading ? (
-            <div className="space-y-2">
-              <div className="h-4 bg-slate-200 rounded animate-pulse"></div>
-              <div className="h-3 bg-slate-200 rounded animate-pulse w-3/4"></div>
+            <div className='space-y-2'>
+              <div className='h-4 bg-slate-200 rounded animate-pulse'></div>
+              <div className='h-3 bg-slate-200 rounded animate-pulse w-3/4'></div>
             </div>
           ) : error ? (
-            <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-              <p className="text-sm text-red-700 font-medium">❌ Không thể tải thông tin preset</p>
-              <p className="text-xs text-red-600 mt-1">ID: {presetId}</p>
+            <div className='p-3 bg-red-50 rounded-lg border border-red-200'>
+              <p className='text-sm text-red-700 font-medium'>❌ Không thể tải thông tin preset</p>
+              <p className='text-xs text-red-600 mt-1'>ID: {presetId}</p>
             </div>
           ) : presetDetails?.data ? (
-            <div className="space-y-3">
+            <div className='space-y-3'>
               {/* Title and Name */}
-              <div className="p-3 bg-slate-50 rounded-lg">
-                <h4 className="font-medium text-sm text-slate-800">{presetDetails.data.styleName || 'Preset thiết kế'}</h4>
-                {presetDetails.data.name && (
-                  <p className="text-xs text-slate-500 mt-1">{presetDetails.data.name}</p>
-                )}
+              <div className='p-3 bg-slate-50 rounded-lg'>
+                <h4 className='font-medium text-sm text-slate-800'>
+                  {presetDetails.data.styleName || 'Preset thiết kế'}
+                </h4>
+                {presetDetails.data.name && <p className='text-xs text-slate-500 mt-1'>{presetDetails.data.name}</p>}
               </div>
 
               {/* Images */}
               {presetDetails.data.images &&
                 Array.isArray(presetDetails.data.images) &&
                 presetDetails.data.images.length > 0 && (
-                  <div className="space-y-3">
-                    <p className="text-sm font-medium text-slate-700">Hình ảnh thiết kế:</p>
-                    <div className="grid grid-cols-2 gap-2">
+                  <div className='space-y-3'>
+                    <p className='text-sm font-medium text-slate-700'>Hình ảnh thiết kế:</p>
+                    <div className='grid grid-cols-2 gap-2'>
                       {presetDetails.data.images.slice(0, 4).map((imageUrl: string, index: number) => (
-                        <div key={index} className="group relative overflow-hidden rounded-lg">
+                        <div key={index} className='group relative overflow-hidden rounded-lg'>
                           <ImageViewer
                             src={imageUrl}
                             alt={`Preset ${index + 1}`}
-                            className="w-full"
-                            thumbnailClassName="w-full h-20 object-cover transition-transform duration-200 group-hover:scale-105"
+                            className='w-full'
+                            thumbnailClassName='w-full h-20 object-cover transition-transform duration-200 group-hover:scale-105'
                             title={`${presetDetails.data.styleName} - Ảnh ${index + 1}`}
                           />
                         </div>
                       ))}
                     </div>
                     {presetDetails.data.images.length > 4 && (
-                      <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-                        <ImageIcon className="h-3 w-3 text-slate-500" />
-                        <p className="text-xs text-slate-600">
-                          +{presetDetails.data.images.length - 4} hình ảnh khác
-                        </p>
+                      <div className='flex items-center gap-2 p-2 bg-slate-50 rounded-lg'>
+                        <ImageIcon className='h-3 w-3 text-slate-500' />
+                        <p className='text-xs text-slate-600'>+{presetDetails.data.images.length - 4} hình ảnh khác</p>
                       </div>
                     )}
                   </div>
                 )}
 
               {/* Price and Details */}
-              <div className="space-y-3">
+              <div className='space-y-3'>
                 {presetDetails.data.price && (
-                  <div className="p-3 bg-slate-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-700">Giá:</span>
-                      <span className="text-sm font-medium text-slate-900">
+                  <div className='p-3 bg-slate-50 rounded-lg'>
+                    <div className='flex items-center justify-between'>
+                      <span className='text-sm font-medium text-slate-700'>Giá:</span>
+                      <span className='text-sm font-medium text-slate-900'>
                         {Number(presetDetails.data.price).toLocaleString('vi-VN')}₫
                       </span>
                     </div>
@@ -583,8 +569,8 @@ function EnhancedPresetMessage({ message }: { message: string }) {
 
                 {/* Style Badge */}
                 {presetDetails.data.styleName && (
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs border-slate-300 text-slate-700">
+                  <div className='flex items-center gap-2'>
+                    <Badge variant='outline' className='text-xs border-slate-300 text-slate-700'>
                       {presetDetails.data.styleName}
                     </Badge>
                   </div>
@@ -592,17 +578,17 @@ function EnhancedPresetMessage({ message }: { message: string }) {
 
                 {/* Order ID */}
                 {orderId && orderId !== 'N/A' && (
-                  <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-                    <Package className="h-3 w-3 text-slate-500" />
-                    <span className="text-xs text-slate-600">Đơn hàng: #{orderId}</span>
+                  <div className='flex items-center gap-2 p-2 bg-slate-50 rounded-lg'>
+                    <Package className='h-3 w-3 text-slate-500' />
+                    <span className='text-xs text-slate-600'>Đơn hàng: #{orderId}</span>
                   </div>
                 )}
               </div>
             </div>
           ) : (
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <p className="text-sm text-slate-700">Không tìm thấy thông tin preset</p>
-              <p className="text-xs text-slate-500 mt-1">ID: {presetId}</p>
+            <div className='p-3 bg-slate-50 rounded-lg'>
+              <p className='text-sm text-slate-700'>Không tìm thấy thông tin preset</p>
+              <p className='text-xs text-slate-500 mt-1'>ID: {presetId}</p>
             </div>
           )}
         </CardContent>
@@ -613,19 +599,19 @@ function EnhancedPresetMessage({ message }: { message: string }) {
 
     // Fallback về component cũ nếu không parse được JSON
     return (
-      <Card className="max-w-sm border-0 shadow-sm bg-white">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <Sparkles className="h-4 w-4 text-slate-600" />
+      <Card className='max-w-sm border-0 shadow-sm bg-white'>
+        <CardContent className='p-4'>
+          <div className='flex items-center gap-3 mb-3'>
+            <div className='p-2 bg-slate-100 rounded-lg'>
+              <Sparkles className='h-4 w-4 text-slate-600' />
             </div>
-            <span className="font-medium text-slate-800">Preset thiết kế</span>
+            <span className='font-medium text-slate-800'>Preset thiết kế</span>
           </div>
-          <div className="p-3 bg-slate-50 rounded-lg">
-            <p className="text-sm text-slate-700">{message}</p>
+          <div className='p-3 bg-slate-50 rounded-lg'>
+            <p className='text-sm text-slate-700'>{message}</p>
           </div>
-          <div className="mt-2 p-2 bg-red-50 rounded-lg border border-red-200">
-            <p className="text-xs text-red-500">⚠️ Lỗi parse JSON</p>
+          <div className='mt-2 p-2 bg-red-50 rounded-lg border border-red-200'>
+            <p className='text-xs text-red-500'>⚠️ Lỗi parse JSON</p>
           </div>
         </CardContent>
       </Card>
@@ -639,53 +625,51 @@ function PresetMessage({ message }: { message: string }) {
     const presetData = JSON.parse(message)
 
     return (
-      <Card className="max-w-sm border-0 shadow-sm bg-white">
-        <CardContent className="p-4 space-y-3">
+      <Card className='max-w-sm border-0 shadow-sm bg-white'>
+        <CardContent className='p-4 space-y-3'>
           {/* Header */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <Sparkles className="h-4 w-4 text-slate-600" />
+          <div className='flex items-center gap-3'>
+            <div className='p-2 bg-slate-100 rounded-lg'>
+              <Sparkles className='h-4 w-4 text-slate-600' />
             </div>
-            <div className="flex-1">
-              <h3 className="font-medium text-slate-900">Preset thiết kế</h3>
-              <p className="text-sm text-slate-500">Mẫu thiết kế</p>
+            <div className='flex-1'>
+              <h3 className='font-medium text-slate-900'>Preset thiết kế</h3>
+              <p className='text-sm text-slate-500'>Mẫu thiết kế</p>
             </div>
-            <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-700 border-slate-200">
+            <Badge variant='secondary' className='text-xs bg-slate-100 text-slate-700 border-slate-200'>
               {presetData.isDefault ? 'Mặc định' : 'Tùy chỉnh'}
             </Badge>
           </div>
 
           {/* Style Name */}
           {presetData.styleName && (
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <p className="font-medium text-sm text-slate-800">{presetData.styleName}</p>
+            <div className='p-3 bg-slate-50 rounded-lg'>
+              <p className='font-medium text-sm text-slate-800'>{presetData.styleName}</p>
             </div>
           )}
 
           {/* Images */}
           {presetData.images && Array.isArray(presetData.images) && presetData.images.length > 0 && (
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-slate-700">Hình ảnh thiết kế:</p>
-              <div className="grid grid-cols-2 gap-2">
+            <div className='space-y-3'>
+              <p className='text-sm font-medium text-slate-700'>Hình ảnh thiết kế:</p>
+              <div className='grid grid-cols-2 gap-2'>
                 {presetData.images.slice(0, 4).map((imageUrl: string, index: number) => (
-                  <div key={index} className="group relative overflow-hidden rounded-lg">
+                  <div key={index} className='group relative overflow-hidden rounded-lg'>
                     <ImageViewer
                       key={index}
                       src={imageUrl}
                       alt={`Preset ${index + 1}`}
-                      className="w-full"
-                      thumbnailClassName="w-full h-20 object-cover transition-transform duration-200 group-hover:scale-105"
+                      className='w-full'
+                      thumbnailClassName='w-full h-20 object-cover transition-transform duration-200 group-hover:scale-105'
                       title={`Preset ${index + 1}`}
                     />
                   </div>
                 ))}
               </div>
               {presetData.images.length > 4 && (
-                <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-                  <ImageIcon className="h-3 w-3 text-slate-500" />
-                  <p className="text-xs text-slate-600">
-                    +{presetData.images.length - 4} hình ảnh khác
-                  </p>
+                <div className='flex items-center gap-2 p-2 bg-slate-50 rounded-lg'>
+                  <ImageIcon className='h-3 w-3 text-slate-500' />
+                  <p className='text-xs text-slate-600'>+{presetData.images.length - 4} hình ảnh khác</p>
                 </div>
               )}
             </div>
@@ -693,10 +677,10 @@ function PresetMessage({ message }: { message: string }) {
 
           {/* Price */}
           {presetData.price && (
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-700">Giá:</span>
-                <span className="text-sm font-medium text-slate-900">
+            <div className='p-3 bg-slate-50 rounded-lg'>
+              <div className='flex items-center justify-between'>
+                <span className='text-sm font-medium text-slate-700'>Giá:</span>
+                <span className='text-sm font-medium text-slate-900'>
                   {Number(presetData.price).toLocaleString('vi-VN')}₫
                 </span>
               </div>
@@ -705,8 +689,8 @@ function PresetMessage({ message }: { message: string }) {
 
           {/* Description */}
           {presetData.description && (
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <p className="text-xs text-slate-600">{presetData.description}</p>
+            <div className='p-3 bg-slate-50 rounded-lg'>
+              <p className='text-xs text-slate-600'>{presetData.description}</p>
             </div>
           )}
         </CardContent>
@@ -714,16 +698,16 @@ function PresetMessage({ message }: { message: string }) {
     )
   } catch {
     return (
-      <Card className="max-w-sm border-0 shadow-sm bg-white">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <Sparkles className="h-4 w-4 text-slate-600" />
+      <Card className='max-w-sm border-0 shadow-sm bg-white'>
+        <CardContent className='p-4'>
+          <div className='flex items-center gap-3 mb-3'>
+            <div className='p-2 bg-slate-100 rounded-lg'>
+              <Sparkles className='h-4 w-4 text-slate-600' />
             </div>
-            <span className="font-medium text-slate-800">Preset thiết kế</span>
+            <span className='font-medium text-slate-800'>Preset thiết kế</span>
           </div>
-          <div className="p-3 bg-slate-50 rounded-lg">
-            <p className="text-sm text-slate-700">{message}</p>
+          <div className='p-3 bg-slate-50 rounded-lg'>
+            <p className='text-sm text-slate-700'>{message}</p>
           </div>
         </CardContent>
       </Card>
@@ -818,11 +802,7 @@ export function MessageContent({ message, type, className }: MessageContentProps
       case 0: // MessageType.Text
       default:
         console.log('💬 Rendering Text message')
-        return (
-          <span className="text-sm whitespace-pre-wrap break-words text-white">
-            {message}
-          </span>
-        )
+        return <span className='text-sm whitespace-pre-wrap break-words text-white'>{message}</span>
     }
   })()
 

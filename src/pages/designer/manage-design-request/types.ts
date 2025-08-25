@@ -83,6 +83,7 @@ export interface ChatPanelProps {
   isMinimized: boolean
   onToggleMinimize: () => void
   onSendPreset?: () => void
+  onSendImage?: (file: File) => void
 }
 
 export interface QuickStartDialogProps {

@@ -118,8 +118,11 @@ export default function StaffDashboardPage() {
             Xin chào, <span className='text-primary'>{greeting.name}</span>
           </h1>
           <p className='text-base md:text-lg text-muted-foreground'>
-            Vai trò: <span className='font-semibold text-primary'>{greeting.role}</span> • Hôm nay bạn có{' '}
-            <span className='font-bold text-primary'>{stats.total}</span> nhiệm vụ
+            Vai trò:{' '}
+            <span className='font-semibold text-primary'>
+              {greeting.role === 'Staff' ? 'Nhân viên' : greeting.role}
+            </span>{' '}
+            • Hôm nay bạn có <span className='font-bold text-primary'>{stats.total}</span> nhiệm vụ
           </p>
         </div>
 

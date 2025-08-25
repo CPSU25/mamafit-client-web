@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
-import { 
-  CheckCircle, 
-  Clock, 
-  AlertCircle, 
-  Zap, 
-  MessageSquare, 
-  Eye, 
-  Play, 
+import {
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Zap,
+  MessageSquare,
+  Eye,
+  Play,
   Calendar,
   DollarSign,
   Camera
@@ -118,22 +118,12 @@ export const DesignRequestCard = ({
 
         {/* Action Buttons */}
         <div className='flex flex-wrap gap-2'>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => onViewDetail(request)}
-            className='flex-1'
-          >
+          <Button variant='outline' size='sm' onClick={() => onViewDetail(request)} className='flex-1'>
             <Eye className='w-4 h-4 mr-2' />
             Chi tiết
           </Button>
-          
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => onStartChat(request)}
-            className='flex-1'
-          >
+
+          <Button variant='outline' size='sm' onClick={() => onStartChat(request)} className='flex-1'>
             <MessageSquare className='w-4 h-4 mr-2' />
             Chat
           </Button>
@@ -151,7 +141,7 @@ export const DesignRequestCard = ({
               Bắt đầu
             </Button>
           )}
-          
+
           {taskStatus === 'IN_PROGRESS' && (
             <Button
               variant='default'

@@ -1,29 +1,11 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Play, 
-  Calendar, 
-  Camera, 
-  User, 
-  DollarSign,
-  AlertCircle
-} from 'lucide-react'
+import { Play, Calendar, Camera, User, DollarSign, AlertCircle } from 'lucide-react'
 import dayjs from 'dayjs'
 import { QuickStartDialogProps } from '../types'
 
-export const QuickStartDialog = ({
-  isOpen,
-  onClose,
-  request,
-  onConfirm
-}: QuickStartDialogProps) => {
+export const QuickStartDialog = ({ isOpen, onClose, request, onConfirm }: QuickStartDialogProps) => {
   if (!request) return null
 
   return (
@@ -56,19 +38,17 @@ export const QuickStartDialog = ({
                   <span className='text-muted-foreground'>Khách hàng:</span>
                   <span className='font-medium'>{request.orderItem.designRequest.username || 'N/A'}</span>
                 </div>
-                
+
                 <div className='flex items-center gap-2 text-sm'>
                   <Calendar className='w-4 h-4 text-muted-foreground' />
                   <span className='text-muted-foreground'>Ngày tạo:</span>
                   <span className='font-medium'>{dayjs(request.orderItem.createdAt).format('DD/MM/YYYY')}</span>
                 </div>
-                
+
                 <div className='flex items-center gap-2 text-sm'>
                   <DollarSign className='w-4 h-4 text-muted-foreground' />
                   <span className='text-muted-foreground'>Giá trị:</span>
-                  <span className='font-medium'>
-                    {request.orderItem.price?.toLocaleString('vi-VN')} ₫
-                  </span>
+                  <span className='font-medium'>{request.orderItem.price?.toLocaleString('vi-VN')} ₫</span>
                 </div>
               </div>
 
@@ -98,7 +78,7 @@ export const QuickStartDialog = ({
             <Button variant='outline' onClick={onClose}>
               Hủy
             </Button>
-            <Button 
+            <Button
               onClick={onConfirm}
               className='bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
             >

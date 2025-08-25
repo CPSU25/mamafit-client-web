@@ -10,15 +10,15 @@ interface DesignRequestStatsProps {
 export const DesignRequestStats = ({ designRequests }: DesignRequestStatsProps) => {
   // Calculate stats
   const totalRequests = designRequests.length
-  const pendingRequests = designRequests.filter(req => {
+  const pendingRequests = designRequests.filter((req) => {
     const status = getTaskStatus(req.milestones, req.orderStatus)
     return status === 'PENDING'
   }).length
-  const inProgressRequests = designRequests.filter(req => {
+  const inProgressRequests = designRequests.filter((req) => {
     const status = getTaskStatus(req.milestones, req.orderStatus)
     return status === 'IN_PROGRESS'
   }).length
-  const completedRequests = designRequests.filter(req => {
+  const completedRequests = designRequests.filter((req) => {
     const status = getTaskStatus(req.milestones, req.orderStatus)
     return status === 'COMPLETED'
   }).length

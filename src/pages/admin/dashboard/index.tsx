@@ -14,8 +14,7 @@ import {
   ArrowDownRight,
   MoreVertical,
   Download,
-  FileText,
-  Filter
+  FileText
 } from 'lucide-react'
 import dayjs from 'dayjs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -60,11 +59,18 @@ const getVietnameseStatus = (status: string): string => {
   const statusMapping: Record<string, string> = {
     CREATED: 'Đã tạo',
     PENDING: 'Chờ xử lý',
-    PRODUCTION: 'Đang sản xuất',
-    SHIPPING: 'Đang giao hàng',
+    IN_PROGRESS: 'Đang sản xuất',
+    AWAITING_PAID_REST: 'Đợi thanh toán',
+    PACKAGING: 'Đang đóng gói',
+    DELIVERING: 'Đang giao hàng',
     COMPLETED: 'Hoàn thành',
     CANCELLED: 'Đã hủy',
-    CONFIRMED: 'Đã xác nhận',
+    CONFIRMED: 'Đã Xác Nhận',
+    RETURNED: 'Đã Trả Hàng',
+    PICKUP_IN_PROGRESS: 'Đang Lấy Hàng',
+    AWAITING_PAID_WARRANTY: 'Chờ Thanh Toán Bảo Hành',
+    COMPLETED_WARRANTY: 'Hoàn Thành Bảo Hành',
+    RECEIVED_AT_BRANCH: 'Nhận tại chi nhánh',
     PROCESSING: 'Đang xử lý',
     DELIVERED: 'Đã giao',
     REJECTED: 'Từ chối'
@@ -363,15 +369,6 @@ export default function AdminDashboard() {
               <SelectItem value='year'>Năm nay</SelectItem>
             </SelectContent>
           </Select>
-
-          <Button variant='outline' size='icon'>
-            <Filter className='h-4 w-4' />
-          </Button>
-
-          <Button>
-            <Download className='h-4 w-4 mr-2' />
-            Xuất báo cáo
-          </Button>
         </div>
       </div>
 

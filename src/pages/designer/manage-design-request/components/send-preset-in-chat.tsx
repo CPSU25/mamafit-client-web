@@ -21,7 +21,14 @@ export interface SendPresetInChatProps {
   orderId?: string
 }
 
-export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, roomId, orderId }: SendPresetInChatProps) {
+export function SendPresetInChat({
+  isOpen,
+  onClose,
+  designRequestId,
+  orderCode,
+  roomId,
+  orderId
+}: SendPresetInChatProps) {
   const [activeTab, setActiveTab] = useState('existing')
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -76,7 +83,13 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, 
   }
 
   const handleSendCustomPreset = async () => {
-    if (!customPreset.name.trim() || !customPreset.price.trim() || Number(customPreset.price) <= 0 || customPreset.imageUrls.length === 0 || !roomId) {
+    if (
+      !customPreset.name.trim() ||
+      !customPreset.price.trim() ||
+      Number(customPreset.price) <= 0 ||
+      customPreset.imageUrls.length === 0 ||
+      !roomId
+    ) {
       toast.error('Vui lòng điền đầy đủ thông tin preset (tên, giá hợp lệ và hình ảnh)')
       return
     }
@@ -234,7 +247,13 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderCode, 
               </Button>
               <Button
                 onClick={handleSendCustomPreset}
-                disabled={!customPreset.name.trim() || !customPreset.price.trim() || Number(customPreset.price) <= 0 || customPreset.imageUrls.length === 0 || isSubmitting}
+                disabled={
+                  !customPreset.name.trim() ||
+                  !customPreset.price.trim() ||
+                  Number(customPreset.price) <= 0 ||
+                  customPreset.imageUrls.length === 0 ||
+                  isSubmitting
+                }
               >
                 {isSubmitting ? (
                   <LoaderCircle className='h-4 w-4 animate-spin mr-2' />

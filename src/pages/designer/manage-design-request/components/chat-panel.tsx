@@ -1,19 +1,10 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { 
-  MessageSquare, 
-  Send, 
-  X, 
-  Minimize2, 
-  Maximize2,
-  Calendar,
-  Camera,
-  Package
-} from 'lucide-react'
+import { MessageSquare, Send, X, Minimize2, Maximize2, Calendar, Camera, Package, ChevronDown } from 'lucide-react'
 import { ChatPanelProps } from '../types'
 import { MessageContent } from '@/components/ui/message-content'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
@@ -29,8 +20,10 @@ export const ChatPanel = ({
   onNewMessageChange,
   isMinimized,
   onToggleMinimize,
-  onSendPreset
+  onSendPreset,
+  onSendImage
 }: ChatPanelProps) => {
+  const [isCustomerInfoCollapsed, setIsCustomerInfoCollapsed] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthStore()
 
@@ -65,7 +58,10 @@ export const ChatPanel = ({
     return (
       <div className='fixed bottom-4 right-4 z-50'>
         <Card className='w-96 shadow-2xl border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50'>
-          <CardHeader className='pb-3 cursor-pointer hover:bg-violet-100/50 transition-colors rounded-t-lg' onClick={onToggleMinimize}>
+          <CardHeader
+            className='pb-3 cursor-pointer hover:bg-violet-100/50 transition-colors rounded-t-lg'
+            onClick={onToggleMinimize}
+          >
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
                 <div className='h-3 w-3 bg-green-500 rounded-full animate-pulse'></div>
@@ -78,6 +74,7 @@ export const ChatPanel = ({
                 )}
               </div>
               <div className='flex items-center gap-1'>
+                <ChevronDown className='w-4 h-4 text-violet-600' />
                 <Button
                   variant='ghost'
                   size='sm'
@@ -110,13 +107,15 @@ export const ChatPanel = ({
 
   return (
     <div className='fixed bottom-4 right-4 z-50'>
-      <Card className='w-[480px] h-[650px] shadow-2xl border-violet-200 flex flex-col max-w-[95vw] max-h-[85vh] bg-gradient-to-br from-white to-violet-50/30 py-0'>
-        <CardHeader className='pb-3 border-b border-violet-100 flex-shrink-0 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-t-lg'>
+      <Card className='w-[480px] h-[650px] shadow-2xl border-violet-200 flex flex-col max-w-[95vw] max-h-[85vh] bg-gradient-to-br from-white to-violet-50/30 !py-0'>
+        <CardHeader className='pt-5 border-b border-violet-100 flex-shrink-0 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-t-lg'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3'>
               <div className='h-3 w-3 bg-green-400 rounded-full animate-pulse'></div>
               <MessageSquare className='w-5 h-5 text-white' />
-              <CardTitle className='text-sm font-medium'>Chat với khách hàng</CardTitle>
+              <CardTitle className='text-sm font-medium'>
+                {activeRequest ? `Đơn ${activeRequest.orderCode}` : 'Chat với khách hàng'}
+              </CardTitle>
             </div>
             <div className='flex items-center gap-1'>
               <Button
@@ -124,15 +123,14 @@ export const ChatPanel = ({
                 size='sm'
                 onClick={onToggleMinimize}
                 className='hover:bg-white/20 text-white'
+                title='Thu gọn'
               >
+                <ChevronDown className='w-4 h-4' />
+              </Button>
+              <Button variant='ghost' size='sm' onClick={onToggleMinimize} className='hover:bg-white/20 text-white'>
                 <Minimize2 className='w-4 h-4' />
               </Button>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={onClose}
-                className='hover:bg-red-500/20 text-white'
-              >
+              <Button variant='ghost' size='sm' onClick={onClose} className='hover:bg-red-500/20 text-white'>
                 <X className='w-4 h-4' />
               </Button>
             </div>
@@ -140,36 +138,63 @@ export const ChatPanel = ({
         </CardHeader>
 
         {activeRequest && (
-          <div className='px-4 py-3 border-b bg-gradient-to-r from-violet-50 to-indigo-50 flex-shrink-0'>
-            <div className='flex items-center gap-3 mb-3'>
-              <Avatar className='h-8 w-8 border-2 border-violet-200'>
-                <AvatarFallback className='text-sm bg-gradient-to-r from-violet-500 to-indigo-500 text-white font-semibold'>
-                  {activeRequest.orderItem.designRequest.username?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className='flex-1'>
-                <span className='text-sm font-semibold text-gray-800'>
-                  {activeRequest.orderItem.designRequest.username || 'Khách hàng'}
-                </span>
-                <div className='flex items-center gap-2 text-xs text-violet-600'>
-                  <div className='h-2 w-2 bg-green-500 rounded-full'></div>
-                  <span>Đang hoạt động</span>
+          <div className='px-2 py-2 border-b bg-gradient-to-br from-violet-50 via-white to-indigo-50 flex-shrink-0'>
+            {/* Collapsible Header */}
+            <div className='flex items-center justify-between mb-3'>
+              <h4 className='text-sm font-medium text-gray-700'>Thông tin khách hàng</h4>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => setIsCustomerInfoCollapsed(!isCustomerInfoCollapsed)}
+                className='h-6 w-6 p-0 hover:bg-violet-100'
+              >
+                {isCustomerInfoCollapsed ? (
+                  <ChevronDown className='w-4 h-4 text-violet-600' />
+                ) : (
+                  <ChevronDown className='w-4 h-4 text-violet-600 rotate-180' />
+                )}
+              </Button>
+            </div>
+
+            {/* Collapsible Content */}
+            {!isCustomerInfoCollapsed && (
+              <>
+                {/* Customer Info Row */}
+                <div className='flex items-center gap-3 mb-4'>
+                  <Avatar className='h-10 w-10 border-2 border-violet-200 shadow-sm'>
+                    <AvatarFallback className='text-sm bg-gradient-to-r from-violet-500 to-indigo-500 text-white font-semibold'>
+                      {activeRequest.orderItem.designRequest.username?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className='flex-1'>
+                    <div className='flex items-center gap-2 mb-1'>
+                      <span className='text-sm font-semibold text-gray-800'>
+                        {activeRequest.orderItem.designRequest.username || 'Khách hàng'}
+                      </span>
+                      <div className='flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded-full'>
+                        <div className='h-2 w-2 bg-green-500 rounded-full animate-pulse'></div>
+                        <span className='text-xs text-green-700 font-medium'>Đang hoạt động</span>
+                      </div>
+                    </div>
+                    <p className='text-xs text-gray-500'>Đơn hàng #{activeRequest.orderCode}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            <div className='grid grid-cols-2 gap-3 text-xs'>
-              <div className='flex items-center gap-2 text-gray-600 bg-white/60 px-2 py-1.5 rounded-lg'>
-                <Calendar className='w-3 h-3' />
-                <span className='font-medium'>Đơn: {activeRequest.orderCode}</span>
-              </div>
-              <div className='flex items-center gap-2 text-gray-600 bg-white/60 px-2 py-1.5 rounded-lg'>
-                <Camera className='w-3 h-3' />
-                <span className='truncate font-medium'>
-                  {activeRequest.orderItem.designRequest.description?.slice(0, 15) || 'Thiết kế'}...
-                </span>
-              </div>
-            </div>
+
+                {/* Order Details Row */}
+                <div className='flex items-center gap-3'>
+                  <div className='flex items-center gap-2 px-3 py-2 bg-white/80 rounded-lg border border-violet-100 shadow-sm'>
+                    <Calendar className='w-4 h-4 text-violet-600' />
+                    <span className='text-sm font-medium text-gray-700'>Đơn: {activeRequest.orderCode}</span>
+                  </div>
+                  <div className='flex items-center gap-2 px-3 py-2 bg-white/80 rounded-lg border border-violet-100 shadow-sm flex-1'>
+                    <Camera className='w-4 h-4 text-violet-600' />
+                    <span className='text-sm text-gray-700 truncate'>
+                      {activeRequest.orderItem.designRequest.description || 'Thiết kế đầm bầu'}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -194,21 +219,23 @@ export const ChatPanel = ({
                     className={`flex ${message.senderId === user?.userId ? 'justify-end' : 'justify-start'} mb-3`}
                   >
                     <div className={`max-w-[80%] ${message.senderId === user?.userId ? 'order-2' : 'order-1'}`}>
-                      <div className={`p-3 rounded-lg shadow-sm ${
-                        message.senderId === user?.userId 
-                          ? 'bg-violet-600 text-white' 
-                          : 'bg-white text-gray-800 border border-gray-200'
-                      }`}>
-                        <MessageContent 
-                          message={message.message} 
+                      <div
+                        className={`p-3 rounded-lg shadow-sm ${
+                          message.senderId === user?.userId
+                            ? 'bg-violet-600 text-white'
+                            : 'bg-white text-gray-800 border border-gray-200'
+                        }`}
+                      >
+                        <MessageContent
+                          message={message.message}
                           type={typeof message.type === 'number' ? message.type : Number(message.type) || 0}
                           className={message.senderId === user?.userId ? 'text-white' : ''}
                         />
-                        <p className={`text-xs mt-2 ${
-                          message.senderId === user?.userId 
-                            ? 'text-violet-100' 
-                            : 'text-gray-500'
-                        }`}>
+                        <p
+                          className={`text-xs mt-2 ${
+                            message.senderId === user?.userId ? 'text-violet-100' : 'text-gray-500'
+                          }`}
+                        >
                           {message.senderName} • {new Date(message.timestamp).toLocaleTimeString('vi-VN')}
                         </p>
                       </div>
@@ -235,8 +262,32 @@ export const ChatPanel = ({
                 </Button>
               </div>
             )}
-            
-            <div className='flex gap-2'>
+
+            <div className='flex gap-2 items-center'>
+              {/* Image upload */}
+              <input
+                id='chat-image-input'
+                type='file'
+                accept='image/*'
+                className='hidden'
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file && onSendImage) {
+                    onSendImage(file)
+                    e.currentTarget.value = ''
+                  }
+                }}
+              />
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                className='px-2'
+                onClick={() => document.getElementById('chat-image-input')?.click()}
+                title='Gửi hình ảnh'
+              >
+                <Camera className='w-4 h-4' />
+              </Button>
               <Input
                 placeholder='Nhập tin nhắn...'
                 value={newMessage}

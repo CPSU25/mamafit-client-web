@@ -38,7 +38,7 @@ export const userListSchema = z.array(userSchema)
 // Helper function to transform ManageUserType to User format
 export const transformManageUserToUser = (apiUser: ManageUserType): User => {
   const status: UserStatus = apiUser.isVerify ? 'active' : 'inactive'
-  
+
   // Safely handle all nullable fields with fallbacks
   const userName = apiUser.userName || 'N/A'
   const dateOfBirth = apiUser.dateOfBirth || 'N/A'
@@ -46,7 +46,7 @@ export const transformManageUserToUser = (apiUser: ManageUserType): User => {
   const roleName = apiUser.roleName || 'N/A'
   const jobTitle = apiUser.jobTitle || 'N/A'
   const fullName = apiUser.fullName || 'N/A'
-  
+
   // Map roleName to role enum, default to 'user' if unknown
   const role = (() => {
     const normalizedRole = roleName.toLowerCase()

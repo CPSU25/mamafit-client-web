@@ -26,9 +26,7 @@ export const DesignRequestHeader = ({
         <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
           Quản Lý Yêu Cầu Thiết Kế
         </h1>
-        <p className='text-sm text-muted-foreground'>
-          Quản lý và theo dõi các yêu cầu thiết kế từ khách hàng
-        </p>
+        <p className='text-sm text-muted-foreground'>Quản lý và theo dõi các yêu cầu thiết kế từ khách hàng</p>
       </div>
 
       <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>

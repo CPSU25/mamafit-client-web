@@ -1,9 +1,7 @@
 import {
   LayoutDashboard,
-  User,
   Users,
   Settings,
-  ShoppingCart,
   Package,
   Palette,
   FolderOpen,
@@ -102,7 +100,6 @@ export const sidebarData: SidebarData = {
           title: 'Vận hành',
           items: [
             { title: 'Quản lý lịch hẹn', url: 'manage-appointment', icon: CalendarDays, badge: '12' },
-            { title: 'Thu ngân', url: 'cashier', icon: ShoppingCart },
             {
               title: 'Quản lý đơn hàng',
               icon: Package,
@@ -125,10 +122,6 @@ export const sidebarData: SidebarData = {
             { title: 'Tin nhắn khách hàng', url: 'messages', icon: MessagesSquare, badge: '8' }
             // { title: 'Check-in/Check-out', url: 'check-in-out', icon: UserCheck }
           ]
-        },
-        {
-          title: 'Cài đặt',
-          items: [{ title: 'Thông tin cá nhân', url: 'profile', icon: User }]
         }
       ]
     },
@@ -164,10 +157,6 @@ export const sidebarData: SidebarData = {
             { title: 'Chat với khách hàng', url: 'messages', icon: MessagesSquare, badge: '4' }
             // { title: 'Phản hồi thiết kế', url: 'design-feedback', icon: FileText }
           ]
-        },
-        {
-          title: 'Cài đặt',
-          items: [{ title: 'Hồ sơ cá nhân', url: 'profile', icon: User }]
         }
       ]
     },
