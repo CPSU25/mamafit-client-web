@@ -94,9 +94,9 @@ export interface ProductTaskGroup {
   measurement: MeasurementType
   orderCode: string
   orderStatus: OrderStatus
-  preset: PresetType
+  preset: PresetType | null // Có thể null cho READY_TO_BUY items
   milestones: MilestoneUI[]
-  maternityDressDetail: MaternityDressDetailType
+  maternityDressDetail: MaternityDressDetailType | null // Có thể null cho PRESET items
   orderItemId: string // ID của order item để update task status
   orderId: string // ID của order để tạo shipping
   addressId?: string

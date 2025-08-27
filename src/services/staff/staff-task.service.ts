@@ -29,7 +29,12 @@ const transformStaffDataForUI = (data: StaffOrderTaskItem[]): ProductTaskGroup[]
 
   return data
     .map((staffOrderTaskItem) => {
-      if (!staffOrderTaskItem.orderItem?.preset) {
+      // Kiểm tra cả preset và maternityDressDetail
+      const hasPreset = staffOrderTaskItem.orderItem?.preset
+      const hasMaternityDressDetail = staffOrderTaskItem.orderItem?.maternityDressDetail
+      
+      if (!hasPreset && !hasMaternityDressDetail) {
+        console.warn('Order item has neither preset nor maternityDressDetail:', staffOrderTaskItem.orderItem?.id)
         return null
       }
 
@@ -71,7 +76,7 @@ const transformStaffDataForUI = (data: StaffOrderTaskItem[]): ProductTaskGroup[]
       })
 
       const result = {
-        preset: staffOrderTaskItem.orderItem.preset,
+        preset: staffOrderTaskItem.orderItem.preset || null, // Có thể null cho READY_TO_BUY
         milestones: milestonesUI.sort((a, b) => a.sequenceOrder - b.sequenceOrder),
         orderItemId: staffOrderTaskItem.orderItem.id,
         orderId: staffOrderTaskItem.orderItem.orderId,
@@ -80,7 +85,7 @@ const transformStaffDataForUI = (data: StaffOrderTaskItem[]): ProductTaskGroup[]
         measurement: staffOrderTaskItem.measurement, // Thêm measurement
         addressId: staffOrderTaskItem.addressId, // Thêm addressId
         orderItem: staffOrderTaskItem.orderItem, // Thêm orderItem để component có thể truy cập addOnOptions
-        maternityDressDetail: staffOrderTaskItem.orderItem.maternityDressDetail // Thêm maternityDressDetail
+        maternityDressDetail: staffOrderTaskItem.orderItem.maternityDressDetail || null // Thêm maternityDressDetail
       }
 
       return result
