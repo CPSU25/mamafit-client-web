@@ -146,40 +146,42 @@ const SidebarMenuCollapsible = ({ item, href }: { item: NavCollapsible; href: st
 
         <CollapsibleContent className='CollapsibleContent'>
           <SidebarMenuSub className='ml-3 border-l-2 border-violet-100 dark:border-violet-900/50'>
-            {item.items.map((subItem) => {
-              if (!('url' in subItem) || !subItem.url) {
-                return null
-              }
-              const isSubActive = checkIsActive(href, subItem)
-              return (
-                <SidebarMenuSubItem key={subItem.title}>
-                  <SidebarMenuSubButton
-                    asChild
-                    isActive={isSubActive}
-                    className={cn(
-                      'relative pl-6 transition-all duration-300',
-                      'hover:bg-violet-50 dark:hover:bg-violet-950/30',
-                      isSubActive &&
-                        'bg-violet-100 dark:bg-violet-950/50 text-violet-900 dark:text-violet-100 font-semibold'
-                    )}
-                  >
-                    <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
-                      {/* Active dot indicator */}
-                      <Circle
-                        className={cn(
-                          'absolute left-[-7px] size-2.5 transition-all duration-300',
-                          isSubActive ? 'fill-violet-500 text-violet-500' : 'text-violet-200 dark:text-violet-800'
-                        )}
-                      />
+            {item.items
+              .filter((subItem) => !subItem.disabled)
+              .map((subItem) => {
+                if (!('url' in subItem) || !subItem.url) {
+                  return null
+                }
+                const isSubActive = checkIsActive(href, subItem)
+                return (
+                  <SidebarMenuSubItem key={subItem.title}>
+                    <SidebarMenuSubButton
+                      asChild
+                      isActive={isSubActive}
+                      className={cn(
+                        'relative pl-6 transition-all duration-300',
+                        'hover:bg-violet-50 dark:hover:bg-violet-950/30',
+                        isSubActive &&
+                          'bg-violet-100 dark:bg-violet-950/50 text-violet-900 dark:text-violet-100 font-semibold'
+                      )}
+                    >
+                      <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
+                        {/* Active dot indicator */}
+                        <Circle
+                          className={cn(
+                            'absolute left-[-7px] size-2.5 transition-all duration-300',
+                            isSubActive ? 'fill-violet-500 text-violet-500' : 'text-violet-200 dark:text-violet-800'
+                          )}
+                        />
 
-                      {subItem.icon && <subItem.icon className='size-4' />}
-                      <span>{subItem.title}</span>
-                      {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
-                    </Link>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              )
-            })}
+                        {subItem.icon && <subItem.icon className='size-4' />}
+                        <span>{subItem.title}</span>
+                        {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                )
+              })}
           </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>
@@ -216,33 +218,33 @@ const SidebarMenuCollapsedDropdown = ({ item, href }: { item: NavCollapsible; hr
           <DropdownMenuLabel className='text-violet-600 dark:text-violet-400'>{item.title}</DropdownMenuLabel>
           <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
 
-          {item.items.map((sub) => {
-            // *** SỬA LỖI Ở ĐÂY: THÊM TYPE GUARD ***
-            // Chỉ render những mục con là link (có url), bỏ qua những mục là nhóm con.
-            if (!('url' in sub) || !sub.url) {
-              return null
-            }
+          {item.items
+            .filter((sub) => !sub.disabled)
+            .map((sub) => {
+              if (!('url' in sub) || !sub.url) {
+                return null
+              }
 
-            // Từ đây trở xuống, TypeScript đã hiểu `sub` chắc chắn là NavLink và `sub.url` là `string`
-            return (
-              <DropdownMenuItem
-                key={`${sub.title}-${sub.url}`}
-                asChild
-                className={cn(
-                  'cursor-pointer transition-colors',
-                  checkIsActive(href, sub) && 'bg-violet-100 dark:bg-violet-900/50 text-violet-900 dark:text-violet-100'
-                )}
-              >
-                <Link to={sub.url} className='flex items-center gap-2'>
-                  {sub.icon && <sub.icon className='size-4' />}
-                  <span className='flex-1'>{sub.title}</span>
-                  {sub.badge && (
-                    <span className='text-xs font-bold text-violet-600 dark:text-violet-400'>{sub.badge}</span>
+              return (
+                <DropdownMenuItem
+                  key={`${sub.title}-${sub.url}`}
+                  asChild
+                  className={cn(
+                    'cursor-pointer transition-colors',
+                    checkIsActive(href, sub) &&
+                      'bg-violet-100 dark:bg-violet-900/50 text-violet-900 dark:text-violet-100'
                   )}
-                </Link>
-              </DropdownMenuItem>
-            )
-          })}
+                >
+                  <Link to={sub.url} className='flex items-center gap-2'>
+                    {sub.icon && <sub.icon className='size-4' />}
+                    <span className='flex-1'>{sub.title}</span>
+                    {sub.badge && (
+                      <span className='text-xs font-bold text-violet-600 dark:text-violet-400'>{sub.badge}</span>
+                    )}
+                  </Link>
+                </DropdownMenuItem>
+              )
+            })}
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>

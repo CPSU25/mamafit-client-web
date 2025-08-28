@@ -27,7 +27,8 @@ import {
   // Bell,
   Shield,
   PenTool,
-  Bell
+  Bell,
+  Eye
 } from 'lucide-react'
 import { SidebarData } from '../types'
 
@@ -51,11 +52,10 @@ export const sidebarData: SidebarData = {
             { title: 'Quản lý người dùng', url: 'manage-user', icon: Users },
             {
               title: 'Quản lý đơn hàng',
-              icon: Package,
+              icon: Package2,
               items: [
                 { title: 'Tất cả đơn hàng', url: 'manage-order', icon: Package2 },
-                { title: 'Yêu cầu thiết kế', url: 'manage-order/design-request', icon: PenTool },
-                { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: Shield }
+                { title: 'Chi tiết đơn hàng', url: 'manage-order/:orderId', icon: Eye, disabled: true }
               ]
             },
             {
