@@ -55,6 +55,8 @@ export const sidebarData: SidebarData = {
               icon: Package2,
               items: [
                 { title: 'Tất cả đơn hàng', url: 'manage-order', icon: Package2 },
+                { title: 'Đơn hàng bảo hành', url: 'manage-order/warranty', icon: Shield },
+                { title: 'Đơn hàng yêu cầu thiết kế', url: 'manage-order/design-request', icon: PenTool },
                 { title: 'Chi tiết đơn hàng', url: 'manage-order/:orderId', icon: Eye, disabled: true }
               ]
             },
