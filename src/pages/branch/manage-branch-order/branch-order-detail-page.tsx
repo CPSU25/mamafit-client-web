@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 
@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
 
@@ -17,8 +16,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  MessageSquare,
-  Send,
   Package,
   ShoppingBag,
   User,
@@ -40,24 +37,6 @@ import { ItemType, type OrderItemType } from '@/@types/manage-order.types'
 const CURRENCY_LOCALE = 'vi-VN'
 const CURRENCY_CODE = 'VND'
 const DATE_FORMAT = 'DD/MM/YYYY HH:mm'
-
-// Mock data for chat (will be replaced with real data later)
-const MOCK_CHAT_MESSAGES = [
-  {
-    id: 1,
-    sender: 'Khách hàng',
-    message: 'Xin chào!',
-    time: '9:00 pm',
-    isCustomer: true
-  },
-  {
-    id: 2,
-    sender: 'Nhân viên chi nhánh',
-    message: 'Chào bạn! Đơn hàng của bạn đang được xử lý. Cảm ơn bạn đã tin tưởng MamaFit.',
-    time: '9:10 pm',
-    isCustomer: false
-  }
-] as const
 
 // Status timeline configuration cho Branch
 const ORDER_STATUS_FLOW = [
@@ -112,7 +91,6 @@ const getStatusTimeline = (currentStatus?: string) => {
 export default function BranchOrderDetailPage() {
   const { orderId } = useParams()
   const navigate = useNavigate()
-  const [chatMessage, setChatMessage] = useState('')
 
   // Data fetching
   const { data: orderDetail } = useOrder(orderId ?? '')
@@ -128,12 +106,6 @@ export default function BranchOrderDetailPage() {
   const statusTimeline = useMemo(() => getStatusTimeline(orderDetail?.data?.status), [orderDetail?.data?.status])
 
   // Event handlers
-  const handleSendMessage = useCallback(() => {
-    if (chatMessage.trim()) {
-      console.log('Sending message:', chatMessage)
-      setChatMessage('')
-    }
-  }, [chatMessage])
 
   const handleNavigateBack = useCallback(() => {
     navigate('/system/branch/manage-branch-order')
@@ -181,8 +153,8 @@ export default function BranchOrderDetailPage() {
   const order = orderDetail.data
 
   return (
-    <Main>
-      <div className='container space-y-4'>
+    <Main className='space-y-6'>
+      <div className=''>
         {/* Header với gradient tím đẹp mắt */}
         <div className='relative overflow-hidden rounded-2xl border-2 border-violet-200 dark:border-violet-800 shadow-xl shadow-violet-100/50 dark:shadow-violet-900/20'>
           <div className='absolute inset-0 bg-gradient-to-r from-violet-600 via-violet-500 to-purple-600 dark:from-violet-700 dark:via-violet-600 dark:to-purple-700' />
@@ -858,53 +830,6 @@ export default function BranchOrderDetailPage() {
                       </div>
                     )
                   })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Chat Section */}
-            <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card'>
-              <CardHeader className='pb-3'>
-                <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
-                  <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
-                    <MessageSquare className='h-5 w-5 text-violet-600 dark:text-violet-400' />
-                  </div>
-                  Trò chuyện với khách hàng
-                </CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-3'>
-                <div className='space-y-3 max-h-48 overflow-y-auto custom-scrollbar'>
-                  {MOCK_CHAT_MESSAGES.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`p-3 rounded-lg transition-colors ${
-                        msg.isCustomer
-                          ? 'bg-violet-50/50 dark:bg-violet-950/20 border border-violet-200 dark:border-violet-700'
-                          : 'bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40 ml-8 border border-violet-300 dark:border-violet-600'
-                      }`}
-                    >
-                      <p className='font-medium text-sm text-violet-700 dark:text-violet-300'>{msg.sender}</p>
-                      <p className='text-sm mt-1 text-foreground'>{msg.message}</p>
-                      <span className='text-xs text-violet-500 dark:text-violet-400 mt-1 block'>{msg.time}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className='flex gap-2'>
-                  <Input
-                    placeholder='Nhập tin nhắn...'
-                    value={chatMessage}
-                    onChange={(e) => setChatMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    className='flex-1 border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400'
-                  />
-                  <Button
-                    size='sm'
-                    onClick={handleSendMessage}
-                    className='bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25'
-                  >
-                    <Send className='h-4 w-4' />
-                  </Button>
                 </div>
               </CardContent>
             </Card>

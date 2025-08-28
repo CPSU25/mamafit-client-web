@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { BranchOrderType } from '@/@types/branch-order.types'
 import { OrderStatus } from '@/@types/manage-order.types'
 import { Button } from '@/components/ui/button'
@@ -11,10 +10,9 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { CheckCircle2, Star } from 'lucide-react'
 import { toast } from 'sonner'
+import { useCompleteOrder } from '@/services/branch/branch-order.service'
 
 interface BranchOrderCompleteDialogProps {
   open: boolean
@@ -23,28 +21,19 @@ interface BranchOrderCompleteDialogProps {
 }
 
 export function BranchOrderCompleteDialog({ open, onOpenChange, order }: BranchOrderCompleteDialogProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [notes, setNotes] = useState('')
+  // Sử dụng hook useCompleteOrder
+  const completeOrderMutation = useCompleteOrder(order?.id || '')
 
   if (!order) return null
 
   const handleCompleteOrder = async () => {
     try {
-      setIsLoading(true)
-
-      // TODO: Gọi API để hoàn thành đơn hàng
-      // await completeBranchOrder(order.id, { notes })
-
+      await completeOrderMutation.mutateAsync()
       toast.success('Đã hoàn thành đơn hàng thành công')
       onOpenChange(false)
-
-      // Refresh data if needed
-      // queryClient.invalidateQueries(['branch-orders'])
     } catch (error) {
       console.error('Error completing order:', error)
       toast.error('Có lỗi xảy ra khi hoàn thành đơn hàng')
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -107,20 +96,6 @@ export function BranchOrderCompleteDialog({ open, onOpenChange, order }: BranchO
             </div>
           </div>
 
-          {/* Notes */}
-          <div className='space-y-2'>
-            <Label htmlFor='notes' className='text-sm font-medium'>
-              Ghi chú hoàn thành (tùy chọn)
-            </Label>
-            <Textarea
-              id='notes'
-              placeholder='Thêm ghi chú về việc giao hàng hoặc dịch vụ bảo hành...'
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className='min-h-[80px]'
-            />
-          </div>
-
           {!canComplete && (
             <div className='bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3'>
               <p className='text-sm text-yellow-800 dark:text-yellow-200'>
@@ -131,15 +106,15 @@ export function BranchOrderCompleteDialog({ open, onOpenChange, order }: BranchO
         </div>
 
         <DialogFooter className='gap-2'>
-          <Button variant='outline' onClick={() => onOpenChange(false)} disabled={isLoading}>
+          <Button variant='outline' onClick={() => onOpenChange(false)} disabled={completeOrderMutation.isPending}>
             Hủy
           </Button>
           <Button
             onClick={handleCompleteOrder}
-            disabled={isLoading || !canComplete}
+            disabled={completeOrderMutation.isPending || !canComplete}
             className='bg-green-600 hover:bg-green-700'
           >
-            {isLoading ? (
+            {completeOrderMutation.isPending ? (
               <>
                 <div className='animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2' />
                 Đang xử lý...

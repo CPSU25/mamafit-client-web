@@ -18,3 +18,13 @@ export const useReceiveAtBranch = (orderId: string) => {
     }
   })
 }
+
+export const useCompleteOrder = (orderId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => branchOrderAPI.completeOrder(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['branch-orders'] })
+    }
+  })
+}

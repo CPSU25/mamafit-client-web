@@ -5,7 +5,7 @@ import { DataTableFacetedFilter } from '../../components/data-table-faceted-filt
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { X, Search, Calendar, Plus, Filter, Download, RefreshCw } from 'lucide-react'
+import { X, Search, Calendar, Plus, Filter } from 'lucide-react'
 import { orderStatusOptions, paymentStatusOptions, paymentMethodOptions } from '../data/data'
 
 interface DataTableToolbarProps<TData> {
@@ -24,7 +24,6 @@ export function BranchOrderTableToolbar<TData>({
 
   return (
     <div className='space-y-4'>
-      {/* Top row - Search and primary actions */}
       <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
         <div className='flex flex-1 items-center space-x-3'>
           {/* Enhanced Search */}
@@ -52,24 +51,6 @@ export function BranchOrderTableToolbar<TData>({
 
         {/* Primary Actions */}
         <div className='flex items-center space-x-2'>
-          <Button
-            variant='outline'
-            size='sm'
-            className='h-10 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
-          >
-            <RefreshCw className='mr-2 h-4 w-4' />
-            Làm mới
-          </Button>
-
-          <Button
-            variant='outline'
-            size='sm'
-            className='h-10 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
-          >
-            <Download className='mr-2 h-4 w-4' />
-            Xuất Excel
-          </Button>
-
           {onCreateNew && (
             <Button
               onClick={onCreateNew}
