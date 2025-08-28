@@ -13,6 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Package, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { useReceiveAtBranch } from '@/services/branch/branch-order.service'
 
 interface BranchOrderReceiveDialogProps {
   open: boolean
@@ -22,15 +23,14 @@ interface BranchOrderReceiveDialogProps {
 
 export function BranchOrderReceiveDialog({ open, onOpenChange, order }: BranchOrderReceiveDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
-
+  const { mutateAsync } = useReceiveAtBranch(order?.id || '')
   if (!order) return null
 
   const handleReceiveOrder = async () => {
     try {
       setIsLoading(true)
 
-      // TODO: Gọi API để cập nhật trạng thái đơn hàng đã nhận
-      // await updateBranchOrderStatus(order.id, 'RECEIVED')
+      await mutateAsync()
 
       toast.success('Đã xác nhận nhận hàng thành công')
       onOpenChange(false)

@@ -36,6 +36,7 @@ export interface BranchOrderType {
   status: OrderStatus
   totalAmount: number | null
   shippingFee: number | null
+  receivedAtBranch: string | null
   serviceAmount: number | null
   paymentStatus: PaymentStatus | null
   paymentMethod: PaymentMethod | null

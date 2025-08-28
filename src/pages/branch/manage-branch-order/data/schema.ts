@@ -92,6 +92,7 @@ export const transformOrderData = (order: Partial<BranchOrderType>): BranchOrder
     canceledReason: order.canceledReason || null,
     subTotalAmount: order.subTotalAmount || null,
     warrantyCode: order.warrantyCode || null,
+    receivedAtBranch: order.receivedAtBranch || null,
     type: order.type || TypeOrder.NORMAL,
     status: order.status || OrderStatus.CREATED,
     addressId: order.addressId || '',

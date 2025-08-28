@@ -20,7 +20,7 @@ interface BranchOrderDetailSidebarProps {
 
 export function BranchOrderDetailSidebar({ order, isOpen, onClose }: BranchOrderDetailSidebarProps) {
   const navigate = useNavigate()
-
+  console.log(order)
   // Fetch user information
   const { data: userData, isLoading: userLoading } = useGetUserById(order?.userId || '')
 
@@ -255,11 +255,11 @@ export function BranchOrderDetailSidebar({ order, isOpen, onClose }: BranchOrder
               <span className='text-sm text-muted-foreground'>Cập nhật:</span>
               <span className='text-sm font-medium'>{format(new Date(order.updatedAt), 'dd/MM/yyyy HH:mm')}</span>
             </div>
-            {order.receivedAt && (
+            {order.receivedAtBranch && (
               <div className='flex justify-between items-center'>
-                <span className='text-sm text-muted-foreground'>Đã nhận:</span>
+                <span className='text-sm text-muted-foreground'>Đã nhận tại cửa hàng:</span>
                 <span className='text-sm font-medium text-green-600'>
-                  {format(new Date(order.receivedAt), 'dd/MM/yyyy HH:mm')}
+                  {format(new Date(order.receivedAtBranch), 'dd/MM/yyyy HH:mm')}
                 </span>
               </div>
             )}
