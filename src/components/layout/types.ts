@@ -15,6 +15,7 @@ interface BaseNavItem {
   title: string
   badge?: string
   icon?: ElementType
+  disabled?: boolean // Thêm thuộc tính disabled
 }
 
 // --- ĐỊNH NGHĨA LẠI ĐỂ CHẶT CHẼ HƠN ---

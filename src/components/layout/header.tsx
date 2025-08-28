@@ -44,9 +44,22 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
     // Xử lý cho nested routes như /system/admin/manage-order/design-request
     const relevantPath = pathSegments.slice(2).join('/') || 'dashboard' // Bỏ qua /system/admin
 
+    // Xử lý dynamic routes như manage-order/:orderId
+    const basePath = relevantPath.split('/')[0]
+
     for (const navGroup of currentRole.navGroups) {
       for (const navItem of navGroup.items) {
+        // Kiểm tra exact match trước
         if (navItem.url === relevantPath) {
+          return {
+            title: navItem.title,
+            groupTitle: navGroup.title,
+            icon: navItem.icon
+          }
+        }
+
+        // Kiểm tra base path match (cho dynamic routes)
+        if (navItem.url === basePath) {
           return {
             title: navItem.title,
             groupTitle: navGroup.title,
@@ -57,6 +70,16 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
         if ('items' in navItem && navItem.items) {
           for (const subItem of navItem.items) {
             if (subItem.url === relevantPath) {
+              return {
+                title: subItem.title,
+                groupTitle: navGroup.title,
+                parentTitle: navItem.title,
+                icon: subItem.icon || navItem.icon
+              }
+            }
+
+            // Kiểm tra base path match cho sub-items
+            if (subItem.url === basePath) {
               return {
                 title: subItem.title,
                 groupTitle: navGroup.title,
