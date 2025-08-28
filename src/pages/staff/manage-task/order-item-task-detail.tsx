@@ -71,7 +71,7 @@ export default function OrderItemDetailPage() {
     )
   }
 
-  const { preset, milestones, orderId, orderCode, measurement, orderItem } = orderItemData
+  const { preset, milestones, orderId, orderCode, measurement, orderItem, maternityDressDetail } = orderItemData
 
   const totalTasks = milestones.reduce((sum, milestone) => sum + milestone.maternityDressTasks.length, 0)
   const completedTasks = milestones.reduce(
@@ -87,7 +87,16 @@ export default function OrderItemDetailPage() {
   // Tính tổng giá trị add-ons từ orderItem.addOnOptions
   const totalAddOnPrice =
     orderItem?.addOnOptions?.reduce((sum: number, addon: AddOnOption) => sum + addon.price, 0) || 0
-  const totalPrice = preset.price + totalAddOnPrice
+
+  // Xác định giá cơ bản từ preset hoặc maternityDressDetail
+  const basePrice = preset?.price ?? maternityDressDetail?.price ?? 0
+  const totalPrice = basePrice + totalAddOnPrice
+
+  // Xác định thông tin hiển thị
+  const displayName = preset?.styleName ?? maternityDressDetail?.name ?? '—'
+  const displaySku = preset?.sku ?? maternityDressDetail?.sku ?? '—'
+  const displayType = preset?.type ?? 'READY_TO_BUY'
+  const displayImage = preset?.images?.[0] ?? maternityDressDetail?.image?.[0] ?? ''
 
   // Lấy status badge color
   const getStatusBadgeVariant = (status: string) => {
@@ -166,8 +175,8 @@ export default function OrderItemDetailPage() {
             <CardContent className='space-y-4'>
               <div className='aspect-square w-full rounded-xl overflow-hidden shadow-md '>
                 <ProductImageViewer
-                  src={preset?.images?.[0] || orderItem?.maternityDressDetail?.image?.[0] || ''}
-                  alt={preset.styleName}
+                  src={displayImage}
+                  alt={displayName}
                   containerClassName='aspect-square w-110 rounded-lg border-2 border-violet-200 dark:border-violet-700'
                   imgClassName='px-2'
                   fit='contain'
@@ -176,15 +185,30 @@ export default function OrderItemDetailPage() {
 
               <div className='space-y-4'>
                 <div className='text-center'>
-                  <h3 className='font-bold text-xl text-gray-900 mb-2'>{preset.styleName}</h3>
+                  <h3 className='font-bold text-xl text-gray-900 mb-2'>{displayName}</h3>
                   <div className='flex items-center justify-center gap-2'>
                     <Badge variant='secondary' className='px-3 py-1'>
-                      {preset.type}
+                      {displayType}
                     </Badge>
                     <Badge variant='outline' className='px-3 py-1'>
-                      SKU: {preset.sku}
+                      SKU: {displaySku}
                     </Badge>
                   </div>
+
+                  {/* Hiển thị thông tin bổ sung cho READY_TO_BUY */}
+                  {maternityDressDetail && !preset && (
+                    <div className='mt-3 space-y-2'>
+                      <div className='flex items-center justify-center gap-2'>
+                        <Badge variant='outline' className='px-2 py-1 text-xs'>
+                          Size: {maternityDressDetail.size}
+                        </Badge>
+                        <Badge variant='outline' className='px-2 py-1 text-xs'>
+                          Màu: {maternityDressDetail.color}
+                        </Badge>
+                      </div>
+                      <div className='text-sm text-muted-foreground'>Số lượng: {maternityDressDetail.quantity}</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Price Section */}
@@ -203,7 +227,7 @@ export default function OrderItemDetailPage() {
                       <div className='text-sm text-green-600'>
                         <span>
                           Giá gốc:{' '}
-                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(preset.price)}
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(basePrice)}
                         </span>
                         <br />
                         <span>

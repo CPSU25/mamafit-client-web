@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { BranchOrderType } from '@/@types/branch-order.types'
 import useDialogState from '@/hooks/use-dialog-state'
 
-type OrderDialogType = 'view' | 'update' | 'edit' | 'delete' | 'assign-task'
+type OrderDialogType = 'view' | 'edit' | 'receive' | 'complete'
 
 interface BranchOrderContextType {
   open: OrderDialogType | null
