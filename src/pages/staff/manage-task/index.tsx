@@ -24,6 +24,8 @@ import { ProductTaskGroup } from '@/pages/staff/manage-task/tasks/types'
 import { useStaffGetOrderTasks } from '@/services/staff/staff-task.service'
 import { useNavigate } from 'react-router-dom'
 
+type AnyMilestone = { maternityDressTasks: Array<{ status: string }> }
+
 export default function StaffTasksPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -148,9 +150,9 @@ export default function StaffTasksPage() {
 
     const filtered = groupedByOrder.filter((group) => {
       const hasMatchingItems = group.items.some((it) => {
-        const oi = it.base
-        const styleName = oi.preset.styleName || ''
-        const orderItemId = oi.orderItemId || ''
+        const oi = it.base // it.base is ProductTaskGroup
+        const styleName = oi.preset?.styleName ?? oi.maternityDressDetail?.name ?? ''
+        const orderItemId = oi.orderItemId
         const matchesSearch = styleName.toLowerCase().includes(search) || orderItemId.toLowerCase().includes(search)
         const statusOk = status === 'all' ? true : getTaskStatus(oi.milestones) === status
         const priorityOk = !priorityOnly || it.sla.urgency !== 'none'
@@ -339,16 +341,23 @@ export default function StaffTasksPage() {
                 {/* Product Cards Grid */}
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                   {orderGroup.items.map((it) => {
-                    const orderItem = it.base
+                    const orderItem = it.base // it.base is ProductTaskGroup
+                    const displayName = orderItem.preset?.styleName ?? orderItem.maternityDressDetail?.name ?? '—'
+                    const displaySku = orderItem.preset?.sku ?? orderItem.maternityDressDetail?.sku ?? '—'
+                    const displayImage =
+                      orderItem.preset?.images?.[0] ?? orderItem.maternityDressDetail?.image?.[0] ?? ''
+                    const displayPrice = orderItem.preset?.price ?? orderItem.maternityDressDetail?.price ?? 0
+                    const displayOrderItemId = orderItem.orderItemId
                     const totalTasks = orderItem.milestones.reduce(
-                      (sum, milestone) => sum + milestone.maternityDressTasks.length,
+                      (sum: number, milestone: AnyMilestone) => sum + milestone.maternityDressTasks.length,
                       0
                     )
                     const completedTasks = orderItem.milestones.reduce(
-                      (sum, milestone) =>
+                      (sum: number, milestone: AnyMilestone) =>
                         sum +
                         milestone.maternityDressTasks.filter(
-                          (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+                          (task: { status: string }) =>
+                            task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
                         ).length,
                       0
                     )
@@ -356,16 +365,16 @@ export default function StaffTasksPage() {
 
                     return (
                       <Card
-                        key={`grid-${orderItem.orderItemId}`}
+                        key={`grid-${displayOrderItemId}`}
                         className='hover:shadow-lg transition-all duration-300 border-2 hover:border-violet-300'
                       >
                         <CardHeader className='pb-3'>
                           <div className='flex items-start justify-between'>
                             <div className='flex-1'>
-                              <CardTitle className='text-lg text-gray-900 mb-1'>{orderItem.preset.styleName}</CardTitle>
+                              <CardTitle className='text-lg text-gray-900 mb-1'>{displayName}</CardTitle>
                               <div className='flex items-center gap-2 text-sm text-gray-600'>
                                 <Tag className='h-3 w-3' />
-                                <span>SKU: {orderItem.preset.sku}</span>
+                                <span>SKU: {displaySku}</span>
                               </div>
                             </div>
                             {getStatusBadge(getTaskStatus(orderItem.milestones))}
@@ -377,8 +386,8 @@ export default function StaffTasksPage() {
                           <div className='flex items-center gap-4'>
                             <div className='relative'>
                               <img
-                                src={orderItem.preset.images[0]}
-                                alt={orderItem.preset.styleName}
+                                src={displayImage}
+                                alt={displayName}
                                 className='w-20 h-20 rounded-lg object-cover shadow-md border-2 border-gray-100'
                               />
                               {it.sla.urgency === 'overdue' && (
@@ -392,7 +401,7 @@ export default function StaffTasksPage() {
                                 {new Intl.NumberFormat('vi-VN', {
                                   style: 'currency',
                                   currency: 'VND'
-                                }).format(orderItem.preset.price)}
+                                }).format(displayPrice)}
                               </p>
                               <p className='text-sm text-muted-foreground mb-2'>{progress}% hoàn thành</p>
                               <div className='w-full bg-gray-200 rounded-full h-2'>
@@ -470,7 +479,7 @@ export default function StaffTasksPage() {
                           <div className='pt-2'>
                             <Button
                               size='sm'
-                              onClick={() => navigate(`/system/staff/order-item/${orderItem.orderItemId}`)}
+                              onClick={() => navigate(`/system/staff/order-item/${displayOrderItemId}`)}
                               className='w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700'
                             >
                               <Eye className='h-4 w-4 mr-2' />
@@ -508,16 +517,23 @@ export default function StaffTasksPage() {
 
                     <div className='space-y-4'>
                       {orderGroup.items.map((it) => {
-                        const orderItem = it.base
+                        const orderItem = it.base // it.base is ProductTaskGroup
+                        const displayName = orderItem.preset?.styleName ?? orderItem.maternityDressDetail?.name ?? '—'
+                        const displaySku = orderItem.preset?.sku ?? orderItem.maternityDressDetail?.sku ?? '—'
+                        const displayImage =
+                          orderItem.preset?.images?.[0] ?? orderItem.maternityDressDetail?.image?.[0] ?? ''
+                        const displayPrice = orderItem.preset?.price ?? orderItem.maternityDressDetail?.price ?? 0
+                        const displayOrderItemId = orderItem.orderItemId
                         const totalTasks = orderItem.milestones.reduce(
-                          (sum, milestone) => sum + milestone.maternityDressTasks.length,
+                          (sum: number, milestone: AnyMilestone) => sum + milestone.maternityDressTasks.length,
                           0
                         )
                         const completedTasks = orderItem.milestones.reduce(
-                          (sum, milestone) =>
+                          (sum: number, milestone: AnyMilestone) =>
                             sum +
                             milestone.maternityDressTasks.filter(
-                              (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
+                              (task: { status: string }) =>
+                                task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
                             ).length,
                           0
                         )
@@ -525,14 +541,14 @@ export default function StaffTasksPage() {
 
                         return (
                           <div
-                            key={`list-${orderItem.orderItemId}`}
+                            key={`list-${displayOrderItemId}`}
                             className='flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors bg-white'
                           >
                             <div className='flex items-center gap-4'>
                               <div className='relative'>
                                 <img
-                                  src={orderItem.preset.images[0]}
-                                  alt={orderItem.preset.styleName}
+                                  src={displayImage}
+                                  alt={displayName}
                                   className='w-16 h-16 rounded-lg object-cover shadow-sm border-2 border-gray-100'
                                 />
                                 {it.sla.urgency === 'overdue' && (
@@ -542,9 +558,9 @@ export default function StaffTasksPage() {
                                 )}
                               </div>
                               <div>
-                                <h3 className='font-semibold text-gray-900'>{orderItem.preset.styleName}</h3>
-                                <p className='text-sm text-gray-600 mb-1'>SKU: {orderItem.preset.sku}</p>
-                                <p className='text-sm text-gray-600 mb-2'>Order Item: {orderItem.orderItemId}</p>
+                                <h3 className='font-semibold text-gray-900'>{displayName}</h3>
+                                <p className='text-sm text-gray-600 mb-1'>SKU: {displaySku}</p>
+                                <p className='text-sm text-gray-600 mb-2'>Order Item: {displayOrderItemId}</p>
                                 <div className='flex flex-wrap items-center gap-2'>
                                   <span className='text-sm text-muted-foreground'>
                                     {completedTasks}/{totalTasks} nhiệm vụ • {progress}% hoàn thành
@@ -583,14 +599,14 @@ export default function StaffTasksPage() {
                                   {new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
                                     currency: 'VND'
-                                  }).format(orderItem.preset.price)}
+                                  }).format(displayPrice)}
                                 </p>
                                 {getStatusBadge(getTaskStatus(orderItem.milestones))}
                               </div>
                               <Button
                                 variant='outline'
                                 size='sm'
-                                onClick={() => navigate(`/system/staff/order-item/${orderItem.orderItemId}`)}
+                                onClick={() => navigate(`/system/staff/order-item/${displayOrderItemId}`)}
                               >
                                 <Eye className='h-4 w-4 mr-2' />
                                 Xem

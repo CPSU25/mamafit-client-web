@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { CreateWarrantyRequestDialog } from './CreateWarrantyRequestDialog'
 import { useSimpleOrderSearch } from '../contexts/OrderSearchContextSimple'
 import type { OrderItemType } from '@/@types/manage-order.types'
+import { ProductImageViewer } from '@/components/ui/image-viewer'
 
 // Product Selection Sidebar Component - Simplified version
 export function ProductSelectionSidebar() {
@@ -88,10 +89,29 @@ export function ProductSelectionSidebar() {
                       onClick={() => toggleItem(item)}
                     >
                       <div className='space-y-2'>
-                        <div className='font-medium'>{item.preset?.name || item.maternityDressDetail?.name}</div>
+                        <div className='flex items-start gap-3'>
+                          <ProductImageViewer
+                            src={item.maternityDressDetail?.image?.[0] || item.preset?.images?.[0] || ''}
+                            alt={item.preset?.name || item.maternityDressDetail?.name || 'product'}
+                            containerClassName='h-12 w-12 rounded-md overflow-hidden bg-muted shrink-0'
+                            imgClassName='!w-full !h-full !object-cover'
+                            fit='cover'
+                            thumbnailClassName='h-12 w-12'
+                          />
+                          <div className='space-y-1'>
+                            <div className='font-medium'>{item.preset?.name || item.maternityDressDetail?.name}</div>
+                            <div className='text-sm text-muted-foreground'>
+                              SKU: {item.preset?.sku || item.maternityDressDetail?.sku}
+                            </div>
+                          </div>
+                        </div>
                         <div className='flex flex-wrap gap-2 text-xs'>
-                          <span className='bg-muted px-2 py-1 rounded'>{item.maternityDressDetail?.color}</span>
-                          <span className='bg-muted px-2 py-1 rounded'>Size: {item.maternityDressDetail?.size}</span>
+                          {item.maternityDressDetail?.color && (
+                            <span className='bg-muted px-2 py-1 rounded'>Màu: {item.maternityDressDetail.color}</span>
+                          )}
+                          {item.maternityDressDetail?.size && (
+                            <span className='bg-muted px-2 py-1 rounded'>Size: {item.maternityDressDetail.size}</span>
+                          )}
                           <span className='bg-muted px-2 py-1 rounded'>SL: {item.quantity}</span>
                           {needsFee && (
                             <span className='bg-amber-100 text-amber-800 px-2 py-1 rounded dark:bg-amber-900/30 dark:text-amber-400'>

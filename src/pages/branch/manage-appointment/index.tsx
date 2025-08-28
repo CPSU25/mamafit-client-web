@@ -19,9 +19,9 @@ import { AppointmentDetailSheet } from './components/appointment-detail-sheet'
 import { ConfirmActionDialog } from './components/confirm-action-dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { Main } from '@/components/layout/main'
 
 const ManageAppointmentPage = () => {
-  // ----- TOÀN BỘ PHẦN LOGIC NÀY KHÔNG THAY ĐỔI -----
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [filters, setFilters] = useState<AppointmentFilters>({})
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
@@ -49,7 +49,6 @@ const ManageAppointmentPage = () => {
 
   const handleDateSelect = (date: Date) => setSelectedDate(date)
   const handleFiltersChange = (newFilters: AppointmentFilters) => {
-    // Cập nhật state của bộ lọc (như cũ)
     setFilters(newFilters)
 
     if (newFilters.dateRange && newFilters.dateRange.from) {
@@ -131,11 +130,9 @@ const ManageAppointmentPage = () => {
   }
   const isAnyMutationLoading = checkInMutation.isPending || checkOutMutation.isPending || cancelMutation.isPending
 
-  // ----- PHẦN GIAO DIỆN (UI/UX) ĐƯỢC REFECTOR -----
-
   if (isLoadingAppointments && !appointmentsData) {
     return (
-      <div className='p-4 md:p-8 space-y-6'>
+      <Main className='space-y-6'>
         <Skeleton className='h-24 w-full' />
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
           <Skeleton className='h-24 w-full' />
@@ -145,92 +142,92 @@ const ManageAppointmentPage = () => {
         </div>
         <Skeleton className='h-20 w-full' />
         <Skeleton className='h-[70vh] w-full' />
-      </div>
+      </Main>
     )
   }
 
   if (appointmentsError) {
     return (
-      <div className='flex h-screen items-center justify-center bg-background'>
-        <div className='text-center'>
-          <h3 className='text-lg font-semibold text-destructive'>Lỗi tải dữ liệu</h3>
-          <p className='text-muted-foreground'>{appointmentsError?.message || 'Không thể kết nối đến máy chủ.'}</p>
-          <Button variant='outline' onClick={() => refetchAppointments()} className='mt-4'>
-            Thử lại
-          </Button>
+      <Main>
+        <div className='flex h-screen items-center justify-center'>
+          <div className='text-center'>
+            <h3 className='text-lg font-semibold text-destructive'>Lỗi tải dữ liệu</h3>
+            <p className='text-muted-foreground'>{appointmentsError?.message || 'Không thể kết nối đến máy chủ.'}</p>
+            <Button variant='outline' onClick={() => refetchAppointments()} className='mt-4'>
+              Thử lại
+            </Button>
+          </div>
         </div>
-      </div>
+      </Main>
     )
   }
 
   return (
-    <div className='min-h-screen w-full bg-background'>
-      <main className='container mx-auto max-w-screen-2xl space-y-6 p-4 md:p-8'>
-        <header className='relative overflow-hidden rounded-lg bg-primary text-primary-foreground shadow-md'>
-          <div className='p-6 md:p-8'>
-            <div className='flex flex-col justify-between gap-4 sm:flex-row sm:items-center'>
-              <div className='flex items-center gap-4'>
-                <div className='rounded-lg bg-primary/20 p-3'>
-                  <CalendarDays className='h-8 w-8' />
-                </div>
-                <div>
-                  <h1 className='text-2xl font-bold md:text-3xl'>Quản lý Lịch hẹn</h1>
-                  <p className='text-sm text-primary-foreground/80'>Theo dõi và quản lý lịch hẹn hiệu quả.</p>
-                </div>
+    <Main className='space-y-6'>
+      <header className='relative overflow-hidden rounded-lg bg-primary text-primary-foreground shadow-md'>
+        <div className='p-6 md:p-8'>
+          <div className='flex flex-col justify-between gap-4 sm:flex-row sm:items-center'>
+            <div className='flex items-center gap-4'>
+              <div className='rounded-lg bg-primary/20 p-3'>
+                <CalendarDays className='h-8 w-8' />
               </div>
-              <div className='text-left sm:text-right'>
-                <p className='text-sm font-medium'>Hôm nay</p>
-                <p className='text-xl font-bold'>{format(new Date(), 'dd/MM/yyyy')}</p>
+              <div>
+                <h1 className='text-2xl font-bold md:text-3xl'>Quản lý Lịch hẹn</h1>
+                <p className='text-sm text-primary-foreground/80'>Theo dõi và quản lý lịch hẹn hiệu quả.</p>
               </div>
             </div>
+            <div className='text-left sm:text-right'>
+              <p className='text-sm font-medium'>Hôm nay</p>
+              <p className='text-xl font-bold'>{format(new Date(), 'dd/MM/yyyy')}</p>
+            </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <section className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-          <AppointmentStatsCards stats={stats} isLoading={isLoadingAppointments} />
-        </section>
+      <section className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+        <AppointmentStatsCards stats={stats} isLoading={isLoadingAppointments} />
+      </section>
 
-        <section className='rounded-lg border bg-card text-card-foreground shadow-sm'>
-          <AppointmentToolbar
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            onCreateAppointment={handleCreateAppointment}
-          />
-        </section>
+      <section className='rounded-lg border bg-card text-card-foreground shadow-sm'>
+        <AppointmentToolbar
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          onCreateAppointment={handleCreateAppointment}
+        />
+      </section>
 
-        <section className='rounded-lg border bg-card text-card-foreground shadow-sm'>
-          <AppointmentCalendarView
-            appointments={appointments}
-            isLoading={isLoadingAppointments}
-            selectedDate={selectedDate}
-            onDateSelect={handleDateSelect}
-            onViewDetail={handleViewDetail}
-            onCheckIn={handleCheckIn}
-            onCheckOut={handleCheckOut}
-            onCancel={handleCancel}
-          />
-        </section>
-
-        <AppointmentDetailSheet
-          appointment={selectedAppointment}
-          isOpen={isDetailSheetOpen}
-          onClose={handleCloseDetailSheet}
+      <section className='rounded-lg border bg-card text-card-foreground shadow-sm'>
+        <AppointmentCalendarView
+          appointments={appointments}
+          isLoading={isLoadingAppointments}
+          selectedDate={selectedDate}
+          onDateSelect={handleDateSelect}
+          onViewDetail={handleViewDetail}
           onCheckIn={handleCheckIn}
           onCheckOut={handleCheckOut}
           onCancel={handleCancel}
         />
+      </section>
 
-        <ConfirmActionDialog
-          isOpen={confirmDialog.isOpen}
-          onClose={handleCloseConfirmDialog}
-          onConfirm={handleConfirmAction}
-          title={confirmDialog.title}
-          description={confirmDialog.description}
-          action={confirmDialog.type || 'cancel'}
-          isLoading={isAnyMutationLoading}
-        />
-      </main>
-    </div>
+      <AppointmentDetailSheet
+        appointment={selectedAppointment}
+        isOpen={isDetailSheetOpen}
+        onClose={handleCloseDetailSheet}
+        onCheckIn={handleCheckIn}
+        onCheckOut={handleCheckOut}
+        onCancel={handleCancel}
+      />
+
+      <ConfirmActionDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleCloseConfirmDialog}
+        onConfirm={handleConfirmAction}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        action={confirmDialog.type || 'cancel'}
+        isLoading={isAnyMutationLoading}
+      />
+    </Main>
   )
 }
 

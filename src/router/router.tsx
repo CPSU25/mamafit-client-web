@@ -23,6 +23,7 @@ import { NotFoundPage, LoginSystem, ChatPage, NotificationSettingPage } from '@/
 import { DesignerDashboard, ManageTemplatePage, ManageDesignRequestPage } from '@/pages/designer'
 import {
   BranchDashboard,
+  BranchOrderDetailPage,
   CashierPage,
   ManageAppointmentPage,
   ManageBranchOrderPage,
@@ -110,6 +111,7 @@ export const router = createBrowserRouter([
             path: 'manage-order',
             element: <ManageBranchOrderPage />
           },
+          { path: 'manage-branch-order/:orderId', element: <BranchOrderDetailPage /> },
           {
             path: 'manage-warranty',
             element: <ManageBranchWarrantyPage />

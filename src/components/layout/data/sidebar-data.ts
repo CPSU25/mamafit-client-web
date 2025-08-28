@@ -16,7 +16,6 @@ import {
   // FileText,
   // BarChart3,
   Clock,
-  AlertCircle,
   Boxes,
   ClipboardList,
   DollarSign,
@@ -103,13 +102,8 @@ export const sidebarData: SidebarData = {
             {
               title: 'Quản lý đơn hàng',
               icon: Package,
-              items: [
-                { title: 'Đơn hàng mới', url: 'manage-order', icon: AlertCircle, badge: '1' }
-                // { title: 'Đang xử lý', url: 'manage-order/processing', icon: Clock },
-                // { title: 'Hoàn thành', url: 'manage-order/completed', icon: CheckCircle }
-              ]
+              url: 'manage-order'
             }
-            // { title: 'Quản lý kho', url: 'manage-inventory', icon: Package2 }
           ]
         },
         {
@@ -181,8 +175,6 @@ export const sidebarData: SidebarData = {
                 { title: 'Quản lý mẫu', url: 'manage-template', icon: Palette }
               ]
             },
-            // { title: 'Yêu cầu thiết kế', url: 'manage-design-request', icon: Award },
-            // { title: 'Đơn hàng sản xuất', url: 'manage-order', icon: Package, badge: '15' },
             {
               title: 'Quản lý đơn hàng',
               icon: Package,

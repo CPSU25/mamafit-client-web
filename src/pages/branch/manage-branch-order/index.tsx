@@ -1,136 +1,203 @@
-// index.tsx - Enhanced Manage Order Page
+// index.tsx - Trang Quản Lý Đơn Hàng Chi Nhánh
 import { useMemo } from 'react'
-import { AlertCircle, Package2 } from 'lucide-react'
+import { Package2, ShoppingCart, Package, CheckCircle, Sparkles, Store } from 'lucide-react'
 
 import { Main } from '@/components/layout/main'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { useGetListUser } from '@/services/admin/manage-user.service'
+import { useGetBranchOrders } from '@/services/branch/branch-order.service'
 
 import { transformOrderData } from './data/schema'
 import { createBranchOrderColumns } from './components/branch-order-columns'
 import { BranchOrderTable } from './components/branch-order-table'
-import { OrderStatistics } from './components/branch-order-statistics'
 import { OrderDialogs } from './components/branch-order-dialogs'
 import { BranchOrderDetailSidebar } from './components/branch-order-detail-sidebar'
-import BranchOrderProvider, { useBranchOrders } from './contexts/branch-order-context'
+import BranchOrderProvider from './contexts/branch-order-context'
+import { useBranchOrders } from './contexts/branch-order-context'
 
 import type { BranchOrderType } from '@/@types/branch-order.types'
-import { useGetBranchOrders } from '@/services/branch/branch-order.service'
 
-// Constants
-const USERS_FETCH_SIZE = 1000
+// Component Statistics Cards theo pattern dự án
+interface OrderStatisticsProps {
+  totalOrders: number
+  processingOrders: number
+  deliveredOrders: number
+  warrantyOrders: number
+  isLoading?: boolean
+}
 
-// Enhanced Loading skeleton component
+function OrderStatistics({
+  totalOrders,
+  processingOrders,
+  deliveredOrders,
+  warrantyOrders,
+  isLoading = false
+}: OrderStatisticsProps) {
+  const stats = [
+    {
+      title: 'Tổng đơn hàng',
+      subtitle: 'Đơn hàng được giao đến',
+      value: totalOrders,
+      icon: ShoppingCart,
+      iconBg: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+      cardBg:
+        'border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/30 dark:to-background'
+    },
+    {
+      title: 'Đang xử lý',
+      subtitle: 'Chờ nhận hàng',
+      value: processingOrders,
+      icon: Package,
+      iconBg: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+      cardBg:
+        'border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/30 dark:to-background'
+    },
+    {
+      title: 'Đã giao khách',
+      subtitle: 'Hoàn thành tại cửa hàng',
+      value: deliveredOrders,
+      icon: CheckCircle,
+      iconBg: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+      cardBg:
+        'border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-white dark:from-green-950/30 dark:to-background'
+    },
+    {
+      title: 'Đơn bảo hành',
+      subtitle: 'Xử lý tại cửa hàng',
+      value: warrantyOrders,
+      icon: Store,
+      iconBg: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+      cardBg:
+        'border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-background'
+    }
+  ]
+
+  if (isLoading) {
+    return (
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className='hover:shadow-lg transition-all duration-300'>
+            <CardHeader className='pb-2'>
+              <div className='h-4 w-24 bg-muted rounded animate-pulse' />
+              <div className='h-3 w-32 bg-muted rounded mt-1 animate-pulse' />
+            </CardHeader>
+            <CardContent>
+              <div className='h-7 w-20 bg-muted rounded animate-pulse' />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      {stats.map((stat, index) => {
+        const Icon = stat.icon
+        return (
+          <Card key={index} className={`${stat.cardBg} hover:shadow-lg transition-all duration-300`}>
+            <CardContent className='p-4'>
+              <div className='flex items-center justify-between'>
+                <div className='space-y-1'>
+                  <p className='text-sm font-medium text-muted-foreground'>{stat.title}</p>
+                  <p className='text-2xl font-bold'>{stat.value.toLocaleString()}</p>
+                  <p className='text-xs text-muted-foreground'>{stat.subtitle}</p>
+                </div>
+                <div className={`h-12 w-12 rounded-full flex items-center justify-center ${stat.iconBg}`}>
+                  <Icon className='h-6 w-6' />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
+    </div>
+  )
+}
+
+// Component Loading skeleton theo pattern dự án
 const OrderPageSkeleton = () => (
-  <div className='space-y-8'>
-    {/* Header skeleton with gradient */}
-    <div className='space-y-4'>
-      <div className='space-y-3'>
-        <div className='h-10 w-80 bg-gradient-to-r from-violet-200 to-purple-200 dark:from-violet-800 dark:to-purple-800 animate-pulse rounded-lg' />
-        <div className='h-5 w-96 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-md' />
+  <Main>
+    <div className='flex items-center justify-center h-[calc(100vh-200px)]'>
+      <div className='text-center space-y-4'>
+        <div className='relative'>
+          <div className='animate-spin rounded-full h-16 w-16 border-4 border-violet-200 border-t-violet-600 mx-auto'></div>
+          <Package2 className='h-8 w-8 text-violet-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' />
+        </div>
+        <div>
+          <p className='text-lg font-medium text-foreground'>Đang tải đơn hàng...</p>
+          <p className='text-sm text-muted-foreground mt-1'>Vui lòng đợi trong giây lát</p>
+        </div>
       </div>
     </div>
-
-    {/* Enhanced Statistics skeleton */}
-    <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i} className='border-violet-200 dark:border-violet-800 shadow-lg'>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <div className='h-4 w-28 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-md' />
-            <div className='h-10 w-10 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-xl' />
-          </CardHeader>
-          <CardContent>
-            <div className='h-8 w-24 bg-violet-200 dark:bg-violet-800 animate-pulse rounded-md mb-2' />
-            <div className='h-4 w-32 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-md' />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-
-    {/* Enhanced Table skeleton */}
-    <Card className='border-violet-200 dark:border-violet-800 shadow-lg'>
-      <CardHeader className='bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30'>
-        <div className='h-6 w-40 bg-violet-200 dark:bg-violet-800 animate-pulse rounded-md' />
-        <div className='h-4 w-64 bg-violet-100 dark:bg-violet-900 animate-pulse rounded-md' />
-      </CardHeader>
-      <CardContent className='p-6'>
-        <div className='space-y-4'>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className='h-16 bg-gradient-to-r from-violet-50 to-transparent dark:from-violet-950/20 dark:to-transparent animate-pulse rounded-lg'
-            />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  </div>
+  </Main>
 )
 
-// Enhanced Error state component
+// Component Error state theo pattern dự án
 const OrderPageError = ({ error }: { error: unknown }) => {
   const errorMessage = error instanceof Error ? error.message : 'Đã xảy ra lỗi không xác định'
 
   return (
-    <div className='flex items-center justify-center min-h-[500px]'>
-      <Alert variant='destructive' className='max-w-lg border-red-200 dark:border-red-800 shadow-lg'>
-        <AlertCircle className='h-5 w-5' />
-        <AlertDescription className='space-y-3'>
-          <div>
-            <p className='font-semibold text-lg'>Không thể tải danh sách đơn hàng</p>
-            <p className='text-sm mt-2'>{errorMessage}</p>
-          </div>
-          <div className='flex items-center space-x-2 text-xs text-muted-foreground'>
-            <div className='w-2 h-2 bg-red-400 rounded-full animate-pulse' />
-            <span>Vui lòng thử lại sau hoặc liên hệ bộ phận kỹ thuật</span>
-          </div>
-        </AlertDescription>
-      </Alert>
-    </div>
+    <Main>
+      <div className='flex items-center justify-center h-[calc(100vh-200px)]'>
+        <Card className='max-w-md w-full border-destructive/20 bg-destructive/5'>
+          <CardContent className='pt-6'>
+            <div className='text-center space-y-4'>
+              <div className='h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto'>
+                <Package2 className='h-8 w-8 text-destructive' />
+              </div>
+              <div>
+                <p className='text-lg font-semibold text-destructive'>Không thể tải danh sách đơn hàng</p>
+                <p className='text-sm text-muted-foreground mt-2'>{errorMessage}</p>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className='px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors'
+              >
+                Thử lại
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Main>
   )
 }
 
 function ManageOrderContent() {
   const { open, setOpen, currentRow } = useBranchOrders()
 
-  // Fetch orders data
+  // Fetch orders data từ branch API
   const { data: ordersResponse, isLoading: ordersLoading, error: ordersError } = useGetBranchOrders()
-  // Fetch users data for customer information lookup
-  const { data: usersResponse, isLoading: usersLoading } = useGetListUser({
-    pageSize: USERS_FETCH_SIZE
-  })
 
   // Memoized data transformations for performance
-  const orderList = useMemo(() => ordersResponse?.data?.map(transformOrderData) || [], [ordersResponse?.data])
-
-  const userList = useMemo(() => usersResponse?.data?.items || [], [usersResponse?.data?.items])
+  const orderList = useMemo(() => {
+    const items = ordersResponse?.data?.map(transformOrderData) || []
+    return items.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }, [ordersResponse?.data])
 
   // Memoized columns creation
-  const columns = useMemo(() => createBranchOrderColumns({ user: userList }), [userList])
+  const columns = useMemo(() => createBranchOrderColumns(), [])
 
-  // Memoized statistics calculations
+  // Memoized statistics calculations cho branch
   const statistics = useMemo(() => {
-    const totalOrders = ordersResponse?.data.length || 0
-    const processedOrders = orderList.filter((order) =>
-      ['CONFIRMED', 'IN_DESIGN', 'IN_PRODUCTION'].includes(order.status)
+    const totalOrders = ordersResponse?.data?.length || 0
+    const processingOrders = orderList.filter((order) =>
+      ['DELIVERING', 'PICKUP_IN_PROGRESS'].includes(order.status)
     ).length
     const deliveredOrders = orderList.filter((order) => order.status === 'COMPLETED').length
-    const returnAmount = orderList
-      .filter((order) => order.status === 'RETURNED')
-      .reduce((total, order) => total + (order.totalAmount ?? 0), 0)
+    const warrantyOrders = orderList.filter((order) => order.type === 'WARRANTY').length
 
     return {
       totalOrders,
-      processedOrders,
+      processingOrders,
       deliveredOrders,
-      returnAmount
+      warrantyOrders
     }
-  }, [ordersResponse?.data.length, orderList])
+  }, [ordersResponse?.data?.length, orderList])
 
   // Loading state
-  if (ordersLoading || usersLoading) {
+  if (ordersLoading) {
     return <OrderPageSkeleton />
   }
 
@@ -143,47 +210,56 @@ function ManageOrderContent() {
   const handleCloseSidebar = () => setOpen(null)
 
   return (
-    <div className='flex h-full relative'>
+    <>
       {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ease-in-out ${isDetailOpen ? 'mr-80 lg:mr-96' : ''}`}>
-        <div className='container mx-auto py-6 space-y-6'>
-          {/* Page Header */}
-          <div className='flex items-center justify-between'>
+      <div className='flex-1 transition-all duration-300 ease-in-out'>
+        <div className='space-y-6'>
+          {/* Header theo pattern dự án */}
+          <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
             <div className='space-y-1'>
               <div className='flex items-center gap-2'>
-                <Package2 className='h-6 w-6' />
-                <h1 className='text-2xl font-bold tracking-tight'>Quản lý đơn hàng</h1>
+                <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg'>
+                  <Store className='h-6 w-6 text-white' />
+                </div>
+                <div>
+                  <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
+                    Quản Lý Đơn Hàng Chi Nhánh
+                  </h1>
+                  <p className='text-sm text-muted-foreground flex items-center gap-1'>
+                    Xử lý đơn hàng và bảo hành tại cửa hàng
+                    <Sparkles className='h-3 w-3 text-violet-500' />
+                  </p>
+                </div>
               </div>
-              <p className='text-muted-foreground'>Quản lý và theo dõi tất cả đơn hàng trong hệ thống</p>
             </div>
           </div>
 
           {/* Statistics Cards */}
           <OrderStatistics
             totalOrders={statistics.totalOrders}
-            processedOrders={statistics.processedOrders}
+            processingOrders={statistics.processingOrders}
             deliveredOrders={statistics.deliveredOrders}
-            returnAmount={statistics.returnAmount}
+            warrantyOrders={statistics.warrantyOrders}
             isLoading={ordersLoading}
           />
 
           {/* Orders Table */}
-          <Card>
-            <CardHeader className='pb-4'>
-              <div className='flex items-center justify-between'>
-                <div className='space-y-1'>
-                  <CardTitle className='text-lg font-semibold'>Tất cả đơn hàng</CardTitle>
-                  <p className='text-sm text-muted-foreground'>Nhận được {statistics.totalOrders} đơn hàng cần xử lý</p>
+          <Card className='border-0 shadow-xl bg-gradient-to-br from-background via-background to-violet-50/30 dark:to-violet-950/10'>
+            <CardContent className='p-0'>
+              <div className='p-6 space-y-4'>
+                <div className='flex items-center justify-between'>
+                  <div className='space-y-1'>
+                    <CardTitle className='text-lg font-semibold'>Đơn hàng tại cửa hàng</CardTitle>
+                    <p className='text-sm text-muted-foreground'>Có {statistics.totalOrders} đơn hàng cần xử lý</p>
+                  </div>
                 </div>
+                <BranchOrderTable
+                  columns={columns}
+                  data={orderList}
+                  isLoading={ordersLoading}
+                  error={ordersError ? String(ordersError) : null}
+                />
               </div>
-            </CardHeader>
-            <CardContent className='pt-0'>
-              <BranchOrderTable
-                columns={columns}
-                data={orderList}
-                isLoading={ordersLoading}
-                error={ordersError ? String((ordersError as Error)?.message ?? ordersError) : null}
-              />
             </CardContent>
           </Card>
         </div>
@@ -198,14 +274,14 @@ function ManageOrderContent() {
         isOpen={isDetailOpen}
         onClose={handleCloseSidebar}
       />
-    </div>
+    </>
   )
 }
 
 export default function ManageBranchOrderPage() {
   return (
     <BranchOrderProvider>
-      <Main className='min-h-screen p-0 bg-gradient-to-br from-violet-50/30 via-white to-purple-50/20 dark:from-violet-950/10 dark:via-background dark:to-purple-950/10'>
+      <Main className='space-y-6'>
         <ManageOrderContent />
       </Main>
     </BranchOrderProvider>

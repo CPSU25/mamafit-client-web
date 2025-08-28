@@ -66,7 +66,7 @@ export function WarrantyDashboardHeader() {
               <div className='flex items-center justify-between'>
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-muted-foreground'>{stat.title}</p>
-                  <p className='text-2xl font-bold'>
+                  <div className='text-2xl font-bold'>
                     {isLoading ? (
                       <div className='flex items-center'>
                         <Loader2 className='h-4 w-4 animate-spin mr-2' />
@@ -75,7 +75,7 @@ export function WarrantyDashboardHeader() {
                     ) : (
                       stat.value.toLocaleString('vi-VN')
                     )}
-                  </p>
+                  </div>
                 </div>
                 <div className={`p-3 rounded-full bg-gradient-to-r ${stat.gradient}`}>
                   <Icon className='h-5 w-5 text-white' />

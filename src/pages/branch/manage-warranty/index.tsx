@@ -4,13 +4,11 @@ import { ProductSelectionSidebar } from './components/ProductSelectionSidebar'
 import { WarrantyRequestsList } from './components/WarrantyRequestsList'
 import { WarrantyDashboardHeader } from './components/WarrantyDashboardHeader'
 import { SimpleOrderSearchProvider } from './contexts/OrderSearchContextSimple'
-
-// Main page component for branch warranty management
-function BranchManageWarrantyContent() {
+import { Main } from '@/components/layout/main'
+const BranchManageWarrantyContent = () => {
   return (
-    <SimpleOrderSearchProvider>
-      <div className='container mx-auto py-6 space-y-6'>
-        {/* Page Header */}
+    <Main className='space-y-6'>
+      <SimpleOrderSearchProvider>
         <div className='flex items-center justify-between'>
           <div className='space-y-1'>
             <div className='flex items-center gap-2'>
@@ -21,25 +19,20 @@ function BranchManageWarrantyContent() {
           </div>
         </div>
 
-        {/* Dashboard Statistics */}
         <WarrantyDashboardHeader />
 
-        {/* Main Content Grid */}
         <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
-          {/* Order Search Section */}
           <div className='xl:col-span-2 space-y-6'>
             <OrderSearchSection />
-            {/* Warranty Requests List - Horizontal Layout */}
             <WarrantyRequestsList />
           </div>
 
-          {/* Product Selection Sidebar */}
           <div className='xl:col-span-1'>
             <ProductSelectionSidebar />
           </div>
         </div>
-      </div>
-    </SimpleOrderSearchProvider>
+      </SimpleOrderSearchProvider>
+    </Main>
   )
 }
 

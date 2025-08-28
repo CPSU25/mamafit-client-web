@@ -340,17 +340,15 @@ export function WarrantyRequestDetailDialog({
                                     <div>
                                       <p className='text-xs text-muted-foreground mb-1'>Hình ảnh:</p>
                                       <div className='flex gap-2 flex-wrap'>
-                                        {item.images
-                                          ?.slice(0, 3)
-                                          .map((image, imgIndex) => (
-                                            <img
-                                              key={imgIndex}
-                                              src={image}
-                                              alt={`Item image ${imgIndex + 1}`}
-                                              className='w-12 h-12 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity'
-                                              onClick={() => openMediaViewer(item.images, [])}
-                                            />
-                                          ))}
+                                        {item.images?.slice(0, 3).map((image, imgIndex) => (
+                                          <img
+                                            key={imgIndex}
+                                            src={image}
+                                            alt={`Item image ${imgIndex + 1}`}
+                                            className='w-12 h-12 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity'
+                                            onClick={() => openMediaViewer(item.images, [])}
+                                          />
+                                        ))}
                                         {(item.images?.length || 0) > 3 && (
                                           <div className='w-12 h-12 bg-muted rounded border flex items-center justify-center text-xs text-muted-foreground'>
                                             +{(item.images?.length || 0) - 3}
@@ -365,19 +363,17 @@ export function WarrantyRequestDetailDialog({
                                     <div>
                                       <p className='text-xs text-muted-foreground mb-1'>Video:</p>
                                       <div className='flex gap-2 flex-wrap'>
-                                        {item.videos
-                                          ?.slice(0, 3)
-                                          .map((video, videoIndex) => (
-                                            <VideoThumbnail
-                                              key={videoIndex}
-                                              src={video}
-                                              title={`Video ${videoIndex + 1}`}
-                                              width={48}
-                                              height={48}
-                                              onClick={() => openVideoViewer(video)}
-                                              className='rounded border'
-                                            />
-                                          ))}
+                                        {item.videos?.slice(0, 3).map((video, videoIndex) => (
+                                          <VideoThumbnail
+                                            key={videoIndex}
+                                            src={video}
+                                            title={`Video ${videoIndex + 1}`}
+                                            width={48}
+                                            height={48}
+                                            onClick={() => openVideoViewer(video)}
+                                            className='rounded border'
+                                          />
+                                        ))}
                                         {(item.videos?.length || 0) > 3 && (
                                           <div className='w-12 h-12 bg-muted rounded border flex items-center justify-center text-xs text-muted-foreground'>
                                             +{(item.videos?.length || 0) - 3}

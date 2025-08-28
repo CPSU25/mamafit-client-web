@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 
@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
 
@@ -17,8 +16,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  MessageSquare,
-  Send,
   Package,
   ShoppingBag,
   User,
@@ -26,56 +23,30 @@ import {
   Clock,
   Truck,
   Ruler,
-  UserCheck,
-  BarChart3,
-  Palette
+  Palette,
+  Eye
 } from 'lucide-react'
 
 import { useOrder, useOrdersByDesignRequest } from '@/services/admin/manage-order.service'
-import { ItemType, type OrderItemType } from '@/@types/manage-order.types'
 import { useGetUserById } from '@/services/admin/manage-user.service'
 import GoongMap from '@/components/Goong/GoongMap'
-import { getItemTypeLabel, getStatusColor, getStatusLabel } from './data/data'
-import StatusOrderTimeline from './components/milestone/status-timeline-orderItem'
-import { useAdminOrderItemsWithTasks } from '@/services/admin/admin-task.service'
-import { OrderAssignDialog } from './components/order-assign-dialog'
-import { useCreateShipping } from '@/services/global/ghtk.service'
-import { GHTKOrder } from '@/@types/ghtk.types'
-import { DeliveryOrderSuccessDialog } from '@/pages/staff/components/delivery-order-success-dialog'
-import { useAuth } from '@/context/auth-context'
+import { getStatusColor, getStatusLabel, getItemTypeLabel } from './data/data'
+import { ItemType, type OrderItemType } from '@/@types/manage-order.types'
 
 // Constants
 const CURRENCY_LOCALE = 'vi-VN'
 const CURRENCY_CODE = 'VND'
 const DATE_FORMAT = 'DD/MM/YYYY HH:mm'
 
-// Mock data for chat (will be replaced with real data later)
-const MOCK_CHAT_MESSAGES = [
-  {
-    id: 1,
-    sender: 'Alex Smith',
-    message: 'Hi!',
-    time: '9:00 pm',
-    isCustomer: true
-  },
-  {
-    id: 2,
-    sender: 'Mr. Jack Mario',
-    message: 'Adminiuix is amazing and we thank you. How can we thank you.',
-    time: '9:10 pm',
-    isCustomer: false
-  }
-] as const
-
-// Status timeline configuration
+// Status timeline configuration cho Branch
 const ORDER_STATUS_FLOW = [
-  { key: 'CREATED', label: 'Đơn hàng đã tạo', icon: ShoppingBag },
+  { key: 'CREATED', label: 'Đã tạo đơn hàng', icon: ShoppingBag },
   { key: 'CONFIRMED', label: 'Đã xác nhận', icon: Package },
   { key: 'IN_PROGRESS', label: 'Đang sản xuất', icon: Package },
-  { key: 'AWAITING_PAID_REST', label: 'Đang chờ thanh toán', icon: Package },
+  { key: 'AWAITING_PAID_REST', label: 'Chờ thanh toán', icon: Package },
   { key: 'PACKAGING', label: 'Đóng gói', icon: Package },
   { key: 'DELIVERING', label: 'Đang giao hàng', icon: Truck },
-  { key: 'COMPLETED', label: 'Đã hoàn thành', icon: Package },
+  { key: 'COMPLETED', label: 'Hoàn thành', icon: Package },
   { key: 'CANCELLED', label: 'Đã hủy', icon: Package },
   { key: 'RETURNED', label: 'Đã trả lại', icon: Package }
 ] as const
@@ -115,123 +86,33 @@ const getStatusTimeline = (currentStatus?: string) => {
 }
 
 /**
- * Order Detail Page Component
+ * Branch Order Detail Page Component
  */
-export default function OrderDetailPage() {
+export default function BranchOrderDetailPage() {
   const { orderId } = useParams()
+  const navigate = useNavigate()
+
+  // Data fetching
   const { data: orderDetail } = useOrder(orderId ?? '')
-  const { hasRole } = useAuth()
-  const [selectedItemForAssign, setSelectedItemForAssign] = useState<string>('')
-  const [assignChargeDialogOpen, setAssignChargeDialogOpen] = useState(false)
-  const [shippingOrder, setShippingOrder] = useState<GHTKOrder | null>(null)
-  const [showShippingDialog, setShowShippingDialog] = useState(false)
+  const { data: user, isLoading: userLoading } = useGetUserById(orderDetail?.data?.userId ?? '')
 
-  // Sử dụng mutation hook để tạo shipping với React Query pattern
-  const createShippingMutation = useCreateShipping()
-
+  // For design requests
   const orderItems = orderDetail?.data?.items || []
-  const orderItemIds = orderItems.map((it) => it.id)
-  const orderItemsData = useAdminOrderItemsWithTasks(orderItemIds, true)
   const firstDesignItem = orderItems.find((it) => it.itemType === 'DESIGN_REQUEST')
   const designRequestId = firstDesignItem?.designRequest?.id
   const { data: ordersByDesign, isLoading: loadingDesignOrders } = useOrdersByDesignRequest(designRequestId)
-  const getAssignButtonProps = (itemId: string, itemIndex?: number) => {
-    // Tìm index thực của item theo id để tránh sai lệch khi lọc danh sách
-    const realIndex = orderItems.findIndex((it) => it.id === itemId)
-    const itemQuery = orderItemsData[realIndex >= 0 ? realIndex : (itemIndex ?? 0)]
-    const itemData = itemQuery?.data
-    const hasMilestones = itemData?.milestones && itemData.milestones.length > 0
-
-    return {
-      text: itemQuery?.isLoading
-        ? 'Đang tải...'
-        : hasMilestones
-          ? 'Giao nhiệm vụ cho nhân viên'
-          : 'Chưa thể giao nhiệm vụ',
-      disabled: itemQuery?.isLoading || !hasMilestones,
-      onClick: () => {
-        if (hasMilestones) {
-          setSelectedItemForAssign(itemId)
-          setAssignChargeDialogOpen(true)
-        }
-      }
-    }
-  }
-  const handleAssignChargeSuccess = () => {
-    // Refetch order detail data without page reload
-    // The order detail query will automatically refetch when needed
-    console.log('Assign charge success - data will be refetched automatically')
-  }
-  const getSelectedItemData = () => {
-    const selectedIndex = orderItems.findIndex((item) => item.id === selectedItemForAssign)
-    return selectedIndex >= 0 ? (orderItemsData[selectedIndex]?.data ?? null) : null
-  }
-
-  // Kiểm tra xem tất cả milestone của tất cả items đã hoàn thành chưa
-  const areAllMilestonesCompleted = () => {
-    if (orderItemsData.length === 0) return false
-
-    return orderItemsData.every((itemQuery) => {
-      if (itemQuery.isLoading || !itemQuery.data || !itemQuery.data.milestones) {
-        return false
-      }
-
-      // Kiểm tra tất cả milestone của item này đã hoàn thành
-      return itemQuery.data.milestones.every((milestone) => {
-        // Kiểm tra tất cả task trong milestone đã hoàn thành (AdminMilestone dùng tasks thay vì maternityDressTasks)
-        return milestone.tasks.every(
-          (task) => task.detail.status === 'DONE' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
-        )
-      })
-    })
-  }
-
-  // Xử lý tạo đơn shipping với React Query pattern
-  const handleCreateShipping = () => {
-    if (!order?.data?.id) return
-
-    createShippingMutation.mutate(order.data.id, {
-      onSuccess: (response) => {
-        if (response.data.success) {
-          setShippingOrder(response.data.order)
-          setShowShippingDialog(true)
-          // Toast và cache invalidation đã được xử lý trong service
-        }
-        // Error handling cũng đã được xử lý trong service
-      }
-    })
-  }
-
-  const navigate = useNavigate()
-  const [chatMessage, setChatMessage] = useState('')
-  const roleBasePath = hasRole('Admin') ? '/system/admin' : hasRole('Manager') ? '/system/manager' : '/system/admin'
-
-  // Data fetching
-  const { data: order, isLoading: orderLoading } = useOrder(orderId ?? '')
-  const { data: user, isLoading: userLoading } = useGetUserById(order?.data?.userId ?? '')
 
   // Memoized computations
-  const statusTimeline = useMemo(() => getStatusTimeline(order?.data?.status), [order?.data?.status])
-
-  // Kiểm tra điều kiện tạo shipping
-  const allMilestonesCompleted = areAllMilestonesCompleted()
-  const canCreateShipping =
-    allMilestonesCompleted && (order?.data?.status === 'IN_PROGRESS' || order?.data?.status === 'PACKAGING')
+  const statusTimeline = useMemo(() => getStatusTimeline(orderDetail?.data?.status), [orderDetail?.data?.status])
 
   // Event handlers
-  const handleSendMessage = useCallback(() => {
-    if (chatMessage.trim()) {
-      console.log('Sending message:', chatMessage)
-      setChatMessage('')
-    }
-  }, [chatMessage])
 
   const handleNavigateBack = useCallback(() => {
-    navigate(`${roleBasePath}/manage-order`)
-  }, [navigate, roleBasePath])
+    navigate('/system/branch/manage-branch-order')
+  }, [navigate])
 
   // Loading state
-  if (orderLoading || userLoading) {
+  if (!orderDetail?.data || userLoading) {
     return (
       <Main>
         <div className='container mx-auto py-6'>
@@ -247,7 +128,7 @@ export default function OrderDetailPage() {
   }
 
   // Error state - no order found
-  if (!order?.data) {
+  if (!orderDetail?.data) {
     return (
       <Main>
         <div className='container mx-auto py-6'>
@@ -269,9 +150,12 @@ export default function OrderDetailPage() {
     )
   }
 
+  const order = orderDetail.data
+
   return (
-    <Main>
-      <div className='container space-y-4'>
+    <Main className='space-y-6'>
+      <div className=''>
+        {/* Header với gradient tím đẹp mắt */}
         <div className='relative overflow-hidden rounded-2xl border-2 border-violet-200 dark:border-violet-800 shadow-xl shadow-violet-100/50 dark:shadow-violet-900/20'>
           <div className='absolute inset-0 bg-gradient-to-r from-violet-600 via-violet-500 to-purple-600 dark:from-violet-700 dark:via-violet-600 dark:to-purple-700' />
           <div className='absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-white/20 dark:via-white/5 dark:to-white/10' />
@@ -284,7 +168,7 @@ export default function OrderDetailPage() {
                   <div className='w-2 h-2 bg-white rounded-full animate-pulse' />
                   <span className='text-white/80 text-sm font-medium tracking-wide'>CHI TIẾT ĐƠN HÀNG</span>
                 </div>
-                <h1 className='text-2xl font-bold text-white drop-shadow-sm'>#{order.data.code}</h1>
+                <h1 className='text-2xl font-bold text-white drop-shadow-sm'>#{order.code}</h1>
                 <p className='text-violet-100 text-sm'>Mã đơn hàng</p>
               </div>
 
@@ -302,19 +186,19 @@ export default function OrderDetailPage() {
             <div className='flex items-center justify-between'>
               <div className='space-y-1'>
                 <h3 className='text-lg font-bold text-white drop-shadow-sm'>
-                  {getItemTypeLabel(order.data.items[0]?.itemType) || 'Đơn hàng'}
+                  {getItemTypeLabel(order.items[0]?.itemType) || 'Đơn hàng'}
                 </h3>
                 <p className='text-violet-100 text-xs'>Loại đơn hàng</p>
               </div>
               <div className='flex items-center space-x-3'>
                 <Badge
                   variant='secondary'
-                  className={`${getStatusColor(order.data.status, 'order')} text-xs font-medium px-4 py-2 bg-white/90 dark:bg-white/80 text-violet-800 shadow-sm`}
+                  className={`${getStatusColor(order.status, 'order')} text-xs font-medium px-4 py-2 bg-white/90 dark:bg-white/80 text-violet-800 shadow-sm`}
                 >
-                  {getStatusLabel(order.data.status, 'order')}
+                  {getStatusLabel(order.status, 'order')}
                 </Badge>
                 <span className='text-xs text-violet-100 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm'>
-                  {formatDate(order.data.createdAt)}
+                  {formatDate(order.createdAt)}
                 </span>
               </div>
             </div>
@@ -325,7 +209,7 @@ export default function OrderDetailPage() {
         <div className='grid gap-4 lg:grid-cols-3'>
           {/* Left Column - Main Content */}
           <div className='lg:col-span-2 space-y-4'>
-            {/* Customer Information - Enhanced violet theme */}
+            {/* Customer Information */}
             {user?.data ? (
               <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card'>
                 <CardHeader className='pb-3'>
@@ -418,7 +302,7 @@ export default function OrderDetailPage() {
                     <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
                       <User className='h-4 w-4 text-violet-600 dark:text-violet-400' />
                     </div>
-                    Customer Information
+                    Thông tin khách hàng
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -433,91 +317,8 @@ export default function OrderDetailPage() {
               </Card>
             )}
 
-            {/* Measurements List - Enhanced design */}
-            {orderDetail?.data?.measurementDiary?.measurements &&
-              orderDetail.data.measurementDiary.measurements.length > 0 && (
-                <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20'>
-                  <CardHeader className='pb-3'>
-                    <CardTitle className='text-sm font-semibold flex items-center justify-between text-violet-700 dark:text-violet-300'>
-                      <div className='flex items-center'>
-                        <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
-                          <Ruler className='h-4 w-4 text-violet-600 dark:text-violet-400' />
-                        </div>
-                        Lịch sử số đo
-                      </div>
-                      <Badge
-                        variant='secondary'
-                        className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
-                      >
-                        {orderDetail.data.measurementDiary.measurements.length} bản ghi
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className='space-y-3'>
-                    {orderDetail.data.measurementDiary.measurements
-                      .slice()
-                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                      .map((m, index) => (
-                        <div
-                          key={m.id}
-                          className={`border-2 rounded-xl p-4 transition-all duration-200 ${
-                            index === 0
-                              ? 'border-violet-300 dark:border-violet-600 bg-gradient-to-br from-violet-50 via-white to-violet-50/50 dark:from-violet-950/30 dark:via-card dark:to-violet-950/20 shadow-md'
-                              : 'border-violet-100 dark:border-violet-800 bg-card hover:border-violet-200 dark:hover:border-violet-700'
-                          }`}
-                        >
-                          <div className='flex items-center justify-between mb-3'>
-                            <div className='flex items-center space-x-2'>
-                              {index === 0 && <div className='w-2 h-2 bg-violet-500 rounded-full animate-pulse' />}
-                              <span className='text-xs font-medium text-violet-600 dark:text-violet-400'>
-                                {index === 0 ? 'Cập nhật mới nhất' : 'Bản ghi trước'}
-                              </span>
-                            </div>
-                            <div className='flex items-center space-x-2'>
-                              {m.isLocked && (
-                                <Badge className='text-[10px] bg-violet-500 hover:bg-violet-600'>Đã khóa</Badge>
-                              )}
-                              <span className='text-xs text-muted-foreground'>
-                                {formatDate(m.updatedAt || m.createdAt)}
-                              </span>
-                            </div>
-                          </div>
-                          <div className='grid grid-cols-3 gap-3 text-xs'>
-                            {[
-                              { label: 'Vòng ngực', value: m.bust },
-                              { label: 'Vòng eo', value: m.waist },
-                              { label: 'Vòng hông', value: m.hip },
-                              { label: 'Vai', value: m.shoulder },
-                              { label: 'Cổ', value: m.neck },
-                              { label: 'Dài váy', value: m.dressLength },
-                              { label: 'Chu vi ngực', value: m.chestAround },
-                              { label: 'Dài tay', value: m.sleeveLength },
-                              { label: 'Rộng vai', value: m.shoulderWidth },
-                              { label: 'Dài chân', value: m.legLength },
-                              { label: 'Cạp quần', value: m.pantsWaist },
-                              { label: 'Bụng', value: m.stomach },
-                              { label: 'Đùi', value: m.thigh },
-                              { label: 'Tuần thai', value: m.weekOfPregnancy },
-                              { label: 'Cân nặng', value: m.weight }
-                            ].map((item, idx) => (
-                              <div key={idx} className='bg-violet-50/50 dark:bg-violet-950/20 p-2 rounded-lg'>
-                                <div className='text-muted-foreground text-[10px] uppercase tracking-wide mb-1'>
-                                  {item.label}
-                                </div>
-                                <div className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
-                                  {item.value}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                  </CardContent>
-                </Card>
-              )}
-
-            {/* Shipping Address - Enhanced violet theme */}
-            {order.data.address && (
+            {/* Shipping Address */}
+            {order.address && (
               <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card'>
                 <CardHeader className='pb-3'>
                   <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
@@ -529,33 +330,27 @@ export default function OrderDetailPage() {
                 </CardHeader>
                 <CardContent className='space-y-3'>
                   <div className='bg-violet-50/50 dark:bg-violet-950/20 p-4 rounded-xl border border-violet-200 dark:border-violet-700'>
-                    <p className='text-sm font-semibold text-foreground mb-2'>{order.data.address.street}</p>
+                    <p className='text-sm font-semibold text-foreground mb-2'>{order.address.street}</p>
                     <p className='text-xs text-muted-foreground'>
-                      {[order.data.address.ward, order.data.address.district, order.data.address.province]
-                        .filter(Boolean)
-                        .join(', ')}
+                      {[order.address.ward, order.address.district, order.address.province].filter(Boolean).join(', ')}
                     </p>
                   </div>
 
-                  {order.data.address.longitude && order.data.address.latitude && (
+                  {order.address.longitude && order.address.latitude && (
                     <div className='rounded-xl overflow-hidden border-2 border-violet-200 dark:border-violet-700 shadow-md'>
-                      <GoongMap
-                        center={[order.data.address.longitude, order.data.address.latitude]}
-                        zoom={16}
-                        className='h-48'
-                      />
+                      <GoongMap center={[order.address.longitude, order.address.latitude]} zoom={16} className='h-48' />
                     </div>
                   )}
                 </CardContent>
               </Card>
             )}
 
-            {/* Design Request - moved out as standalone Card(s) */}
+            {/* Design Request - standalone Cards */}
             {(() => {
-              const allItems = orderDetail?.data?.items || order.data.items || []
+              const allItems = orderDetail?.data?.items || order.items || []
               const designItems = allItems.filter((it) => it.itemType === 'DESIGN_REQUEST')
               if (designItems.length === 0) return null
-              return designItems.map((item, index) => (
+              return designItems.map((item) => (
                 <Card
                   key={`design-${item.id}`}
                   className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 overflow-hidden !p-0'
@@ -632,37 +427,6 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
                     )}
-
-                    {/* Status Timeline */}
-                    <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
-                      <div className='flex items-center space-x-2 mb-3'>
-                        <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
-                          <BarChart3 className='w-3 h-3 text-white' />
-                        </div>
-                        <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>Tiến độ</span>
-                      </div>
-                      <div className='pl-7'>
-                        <StatusOrderTimeline orderItemId={item.id} />
-                      </div>
-                    </div>
-
-                    {/* Assign button */}
-                    <div className='pt-3 border-t border-violet-200 dark:border-violet-700'>
-                      {(() => {
-                        const buttonProps = getAssignButtonProps(item.id, index)
-                        return (
-                          <Button
-                            size='sm'
-                            onClick={buttonProps.onClick}
-                            className='w-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25'
-                            disabled={buttonProps.disabled}
-                          >
-                            <UserCheck className='h-4 w-4 mr-2' />
-                            {buttonProps.text}
-                          </Button>
-                        )
-                      })()}
-                    </div>
                   </div>
                 </Card>
               ))
@@ -678,17 +442,23 @@ export default function OrderDetailPage() {
                     </div>
                     {designRequestId ? 'Đơn được tạo từ yêu cầu thiết kế này' : 'Sản phẩm trong đơn'}
                   </div>
-                  <Badge
-                    variant='secondary'
-                    className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
-                  >
-                    {designRequestId
-                      ? `${ordersByDesign?.data?.length || 0} đơn`
-                      : (() => {
-                          const allItems = orderDetail?.data?.items || order.data.items || []
-                          return `${allItems.filter((it) => it.itemType !== ItemType.DESIGN_REQUEST).length} sản phẩm`
-                        })()}
-                  </Badge>
+                  <div className='flex items-center gap-2'>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300'
+                    >
+                      {designRequestId
+                        ? `${ordersByDesign?.data?.length || 0} đơn`
+                        : (() => {
+                            const allItems = orderDetail?.data?.items || order.items || []
+                            return `${allItems.filter((it) => it.itemType !== ItemType.DESIGN_REQUEST).length} sản phẩm`
+                          })()}
+                    </Badge>
+                    <Badge variant='outline' className='text-xs text-violet-600 dark:text-violet-400'>
+                      <Eye className='h-3 w-3 mr-1' />
+                      Chỉ xem
+                    </Badge>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-4'>
@@ -712,8 +482,7 @@ export default function OrderDetailPage() {
                       return (
                         <div
                           key={od.id}
-                          className='p-4 rounded-xl border border-violet-200 dark:border-violet-700 bg-violet-50/40 dark:bg-violet-950/10 cursor-pointer hover:border-violet-300 dark:hover:border-violet-600 transition-colors'
-                          onClick={() => navigate(`${roleBasePath}/manage-order/${od.id}`)}
+                          className='p-4 rounded-xl border border-violet-200 dark:border-violet-700 bg-violet-50/40 dark:bg-violet-950/10'
                         >
                           <div className='flex items-center justify-between gap-4'>
                             <div className='flex-1 min-w-0'>
@@ -734,15 +503,6 @@ export default function OrderDetailPage() {
                                       <span className='font-medium'>{title}</span>
                                       {styleName && (
                                         <span className='text-muted-foreground'> • Phong cách: {styleName}</span>
-                                      )}
-                                      {first?.maternityDressDetail?.sku && (
-                                        <span className='text-muted-foreground'>
-                                          {' '}
-                                          • SKU: {first.maternityDressDetail.sku}
-                                        </span>
-                                      )}
-                                      {first?.preset?.sku && (
-                                        <span className='text-muted-foreground'> • SKU: {first.preset.sku}</span>
                                       )}
                                     </div>
                                   )}
@@ -771,14 +531,6 @@ export default function OrderDetailPage() {
                                 >
                                   {getStatusLabel(od.paymentStatus as unknown as string, 'payment')}
                                 </Badge>
-                                {od.deliveryMethod && (
-                                  <span className='text-xs px-2 py-1 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300'>
-                                    {od.deliveryMethod === 'DELIVERY' ? 'Giao hàng' : 'Nhận tại cửa hàng'}
-                                  </span>
-                                )}
-                                <span className='text-xs px-2 py-1 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300'>
-                                  {items.length} sản phẩm
-                                </span>
                               </div>
                             </div>
                           </div>
@@ -793,10 +545,9 @@ export default function OrderDetailPage() {
                       <p className='text-sm font-medium'>Không có đơn nào được tạo từ yêu cầu thiết kế này</p>
                     </div>
                   )
-                ) : (orderDetail?.data?.items || order.data.items || []).filter(
-                    (it) => it.itemType !== 'DESIGN_REQUEST'
-                  ).length > 0 ? (
-                  (orderDetail?.data?.items || order.data.items || [])
+                ) : (orderDetail?.data?.items || order.items || []).filter((it) => it.itemType !== 'DESIGN_REQUEST')
+                    .length > 0 ? (
+                  (orderDetail?.data?.items || order.items || [])
                     .filter((it) => it.itemType !== 'DESIGN_REQUEST')
                     .map((item, index) => {
                       const rawTitle = item.preset?.name ?? item.maternityDressDetail?.name
@@ -838,12 +589,6 @@ export default function OrderDetailPage() {
                                   {subtitleText}
                                 </p>
                               )}
-                              {item.preset?.sku && (
-                                <p className='text-xs text-muted-foreground truncate flex items-center'>
-                                  <span className='w-1 h-1 bg-violet-400 rounded-full mr-2'></span>
-                                  SKU: {item.preset.sku}
-                                </p>
-                              )}
                               <p className='text-sm font-bold text-violet-600 dark:text-violet-400'>
                                 {formatCurrency(item.price)}
                               </p>
@@ -855,37 +600,6 @@ export default function OrderDetailPage() {
                                 </span>
                               </div>
                             </div>
-                          </div>
-
-                          {/* Status Timeline */}
-                          <div className='bg-white/80 dark:bg-card/80 backdrop-blur-sm border border-violet-200 dark:border-violet-700 rounded-xl p-4 shadow-sm'>
-                            <div className='flex items-center space-x-2 mb-3'>
-                              <div className='w-5 h-5 bg-violet-500 rounded-lg flex items-center justify-center'>
-                                <BarChart3 className='w-3 h-3 text-white' />
-                              </div>
-                              <span className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
-                                Tiến độ
-                              </span>
-                            </div>
-                            <StatusOrderTimeline orderItemId={item.id} />
-                          </div>
-
-                          {/* Assign button */}
-                          <div className='pt-2 border-t border-violet-200 dark:border-violet-700'>
-                            {(() => {
-                              const buttonProps = getAssignButtonProps(item.id, index)
-                              return (
-                                <Button
-                                  size='sm'
-                                  onClick={buttonProps.onClick}
-                                  className='w-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25'
-                                  disabled={buttonProps.disabled}
-                                >
-                                  <UserCheck className='h-4 w-4 mr-2' />
-                                  {buttonProps.text}
-                                </Button>
-                              )
-                            })()}
                           </div>
                         </div>
                       )
@@ -905,7 +619,7 @@ export default function OrderDetailPage() {
 
           {/* Right Column - Payment & Chat */}
           <div className='space-y-4'>
-            {/* Payment Summary - Enhanced violet theme */}
+            {/* Payment Summary */}
             <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card'>
               <CardHeader className='pb-3'>
                 <div className='flex items-center justify-between'>
@@ -915,54 +629,52 @@ export default function OrderDetailPage() {
                     </div>
                     Thanh toán
                   </CardTitle>
-                  {order.data.paymentStatus && (
+                  {order.paymentStatus && (
                     <Badge
                       variant='outline'
-                      className={`${getStatusColor(order.data.paymentStatus, 'payment')} text-xs px-3 py-1`}
+                      className={`${getStatusColor(order.paymentStatus, 'payment')} text-xs px-3 py-1`}
                     >
-                      {getStatusLabel(order.data.paymentStatus, 'payment')}
+                      {getStatusLabel(order.paymentStatus, 'payment')}
                     </Badge>
                   )}
                 </div>
               </CardHeader>
               <CardContent className='space-y-3'>
                 <div className='space-y-3 text-xs'>
-                  {order.data.subTotalAmount && (
+                  {order.subTotalAmount && (
                     <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                       <span className='text-muted-foreground'>Giá sản phẩm</span>
-                      <span className='font-semibold'>{formatCurrency(order.data.subTotalAmount)}</span>
+                      <span className='font-semibold'>{formatCurrency(order.subTotalAmount)}</span>
                     </div>
                   )}
-                  {order.data.discountSubtotal !== 0 && order.data.discountSubtotal !== undefined && (
+                  {order.discountSubtotal !== 0 && order.discountSubtotal !== undefined && (
                     <div className='flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg'>
                       <span className='text-muted-foreground'>Giảm giá</span>
-                      <span className='text-green-600 font-semibold'>
-                        -{formatCurrency(order.data.discountSubtotal)}
-                      </span>
+                      <span className='text-green-600 font-semibold'>-{formatCurrency(order.discountSubtotal)}</span>
                     </div>
                   )}
 
                   <Separator className='bg-violet-200 dark:bg-violet-700' />
 
-                  {order.data.depositSubtotal !== 0 && order.data.depositSubtotal !== undefined && (
+                  {order.depositSubtotal !== 0 && order.depositSubtotal !== undefined && (
                     <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                       <span className='text-muted-foreground'>Đặt cọc</span>
-                      <span className='font-semibold'>{formatCurrency(order.data.depositSubtotal)}</span>
+                      <span className='font-semibold'>{formatCurrency(order.depositSubtotal)}</span>
                     </div>
                   )}
                   <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                     <span className='text-muted-foreground'>Phí vận chuyển</span>
                     <span className='font-semibold'>
-                      {order.data.shippingFee !== undefined && order.data.shippingFee !== 0
-                        ? formatCurrency(order.data.shippingFee)
+                      {order.shippingFee !== undefined && order.shippingFee !== 0
+                        ? formatCurrency(order.shippingFee)
                         : '0 ₫'}
                     </span>
                   </div>
                   <div className='flex justify-between items-center p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg'>
                     <span className='text-muted-foreground'>Phí dịch vụ</span>
                     <span className='font-semibold'>
-                      {order.data.serviceAmount !== 0 && order.data.serviceAmount !== undefined
-                        ? formatCurrency(order.data.serviceAmount)
+                      {order.serviceAmount !== 0 && order.serviceAmount !== undefined
+                        ? formatCurrency(order.serviceAmount)
                         : '0 ₫'}
                     </span>
                   </div>
@@ -972,7 +684,7 @@ export default function OrderDetailPage() {
                   <div className='flex justify-between items-center p-4 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl border border-violet-200 dark:border-violet-700'>
                     <span className='font-bold text-base text-violet-700 dark:text-violet-300'>Tổng cộng</span>
                     <span className='text-lg font-bold text-violet-600 dark:text-violet-400'>
-                      {formatCurrency(order.data.totalAmount || 0)}
+                      {formatCurrency(order.totalAmount || 0)}
                     </span>
                   </div>
 
@@ -980,16 +692,16 @@ export default function OrderDetailPage() {
                     <div className='p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800'>
                       <span className='text-xs text-muted-foreground block mb-1'>Đã thanh toán</span>
                       <span className='text-green-600 font-bold text-base'>
-                        {order.data.totalPaid !== undefined && order.data.totalPaid !== 0
-                          ? formatCurrency(order.data.totalPaid)
+                        {order.totalPaid !== undefined && order.totalPaid !== 0
+                          ? formatCurrency(order.totalPaid)
                           : '0 ₫'}
                       </span>
                     </div>
                     <div className='p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800'>
                       <span className='text-xs text-muted-foreground block mb-1'>Còn lại</span>
                       <span className='text-orange-600 font-bold text-base'>
-                        {order.data.remainingBalance !== undefined && order.data.remainingBalance !== 0
-                          ? formatCurrency(order.data.remainingBalance)
+                        {order.remainingBalance !== undefined && order.remainingBalance !== 0
+                          ? formatCurrency(order.remainingBalance)
                           : '0 ₫'}
                       </span>
                     </div>
@@ -998,22 +710,22 @@ export default function OrderDetailPage() {
 
                 <div className='flex items-center justify-between pt-2 border-t border-violet-200 dark:border-violet-700'>
                   <div className='space-y-1'>
-                    {order.data.paymentMethod && (
+                    {order.paymentMethod && (
                       <span className='text-xs text-muted-foreground bg-violet-50 dark:bg-violet-950/30 px-3 py-1 rounded-full'>
-                        {order.data.paymentMethod === 'CASH' ? 'Tiền mặt' : 'Chuyển khoản'}
+                        {order.paymentMethod === 'CASH' ? 'Tiền mặt' : 'Chuyển khoản'}
                       </span>
                     )}
                   </div>
-                  {order.data.deliveryMethod && (
+                  {order.deliveryMethod && (
                     <span className='text-xs text-muted-foreground bg-violet-50 dark:bg-violet-950/30 px-3 py-1 rounded-full'>
-                      {order.data.deliveryMethod === 'DELIVERY' ? 'Giao hàng' : 'Nhận tại cửa hàng'}
+                      {order.deliveryMethod === 'DELIVERY' ? 'Giao hàng' : 'Nhận tại cửa hàng'}
                     </span>
                   )}
                 </div>
 
                 {/* Tracking code */}
                 {(() => {
-                  const trackingCode = (order.data as unknown as { trackingOrderCode?: string }).trackingOrderCode
+                  const trackingCode = (order as unknown as { trackingOrderCode?: string }).trackingOrderCode
                   return trackingCode ? (
                     <div className='mt-2 flex items-center justify-between p-3 bg-violet-50/50 dark:bg-violet-950/20 rounded-lg border border-violet-200 dark:border-violet-700'>
                       <span className='text-xs text-muted-foreground'>Mã vận đơn</span>
@@ -1023,39 +735,17 @@ export default function OrderDetailPage() {
                     </div>
                   ) : null
                 })()}
-
-                {/* Shipping Button */}
-                {canCreateShipping && (
-                  <div className='pt-3 border-t border-violet-200 dark:border-violet-700'>
-                    <Button
-                      onClick={handleCreateShipping}
-                      disabled={createShippingMutation.isPending}
-                      className='w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
-                      size='sm'
-                    >
-                      <Truck className='h-4 w-4 mr-2' />
-                      {createShippingMutation.isPending ? 'Đang tạo đơn...' : 'Tạo đơn giao hàng'}
-                    </Button>
-                    <p className='text-xs text-center text-muted-foreground mt-2'>
-                      {createShippingMutation.isPending
-                        ? 'Đang xử lý yêu cầu tạo đơn giao hàng...'
-                        : 'Tất cả milestone đã hoàn thành, có thể tạo đơn giao hàng'}
-                    </p>
-                    {createShippingMutation.isError && (
-                      <p className='text-xs text-center text-red-500 mt-1'>Có lỗi xảy ra, vui lòng thử lại</p>
-                    )}
-                  </div>
-                )}
               </CardContent>
             </Card>
-            {/* Order Status Timeline - Enhanced violet theme */}
+
+            {/* Order Status Timeline */}
             <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card'>
               <CardHeader className='pb-3'>
                 <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
                   <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
                     <Clock className='h-5 w-5 text-violet-600 dark:text-violet-400' />
                   </div>
-                  Tiến trình trạng thái đơn hàng
+                  Tiến trình đơn hàng
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1132,7 +822,7 @@ export default function OrderDetailPage() {
                                     clipRule='evenodd'
                                   />
                                 </svg>
-                                Cập nhật lúc {formatDate(order.data.updatedAt)}
+                                Cập nhật lúc {formatDate(order.updatedAt)}
                               </p>
                             )}
                           </div>
@@ -1143,61 +833,10 @@ export default function OrderDetailPage() {
                 </div>
               </CardContent>
             </Card>
-            {/* Chat Section - Enhanced violet theme */}
-            <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card'>
-              <CardHeader className='pb-3'>
-                <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
-                  <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
-                    <MessageSquare className='h-5 w-5 text-violet-600 dark:text-violet-400' />
-                  </div>
-                  Trò chuyện
-                </CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-3'>
-                <div className='space-y-3 max-h-48 overflow-y-auto custom-scrollbar'>
-                  {MOCK_CHAT_MESSAGES.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`p-3 rounded-lg transition-colors ${
-                        msg.isCustomer
-                          ? 'bg-violet-50/50 dark:bg-violet-950/20 border border-violet-200 dark:border-violet-700'
-                          : 'bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40 ml-8 border border-violet-300 dark:border-violet-600'
-                      }`}
-                    >
-                      <p className='font-medium text-sm text-violet-700 dark:text-violet-300'>{msg.sender}</p>
-                      <p className='text-sm mt-1 text-foreground'>{msg.message}</p>
-                      <span className='text-xs text-violet-500 dark:text-violet-400 mt-1 block'>{msg.time}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className='flex gap-2'>
-                  <Input
-                    placeholder='Nhập tin nhắn...'
-                    value={chatMessage}
-                    onChange={(e) => setChatMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    className='flex-1 border-violet-200 dark:border-violet-700 focus:border-violet-500 dark:focus:border-violet-400'
-                  />
-                  <Button
-                    size='sm'
-                    onClick={handleSendMessage}
-                    className='bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25'
-                  >
-                    <Send className='h-4 w-4' />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
-      <OrderAssignDialog
-        open={assignChargeDialogOpen}
-        onOpenChange={setAssignChargeDialogOpen}
-        orderItem={getSelectedItemData() || null}
-        onSuccess={handleAssignChargeSuccess}
-      />
+
       {/* Custom scrollbar styles */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -1225,13 +864,6 @@ export default function OrderDetailPage() {
           }
         }
       `}</style>
-
-      {/* Delivery Order Success Dialog */}
-      <DeliveryOrderSuccessDialog
-        open={showShippingDialog}
-        onOpenChange={setShowShippingDialog}
-        order={shippingOrder}
-      />
     </Main>
   )
 }
