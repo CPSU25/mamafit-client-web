@@ -43,7 +43,7 @@ export function NavGroup({ title, items }: NavGroup) {
       </div>
 
       <SidebarMenu className='mt-2'>
-        {items.map((item) => {
+        {items.filter((item) => !item.disabled).map((item) => {
           const key = `${item.title}-${item.url}`
 
           if (!item.items) return <SidebarMenuLink key={key} item={item} href={href} />
