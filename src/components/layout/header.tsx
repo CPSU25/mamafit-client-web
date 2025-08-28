@@ -5,7 +5,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useLocation } from 'react-router-dom'
 import { sidebarData } from './data/sidebar-data'
 import { useAuth } from '@/context/auth-context'
-import { Bell, Settings, Menu } from 'lucide-react'
+import { Bell, Settings, Menu, Package2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
@@ -44,6 +44,7 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
     // Xử lý cho nested routes như /system/admin/manage-order/design-request
     const relevantPath = pathSegments.slice(2).join('/') || 'dashboard' // Bỏ qua /system/admin
 
+    // Tìm exact match trước
     for (const navGroup of currentRole.navGroups) {
       for (const navItem of navGroup.items) {
         if (navItem.url === relevantPath) {
@@ -57,6 +58,47 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
         if ('items' in navItem && navItem.items) {
           for (const subItem of navItem.items) {
             if (subItem.url === relevantPath) {
+              return {
+                title: subItem.title,
+                groupTitle: navGroup.title,
+                parentTitle: navItem.title,
+                icon: subItem.icon || navItem.icon
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Nếu không tìm thấy exact match, kiểm tra xem có phải là dynamic route không
+    // Ví dụ: manage-order/123 -> hiển thị "Chi tiết đơn hàng"
+    const basePath = relevantPath.split('/')[0]
+    
+    // Xử lý đặc biệt cho manage-order/:orderId
+    if (basePath === 'manage-order' && relevantPath.split('/').length > 1) {
+      // Đây là route chi tiết đơn hàng
+      return {
+        title: 'Chi tiết đơn hàng',
+        groupTitle: 'Quản lý hệ thống',
+        parentTitle: 'Quản lý đơn hàng',
+        icon: Package2 // Sử dụng icon từ parent route
+      }
+    }
+    
+    // Tìm parent route cho các trường hợp khác
+    for (const navGroup of currentRole.navGroups) {
+      for (const navItem of navGroup.items) {
+        if (navItem.url === basePath) {
+          return {
+            title: navItem.title,
+            groupTitle: navGroup.title,
+            icon: navItem.icon
+          }
+        }
+
+        if ('items' in navItem && navItem.items) {
+          for (const subItem of navItem.items) {
+            if (subItem.url === basePath) {
               return {
                 title: subItem.title,
                 groupTitle: navGroup.title,

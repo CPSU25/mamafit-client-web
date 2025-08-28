@@ -44,12 +44,10 @@ import { GHTKOrder } from '@/@types/ghtk.types'
 import { DeliveryOrderSuccessDialog } from '@/pages/staff/components/delivery-order-success-dialog'
 import { useAuth } from '@/context/auth-context'
 
-// Constants
 const CURRENCY_LOCALE = 'vi-VN'
 const CURRENCY_CODE = 'VND'
 const DATE_FORMAT = 'DD/MM/YYYY HH:mm'
 
-// Mock data for chat (will be replaced with real data later)
 const MOCK_CHAT_MESSAGES = [
   {
     id: 1,
@@ -67,7 +65,6 @@ const MOCK_CHAT_MESSAGES = [
   }
 ] as const
 
-// Status timeline configuration
 const ORDER_STATUS_FLOW = [
   { key: 'CREATED', label: 'Đơn hàng đã tạo', icon: ShoppingBag },
   { key: 'CONFIRMED', label: 'Đã xác nhận', icon: Package },
@@ -103,6 +100,8 @@ const formatDate = (dateString: string | undefined | null): string => {
 
 /**
  * Get status timeline for order progression
+ * @param currentStatus - Current status of the order
+ * @returns Status timeline for order progression
  */
 const getStatusTimeline = (currentStatus?: string) => {
   const currentStatusIndex = ORDER_STATUS_FLOW.findIndex((s) => s.key === currentStatus)
@@ -116,6 +115,7 @@ const getStatusTimeline = (currentStatus?: string) => {
 
 /**
  * Order Detail Page Component
+ * @returns Order detail page component
  */
 export default function OrderDetailPage() {
   const { orderId } = useParams()
@@ -126,7 +126,6 @@ export default function OrderDetailPage() {
   const [shippingOrder, setShippingOrder] = useState<GHTKOrder | null>(null)
   const [showShippingDialog, setShowShippingDialog] = useState(false)
 
-  // Sử dụng mutation hook để tạo shipping với React Query pattern
   const createShippingMutation = useCreateShipping()
 
   const orderItems = orderDetail?.data?.items || []
@@ -136,7 +135,6 @@ export default function OrderDetailPage() {
   const designRequestId = firstDesignItem?.designRequest?.id
   const { data: ordersByDesign, isLoading: loadingDesignOrders } = useOrdersByDesignRequest(designRequestId)
   const getAssignButtonProps = (itemId: string, itemIndex?: number) => {
-    // Tìm index thực của item theo id để tránh sai lệch khi lọc danh sách
     const realIndex = orderItems.findIndex((it) => it.id === itemId)
     const itemQuery = orderItemsData[realIndex >= 0 ? realIndex : (itemIndex ?? 0)]
     const itemData = itemQuery?.data
@@ -158,8 +156,6 @@ export default function OrderDetailPage() {
     }
   }
   const handleAssignChargeSuccess = () => {
-    // Refetch order detail data without page reload
-    // The order detail query will automatically refetch when needed
     console.log('Assign charge success - data will be refetched automatically')
   }
   const getSelectedItemData = () => {
@@ -167,7 +163,6 @@ export default function OrderDetailPage() {
     return selectedIndex >= 0 ? (orderItemsData[selectedIndex]?.data ?? null) : null
   }
 
-  // Kiểm tra xem tất cả milestone của tất cả items đã hoàn thành chưa
   const areAllMilestonesCompleted = () => {
     if (orderItemsData.length === 0) return false
 
@@ -176,9 +171,7 @@ export default function OrderDetailPage() {
         return false
       }
 
-      // Kiểm tra tất cả milestone của item này đã hoàn thành
       return itemQuery.data.milestones.every((milestone) => {
-        // Kiểm tra tất cả task trong milestone đã hoàn thành (AdminMilestone dùng tasks thay vì maternityDressTasks)
         return milestone.tasks.every(
           (task) => task.detail.status === 'DONE' || task.detail.status === 'PASS' || task.detail.status === 'FAIL'
         )
@@ -186,7 +179,6 @@ export default function OrderDetailPage() {
     })
   }
 
-  // Xử lý tạo đơn shipping với React Query pattern
   const handleCreateShipping = () => {
     if (!order?.data?.id) return
 
@@ -195,9 +187,7 @@ export default function OrderDetailPage() {
         if (response.data.success) {
           setShippingOrder(response.data.order)
           setShowShippingDialog(true)
-          // Toast và cache invalidation đã được xử lý trong service
         }
-        // Error handling cũng đã được xử lý trong service
       }
     })
   }
@@ -271,7 +261,7 @@ export default function OrderDetailPage() {
 
   return (
     <Main>
-      <div className='container space-y-4'>
+      <div className='space-y-4'>
         <div className='relative overflow-hidden rounded-2xl border-2 border-violet-200 dark:border-violet-800 shadow-xl shadow-violet-100/50 dark:shadow-violet-900/20'>
           <div className='absolute inset-0 bg-gradient-to-r from-violet-600 via-violet-500 to-purple-600 dark:from-violet-700 dark:via-violet-600 dark:to-purple-700' />
           <div className='absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-white/20 dark:via-white/5 dark:to-white/10' />

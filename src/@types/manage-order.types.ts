@@ -42,7 +42,8 @@ export enum PaymentMethod {
 }
 export enum DeliveryMethod {
   DELIVERY = 'DELIVERY',
-  PICKUP = 'PICKUP'
+  PICKUP = 'PICKUP',
+  PICK_UP = 'PICK_UP' // Thêm giá trị này để tương thích với API
 }
 export enum TypeOrder {
   NORMAL = 'NORMAL',
@@ -66,6 +67,7 @@ export interface OrderType {
   id: string
   addressId?: string
   code: string
+  trackingOrderCode?: string
   discountSubtotal?: number
   depositSubtotal?: number
   remainingBalance?: number
