@@ -19,6 +19,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DataTablePagination } from '../../components/data-table-pagination'
 import { AlertCircle, Search } from 'lucide-react'
 import { BranchOrderTableToolbar } from './branch-order-table-toolbar'
+import { useBranchOrders } from '../contexts/branch-order-context'
+import { BranchOrderType } from '@/@types/branch-order.types'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -32,6 +34,14 @@ export function BranchOrderTable<TData, TValue>({ columns, data, isLoading, erro
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
+
+  // Branch orders context for opening sidebar
+  const { setOpen, setCurrentRow } = useBranchOrders()
+
+  const handleRowClick = (order: BranchOrderType) => {
+    setCurrentRow(order)
+    setOpen('view')
+  }
 
   const table = useReactTable({
     data,
@@ -121,14 +131,24 @@ export function BranchOrderTable<TData, TValue>({ columns, data, isLoading, erro
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  onClick={() => handleRowClick(row.original as BranchOrderType)}
                   className={`
-                    border-b border-violet-100 dark:border-violet-900 hover:bg-violet-50/50 dark:hover:bg-violet-950/20 transition-colors duration-200
+                    border-b border-violet-100 dark:border-violet-900 hover:bg-violet-50/50 dark:hover:bg-violet-950/20 transition-colors duration-200 cursor-pointer
                     ${index % 2 === 0 ? 'bg-white dark:bg-card' : 'bg-violet-50/30 dark:bg-violet-950/5'}
                     ${row.getIsSelected() ? 'bg-violet-100 dark:bg-violet-950/30' : ''}
                   `}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className='py-4'>
+                    <TableCell
+                      key={cell.id}
+                      className='py-4'
+                      onClick={(e) => {
+                        // Prevent row click when clicking on actions column
+                        if (cell.column.id === 'actions' || cell.column.id === 'select') {
+                          e.stopPropagation()
+                        }
+                      }}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

@@ -110,6 +110,7 @@ export const router = createBrowserRouter([
             path: 'manage-order',
             element: <ManageBranchOrderPage />
           },
+          { path: 'manage-branch-order/:orderId', element: <OrderDetailPage /> },
           {
             path: 'manage-warranty',
             element: <ManageBranchWarrantyPage />

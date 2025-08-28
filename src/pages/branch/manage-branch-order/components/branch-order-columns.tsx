@@ -1,20 +1,15 @@
 // order-columns.tsx - Enhanced Order Table Columns
-import { ManageUserType } from '@/@types/admin.types'
 import { BranchOrderType } from '@/@types/branch-order.types'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ColumnDef } from '@tanstack/react-table'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getStatusColor, getStatusLabel } from '../data/data'
-import { BranchOrderTableRowAction } from './branch-order-row-action'
+import { BranchOrderRowActions } from './branch-order-row-actions'
+import { OrderCustomerCell } from './order-customer-cell'
 import { format } from 'date-fns'
 
-interface BranchOrderColumnsProps {
-  user?: ManageUserType[]
-}
-
-export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps = {}): ColumnDef<BranchOrderType>[] => [
+export const createBranchOrderColumns = (): ColumnDef<BranchOrderType>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -61,22 +56,7 @@ export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps 
     id: 'customerInfor',
     header: ({ column }) => <DataTableColumnHeader column={column} title='Khách hàng' />,
     cell: ({ row }) => {
-      const userId = row.getValue('userId') as string
-      const customer = user.find((u) => u.id === userId)
-      return (
-        <div className='flex items-center space-x-3'>
-          <Avatar className='h-10 w-10 ring-2 ring-violet-200 dark:ring-violet-700'>
-            <AvatarFallback className='text-sm bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-300 font-semibold'>
-              {customer?.fullName?.charAt(0)?.toUpperCase() || 'U'}
-            </AvatarFallback>
-            <AvatarImage src={customer?.profilePicture || ''} />
-          </Avatar>
-          <div className='min-w-0 flex-1'>
-            <p className='font-semibold text-sm text-foreground truncate'>{customer?.fullName || 'N/A'}</p>
-            <p className='text-xs text-muted-foreground truncate'>{customer?.userEmail || 'N/A'}</p>
-          </div>
-        </div>
-      )
+      return <OrderCustomerCell order={row.original} />
     },
     enableSorting: false,
     enableHiding: true
@@ -218,7 +198,7 @@ export const createBranchOrderColumns = ({ user = [] }: BranchOrderColumnsProps 
   {
     id: 'actions',
     header: 'Thao tác',
-    cell: ({ row }) => <BranchOrderTableRowAction row={row} />,
+    cell: ({ row }) => <BranchOrderRowActions order={row.original} />,
     enableSorting: false,
     enableHiding: false
   }

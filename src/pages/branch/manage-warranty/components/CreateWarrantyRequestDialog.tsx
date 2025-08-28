@@ -22,6 +22,7 @@ import { FirebaseVideoUpload } from '@/components/firebase-video-upload'
 import { useCreateBranchWarrantyRequest } from '@/services/global/warranty.service'
 import type { OrderItemType } from '@/@types/manage-order.types'
 import { PaymentMethod } from '@/@types/manage-order.types'
+import { useGetConfigs } from '@/services/global/system-config.service'
 
 interface CreateWarrantyRequestDialogProps {
   open: boolean
@@ -43,12 +44,14 @@ export function CreateWarrantyRequestDialog({
   const [feeAmount, setFeeAmount] = useState<number | null>(null)
 
   const { mutateAsync: createRequest, isPending: creating } = useCreateBranchWarrantyRequest()
-
+  const { data: configData } = useGetConfigs()
+  const warrantyPeriod = configData?.data.fields.warrantyTime
+  console.log('hi', warrantyPeriod)
   // Check if any item needs fee (warranty round >= 2) - memoized to prevent infinite re-renders
   const needsFee = useMemo(() => {
     return selectedItems.some((item) => {
       const warrantyRound = item.warrantyRound || 1
-      return warrantyRound >= 2
+      return warrantyRound >= (warrantyPeriod as number)
     })
   }, [selectedItems])
 

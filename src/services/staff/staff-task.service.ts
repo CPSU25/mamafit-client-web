@@ -32,7 +32,7 @@ const transformStaffDataForUI = (data: StaffOrderTaskItem[]): ProductTaskGroup[]
       // Kiểm tra cả preset và maternityDressDetail
       const hasPreset = staffOrderTaskItem.orderItem?.preset
       const hasMaternityDressDetail = staffOrderTaskItem.orderItem?.maternityDressDetail
-      
+
       if (!hasPreset && !hasMaternityDressDetail) {
         console.warn('Order item has neither preset nor maternityDressDetail:', staffOrderTaskItem.orderItem?.id)
         return null

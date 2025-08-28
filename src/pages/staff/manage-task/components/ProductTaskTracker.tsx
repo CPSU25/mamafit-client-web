@@ -56,24 +56,24 @@ export const ProductTaskTracker: React.FC<ProductTaskTrackerProps> = ({
               <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
                 <div className='flex items-center gap-4'>
                   <img
-                    src={preset.images[0]}
-                    alt={preset.styleName}
+                    src={preset?.images[0]}
+                    alt={preset?.styleName}
                     className='w-16 h-16 rounded-lg object-cover shadow-sm'
                   />
                   <div>
-                    <CardTitle className='text-xl'>{preset.styleName}</CardTitle>
+                    <CardTitle className='text-xl'>{preset?.styleName}</CardTitle>
                     <div className='space-y-1'>
                       <p className='text-sm text-muted-foreground'>
                         Order Code: <span className='font-mono text-xs'>{productGroup.orderCode}</span>
                       </p>
                       <p className='text-sm text-muted-foreground'>
-                        Preset: <span className='font-mono text-xs'>{preset.id}</span>
+                        Preset: <span className='font-mono text-xs'>{preset?.sku}</span>
                       </p>
                       <p className='text-lg font-semibold text-primary'>
                         {new Intl.NumberFormat('vi-VN', {
                           style: 'currency',
                           currency: 'VND'
-                        }).format(preset.price)}
+                        }).format(preset?.price || 0)}
                       </p>
                     </div>
                   </div>

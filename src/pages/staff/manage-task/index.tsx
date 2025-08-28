@@ -346,8 +346,7 @@ export default function StaffTasksPage() {
                     const displaySku = orderItem.preset?.sku ?? orderItem.maternityDressDetail?.sku ?? '—'
                     const displayImage =
                       orderItem.preset?.images?.[0] ?? orderItem.maternityDressDetail?.image?.[0] ?? ''
-                    const displayPrice =
-                      orderItem.preset?.price ?? orderItem.maternityDressDetail?.price ?? 0
+                    const displayPrice = orderItem.preset?.price ?? orderItem.maternityDressDetail?.price ?? 0
                     const displayOrderItemId = orderItem.orderItemId
                     const totalTasks = orderItem.milestones.reduce(
                       (sum: number, milestone: AnyMilestone) => sum + milestone.maternityDressTasks.length,
@@ -523,8 +522,7 @@ export default function StaffTasksPage() {
                         const displaySku = orderItem.preset?.sku ?? orderItem.maternityDressDetail?.sku ?? '—'
                         const displayImage =
                           orderItem.preset?.images?.[0] ?? orderItem.maternityDressDetail?.image?.[0] ?? ''
-                        const displayPrice =
-                          orderItem.preset?.price ?? orderItem.maternityDressDetail?.price ?? 0
+                        const displayPrice = orderItem.preset?.price ?? orderItem.maternityDressDetail?.price ?? 0
                         const displayOrderItemId = orderItem.orderItemId
                         const totalTasks = orderItem.milestones.reduce(
                           (sum: number, milestone: AnyMilestone) => sum + milestone.maternityDressTasks.length,

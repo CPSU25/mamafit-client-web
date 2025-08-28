@@ -87,7 +87,7 @@ export default function OrderItemDetailPage() {
   // Tính tổng giá trị add-ons từ orderItem.addOnOptions
   const totalAddOnPrice =
     orderItem?.addOnOptions?.reduce((sum: number, addon: AddOnOption) => sum + addon.price, 0) || 0
-  
+
   // Xác định giá cơ bản từ preset hoặc maternityDressDetail
   const basePrice = preset?.price ?? maternityDressDetail?.price ?? 0
   const totalPrice = basePrice + totalAddOnPrice
@@ -173,45 +173,43 @@ export default function OrderItemDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className='space-y-4'>
-                              <div className='aspect-square w-full rounded-xl overflow-hidden shadow-md '>
-                  <ProductImageViewer
-                    src={displayImage}
-                    alt={displayName}
-                    containerClassName='aspect-square w-110 rounded-lg border-2 border-violet-200 dark:border-violet-700'
-                    imgClassName='px-2'
-                    fit='contain'
-                  />
-                </div>
+              <div className='aspect-square w-full rounded-xl overflow-hidden shadow-md '>
+                <ProductImageViewer
+                  src={displayImage}
+                  alt={displayName}
+                  containerClassName='aspect-square w-110 rounded-lg border-2 border-violet-200 dark:border-violet-700'
+                  imgClassName='px-2'
+                  fit='contain'
+                />
+              </div>
 
-                <div className='space-y-4'>
-                  <div className='text-center'>
-                    <h3 className='font-bold text-xl text-gray-900 mb-2'>{displayName}</h3>
-                    <div className='flex items-center justify-center gap-2'>
-                      <Badge variant='secondary' className='px-3 py-1'>
-                        {displayType}
-                      </Badge>
-                      <Badge variant='outline' className='px-3 py-1'>
-                        SKU: {displaySku}
-                      </Badge>
-                    </div>
-
-                    {/* Hiển thị thông tin bổ sung cho READY_TO_BUY */}
-                    {maternityDressDetail && !preset && (
-                      <div className='mt-3 space-y-2'>
-                        <div className='flex items-center justify-center gap-2'>
-                          <Badge variant='outline' className='px-2 py-1 text-xs'>
-                            Size: {maternityDressDetail.size}
-                          </Badge>
-                          <Badge variant='outline' className='px-2 py-1 text-xs'>
-                            Màu: {maternityDressDetail.color}
-                          </Badge>
-                        </div>
-                        <div className='text-sm text-muted-foreground'>
-                          Số lượng: {maternityDressDetail.quantity}
-                        </div>
-                      </div>
-                    )}
+              <div className='space-y-4'>
+                <div className='text-center'>
+                  <h3 className='font-bold text-xl text-gray-900 mb-2'>{displayName}</h3>
+                  <div className='flex items-center justify-center gap-2'>
+                    <Badge variant='secondary' className='px-3 py-1'>
+                      {displayType}
+                    </Badge>
+                    <Badge variant='outline' className='px-3 py-1'>
+                      SKU: {displaySku}
+                    </Badge>
                   </div>
+
+                  {/* Hiển thị thông tin bổ sung cho READY_TO_BUY */}
+                  {maternityDressDetail && !preset && (
+                    <div className='mt-3 space-y-2'>
+                      <div className='flex items-center justify-center gap-2'>
+                        <Badge variant='outline' className='px-2 py-1 text-xs'>
+                          Size: {maternityDressDetail.size}
+                        </Badge>
+                        <Badge variant='outline' className='px-2 py-1 text-xs'>
+                          Màu: {maternityDressDetail.color}
+                        </Badge>
+                      </div>
+                      <div className='text-sm text-muted-foreground'>Số lượng: {maternityDressDetail.quantity}</div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Price Section */}
                 <div className='bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200'>
