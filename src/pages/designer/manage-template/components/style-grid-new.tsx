@@ -10,9 +10,6 @@ interface StyleGridProps {
 }
 
 export const StyleGrid: React.FC<StyleGridProps> = ({ groupedByStyle, onEdit, onDelete, onView }) => {
-  // Debug: kiểm tra onView prop
-  console.log('StyleGrid rendered with onView:', !!onView)
-
   const styleEntries = Object.entries(groupedByStyle)
 
   const handlePreviewTemplate = (template: DressTemplate) => {

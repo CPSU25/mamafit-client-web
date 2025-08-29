@@ -1,4 +1,3 @@
-
 import { AlertTriangle, MessageSquare } from 'lucide-react'
 import { TicketCard } from './ticket-card'
 import type { TicketList } from '@/@types/ticket.types'

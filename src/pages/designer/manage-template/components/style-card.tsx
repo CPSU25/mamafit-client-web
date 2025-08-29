@@ -27,7 +27,10 @@ export const StyleCard: React.FC<StyleCardProps> = ({
   const userTemplates = templates.filter((t) => t.type === 'USER').length
 
   return (
-    <Card className='w-full shadow-sm hover:shadow-md transition-shadow'>
+    <Card
+      className='w-full shadow-sm hover:shadow-md transition-shadow cursor-pointer'
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
       <CardHeader className='pb-3'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3'>
@@ -59,7 +62,7 @@ export const StyleCard: React.FC<StyleCardProps> = ({
               </div>
             </div>
 
-            <Button variant='ghost' size='sm' onClick={() => setIsExpanded(!isExpanded)}>
+            <Button variant='ghost' size='sm' className='pointer-events-none'>
               {isExpanded ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' />}
             </Button>
           </div>
@@ -90,7 +93,10 @@ export const StyleCard: React.FC<StyleCardProps> = ({
                       size='sm'
                       variant='secondary'
                       className='h-7 w-7 p-0'
-                      onClick={() => onPreviewTemplate(template)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onPreviewTemplate(template)
+                      }}
                     >
                       <Eye className='w-3 h-3' />
                     </Button>
@@ -98,7 +104,10 @@ export const StyleCard: React.FC<StyleCardProps> = ({
                       size='sm'
                       variant='secondary'
                       className='h-7 w-7 p-0'
-                      onClick={() => onEditTemplate(template.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onEditTemplate(template.id)
+                      }}
                     >
                       <Edit className='w-3 h-3' />
                     </Button>
@@ -106,7 +115,10 @@ export const StyleCard: React.FC<StyleCardProps> = ({
                       size='sm'
                       variant='destructive'
                       className='h-7 w-7 p-0'
-                      onClick={() => onDeleteTemplate(template.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDeleteTemplate(template.id)
+                      }}
                     >
                       <Trash2 className='w-3 h-3' />
                     </Button>
@@ -116,8 +128,13 @@ export const StyleCard: React.FC<StyleCardProps> = ({
                 {/* Template Info */}
                 <div className='text-center'>
                   <Badge variant={template.type === 'SYSTEM' ? 'default' : 'outline'} className='text-xs mb-1'>
-                    #{template.id.slice(0, 8)}
+                    {template.name}
                   </Badge>
+                  {template.isDefault && (
+                    <Badge variant='outline' className='ml-2 text-xs'>
+                      Mặc định
+                    </Badge>
+                  )}
                   <p className='text-xs text-muted-foreground'>{template.price.toLocaleString('vi-VN')}đ</p>
                 </div>
               </div>

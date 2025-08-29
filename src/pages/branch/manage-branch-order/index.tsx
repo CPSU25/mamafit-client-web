@@ -1,4 +1,3 @@
-// index.tsx - Trang Quản Lý Đơn Hàng Chi Nhánh
 import { useMemo } from 'react'
 import { Package2, ShoppingCart, Package, CheckCircle, Sparkles, Store } from 'lucide-react'
 
@@ -11,7 +10,7 @@ import { transformOrderData } from './data/schema'
 import { createBranchOrderColumns } from './components/branch-order-columns'
 import { BranchOrderTable } from './components/branch-order-table'
 import { OrderDialogs } from './components/branch-order-dialogs'
-import { BranchOrderDetailSidebar } from './components/branch-order-detail-sidebar'
+import { BranchOrderDetailDialog } from './components/branch-order-detail-dialog'
 import BranchOrderProvider from './contexts/branch-order-context'
 import { useBranchOrders } from './contexts/branch-order-context'
 
@@ -269,7 +268,7 @@ function ManageOrderContent() {
       </div>
 
       {/* Order Detail Sidebar */}
-      <BranchOrderDetailSidebar
+      <BranchOrderDetailDialog
         order={currentRow as BranchOrderType}
         isOpen={isDetailOpen}
         onClose={handleCloseSidebar}

@@ -153,8 +153,8 @@ export default function BranchOrderDetailPage() {
   const order = orderDetail.data
 
   return (
-    <Main className='space-y-6'>
-      <div className=''>
+    <Main>
+      <div className='space-y-4'>
         {/* Header với gradient tím đẹp mắt */}
         <div className='relative overflow-hidden rounded-2xl border-2 border-violet-200 dark:border-violet-800 shadow-xl shadow-violet-100/50 dark:shadow-violet-900/20'>
           <div className='absolute inset-0 bg-gradient-to-r from-violet-600 via-violet-500 to-purple-600 dark:from-violet-700 dark:via-violet-600 dark:to-purple-700' />

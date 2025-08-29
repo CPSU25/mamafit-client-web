@@ -105,7 +105,8 @@ export const sidebarData: SidebarData = {
               title: 'Quản lý đơn hàng',
               icon: Package,
               url: 'manage-order'
-            }
+            },
+            { title: 'Chi tiết đơn hàng', url: 'manage-order/:orderId', icon: Eye, disabled: true }
           ]
         },
         {
