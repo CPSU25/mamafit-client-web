@@ -144,14 +144,14 @@ export const sidebarData: SidebarData = {
                 // { title: 'Mẫu nổi bật', url: 'manage-template/featured', icon: Award }
               ]
             },
-            { title: 'Yêu cầu thiết kế', url: 'manage-design-request', icon: Award, badge: '7' }
+            { title: 'Yêu cầu thiết kế', url: 'manage-design-request', icon: Award }
             // { title: 'Công việc của tôi', url: 'manage-task', icon: ClipboardList }
           ]
         },
         {
           title: 'Tương tác',
           items: [
-            { title: 'Chat với khách hàng', url: 'messages', icon: MessagesSquare, badge: '4' }
+            { title: 'Chat với khách hàng', url: 'messages', icon: MessagesSquare }
             // { title: 'Phản hồi thiết kế', url: 'design-feedback', icon: FileText }
           ]
         }

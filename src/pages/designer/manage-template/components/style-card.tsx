@@ -23,8 +23,6 @@ export const StyleCard: React.FC<StyleCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false)
 
   const totalPrice = templates.reduce((sum, template) => sum + template.price, 0)
-  const systemTemplates = templates.filter((t) => t.type === 'SYSTEM').length
-  const userTemplates = templates.filter((t) => t.type === 'USER').length
 
   return (
     <Card
@@ -39,27 +37,13 @@ export const StyleCard: React.FC<StyleCardProps> = ({
             </div>
             <div>
               <CardTitle className='text-lg font-semibold'>{styleName}</CardTitle>
-              <p className='text-sm text-muted-foreground'>
-                {templates.length} preset{templates.length > 1 ? 's' : ''}
-              </p>
+              <p className='text-sm text-muted-foreground'>{templates.length} mẫu</p>
             </div>
           </div>
 
           <div className='flex items-center gap-2'>
             <div className='text-right'>
               <p className='text-sm font-medium'>{totalPrice.toLocaleString('vi-VN')}đ</p>
-              <div className='flex gap-1'>
-                {systemTemplates > 0 && (
-                  <Badge variant='secondary' className='text-xs'>
-                    {systemTemplates} System
-                  </Badge>
-                )}
-                {userTemplates > 0 && (
-                  <Badge variant='outline' className='text-xs'>
-                    {userTemplates} User
-                  </Badge>
-                )}
-              </div>
             </div>
 
             <Button variant='ghost' size='sm' className='pointer-events-none'>
@@ -80,7 +64,7 @@ export const StyleCard: React.FC<StyleCardProps> = ({
                 {/* Template Image */}
                 <div className='aspect-[3/4] bg-white rounded-md overflow-hidden mb-2 border'>
                   {template.images && template.images.length > 0 ? (
-                    <img src={template.images[0]} alt={`${styleName} preset`} className='w-full h-full object-cover' />
+                    <img src={template.images[0]} alt={`${styleName} mẫu`} className='w-full h-full object-cover' />
                   ) : (
                     <div className='w-full h-full flex items-center justify-center text-gray-400'>
                       <Palette className='w-8 h-8' />

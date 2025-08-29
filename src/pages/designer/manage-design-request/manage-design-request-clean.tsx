@@ -16,13 +16,24 @@ import {
   DesignRequestDetailDialog
 } from './components'
 import { ExtendedOrderTaskItem, ChatMessage } from './types'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from '@/components/ui/pagination'
 
 const ManageDesignRequestPage = () => {
   // State management
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedRequest, setSelectedRequest] = useState<ExtendedOrderTaskItem | null>(null)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   // Chat states
   const [isChatPanelOpen, setIsChatPanelOpen] = useState(false)
@@ -59,9 +70,6 @@ const ManageDesignRequestPage = () => {
     if (!designRequests) {
       return []
     }
-
-    // API response structure: { data: [...], message: "...", statusCode: 200, code: "SUCCESS" }
-    // So we need to access designRequests.data.data (nested data property)
     const requestsArray = designRequests.data?.data || []
 
     if (!Array.isArray(requestsArray)) {
@@ -70,6 +78,42 @@ const ManageDesignRequestPage = () => {
 
     return requestsArray as ExtendedOrderTaskItem[]
   }, [designRequests])
+
+  // Filter and process data
+  const filteredRequests = useMemo(() => {
+    let filtered = processedRequests
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (request) =>
+          request.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          request.orderItem.designRequest.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          request.orderItem.designRequest.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter((request) => getTaskStatus(request.milestones, request.orderStatus) === statusFilter)
+    }
+
+    return filtered
+  }, [processedRequests, searchTerm, statusFilter])
+
+  // Pagination logic
+  const paginatedRequests = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return filteredRequests.slice(startIndex, endIndex)
+  }, [filteredRequests, currentPage, pageSize])
+
+  const totalPages = Math.ceil(filteredRequests.length / pageSize)
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, statusFilter])
 
   // Helper functions
   const getTaskStatus = (milestones: ExtendedOrderTaskItem['milestones'], orderStatus?: string) => {
@@ -94,6 +138,16 @@ const ManageDesignRequestPage = () => {
     if (allTasks.every((task) => task.status === 'COMPLETED')) return 'COMPLETED'
     if (allTasks.some((task) => task.status === 'IN_PROGRESS')) return 'IN_PROGRESS'
     return 'PENDING'
+  }
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1) // Reset to first page when changing page size
   }
 
   // Setup SignalR connection và real-time listeners
@@ -167,28 +221,6 @@ const ManageDesignRequestPage = () => {
       chatService.off('MessageSent', handleMessageSent)
     }
   }, [chatRoomId, user?.userId, invalidateRoomMessages, updateRoomLastMessage])
-
-  // Filter and process data
-  const filteredRequests = useMemo(() => {
-    let filtered = processedRequests
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (request) =>
-          request.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          request.orderItem.designRequest.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          request.orderItem.designRequest.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter((request) => getTaskStatus(request.milestones, request.orderStatus) === statusFilter)
-    }
-
-    return filtered
-  }, [processedRequests, searchTerm, statusFilter])
 
   // Convert API messages to component messages
   const convertedMessages: ChatMessage[] = useMemo(() => {
@@ -348,8 +380,6 @@ const ManageDesignRequestPage = () => {
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
       />
 
       {/* Stats */}
@@ -357,17 +387,78 @@ const ManageDesignRequestPage = () => {
 
       {/* Content */}
       <div className='space-y-6'>
-        {viewMode === 'grid' ? (
-          <DesignRequestGrid
-            requests={filteredRequests}
-            onViewDetail={handleViewDetail}
-            onStartChat={handleStartChat}
-            onQuickStart={handleQuickStart}
-            onComplete={handleComplete}
-          />
-        ) : (
-          <div className='text-center py-12'>
-            <p className='text-muted-foreground'>List view chưa được implement</p>
+        <DesignRequestGrid
+          requests={paginatedRequests}
+          onViewDetail={handleViewDetail}
+          onStartChat={handleStartChat}
+          onQuickStart={handleQuickStart}
+          onComplete={handleComplete}
+        />
+
+        {/* Pagination */}
+        {filteredRequests.length > 0 && (
+          <div className='flex flex-col items-center space-y-4'>
+            <Pagination>
+              <PaginationContent>
+                {/* Previous Button */}
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                    className={`cursor-pointer select-none ${
+                      currentPage <= 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    }`}
+                  />
+                </PaginationItem>
+
+                {/* Page Numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      isActive={page === currentPage}
+                      onClick={() => handlePageChange(page)}
+                      className='cursor-pointer'
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+
+                {/* Next Button */}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                    className={`cursor-pointer select-none ${
+                      currentPage >= totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    }`}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+
+            {/* Pagination Info */}
+            <div className='text-center'>
+              <span className='text-sm text-gray-600 dark:text-gray-300'>
+                Trang {currentPage} / {totalPages} • Hiển thị {paginatedRequests.length} / {filteredRequests.length} yêu
+                cầu
+              </span>
+            </div>
+
+            {/* Page Size Selector */}
+            <div className='flex items-center space-x-2'>
+              <span className='text-sm text-gray-600 dark:text-gray-300'>Hiển thị:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className='px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500'
+              >
+                {[5, 10, 20, 50].map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+              <span className='text-sm text-gray-600 dark:text-gray-300'>yêu cầu/trang</span>
+            </div>
           </div>
         )}
       </div>
