@@ -6,9 +6,6 @@ import AppSidebar from '@/components/layout/app-sidebar'
 import Cookies from 'js-cookie'
 import { SearchProvider } from '@/context/search-context'
 import { Header } from '@/components/layout/header'
-// import { Search } from '@/components/search'
-// import { ModeToggle } from '@/components/mode-toggle'
-// import { NotificationDropdown } from '@/components/notification-dropdown'
 import { Search } from '@/components/search'
 
 interface Props {
@@ -26,11 +23,8 @@ function SystemLayout({ role, children }: Props) {
           <Header>
             <div className='flex items-center gap-3 flex-1 justify-end max-w-lg'>
               <div className='flex-1 max-w-sm'>
-                <Search placeholder='Search...' />
+                <Search placeholder='Tìm kiếm nhanh...' />
               </div>
-              {/* <div className='flex items-center gap-2'>
-                <NotificationDropdown />
-              </div> */}
             </div>
           </Header>
 

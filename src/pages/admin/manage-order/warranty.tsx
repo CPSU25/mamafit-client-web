@@ -131,7 +131,7 @@ function WarrantyOrderContent() {
   const handleCloseSidebar = () => setOpen(null)
 
   return (
-    <Main>
+    <div>
       {/* Main Content */}
       <div className={`flex-1 transition-all duration-300 ease-in-out ${isDetailOpen ? 'mr-80 lg:mr-96' : ''}`}>
         <div className='space-y-6'>
@@ -257,7 +257,7 @@ function WarrantyOrderContent() {
 
       {/* Order Detail Sidebar */}
       <OrderDetailSidebar order={currentRow as OrderById} isOpen={isDetailOpen} onClose={handleCloseSidebar} />
-    </Main>
+    </div>
   )
 }
 

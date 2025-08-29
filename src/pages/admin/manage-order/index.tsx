@@ -239,7 +239,7 @@ function ManageOrderContent() {
   const handleCloseSidebar = () => setOpen(null)
 
   return (
-    <Main>
+    <div>
       {/* Main Content */}
       <div
         className={`flex-1 transition-all duration-300 ease-in-out ${isDetailOpen ? 'sm:mr-96 lg:mr-[28rem] xl:mr-[32rem]' : ''}`}
@@ -303,7 +303,7 @@ function ManageOrderContent() {
 
       {/* Order Detail Sidebar */}
       <OrderDetailSidebar order={currentRow as OrderById} isOpen={isDetailOpen} onClose={handleCloseSidebar} />
-    </Main>
+    </div>
   )
 }
 

@@ -57,3 +57,25 @@ export const requestTypeConfig: Record<RequestType, RequestTypeConfigEntry> = {
       'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/20 dark:text-violet-400 dark:border-violet-800'
   }
 }
+
+// Tab to status mapping for filtering
+export const tabStatusMapping: Record<string, StatusWarrantyRequest[]> = {
+  all: [],
+  pending: [StatusWarrantyRequest.PENDING],
+  approved: [StatusWarrantyRequest.APPROVED],
+  repairing: [StatusWarrantyRequest.REPAIRING],
+  awaiting_payment: [StatusWarrantyRequest.APPROVED], // Chờ thanh toán = đã duyệt
+  completed: [StatusWarrantyRequest.COMPLETED],
+  rejected: [StatusWarrantyRequest.REJECTED, StatusWarrantyRequest.PARTIALLY_REJECTED]
+}
+
+// Tab labels for display
+export const tabLabels: Record<string, string> = {
+  all: 'Tất cả',
+  pending: 'Chờ xử lý',
+  approved: 'Đã duyệt',
+  repairing: 'Sửa chữa',
+  awaiting_payment: 'Chờ TT',
+  completed: 'Hoàn thành',
+  rejected: 'Từ chối'
+}

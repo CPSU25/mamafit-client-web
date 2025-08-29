@@ -23,7 +23,7 @@ const VoucherPageSkeleton = () => (
           <Ticket className='h-8 w-8 text-purple-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' />
         </div>
         <div>
-          <p className='text-lg font-medium text-foreground'>Đang tải voucher...</p>
+          <p className='text-lg font-medium text-foreground'>Đang tải khuyến mãi...</p>
           <p className='text-sm text-muted-foreground mt-1'>Vui lòng đợi trong giây lát</p>
         </div>
       </div>
@@ -45,7 +45,7 @@ const VoucherPageError = ({ error }: { error: unknown }) => {
                 <Ticket className='h-8 w-8 text-destructive' />
               </div>
               <div>
-                <p className='text-lg font-semibold text-destructive'>Không thể tải voucher</p>
+                <p className='text-lg font-semibold text-destructive'>Không thể tải khuyến mãi</p>
                 <p className='text-sm text-muted-foreground mt-2'>{errorMessage}</p>
               </div>
               <button
@@ -112,10 +112,10 @@ function ManageVoucherContent() {
             </div>
             <div>
               <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-purple-500 bg-clip-text text-transparent'>
-                Quản Lý Voucher
+                Quản Lý Khuyến Mãi
               </h1>
               <p className='text-sm text-muted-foreground flex items-center gap-1'>
-                Quản lý lô voucher và voucher giảm giá
+                Quản lý lô khuyến mãi và khuyến mãi giảm giá
                 <Sparkles className='h-3 w-3 text-purple-500' />
               </p>
             </div>
