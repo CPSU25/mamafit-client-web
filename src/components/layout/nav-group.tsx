@@ -43,15 +43,17 @@ export function NavGroup({ title, items }: NavGroup) {
       </div>
 
       <SidebarMenu className='mt-2'>
-        {items.filter((item) => !item.disabled).map((item) => {
-          const key = `${item.title}-${item.url}`
+        {items
+          .filter((item) => !item.disabled)
+          .map((item) => {
+            const key = `${item.title}-${item.url}`
 
-          if (!item.items) return <SidebarMenuLink key={key} item={item} href={href} />
+            if (!item.items) return <SidebarMenuLink key={key} item={item} href={href} />
 
-          if (state === 'collapsed') return <SidebarMenuCollapsedDropdown key={key} item={item} href={href} />
+            if (state === 'collapsed') return <SidebarMenuCollapsedDropdown key={key} item={item} href={href} />
 
-          return <SidebarMenuCollapsible key={key} item={item} href={href} />
-        })}
+            return <SidebarMenuCollapsible key={key} item={item} href={href} />
+          })}
       </SidebarMenu>
     </SidebarGroup>
   )

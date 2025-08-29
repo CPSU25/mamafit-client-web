@@ -130,7 +130,8 @@ export function CreateWarrantyRequestDialog({
                       <div className='flex items-start gap-4'>
                         {/* Product Image */}
                         <div className='flex-shrink-0'>
-                          {item.maternityDressDetail?.image || (item.preset?.images && item.preset.images.length > 0) ? (
+                          {item.maternityDressDetail?.image ||
+                          (item.preset?.images && item.preset.images.length > 0) ? (
                             <ProductImageViewer
                               src={item.maternityDressDetail?.image?.[0] || item.preset?.images?.[0] || ''}
                               alt={item.preset?.name || item.maternityDressDetail?.name || 'product'}
@@ -152,12 +153,18 @@ export function CreateWarrantyRequestDialog({
                             <div className='space-y-2'>
                               <div className='flex items-center gap-2'>
                                 {item.preset?.sku && (
-                                  <Badge variant='outline' className='font-mono text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800'>
+                                  <Badge
+                                    variant='outline'
+                                    className='font-mono text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800'
+                                  >
                                     {item.preset.sku}
                                   </Badge>
                                 )}
                                 {item.maternityDressDetail?.sku && (
-                                  <Badge variant='outline' className='font-mono text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800'>
+                                  <Badge
+                                    variant='outline'
+                                    className='font-mono text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800'
+                                  >
                                     {item.maternityDressDetail.sku}
                                   </Badge>
                                 )}
@@ -166,7 +173,10 @@ export function CreateWarrantyRequestDialog({
                                 {item.preset?.name || item.maternityDressDetail?.name}
                               </h3>
                             </div>
-                            <Badge variant='secondary' className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-950/30 dark:text-violet-400'>
+                            <Badge
+                              variant='secondary'
+                              className='text-xs bg-violet-100 text-violet-700 dark:bg-violet-950/30 dark:text-violet-400'
+                            >
                               Sản phẩm {index + 1}
                             </Badge>
                           </div>
@@ -195,7 +205,9 @@ export function CreateWarrantyRequestDialog({
                         {item.warrantyDate && (
                           <div className='flex items-center gap-2 text-blue-600 dark:text-blue-400'>
                             <Calendar className='h-4 w-4' />
-                            <span className='font-medium'>BH đến: {new Date(item.warrantyDate).toLocaleDateString('vi-VN')}</span>
+                            <span className='font-medium'>
+                              BH đến: {new Date(item.warrantyDate).toLocaleDateString('vi-VN')}
+                            </span>
                           </div>
                         )}
                         <div className='flex items-center gap-2 text-emerald-600 dark:text-emerald-400'>

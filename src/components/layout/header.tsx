@@ -73,7 +73,7 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
     // Nếu không tìm thấy exact match, kiểm tra xem có phải là dynamic route không
     // Ví dụ: manage-order/123 -> hiển thị "Chi tiết đơn hàng"
     const basePath = relevantPath.split('/')[0]
-    
+
     // Xử lý đặc biệt cho manage-order/:orderId
     if (basePath === 'manage-order' && relevantPath.split('/').length > 1) {
       // Đây là route chi tiết đơn hàng
@@ -84,7 +84,7 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
         icon: Package2 // Sử dụng icon từ parent route
       }
     }
-    
+
     // Tìm parent route cho các trường hợp khác
     for (const navGroup of currentRole.navGroups) {
       for (const navItem of navGroup.items) {

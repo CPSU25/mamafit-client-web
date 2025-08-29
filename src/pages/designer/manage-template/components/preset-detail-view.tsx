@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTemplateDetail } from '@/services/designer/template.service'
+import { ImageViewer } from '@/components/ui/image-viewer'
 
 interface PresetDetailViewProps {
   presetId: string | null
@@ -73,9 +74,6 @@ export const PresetDetailView: React.FC<PresetDetailViewProps> = ({
 
   if (!template) return null
 
-  const totalComponentPrice = template.componentOptions?.reduce((sum, option) => sum + option.price, 0) || 0
-  const totalPrice = template.price + totalComponentPrice
-
   return (
     <div className={`${compact ? 'space-y-4' : 'space-y-6'}`}>
       {/* Header - ẩn đi khi compact vì đã có header ở parent */}
@@ -114,7 +112,6 @@ export const PresetDetailView: React.FC<PresetDetailViewProps> = ({
         </div>
       )}
 
-      {/* Preset ID và Style Name - luôn hiển thị */}
       <div className='bg-gray-50 rounded-lg p-4 border'>
         <div className='flex items-center justify-between'>
           <div>
@@ -154,17 +151,19 @@ export const PresetDetailView: React.FC<PresetDetailViewProps> = ({
             </CardHeader>
             <CardContent>
               {/* Main Image */}
-              <div
-                className={`${compact ? 'aspect-[4/3]' : 'aspect-[3/4]'} bg-gray-100 rounded-lg overflow-hidden mb-3`}
-              >
+              <div className={`${compact ? 'aspect-[4/3]' : 'aspect-[3/4]'} rounded-lg overflow-hidden mb-3`}>
                 {template.images && template.images.length > 0 ? (
-                  <img
+                  <ImageViewer
                     src={template.images[0]}
                     alt={`Template ${template.styleName}`}
-                    className='w-full h-full object-cover hover:scale-105 transition-transform duration-300'
+                    containerClassName={`${compact ? 'aspect-[4/3]' : 'aspect-[3/4]'} bg-background`}
+                    imgClassName='w-full h-full object-cover'
+                    fit='contain'
+                    showZoomIcon
+                    title={template.name || template.styleName}
                   />
                 ) : (
-                  <div className='w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400'>
+                  <div className='w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400 rounded-lg border'>
                     <Package className={`${compact ? 'w-8 h-8' : 'w-12 h-12'}`} />
                     <span className='text-sm mt-2'>Chưa có hình ảnh</span>
                   </div>
@@ -175,11 +174,15 @@ export const PresetDetailView: React.FC<PresetDetailViewProps> = ({
               {template.images && template.images.length > 1 && (
                 <div className={`grid ${compact ? 'grid-cols-3 gap-1' : 'grid-cols-2 gap-2'}`}>
                   {template.images.slice(1, compact ? 4 : 5).map((image, index) => (
-                    <div key={index} className='aspect-square bg-gray-100 rounded-md overflow-hidden group'>
-                      <img
+                    <div key={index} className='aspect-square rounded-md overflow-hidden group'>
+                      <ImageViewer
                         src={image}
                         alt={`Additional view ${index + 1}`}
-                        className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
+                        containerClassName='aspect-square bg-background'
+                        imgClassName='!w-auto !h-auto !object-contain'
+                        fit='contain'
+                        showZoomIcon
+                        title={`Ảnh ${index + 2}`}
                       />
                     </div>
                   ))}
@@ -211,10 +214,10 @@ export const PresetDetailView: React.FC<PresetDetailViewProps> = ({
                     <span className='text-sm text-gray-600'>Style:</span>
                     <span className='font-medium text-gray-900'>{template.styleName}</span>
                   </div>
-                  <div className='flex justify-between items-center p-2 rounded bg-gray-50'>
+                  {/* <div className='flex justify-between items-center p-2 rounded bg-gray-50'>
                     <span className='text-sm text-gray-600'>Loại:</span>
                     <Badge variant={template.type === 'SYSTEM' ? 'default' : 'outline'}>{template.type}</Badge>
-                  </div>
+                  </div> */}
                   <div className='flex justify-between items-center p-2 rounded bg-gray-50'>
                     <span className='text-sm text-gray-600'>Mặc định:</span>
                     <Badge variant={template.isDefault ? 'default' : 'secondary'}>
@@ -224,16 +227,8 @@ export const PresetDetailView: React.FC<PresetDetailViewProps> = ({
                 </div>
                 <div className='space-y-3'>
                   <div className='flex justify-between items-center p-2 rounded bg-gray-50'>
-                    <span className='text-sm text-gray-600'>Giá cơ bản:</span>
+                    <span className='text-sm text-gray-600'>Giá preset:</span>
                     <span className='font-medium text-gray-900'>{template.price.toLocaleString('vi-VN')}đ</span>
-                  </div>
-                  <div className='flex justify-between items-center p-2 rounded bg-gray-50'>
-                    <span className='text-sm text-gray-600'>Giá components:</span>
-                    <span className='font-medium text-gray-900'>{totalComponentPrice.toLocaleString('vi-VN')}đ</span>
-                  </div>
-                  <div className='flex justify-between items-center p-3 rounded bg-gradient-to-r from-green-50 to-blue-50 border border-green-200'>
-                    <span className='text-sm font-medium text-gray-700'>Tổng giá trị:</span>
-                    <span className='font-bold text-primary text-lg'>{totalPrice.toLocaleString('vi-VN')}đ</span>
                   </div>
                 </div>
               </div>
@@ -327,21 +322,21 @@ export const PresetDetailView: React.FC<PresetDetailViewProps> = ({
                                   <h5 className='font-semibold text-gray-900 group-hover:text-blue-700 transition-colors'>
                                     {option.name}
                                   </h5>
-                                  <div className='flex items-center gap-2 ml-auto'>
+                                  {/* <div className='flex items-center gap-2 ml-auto'>
                                     <Badge
                                       variant='outline'
                                       className='bg-green-50 text-green-700 border-green-200 font-medium'
                                     >
                                       {option.price.toLocaleString('vi-VN')}đ
                                     </Badge>
-                                  </div>
+                                  </div> */}
                                 </div>
 
                                 {option.description && (
                                   <p className='text-sm text-gray-600 mb-3 leading-relaxed'>{option.description}</p>
                                 )}
 
-                                <div className='flex items-center justify-between'>
+                                {/* <div className='flex items-center justify-between'>
                                   <div className='flex items-center gap-2'>
                                     {option.tag && (
                                       <Badge
@@ -353,7 +348,7 @@ export const PresetDetailView: React.FC<PresetDetailViewProps> = ({
                                     )}
                                   </div>
                                   <span className='text-xs text-gray-400 font-mono'>#{option.id.slice(0, 8)}</span>
-                                </div>
+                                </div> */}
                               </div>
                             </div>
                           </div>

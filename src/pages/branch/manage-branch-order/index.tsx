@@ -27,7 +27,7 @@ interface OrderStatisticsProps {
 
 function OrderStatistics({
   totalOrders,
-  processingOrders, 
+  processingOrders,
   deliveredOrders,
   warrantyOrders,
   isLoading = false

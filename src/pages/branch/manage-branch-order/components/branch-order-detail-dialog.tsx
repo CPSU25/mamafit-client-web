@@ -66,7 +66,7 @@ export function BranchOrderDetailDialog({ order, isOpen, onClose }: BranchOrderD
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <div className='flex items-center gap-2'>
             <Package className='h-5 w-5 text-violet-600' />

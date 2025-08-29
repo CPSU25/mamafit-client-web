@@ -14,11 +14,18 @@ import {
 import { useTemplateManager } from '@/hooks/use-template-manager'
 import { useTemplates } from '@/services/designer/template.service'
 import { ViewMode, SortBy, FilterBy } from '@/@types/designer.types'
+import EditPresetModal from '@/pages/designer/manage-template/components/edit-preset-modal'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { useDeleteTemplate } from '@/services/designer/template.service'
 
 export default function ManageTemplatePage() {
   const [searchParams] = useSearchParams()
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editPresetId, setEditPresetId] = useState<string | null>(null)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   // Lấy params từ URL để truyền vào hook
   const page = parseInt(searchParams.get('page') || '100')
@@ -54,21 +61,35 @@ export default function ManageTemplatePage() {
     refetch() // Refresh the data after successful creation
   }
 
+  // Edit flow
   const handleEdit = (id: string) => {
-    console.log('Edit template:', id)
+    setEditPresetId(id)
+    setIsEditModalOpen(true)
   }
 
+  // Delete flow
+  const deleteMutation = useDeleteTemplate()
   const handleDelete = (id: string) => {
-    console.log('Delete template:', id)
+    setDeleteId(id)
+    setIsDeleteOpen(true)
+  }
+  const confirmDelete = async () => {
+    if (!deleteId) return
+    try {
+      await deleteMutation.mutateAsync(deleteId)
+      setIsDeleteOpen(false)
+      setDeleteId(null)
+      refetch()
+    } catch {
+      // toast handled in hook
+    }
   }
 
   const handleViewPreset = (id: string) => {
-    console.log('handleViewPreset called with id:', id)
     setSelectedPresetId(id)
   }
 
   const handleBackToList = () => {
-    console.log('handleBackToList called')
     setSelectedPresetId(null)
   }
 
@@ -195,6 +216,30 @@ export default function ManageTemplatePage() {
           open={isCreateModalOpen}
           onOpenChange={setIsCreateModalOpen}
           onSuccess={handleCreateSuccess}
+        />
+
+        {/* Edit Preset Modal */}
+        <EditPresetModal
+          open={isEditModalOpen}
+          presetId={editPresetId}
+          onOpenChange={setIsEditModalOpen}
+          onSuccess={() => {
+            refetch()
+            setEditPresetId(null)
+          }}
+        />
+
+        {/* Delete Confirm Dialog */}
+        <ConfirmDialog
+          open={isDeleteOpen}
+          onOpenChange={setIsDeleteOpen}
+          title='Xác nhận xóa preset'
+          description='Bạn có chắc chắn muốn xóa preset này? Hành động này không thể hoàn tác.'
+          confirmText='Xóa'
+          cancelText='Hủy'
+          variant='destructive'
+          onConfirm={confirmDelete}
+          isLoading={deleteMutation.isPending}
         />
       </div>
     </div>
