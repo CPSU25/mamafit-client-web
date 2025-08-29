@@ -1,1 +1,1 @@
-export { default } from './manage-design-request-clean'
+export { default } from './manage-design-request'

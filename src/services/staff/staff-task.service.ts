@@ -329,8 +329,18 @@ export const useStaffGetCurrentSequence = (orderItemId: string) => {
       throw new Error(response.data.message || 'Failed to fetch current sequence')
     },
     enabled: !!orderItemId,
-    staleTime: 1000 * 60 * 5, // 5 phút
-    refetchOnMount: true,
-    refetchOnWindowFocus: false
+    staleTime: 5 * 60 * 1000, // 5 phút
+    gcTime: 10 * 60 * 1000, // 10 phút
+    refetchOnMount: false, // Không refetch khi mount
+    refetchOnWindowFocus: false, // Không refetch khi focus window
+    refetchOnReconnect: false, // Không refetch khi reconnect
+    retry: (failureCount, error) => {
+      const status = (error as { response?: { status?: number } })?.response?.status
+      if (status && status >= 400 && status < 500) {
+        return false
+      }
+      return failureCount < 2
+    },
+    retryDelay: 1000
   })
 }

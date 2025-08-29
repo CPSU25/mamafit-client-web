@@ -17,6 +17,7 @@ import { ViewMode, SortBy, FilterBy } from '@/@types/designer.types'
 import EditPresetModal from '@/pages/designer/manage-template/components/edit-preset-modal'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useDeleteTemplate } from '@/services/designer/template.service'
+import { Main } from '@/components/layout/main'
 
 export default function ManageTemplatePage() {
   const [searchParams] = useSearchParams()
@@ -27,23 +28,19 @@ export default function ManageTemplatePage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  // Lấy params từ URL để truyền vào hook
   const page = parseInt(searchParams.get('page') || '100')
   const searchTerm = searchParams.get('search') || ''
   const sortBy = (searchParams.get('sortBy') as SortBy) || 'CREATED_AT_DESC'
   const filterBy = (searchParams.get('filterBy') as FilterBy) || 'all'
   const viewMode = (searchParams.get('viewMode') as ViewMode) || 'grid'
 
-  // Fetch dữ liệu từ API - chỉ cần pagination
   const { data, error, refetch } = useTemplates({
     index: 0,
     pageSize: page
   })
-
-  // Sử dụng hook quản lý template với dữ liệu từ API
-  // Search và sort sẽ được xử lý ở client-side
+  const systemPresets = data?.items.filter((preset) => preset.type === 'SYSTEM') || []
   const templateManager = useTemplateManager({
-    initialTemplates: data?.items || [],
+    initialTemplates: systemPresets || [],
     initialSearchTerm: searchTerm,
     initialViewMode: viewMode,
     initialSortBy: sortBy,
@@ -58,16 +55,14 @@ export default function ManageTemplatePage() {
   }
 
   const handleCreateSuccess = () => {
-    refetch() // Refresh the data after successful creation
+    refetch()
   }
 
-  // Edit flow
   const handleEdit = (id: string) => {
     setEditPresetId(id)
     setIsEditModalOpen(true)
   }
 
-  // Delete flow
   const deleteMutation = useDeleteTemplate()
   const handleDelete = (id: string) => {
     setDeleteId(id)
@@ -75,14 +70,10 @@ export default function ManageTemplatePage() {
   }
   const confirmDelete = async () => {
     if (!deleteId) return
-    try {
-      await deleteMutation.mutateAsync(deleteId)
-      setIsDeleteOpen(false)
-      setDeleteId(null)
-      refetch()
-    } catch {
-      // toast handled in hook
-    }
+    await deleteMutation.mutateAsync(deleteId)
+    setIsDeleteOpen(false)
+    setDeleteId(null)
+    refetch()
   }
 
   const handleViewPreset = (id: string) => {
@@ -107,22 +98,15 @@ export default function ManageTemplatePage() {
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='max-w-[1600px] mx-auto p-6 space-y-6'>
-        <PageHeader
-          onCreateTemplate={handleCreateTemplate}
-          onImport={() => console.log('Import')}
-          onExport={() => console.log('Export')}
-          onSettings={() => console.log('Settings')}
-        />
+    <Main>
+      <div className='space-y-6'>
+        <PageHeader onCreateTemplate={handleCreateTemplate} />
 
         <StatsCards stats={stats} />
 
         <TemplateFilters
           searchTerm={templateManager.searchTerm}
           onSearchChange={templateManager.setSearchTerm}
-          viewMode={templateManager.viewMode}
-          onViewModeChange={templateManager.setViewMode}
           sortBy={templateManager.sortBy}
           onSortChange={templateManager.setSortBy}
           filterBy={templateManager.filterBy}
@@ -130,24 +114,21 @@ export default function ManageTemplatePage() {
           totalResults={Object.values(groupedByStyle).reduce((acc, group) => acc + group.templates.length, 0)}
         />
 
-        {/* Main Content Area */}
         <div className='relative'>
-          {/* Template Grid - Full width khi không có detail view */}
           <div
             className={`transition-all duration-500 ease-in-out ${
               selectedPresetId ? 'grid grid-cols-1 xl:grid-cols-5 gap-6' : 'w-full'
             }`}
           >
-            {/* Template List Area */}
             <div className={`${selectedPresetId ? 'xl:col-span-3 transition-all duration-500' : 'w-full'}`}>
               <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
                 <div className='p-6 border-b border-gray-100'>
                   <div className='flex items-center justify-between'>
                     <h2 className='text-xl font-semibold text-gray-900'>
-                      Templates ({Object.values(groupedByStyle).reduce((acc, group) => acc + group.templates.length, 0)}
-                      )
+                      Số lượng mẫu (
+                      {Object.values(groupedByStyle).reduce((acc, group) => acc + group.templates.length, 0)})
                     </h2>
-                    {selectedPresetId && <div className='text-sm text-gray-500'>Đã chọn preset để xem chi tiết →</div>}
+                    {selectedPresetId && <div className='text-sm text-gray-500'>Đã chọn mẫu để xem chi tiết →</div>}
                   </div>
                 </div>
 
@@ -168,7 +149,6 @@ export default function ManageTemplatePage() {
               </div>
             </div>
 
-            {/* Detail View Sidebar - Slide in from right */}
             {selectedPresetId && (
               <div className='xl:col-span-2'>
                 <div className='sticky top-6'>
@@ -177,8 +157,8 @@ export default function ManageTemplatePage() {
                     <div className='bg-gradient-to-r from-blue-500 to-purple-600 p-6 text-white'>
                       <div className='flex items-center justify-between'>
                         <div>
-                          <h3 className='text-lg font-semibold'>Chi tiết Preset</h3>
-                          <p className='text-blue-100 text-sm mt-1'>Thông tin đầy đủ về preset</p>
+                          <h3 className='text-lg font-semibold'>Chi tiết Mẫu</h3>
+                          <p className='text-blue-100 text-sm mt-1'>Thông tin đầy đủ về mẫu</p>
                         </div>
                         <Button
                           variant='ghost'
@@ -191,7 +171,6 @@ export default function ManageTemplatePage() {
                       </div>
                     </div>
 
-                    {/* Content with custom scrollbar */}
                     <div className='max-h-[calc(100vh-180px)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'>
                       <div className='p-6'>
                         <PresetDetailView
@@ -211,14 +190,12 @@ export default function ManageTemplatePage() {
           </div>
         </div>
 
-        {/* Create Preset Modal */}
         <CreatePresetModal
           open={isCreateModalOpen}
           onOpenChange={setIsCreateModalOpen}
           onSuccess={handleCreateSuccess}
         />
 
-        {/* Edit Preset Modal */}
         <EditPresetModal
           open={isEditModalOpen}
           presetId={editPresetId}
@@ -229,7 +206,6 @@ export default function ManageTemplatePage() {
           }}
         />
 
-        {/* Delete Confirm Dialog */}
         <ConfirmDialog
           open={isDeleteOpen}
           onOpenChange={setIsDeleteOpen}
@@ -242,6 +218,6 @@ export default function ManageTemplatePage() {
           isLoading={deleteMutation.isPending}
         />
       </div>
-    </div>
+    </Main>
   )
 }

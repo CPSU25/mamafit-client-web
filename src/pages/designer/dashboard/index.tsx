@@ -123,7 +123,7 @@ export default function DesignerDashboard() {
               <div className='flex items-center justify-between'>
                 <div>
                   <p className='text-sm text-muted-foreground'>Tạo nhanh</p>
-                  <p className='text-2xl font-bold'>Preset</p>
+                  <p className='text-2xl font-bold'>Mẫu đầm bầu</p>
                 </div>
                 <Button size='sm' onClick={() => navigate('/system/designer/manage-template')}>
                   <Plus className='w-4 h-4 mr-1' /> Mới

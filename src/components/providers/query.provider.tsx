@@ -18,8 +18,10 @@ const queryClient = new QueryClient({
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
       staleTime: 5 * 60 * 1000, // 5 minutes - longer cache for better performance
+      gcTime: 10 * 60 * 1000, // 10 minutes - keep cache longer to prevent duplicate calls
       refetchOnWindowFocus: false, // Disable auto refetch on window focus
-      refetchOnReconnect: true // Refetch when internet connection is restored
+      refetchOnReconnect: false, // Disable auto refetch on reconnect to prevent duplicate calls
+      refetchOnMount: false // Disable auto refetch on mount to prevent duplicate calls
     },
     mutations: {
       retry: 1, // Retry mutations once on failure

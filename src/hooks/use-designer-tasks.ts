@@ -3,10 +3,15 @@ import { toast } from 'sonner'
 import designerTaskAPI from '@/apis/designer-task.api'
 import { presetApi } from '@/apis/manage-template.api'
 
-export function useDesignerTasks() {
+interface DesignerTasksParams {
+  index?: number
+  pageSize?: number
+}
+
+export function useDesignerTasks(params?: DesignerTasksParams) {
   return useQuery({
-    queryKey: ['designer-tasks'],
-    queryFn: () => designerTaskAPI.getDesignRequestTask(),
+    queryKey: ['designer-tasks', params],
+    queryFn: () => designerTaskAPI.getDesignRequestTask(params),
     staleTime: 5 * 60 * 1000, // 5 phút
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
