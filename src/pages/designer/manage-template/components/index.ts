@@ -6,7 +6,7 @@ export { TemplateCard } from './template-card'
 export { StyleGroup } from './style-group'
 export { StyleGroupGrid } from './style-group-grid'
 export { StyleCard } from './style-card'
-export { StyleGrid } from './style-grid'
+export { StyleGrid } from './style-grid-new'
 export { PresetDetailView } from './preset-detail-view'
 export { default as CreatePresetModal } from './create-preset-modal'
 

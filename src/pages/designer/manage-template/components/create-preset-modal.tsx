@@ -18,13 +18,14 @@ import { SingleImageUpload } from '@/components/ui/single-image-upload'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { useCreateTemplate } from '@/services/designer/template.service'
+import { useCreateTemplate, useTemplates } from '@/services/designer/template.service'
 import { useComponents, useComponent } from '@/services/admin/manage-component.service'
 import { useGetStyles } from '@/services/admin/category.service'
 import { PresetFormData } from '@/@types/manage-template.types'
 import { ComponentOptionType } from '@/@types/manage-component.types'
 import { StyleType } from '@/@types/manage-maternity-dress.types'
 import { toast } from 'sonner'
+import { PriceInput } from '@/components/ui/price-input'
 
 interface CreatePresetModalProps {
   open: boolean
@@ -91,6 +92,14 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
 
   const createTemplateMutation = useCreateTemplate()
 
+  // Load presets to enforce "only one default per style"
+  const { data: templatesData } = useTemplates({ index: 0, pageSize: 1000 })
+  const hasDefaultForSelectedStyle = (() => {
+    if (!formData.styleId) return false
+    const items = templatesData?.items || []
+    return items.some((t: { styleId: string; isDefault: boolean }) => t.styleId === formData.styleId && t.isDefault)
+  })()
+
   // Fetch styles data với filter isCustom = true
   const { data: stylesData } = useGetStyles({
     pageSize: 100
@@ -134,6 +143,10 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
 
   // Handle form submission
   const handleSubmit = async (data: FormDataType) => {
+    if (data.isDefault && hasDefaultForSelectedStyle) {
+      toast.error('Style này đã có preset mặc định. Hãy bỏ chọn hoặc chọn style khác.')
+      return
+    }
     // Collect all selected component option IDs
     const componentOptionIds = [
       data.hemOptionId,
@@ -261,13 +274,19 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
             )}
           </div>
 
-          {/* Default Preset Checkbox */}
           <div className='flex items-center justify-center pt-8'>
             <div className='flex items-center space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200'>
               <Checkbox
                 id='isDefault'
                 checked={formData.isDefault}
-                onCheckedChange={(checked) => handleInputChange('isDefault', checked as boolean)}
+                disabled={!formData.styleId || hasDefaultForSelectedStyle}
+                onCheckedChange={(checked) => {
+                  if (hasDefaultForSelectedStyle && checked) {
+                    toast.warning('Style này đã có preset mặc định')
+                    return
+                  }
+                  handleInputChange('isDefault', Boolean(checked))
+                }}
               />
               <Label htmlFor='isDefault' className='text-sm text-blue-700 font-medium cursor-pointer'>
                 Đặt làm preset mặc định
@@ -276,7 +295,6 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
           </div>
         </div>
 
-        {/* Name and Price Input */}
         <div className='flex flex-row gap-4 mb-6'>
           <div className='flex-1'>
             <div className='space-y-2'>
@@ -306,12 +324,12 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
                 <DollarSign className='h-4 w-4 text-green-600' />
                 Giá (VNĐ)
               </Label>
-              <Input
+              <PriceInput
                 id='price'
-                type='number'
+                value={formData.price}
+                onChange={(val) => handleInputChange('price', val)}
+                minValue={0}
                 placeholder='0'
-                value={formData.price || ''}
-                onChange={(e) => handleInputChange('price', Number(e.target.value))}
                 className={`h-12 text-base ${errors.price ? 'border-red-500 focus:border-red-500' : ''}`}
               />
               {errors.price && (
@@ -326,16 +344,13 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
 
         <Separator className='my-6' />
 
-        {/* Main Layout */}
         <div className='grid grid-cols-12 gap-8'>
-          {/* Left Column - Components */}
           <div className='col-span-4 space-y-6'>
             <h3 className='text-lg font-semibold text-gray-800 flex items-center gap-2'>
               <Palette className='h-5 w-5' />
               Thành Phần Dress
             </h3>
 
-            {/* Hem */}
             <div className='space-y-3'>
               <div className='flex items-center gap-3'>
                 <div className={`w-3 h-3 rounded-full ${componentColors.Hem}`}></div>
@@ -366,7 +381,6 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
               </div>
             </div>
 
-            {/* Neckline */}
             <div className='space-y-3'>
               <div className='flex items-center gap-3'>
                 <div className={`w-3 h-3 rounded-full ${componentColors.Neckline}`}></div>
@@ -399,7 +413,6 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
               </div>
             </div>
 
-            {/* Waist */}
             <div className='space-y-3'>
               <div className='flex items-center gap-3'>
                 <div className={`w-3 h-3 rounded-full ${componentColors.Waist}`}></div>
@@ -430,7 +443,6 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
               </div>
             </div>
 
-            {/* Sleeves */}
             <div className='space-y-3'>
               <div className='flex items-center gap-3'>
                 <div className={`w-3 h-3 rounded-full ${componentColors.Sleeves}`}></div>
@@ -462,7 +474,6 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
             </div>
           </div>
 
-          {/* Center Column - Image */}
           <div className='col-span-4 flex flex-col items-center space-y-6'>
             <div className='relative'>
               <div className='relative w-full h-[500px] bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-4 border-dashed border-gray-300 shadow-xl overflow-hidden'>
@@ -488,7 +499,6 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
               )}
             </div>
 
-            {/* Image Upload */}
             <div className='w-full p-6 bg-white rounded-xl shadow-lg border border-gray-200'>
               <div className='flex items-center gap-3 mb-4'>
                 <Palette className='h-5 w-5 text-purple-500' />
@@ -503,14 +513,12 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
             </div>
           </div>
 
-          {/* Right Column - Fabric & Color */}
           <div className='col-span-4 space-y-6'>
             <h3 className='text-lg font-semibold text-gray-800 flex items-center gap-2'>
               <Palette className='h-5 w-5' />
               Chất Liệu & Màu Sắc
             </h3>
 
-            {/* Fabric */}
             <div className='space-y-3'>
               <div className='flex items-center gap-3'>
                 <div className={`w-3 h-3 rounded-full ${componentColors.Fabric}`}></div>
@@ -541,7 +549,6 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
               </div>
             </div>
 
-            {/* Color */}
             <div className='space-y-3'>
               <div className='flex items-center gap-3'>
                 <div className={`w-3 h-3 rounded-full ${componentColors.Color}`}></div>
@@ -572,7 +579,6 @@ export default function CreatePresetModal({ open, onOpenChange, onSuccess }: Cre
               </div>
             </div>
 
-            {/* Selected Options Summary */}
             <div className='p-4 bg-gray-50 rounded-lg border'>
               <h4 className='font-medium text-gray-700 mb-3'>Tóm tắt lựa chọn:</h4>
               <div className='space-y-2 text-sm'>

@@ -22,8 +22,11 @@ export function ProductSelectionSidebar() {
     const filtered = items.filter(
       (item: OrderItemType) =>
         item.maternityDressDetail?.id?.includes(sku) ||
+        item.maternityDressDetail?.sku?.toLowerCase().includes(sku.toLowerCase()) ||
         item.maternityDressDetail?.name?.toLowerCase().includes(sku.toLowerCase()) ||
         item.maternityDressDetail?.color?.toLowerCase().includes(sku.toLowerCase()) ||
+        item.preset?.id?.includes(sku) ||
+        item.preset?.sku?.toLowerCase().includes(sku.toLowerCase()) ||
         item.preset?.name?.toLowerCase().includes(sku.toLowerCase())
     )
 
@@ -75,7 +78,7 @@ export function ProductSelectionSidebar() {
               <div className='space-y-3 max-h-96 overflow-y-auto'>
                 {matchingItems.map((item) => {
                   const isSelected = selectedItems.some((selected) => selected.id === item.id)
-                  const warrantyRound = item.warrantyRound || 1
+                  const warrantyRound = item.warrantyRound || 0
                   const needsFee = warrantyRound >= 2
 
                   return (

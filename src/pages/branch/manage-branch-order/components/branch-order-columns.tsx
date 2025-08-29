@@ -68,8 +68,8 @@ export const createBranchOrderColumns = (): ColumnDef<BranchOrderType>[] => [
     cell: ({ row }) => {
       const totalAmount = (row.getValue('totalAmount') as number) ?? 0
       return (
-        <div className='text-right'>
-          <div className='font-bold text-violet-700 dark:text-violet-300'>
+        <div className='item-center'>
+          <div className='font-bold text-violet-700 dark:text-violet-300 '>
             {new Intl.NumberFormat('vi-VN', {
               style: 'currency',
               currency: 'VND'

@@ -46,6 +46,7 @@ export interface ComponentOption {
 export interface DressTemplate {
   id: string
   styleId: string
+  name: string
   styleName: string
   createdAt: string
   createdBy: string
