@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import dayjs from 'dayjs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -23,6 +23,7 @@ import {
 import { ProductTaskGroup } from '@/pages/staff/manage-task/tasks/types'
 import { useStaffGetOrderTasks } from '@/services/staff/staff-task.service'
 import { useNavigate } from 'react-router-dom'
+import { Main } from '@/components/layout/main'
 
 type AnyMilestone = { maternityDressTasks: Array<{ status: string }> }
 
@@ -35,7 +36,7 @@ export default function StaffTasksPage() {
   const { data: orderItems, isLoading, isError } = useStaffGetOrderTasks()
   console.log('Order Items:', orderItems)
 
-  const getTaskStatus = (milestones: ProductTaskGroup['milestones']) => {
+  const getTaskStatus = useCallback((milestones: ProductTaskGroup['milestones']) => {
     if (!milestones || milestones.length === 0) return 'PENDING'
 
     const allTasks = milestones.flatMap((m) => m.maternityDressTasks)
@@ -43,9 +44,9 @@ export default function StaffTasksPage() {
       return 'COMPLETED'
     if (allTasks.some((task) => task.status === 'IN_PROGRESS')) return 'IN_PROGRESS'
     return 'PENDING'
-  }
+  }, [])
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = useCallback((status: string) => {
     switch (status) {
       case 'COMPLETED':
         return (
@@ -71,7 +72,7 @@ export default function StaffTasksPage() {
       default:
         return <Badge variant='outline'>Không xác định</Badge>
     }
-  }
+  }, [])
 
   // Compute SLA and urgency per order item
   const itemsWithSLA = useMemo(() => {
@@ -141,7 +142,7 @@ export default function StaffTasksPage() {
       completedItems: items.filter((item) => item.isCompleted).length,
       inProgressItems: items.filter((item) => getTaskStatus(item.base.milestones) === 'IN_PROGRESS').length
     }))
-  }, [itemsWithSLA])
+  }, [itemsWithSLA, getTaskStatus])
 
   const filteredOrderItems = useMemo(() => {
     const search = searchTerm.trim().toLowerCase()
@@ -173,7 +174,7 @@ export default function StaffTasksPage() {
       const minDeadlineB = Math.min(...b.items.map((item) => item.sla.minutesLeft ?? Number.POSITIVE_INFINITY))
       return minDeadlineA - minDeadlineB
     })
-  }, [groupedByOrder, searchTerm, statusFilter, priorityOnly])
+  }, [groupedByOrder, searchTerm, statusFilter, priorityOnly, getTaskStatus])
 
   const totalOrderItems = orderItems?.length || 0
   const completedItems = orderItems?.filter((item) => getTaskStatus(item.milestones) === 'COMPLETED').length || 0
@@ -210,7 +211,7 @@ export default function StaffTasksPage() {
   }
 
   return (
-    <div className='space-y-6'>
+    <Main className='space-y-6'>
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div>
@@ -319,14 +320,13 @@ export default function StaffTasksPage() {
           <div className='space-y-8'>
             {filteredOrderItems.map((orderGroup) => (
               <div key={orderGroup.orderCode} className='space-y-4'>
-                {/* Order Group Header */}
                 <div className='flex items-center justify-between p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg border border-violet-200'>
                   <div className='flex items-center gap-3'>
                     <div className='p-2 bg-violet-100 rounded-lg'>
                       <ShoppingBag className='h-5 w-5 text-violet-600' />
                     </div>
                     <div>
-                      <h3 className='text-lg font-semibold text-violet-900'>Order: {orderGroup.orderCode}</h3>
+                      <h3 className='text-lg font-semibold text-violet-900'>Đơn hàng: {orderGroup.orderCode}</h3>
                       <p className='text-sm text-violet-700'>
                         {orderGroup.totalItems} sản phẩm • {orderGroup.completedItems} hoàn thành •{' '}
                         {orderGroup.inProgressItems} đang thực hiện
@@ -334,7 +334,7 @@ export default function StaffTasksPage() {
                     </div>
                   </div>
                   <Badge variant='outline' className='bg-white border-violet-300 text-violet-700'>
-                    {orderGroup.totalItems} items
+                    {orderGroup.totalItems} sản phẩm
                   </Badge>
                 </div>
 
@@ -560,7 +560,6 @@ export default function StaffTasksPage() {
                               <div>
                                 <h3 className='font-semibold text-gray-900'>{displayName}</h3>
                                 <p className='text-sm text-gray-600 mb-1'>SKU: {displaySku}</p>
-                                <p className='text-sm text-gray-600 mb-2'>Order Item: {displayOrderItemId}</p>
                                 <div className='flex flex-wrap items-center gap-2'>
                                   <span className='text-sm text-muted-foreground'>
                                     {completedTasks}/{totalTasks} nhiệm vụ • {progress}% hoàn thành
@@ -638,6 +637,6 @@ export default function StaffTasksPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </Main>
   )
 }

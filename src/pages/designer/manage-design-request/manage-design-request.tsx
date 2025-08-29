@@ -147,10 +147,9 @@ const ManageDesignRequestPage = () => {
 
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize)
-    setCurrentPage(1) // Reset to first page when changing page size
+    setCurrentPage(1)
   }
 
-  // Setup SignalR connection và real-time listeners
   useEffect(() => {
     let isMounted = true
 
