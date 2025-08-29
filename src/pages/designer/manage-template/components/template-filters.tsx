@@ -1,16 +1,14 @@
 import React, { useState } from 'react'
-import { Search, Filter, SortAsc, Grid, List } from 'lucide-react'
+import { Search, Filter, SortAsc } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { ViewMode, SortBy, FilterBy } from '@/@types/designer.types'
+import { SortBy, FilterBy } from '@/@types/designer.types'
 
 interface TemplateFiltersProps {
   searchTerm: string
   onSearchChange: (value: string) => void
-  viewMode: ViewMode
-  onViewModeChange: (mode: ViewMode) => void
   sortBy: SortBy
   onSortChange: (sort: SortBy) => void
   filterBy: FilterBy
@@ -21,8 +19,6 @@ interface TemplateFiltersProps {
 export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
   searchTerm,
   onSearchChange,
-  viewMode,
-  onViewModeChange,
   sortBy,
   onSortChange,
   filterBy,
@@ -34,13 +30,9 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
   const getFilterLabel = (filter: FilterBy) => {
     switch (filter) {
       case 'SYSTEM':
-        return 'System Templates'
-      case 'USER':
-        return 'User Templates'
+        return 'Mẫu hệ thống'
       case 'default':
-        return 'Default Templates'
-      case 'hasOptions':
-        return 'Có Component Options'
+        return 'Mẫu mặc định'
       default:
         return 'Tất cả'
     }
@@ -59,12 +51,11 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
 
   return (
     <div className='space-y-4'>
-      {/* Main Search and Actions */}
       <div className='flex items-center gap-4'>
         <div className='relative flex-1 max-w-md'>
           <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4' />
           <Input
-            placeholder='Tìm kiếm templates, styles...'
+            placeholder='Tìm kiếm mẫu, kiểu dáng...'
             className='pl-10'
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -76,25 +67,6 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
             <Filter className='w-4 h-4 mr-2' />
             Lọc
           </Button>
-
-          <div className='flex items-center border rounded-md'>
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              size='sm'
-              onClick={() => onViewModeChange('grid')}
-              className='rounded-r-none'
-            >
-              <Grid className='w-4 h-4' />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size='sm'
-              onClick={() => onViewModeChange('list')}
-              className='rounded-l-none border-l'
-            >
-              <List className='w-4 h-4' />
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -139,7 +111,6 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
             size='sm'
             onClick={() => {
               onSearchChange('')
-              //   onSortChange('createdAt');
               onFilterChange('all')
             }}
           >
@@ -148,7 +119,6 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
         </div>
       )}
 
-      {/* Results Summary */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-2'>
           <span className='text-sm text-muted-foreground'>{totalResults} kết quả</span>

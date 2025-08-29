@@ -26,7 +26,7 @@ export const StyleGrid: React.FC<StyleGridProps> = ({ groupedByStyle, onEdit, on
     return (
       <div className='flex items-center justify-center h-64'>
         <div className='text-center'>
-          <p className='text-muted-foreground'>Không có template nào để hiển thị</p>
+          <p className='text-muted-foreground'>Không có mẫu nào để hiển thị</p>
         </div>
       </div>
     )

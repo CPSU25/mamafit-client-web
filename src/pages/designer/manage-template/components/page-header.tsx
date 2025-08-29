@@ -4,9 +4,6 @@ import { Button } from '@/components/ui/button'
 
 interface PageHeaderProps {
   onCreateTemplate: () => void
-  onImport: () => void
-  onExport: () => void
-  onSettings: () => void
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({ onCreateTemplate }) => {
@@ -14,8 +11,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ onCreateTemplate }) => {
     <div className='bg-background border rounded-lg p-6 shadow-sm'>
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-3xl font-bold text-foreground'>Quản lý Template Đầm Bầu</h1>
-          <p className='text-muted-foreground mt-2'>Thiết kế và tổ chức các template đầm theo styles cho mẹ bầu</p>
+          <h1 className='text-3xl font-bold text-foreground'>Quản lý Mẫu Đầm Bầu</h1>
+          <p className='text-muted-foreground mt-2'>Thiết kế và tổ chức các mẫu đầm theo styles cho mẹ bầu</p>
         </div>
 
         <div className='flex items-center gap-3'>

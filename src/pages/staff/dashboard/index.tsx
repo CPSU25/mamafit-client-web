@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useCallback } from 'react'
 import dayjs from 'dayjs'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
@@ -75,42 +75,45 @@ export default function StaffDashboardPage() {
   }, [nearDeadlines])
 
   const greeting = useMemo(() => {
-    const name = userPermission?.userName || 'Staff'
-    const role = userPermission?.roleName || 'Staff'
+    const name = userPermission?.userName || 'Nhân viên'
+    const role = userPermission?.roleName || 'Nhân viên'
     return { name, role }
   }, [userPermission])
 
-  const handleViewTask = (orderItemId: string) => {
-    navigate(`/system/staff/order-item/${orderItemId}`)
-  }
+  const handleViewTask = useCallback(
+    (orderItemId: string) => {
+      navigate(`/system/staff/order-item/${orderItemId}`)
+    },
+    [navigate]
+  )
 
-  const handleViewAllTasks = () => {
+  const handleViewAllTasks = useCallback(() => {
     navigate('/system/staff/manage-task')
-  }
+  }, [navigate])
 
-  const getUrgencyIcon = (minutesLeft: number) => {
+  const getUrgencyIcon = useCallback((minutesLeft: number) => {
     if (minutesLeft < 0) return <AlertTriangle className='h-4 w-4 text-destructive' />
     if (minutesLeft <= 60) return <Zap className='h-4 w-4 text-warning' />
     if (minutesLeft <= 240) return <Clock className='h-4 w-4 text-orange-500' />
     return <Calendar className='h-4 w-4 text-blue-500' />
-  }
+  }, [])
 
-  const getUrgencyColor = (minutesLeft: number) => {
+  const getUrgencyColor = useCallback((minutesLeft: number) => {
     if (minutesLeft < 0) return 'bg-destructive/10 border-destructive/20 hover:bg-destructive/20'
     if (minutesLeft <= 60) return 'bg-warning/10 border-warning/20 hover:bg-warning/20'
     if (minutesLeft <= 240) return 'bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20'
     return 'bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20'
-  }
+  }, [])
 
-  const getUrgencyBadgeColor = (minutesLeft: number) => {
+  const getUrgencyBadgeColor = useCallback((minutesLeft: number) => {
     if (minutesLeft < 0) return 'bg-destructive text-destructive-foreground'
     if (minutesLeft <= 60) return 'bg-warning text-warning-foreground'
     if (minutesLeft <= 240) return 'bg-orange-500 text-white'
     return 'bg-blue-500 text-white'
-  }
+  }, [])
 
   return (
-    <Main className='space-y-6 p-4 md:p-6 lg:p-8'>
+    <Main className='space-y-6'>
       {/* Welcome Header */}
       <div className='space-y-4'>
         <div className='space-y-2'>
@@ -122,7 +125,7 @@ export default function StaffDashboardPage() {
             <span className='font-semibold text-primary'>
               {greeting.role === 'Staff' ? 'Nhân viên' : greeting.role}
             </span>{' '}
-            • Hôm nay bạn có <span className='font-bold text-primary'>{stats.total}</span> nhiệm vụ
+            • Hôm nay bạn có <span className='font-bold text-primary'>{stats.pending}</span> nhiệm vụ chờ thực hiện
           </p>
         </div>
 
@@ -135,10 +138,6 @@ export default function StaffDashboardPage() {
           >
             <Eye className='h-4 w-4 mr-2' />
             Xem tất cả công việc
-          </Button>
-          <Button variant='outline' onClick={() => navigate('/system/staff/manage-task')} size='lg'>
-            <Target className='h-4 w-4 mr-2' />
-            Quản lý công việc
           </Button>
         </div>
       </div>

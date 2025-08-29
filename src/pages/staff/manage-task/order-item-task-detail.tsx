@@ -10,9 +10,9 @@ import { useQuery } from '@tanstack/react-query'
 import { OrderItemMilestoneTracker } from '@/pages/staff/manage-task/components/OrderItemMilestoneTracker'
 import dayjs from 'dayjs'
 
-// Import type từ file types.ts
 import { AddOnOption } from './tasks/types'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
+import { getStatusColor, getStatusLabel } from '@/pages/admin/manage-order/data/data'
 
 export default function OrderItemDetailPage() {
   const { orderItemId } = useParams<{ orderItemId: string }>()
@@ -30,7 +30,7 @@ export default function OrderItemDetailPage() {
   if (!orderItemId) {
     return (
       <div className='container mx-auto p-8 text-center'>
-        <h2 className='text-xl font-semibold text-red-500'>Order Item ID không hợp lệ</h2>
+        <h2 className='text-xl font-semibold text-red-500'>Sản phẩm không hợp lệ</h2>
         <Button onClick={() => navigate('/system/staff/manage-task')} className='mt-4'>
           Quay lại danh sách
         </Button>
@@ -61,7 +61,7 @@ export default function OrderItemDetailPage() {
     return (
       <div className='container mx-auto p-8 text-center'>
         <div className='text-red-500 space-y-2'>
-          <h2 className='text-xl font-semibold'>Không thể tải thông tin Order Item</h2>
+          <h2 className='text-xl font-semibold'>Không thể tải thông tin sản phẩm trong đơn hàng</h2>
           <p>Đã có lỗi xảy ra khi tải thông tin chi tiết.</p>
         </div>
         <Button onClick={() => navigate('/system/staff/manage-task')} className='mt-4'>
@@ -84,39 +84,19 @@ export default function OrderItemDetailPage() {
   )
   const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
-  // Tính tổng giá trị add-ons từ orderItem.addOnOptions
   const totalAddOnPrice =
     orderItem?.addOnOptions?.reduce((sum: number, addon: AddOnOption) => sum + addon.price, 0) || 0
 
-  // Xác định giá cơ bản từ preset hoặc maternityDressDetail
   const basePrice = preset?.price ?? maternityDressDetail?.price ?? 0
   const totalPrice = basePrice + totalAddOnPrice
 
-  // Xác định thông tin hiển thị
   const displayName = preset?.styleName ?? maternityDressDetail?.name ?? '—'
   const displaySku = preset?.sku ?? maternityDressDetail?.sku ?? '—'
   const displayType = preset?.type ?? 'READY_TO_BUY'
   const displayImage = preset?.images?.[0] ?? maternityDressDetail?.image?.[0] ?? ''
 
-  // Lấy status badge color
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'PACKAGING':
-        return 'default'
-      case 'COMPLETED':
-        return 'default'
-      case 'IN_PROGRESS':
-        return 'secondary'
-      case 'PENDING':
-        return 'outline'
-      default:
-        return 'secondary'
-    }
-  }
-
   return (
     <div className='container mx-auto p-4 md:p-8 space-y-6'>
-      {/* Header với thông tin tổng quan */}
       <div className='bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-4'>
@@ -132,8 +112,11 @@ export default function OrderItemDetailPage() {
             <div>
               <h1 className='text-3xl font-bold text-gray-900'>Chi tiết Order Item</h1>
               <div className='flex items-center gap-4 mt-2'>
-                <Badge variant={getStatusBadgeVariant(orderItemData.orderStatus)} className='text-sm px-3 py-1'>
-                  {orderItemData.orderStatus}
+                <Badge
+                  variant='secondary'
+                  className={`${getStatusColor(orderItemData.orderStatus, 'order')} text-xs font-medium px-4 py-2 bg-white/90 dark:bg-white/80 text-violet-800 shadow-sm`}
+                >
+                  {getStatusLabel(orderItemData.orderStatus, 'order')}
                 </Badge>
                 <span className='text-muted-foreground'>
                   {completedTasks}/{totalTasks} nhiệm vụ hoàn thành
@@ -144,7 +127,6 @@ export default function OrderItemDetailPage() {
             </div>
           </div>
 
-          {/* Progress Circle */}
           <div className='relative'>
             <div className='w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center'>
               <div className='w-16 h-16 rounded-full bg-white flex items-center justify-center'>
@@ -162,9 +144,7 @@ export default function OrderItemDetailPage() {
       </div>
 
       <div className='space-y-6'>
-        {/* Top Row: Product Info, Order Details, Measurements */}
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-          {/* Product Info - Cải thiện layout */}
           <Card className='shadow-lg border-0 bg-gradient-to-br from-white to-gray-50'>
             <CardHeader className='pb-4'>
               <CardTitle className='flex items-center gap-2 text-lg'>
@@ -195,7 +175,6 @@ export default function OrderItemDetailPage() {
                     </Badge>
                   </div>
 
-                  {/* Hiển thị thông tin bổ sung cho READY_TO_BUY */}
                   {maternityDressDetail && !preset && (
                     <div className='mt-3 space-y-2'>
                       <div className='flex items-center justify-center gap-2'>
@@ -211,7 +190,6 @@ export default function OrderItemDetailPage() {
                   )}
                 </div>
 
-                {/* Price Section */}
                 <div className='bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200'>
                   <div className='text-center'>
                     <div className='flex items-center justify-center gap-2 mb-2'>
@@ -241,7 +219,6 @@ export default function OrderItemDetailPage() {
                   </div>
                 </div>
 
-                {/* Order Details */}
                 <div className='space-y-3 text-sm bg-gray-50 p-3 rounded-lg'>
                   <div className='flex items-center gap-2'>
                     <Package className='h-4 w-4 text-muted-foreground' />
@@ -265,7 +242,6 @@ export default function OrderItemDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Add-On Options - Mới thêm */}
           <Card className='shadow-lg border-0 bg-gradient-to-br from-white to-purple-50'>
             <CardHeader className='pb-4'>
               <CardTitle className='flex items-center gap-2 text-lg'>
@@ -286,7 +262,6 @@ export default function OrderItemDetailPage() {
                       key={addon.id}
                       className='bg-white p-4 rounded-lg border border-purple-200 shadow-md hover:shadow-lg transition-shadow duration-200'
                     >
-                      {/* Header với tên và giá */}
                       <div className='flex items-start justify-between mb-3'>
                         <div className='flex-1'>
                           <h4 className='font-bold text-gray-900 text-base mb-1'>{addon.name}</h4>
@@ -300,9 +275,7 @@ export default function OrderItemDetailPage() {
                         </Badge>
                       </div>
 
-                      {/* Thông tin chi tiết */}
                       <div className='space-y-2'>
-                        {/* Position */}
                         <div className='flex items-center gap-2'>
                           <span className='text-xs font-medium text-gray-500'>Vị trí:</span>
                           <Badge
@@ -313,7 +286,6 @@ export default function OrderItemDetailPage() {
                           </Badge>
                         </div>
 
-                        {/* Size */}
                         <div className='flex items-center gap-2'>
                           <span className='text-xs font-medium text-gray-500'>Kích thước:</span>
                           <Badge
@@ -324,7 +296,6 @@ export default function OrderItemDetailPage() {
                           </Badge>
                         </div>
 
-                        {/* Service Type */}
                         <div className='flex items-center gap-2'>
                           <span className='text-xs font-medium text-gray-500'>Loại dịch vụ:</span>
                           <Badge
@@ -336,7 +307,6 @@ export default function OrderItemDetailPage() {
                         </div>
                       </div>
 
-                      {/* Footer với thông tin hệ thống */}
                       <div className='mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400'>
                         <div className='flex items-center justify-between'>
                           <span>Tạo bởi: {addon.createdBy}</span>
@@ -355,7 +325,6 @@ export default function OrderItemDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Measurements - Cải thiện layout */}
           <Card className='shadow-lg border-0 bg-gradient-to-br from-white to-orange-50'>
             <CardHeader className='pb-4'>
               <CardTitle className='flex items-center gap-2 text-lg'>
@@ -442,7 +411,6 @@ export default function OrderItemDetailPage() {
           </Card>
         </div>
 
-        {/* Address Section - Cải thiện layout */}
         <Card className='shadow-lg border-0 bg-gradient-to-br from-white to-green-50'>
           <CardHeader>
             <CardTitle className='flex items-center gap-2 text-lg'>
@@ -498,7 +466,6 @@ export default function OrderItemDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Bottom Row: Milestone Tracker */}
         <div className='w-full'>
           <OrderItemMilestoneTracker
             milestones={milestones}

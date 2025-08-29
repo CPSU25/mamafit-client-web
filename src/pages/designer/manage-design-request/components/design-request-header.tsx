@@ -1,24 +1,19 @@
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Filter, Grid, List, Search } from 'lucide-react'
+import { Filter, Search } from 'lucide-react'
 
 interface DesignRequestHeaderProps {
   searchTerm: string
   onSearchChange: (value: string) => void
   statusFilter: string
   onStatusFilterChange: (value: string) => void
-  viewMode: 'grid' | 'list'
-  onViewModeChange: (mode: 'grid' | 'list') => void
 }
 
 export const DesignRequestHeader = ({
   searchTerm,
   onSearchChange,
   statusFilter,
-  onStatusFilterChange,
-  viewMode,
-  onViewModeChange
+  onStatusFilterChange
 }: DesignRequestHeaderProps) => {
   return (
     <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6'>
@@ -31,7 +26,7 @@ export const DesignRequestHeader = ({
 
       <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
         {/* Search */}
-        <div className='relative flex-1 sm:flex-none'>
+        <div className='relative flex-1 sm:flex-none mr-10'>
           <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4' />
           <Input
             placeholder='Tìm kiếm theo mã đơn hàng, tên khách hàng...'
@@ -54,26 +49,6 @@ export const DesignRequestHeader = ({
             <SelectItem value='COMPLETED'>Hoàn thành</SelectItem>
           </SelectContent>
         </Select>
-
-        {/* View Mode Toggle */}
-        <div className='flex border rounded-lg p-1 bg-muted'>
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'ghost'}
-            size='sm'
-            onClick={() => onViewModeChange('grid')}
-            className='h-8 px-3'
-          >
-            <Grid className='w-4 h-4' />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'ghost'}
-            size='sm'
-            onClick={() => onViewModeChange('list')}
-            className='h-8 px-3'
-          >
-            <List className='w-4 h-4' />
-          </Button>
-        </div>
       </div>
     </div>
   )

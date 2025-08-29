@@ -1,17 +1,5 @@
 import { Link } from 'react-router-dom'
-import {
-  Bell,
-  ChevronsUpDown,
-  // CreditCard,
-  LogOut,
-  // Sparkles,
-  // User,
-  Heart
-  // Settings,
-  // HelpCircle,
-  // Moon,
-  // Sun
-} from 'lucide-react'
+import { Bell, ChevronsUpDown, LogOut } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -31,7 +19,6 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
   const isCollapsed = state === 'collapsed'
   const { logoutMutation, isPending } = useLogout()
 
-  // Logic handleLogout và getRoleDisplay của bạn được giữ nguyên
   const handleLogout = () => {
     try {
       const authStorage = localStorage.getItem('auth-storage')
@@ -71,9 +58,8 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
                 'data-[state=open]:bg-violet-50 dark:data-[state=open]:bg-violet-950/30'
               )}
             >
-              {/* Avatar with online indicator */}
               <div className='relative'>
-                <Avatar className='h-9 w-9 rounded-xl ring-2 ring-violet-200 dark:ring-violet-800 transition-all group-hover:ring-violet-300 dark:group-hover:ring-violet-700'>
+                <Avatar className='h-8 w-8 rounded-xl ring-2 ring-violet-200 dark:ring-violet-800 transition-all group-hover:ring-violet-300 dark:group-hover:ring-violet-700'>
                   <AvatarImage src={user?.avatar} alt={user?.username} />
                   <AvatarFallback className='rounded-xl bg-gradient-to-br from-violet-400 to-violet-600 text-white font-bold'>
                     {user?.username?.[0]?.toUpperCase() || 'U'}
@@ -148,12 +134,12 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
                   <span>Thông tin cá nhân</span>
                 </Link>
               </DropdownMenuItem> */}
-              <DropdownMenuItem asChild className='cursor-pointer'>
+              {/* <DropdownMenuItem asChild className='cursor-pointer'>
                 <Link to='/settings/preferences' className='flex items-center gap-2'>
                   <Heart className='size-4' />
                   <span>Tùy chỉnh</span>
                 </Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               {/* <DropdownMenuItem asChild className='cursor-pointer'>
                 <Link to='/settings/billing' className='flex items-center gap-2'>
                   <CreditCard className='size-4' />
