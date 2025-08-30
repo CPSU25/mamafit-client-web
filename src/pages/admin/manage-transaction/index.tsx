@@ -78,17 +78,13 @@ export default function ManageTransactionPage() {
     pageSize: 10
   })
 
-  // Handle date range change
   const handleDateRangeChange = (range: DateRange | undefined) => {
-    // Update query params with date range
     const newParams = {
       ...queryParams,
-      // API shows string($date-time); use ISO 8601
       startDate: range?.from ? dayjs(range.from).toDate().toISOString() : undefined,
       endDate: range?.to ? dayjs(range.to).toDate().toISOString() : undefined
     }
 
-    // Remove undefined values
     Object.keys(newParams).forEach((key) => {
       if (newParams[key as keyof typeof newParams] === undefined) {
         delete newParams[key as keyof typeof newParams]
@@ -98,23 +94,19 @@ export default function ManageTransactionPage() {
     setQueryParams(newParams)
   }
 
-  // Sử dụng service để lấy data từ API với date filters
   const { data: apiResponse, isLoading, error } = useTransactions(queryParams)
 
-  // Transform API data hoặc sử dụng mock data
   const transactionList = apiResponse?.data?.items
     ? apiResponse.data.items.map(transformTransactionTypeToTransaction)
     : mockTransactionData
 
-  // Calculate statistics từ data
   const totalTransactions = transactionList.length
   const successfulTransactions = transactionList.filter((t) => t.transferAmount > 0).length
   const utilizationRate = totalTransactions > 0 ? Math.round((successfulTransactions / totalTransactions) * 100) : 0
 
-  // Tính toán các totals cho charts
   const totals = useMemo(() => {
     const income = transactionList.reduce((sum, t) => sum + t.transferAmount, 0)
-    const expense = 3134500 // mock expense
+    const expense = 3134500
     const returnCost = 134000
     const shippingCost = 3000000
     return { income, expense, returnCost, shippingCost }
@@ -170,9 +162,7 @@ export default function ManageTransactionPage() {
 
   return (
     <Main className='space-y-6'>
-      {/* Enhanced Header Section */}
       <div className='space-y-6'>
-        {/* Title and Actions */}
         <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
           <div className='space-y-1'>
             <div className='flex items-center gap-2'>
@@ -192,7 +182,6 @@ export default function ManageTransactionPage() {
           </div>
         </div>
 
-        {/* Statistics Cards */}
         <div className='grid gap-4 md:grid-cols-4'>
           <KpiCard title='Tổng giao dịch' value={totalTransactions.toString()} delta='+2.75%' icon={BarChart3} />
           <KpiCard title='Doanh thu' value={currency(totals.income)} delta='+2.75%' icon={DollarSign} />
@@ -201,9 +190,7 @@ export default function ManageTransactionPage() {
         </div>
       </div>
 
-      {/* Charts Section */}
       <div className='grid gap-4 lg:grid-cols-3'>
-        {/* Summary bar */}
         <Card className='lg:col-span-1 border-violet-200 dark:border-violet-800'>
           <CardHeader>
             <CardTitle className='text-violet-700 dark:text-violet-300'>Tổng quan</CardTitle>

@@ -5,7 +5,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useLocation } from 'react-router-dom'
 import { sidebarData } from './data/sidebar-data'
 import { useAuth } from '@/context/auth-context'
-import { Bell, Settings, Menu, Package2 } from 'lucide-react'
+import { Bell, Menu, Package2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
@@ -32,7 +32,6 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
     return () => document.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Find active navigation item based on current path and user role
   const getActiveNavItem = () => {
     if (!userPermission?.roleName) return null
 
@@ -41,10 +40,8 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
 
     const currentPath = location.pathname
     const pathSegments = currentPath.split('/').filter(Boolean)
-    // Xử lý cho nested routes như /system/admin/manage-order/design-request
-    const relevantPath = pathSegments.slice(2).join('/') || 'dashboard' // Bỏ qua /system/admin
+    const relevantPath = pathSegments.slice(2).join('/') || 'dashboard'
 
-    // Tìm exact match trước
     for (const navGroup of currentRole.navGroups) {
       for (const navItem of navGroup.items) {
         if (navItem.url === relevantPath) {
@@ -70,22 +67,17 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
       }
     }
 
-    // Nếu không tìm thấy exact match, kiểm tra xem có phải là dynamic route không
-    // Ví dụ: manage-order/123 -> hiển thị "Chi tiết đơn hàng"
     const basePath = relevantPath.split('/')[0]
 
-    // Xử lý đặc biệt cho manage-order/:orderId
     if (basePath === 'manage-order' && relevantPath.split('/').length > 1) {
-      // Đây là route chi tiết đơn hàng
       return {
         title: 'Chi tiết đơn hàng',
         groupTitle: 'Quản lý hệ thống',
         parentTitle: 'Quản lý đơn hàng',
-        icon: Package2 // Sử dụng icon từ parent route
+        icon: Package2
       }
     }
 
-    // Tìm parent route cho các trường hợp khác
     for (const navGroup of currentRole.navGroups) {
       for (const navItem of navGroup.items) {
         if (navItem.url === basePath) {
@@ -149,7 +141,6 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
       )}
       {...props}
     >
-      {/* Left section - Navigation & Page Info */}
       <div className='flex items-center gap-3 lg:gap-4 flex-1'>
         <div className='flex items-center gap-2 lg:gap-3'>
           <SidebarTrigger
@@ -167,7 +158,6 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
           <Separator orientation='vertical' className='h-6 bg-violet-200 dark:bg-violet-800 hidden lg:block' />
         </div>
 
-        {/* Page info with icon */}
         <div className='flex items-center gap-3 flex-1'>
           {PageIcon && (
             <div className='hidden lg:flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30'>
@@ -182,9 +172,7 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
         </div>
       </div>
 
-      {/* Right section - Actions */}
       <div className='flex items-center gap-2 lg:gap-3'>
-        {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -245,13 +233,8 @@ export const Header = ({ className, fixed, title, subtitle, children, ...props }
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Quick settings */}
-        <Button variant='ghost' size='icon' className='h-9 w-9 hover:bg-violet-100 dark:hover:bg-violet-900/30'>
-          <Settings className='h-5 w-5' />
-        </Button>
         <ModeToggle />
 
-        {/* Custom children */}
         {children}
       </div>
     </header>

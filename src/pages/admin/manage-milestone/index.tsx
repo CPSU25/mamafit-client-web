@@ -84,9 +84,7 @@ export default function ManageMilestonePage() {
   return (
     <MilestonesProvider>
       <Main className='space-y-6'>
-        {/* Enhanced Header Section */}
         <div className='space-y-6'>
-          {/* Title and Actions */}
           <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
             <div className='space-y-1'>
               <div className='flex items-center gap-2'>
@@ -107,7 +105,6 @@ export default function ManageMilestonePage() {
             <MilestonePrimaryButtons />
           </div>
 
-          {/* Statistics Cards */}
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
             <Card className='border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/30 dark:to-background hover:shadow-lg transition-all duration-300'>
               <CardContent className='p-4'>
@@ -180,7 +177,6 @@ export default function ManageMilestonePage() {
           </div>
         </div>
 
-        {/* Table Section with Enhanced Styling */}
         <Card className='border-0 shadow-xl bg-gradient-to-br from-background via-background to-violet-50/30 dark:to-violet-950/10'>
           <CardContent className='p-0'>
             <div className='p-6 space-y-4'>

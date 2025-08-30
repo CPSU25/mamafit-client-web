@@ -1,9 +1,11 @@
-import { useState } from 'react'
-import { Shield, RefreshCw, TrendingUp, Clock } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Shield, RefreshCw, TrendingUp, Clock, Sparkles, Search, X } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import {
   Pagination,
   PaginationContent,
@@ -13,14 +15,16 @@ import {
   PaginationPrevious
 } from '@/components/ui/pagination'
 import { Main } from '@/components/layout/main'
-import { WarrantyFilters, WarrantyRequestCard, WarrantyDecisionForm } from './components'
+import { WarrantyRequestCard, WarrantyDecisionForm } from './components'
 import { useWarrantyRequestList, useWarrantyRequestById } from '@/services/global/warranty.service'
 import { WarrantyRequestList, StatusWarrantyRequest } from '@/@types/warranty-request.types'
 import { cn } from '@/lib/utils/utils'
+import { tabStatusMapping } from './constants'
 
 function WarrantyManagementSystem() {
   const [selectedTab, setSelectedTab] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<WarrantyRequestList | null>(null)
 
@@ -28,10 +32,19 @@ function WarrantyManagementSystem() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize] = useState(12) // 12 items per page for better grid layout
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
   const { data: warrantyRequestsResponse, isLoading } = useWarrantyRequestList({
     index: currentPage,
     pageSize: pageSize,
-    search: searchQuery,
+    search: debouncedSearchQuery,
     sortBy: 'CREATED_AT_DESC'
   })
 
@@ -45,16 +58,24 @@ function WarrantyManagementSystem() {
   // Extract warranty requests and pagination info
   const warrantyRequests = warrantyRequestsResponse?.items ?? []
 
-  // For pagination, we'll display all items from current page
-  // Filtering will be handled server-side through search params
-  const displayRequests = warrantyRequests
+  // Apply local filtering based on selected tab
+  const filteredRequests = useMemo(() => {
+    if (selectedTab === 'all') return warrantyRequests
 
-  // Calculate stats từ current page data
+    const allowedStatuses = tabStatusMapping[selectedTab] || []
+    return warrantyRequests.filter((request) => allowedStatuses.includes(request.status))
+  }, [warrantyRequests, selectedTab])
+
+  // Calculate stats from filtered data
   const stats = {
     total: warrantyRequestsResponse?.totalCount ?? 0,
-    pending: warrantyRequests.filter((r) => r.status === StatusWarrantyRequest.PENDING).length ?? 0,
-    approved: warrantyRequests.filter((r) => r.status === StatusWarrantyRequest.APPROVED).length ?? 0,
-    completed: warrantyRequests.filter((r) => r.status === StatusWarrantyRequest.COMPLETED).length ?? 0
+    pending: warrantyRequests.filter((r) => r.status === StatusWarrantyRequest.PENDING).length,
+    approved: warrantyRequests.filter((r) => r.status === StatusWarrantyRequest.APPROVED).length,
+    repairing: warrantyRequests.filter((r) => r.status === StatusWarrantyRequest.REPAIRING).length,
+    completed: warrantyRequests.filter((r) => r.status === StatusWarrantyRequest.COMPLETED).length,
+    rejected: warrantyRequests.filter(
+      (r) => r.status === StatusWarrantyRequest.REJECTED || r.status === StatusWarrantyRequest.PARTIALLY_REJECTED
+    ).length
   }
 
   const handleViewDetail = (request: WarrantyRequestList) => {
@@ -86,23 +107,30 @@ function WarrantyManagementSystem() {
     setSelectedTab('all')
     setCurrentPage(1)
   }
+
+  // Check if any filters are active
+  const hasActiveFilters = searchQuery || selectedTab !== 'all'
+
   return (
     <Main className='min-h-screen'>
       {/* Modern Header */}
       <div className='sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200/50 dark:border-gray-700/50 -mx-4 -mt-6 mb-8'>
         <div className='container mx-auto px-6 py-4'>
           <div className='flex flex-col lg:flex-row lg:items-center justify-between gap-4'>
-            <div className='flex items-center gap-4'>
-              <div className='p-3 bg-gradient-to-r from-violet-500 to-purple-600 dark:from-violet-600 dark:to-purple-700 rounded-xl shadow-lg'>
-                <Shield className='w-8 h-8 text-white' />
-              </div>
-              <div>
-                <h1 className='text-2xl font-bold bg-gradient-to-r from-purple-900 via-violet-700 to-purple-700 dark:from-gray-100 dark:via-violet-300 dark:to-purple-300 bg-clip-text text-transparent'>
-                  Yêu Cầu Bảo Hành
-                </h1>
-                <p className='text-sm text-gray-600 dark:text-gray-300 mt-1'>
-                  Xử lý và theo dõi yêu cầu bảo hành từ khách hàng
-                </p>
+            <div className='space-y-1'>
+              <div className='flex items-center gap-2'>
+                <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg'>
+                  <Shield className='h-6 w-6 text-white' />
+                </div>
+                <div>
+                  <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
+                    Yêu Cầu Bảo Hành
+                  </h1>
+                  <p className='text-sm text-muted-foreground flex items-center gap-1'>
+                    Quản lý các yêu cầu bảo hành và tiến độ xử lý
+                    <Sparkles className='h-3 w-3 text-violet-500' />
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -172,80 +200,148 @@ function WarrantyManagementSystem() {
           </Card>
         </div>
 
-        {/* Modern Search Section */}
+        {/* Simple Search Bar */}
         <Card className='border-0 shadow-md bg-white dark:bg-gray-900'>
-          <CardContent className='p-6'>
-            <WarrantyFilters searchQuery={searchQuery} onSearchChange={handleSearchChange} />
+          <CardContent className='p-4'>
+            <div className='w-full max-w-2xl mx-auto'>
+              <div className='relative'>
+                <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                  <Search className='h-5 w-5 text-gray-400' />
+                </div>
+                <Input
+                  placeholder='Tìm kiếm theo mã SKU, tên khách hàng, số điện thoại...'
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className='h-11 text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 rounded-lg'
+                />
+                {searchQuery && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={() => handleSearchChange('')}
+                    className='absolute inset-y-0 right-0 px-3 h-full hover:bg-gray-100 dark:hover:bg-gray-700'
+                  >
+                    <X className='h-4 w-4 text-gray-400' />
+                  </Button>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Enhanced Tab Navigation */}
-        <div className='bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 p-6'>
-          <Tabs value={selectedTab} onValueChange={handleTabChange} className='space-y-6'>
-            <div className='flex flex-col lg:flex-row lg:items-center justify-between gap-4'>
-              <TabsList className='grid grid-cols-7 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl h-auto'>
+        {/* Enhanced Tab Navigation with inline search */}
+        <div className='bg-gradient-to-br from-white via-violet-50/20 to-white dark:from-gray-900 dark:via-violet-950/20 dark:to-gray-900 rounded-3xl shadow-xl border border-violet-100/50 dark:border-violet-800/50 p-8'>
+          <Tabs value={selectedTab} onValueChange={handleTabChange} className='space-y-8'>
+            <div className='flex flex-col lg:flex-row lg:items-center justify-between gap-6'>
+              <TabsList className='grid grid-cols-7 bg-gradient-to-r from-gray-100 via-violet-50 to-gray-100 dark:from-gray-800 dark:via-violet-950/30 dark:to-gray-800 p-2 rounded-2xl h-auto shadow-lg'>
                 <TabsTrigger
                   value='all'
-                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg py-3 px-4 text-sm font-medium'
+                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-lg data-[state=active]:scale-105 rounded-xl py-4 px-5 text-sm font-semibold transition-all duration-200'
                 >
-                  Tất cả
+                  <div className='flex flex-col items-center gap-2'>
+                    <span className='text-gray-900 dark:text-gray-100'>Tất cả</span>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs px-3 py-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white border-0 shadow-md'
+                    >
+                      {stats.total}
+                    </Badge>
+                  </div>
                 </TabsTrigger>
                 <TabsTrigger
                   value='pending'
-                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg py-3 px-4 text-sm font-medium'
+                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-lg data-[state=active]:scale-105 rounded-xl py-4 px-5 text-sm font-semibold transition-all duration-200'
                 >
-                  Chờ xử lý
+                  <div className='flex flex-col items-center gap-2'>
+                    <span className='text-gray-900 dark:text-gray-100'>Chờ xử lý</span>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-md'
+                    >
+                      {stats.pending}
+                    </Badge>
+                  </div>
                 </TabsTrigger>
                 <TabsTrigger
                   value='approved'
-                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg py-3 px-4 text-sm font-medium'
+                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-lg data-[state=active]:scale-105 rounded-xl py-4 px-5 text-sm font-semibold transition-all duration-200'
                 >
-                  Đã duyệt
+                  <div className='flex flex-col items-center gap-2'>
+                    <span className='text-gray-900 dark:text-gray-100'>Đã duyệt</span>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs px-3 py-1 bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 shadow-md'
+                    >
+                      {stats.approved}
+                    </Badge>
+                  </div>
                 </TabsTrigger>
                 <TabsTrigger
                   value='repairing'
-                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg py-3 px-4 text-sm font-medium'
+                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-lg data-[state=active]:scale-105 rounded-xl py-4 px-5 text-sm font-semibold transition-all duration-200'
                 >
-                  Sửa chữa
+                  <div className='flex flex-col items-center gap-2'>
+                    <span className='text-gray-900 dark:text-gray-100'>Sửa chữa</span>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md'
+                    >
+                      {stats.repairing}
+                    </Badge>
+                  </div>
                 </TabsTrigger>
                 <TabsTrigger
                   value='awaiting_payment'
-                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg py-3 px-4 text-sm font-medium'
+                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-lg data-[state=active]:scale-105 rounded-xl py-4 px-5 text-sm font-semibold transition-all duration-200'
                 >
-                  Chờ TT
+                  <div className='flex flex-col items-center gap-2'>
+                    <span className='text-gray-900 dark:text-gray-100'>Chờ TT</span>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs px-3 py-1 bg-gradient-to-r from-violet-500 to-purple-500 text-white border-0 shadow-md'
+                    >
+                      {stats.approved}
+                    </Badge>
+                  </div>
                 </TabsTrigger>
                 <TabsTrigger
                   value='completed'
-                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg py-3 px-4 text-sm font-medium'
+                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-lg data-[state=active]:scale-105 rounded-xl py-4 px-5 text-sm font-semibold transition-all duration-200'
                 >
-                  Hoàn thành
+                  <div className='flex flex-col items-center gap-2'>
+                    <span className='text-gray-900 dark:text-gray-100'>Hoàn thành</span>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-md'
+                    >
+                      {stats.completed}
+                    </Badge>
+                  </div>
                 </TabsTrigger>
                 <TabsTrigger
                   value='rejected'
-                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg py-3 px-4 text-sm font-medium'
+                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-lg data-[state=active]:scale-105 rounded-xl py-4 px-5 text-sm font-semibold transition-all duration-200'
                 >
-                  Từ chối
+                  <div className='flex flex-col items-center gap-2'>
+                    <span className='text-gray-900 dark:text-gray-100'>Từ chối</span>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 shadow-md'
+                    >
+                      {stats.rejected}
+                    </Badge>
+                  </div>
                 </TabsTrigger>
               </TabsList>
 
               {/* Results Summary with modern styling */}
               <div className='flex items-center gap-4'>
-                <div className='bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700'>
-                  <span className='text-sm text-gray-600 dark:text-gray-300'>
-                    <span className='font-semibold text-violet-600 dark:text-violet-400'>{displayRequests.length}</span>{' '}
-                    / {stats.total} yêu cầu
+                <div className='bg-gradient-to-r from-violet-500 to-purple-600 text-white px-6 py-3 rounded-2xl shadow-lg border-0'>
+                  <span className='text-sm font-semibold'>
+                    <span className='text-white font-bold text-lg'>{filteredRequests.length}</span> / {stats.total} yêu
+                    cầu
                   </span>
                 </div>
-                {searchQuery && (
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={handleClearFilters}
-                    className='text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  >
-                    Xóa bộ lọc
-                  </Button>
-                )}
               </div>
             </div>
 
@@ -276,16 +372,16 @@ function WarrantyManagementSystem() {
             )}
 
             {/* Warranty Requests Grid với modern layout */}
-            {!isLoading && displayRequests.length > 0 && (
+            {!isLoading && filteredRequests.length > 0 && (
               <div className='grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6'>
-                {displayRequests.map((request) => (
+                {filteredRequests.map((request) => (
                   <WarrantyRequestCard key={request.id} request={request} onViewDetail={handleViewDetail} />
                 ))}
               </div>
             )}
 
             {/* Enhanced Empty State */}
-            {!isLoading && displayRequests.length === 0 && (
+            {!isLoading && filteredRequests.length === 0 && (
               <div className='text-center py-20'>
                 <div className='mx-auto w-32 h-32 bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center mb-8'>
                   <Shield className='w-16 h-16 text-violet-400 dark:text-violet-500' />
@@ -298,7 +394,7 @@ function WarrantyManagementSystem() {
                     ? 'Chưa có yêu cầu bảo hành nào được tạo. Các yêu cầu mới sẽ xuất hiện ở đây.'
                     : 'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm để xem thêm yêu cầu.'}
                 </p>
-                {(searchQuery || selectedTab !== 'all') && (
+                {hasActiveFilters && (
                   <Button
                     onClick={handleClearFilters}
                     className='gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 dark:from-violet-700 dark:to-purple-700 dark:hover:from-violet-800 dark:hover:to-purple-800 text-white shadow-lg'
@@ -311,7 +407,7 @@ function WarrantyManagementSystem() {
             )}
 
             {/* Pagination Component - Always show when we have data */}
-            {!isLoading && (
+            {!isLoading && filteredRequests.length > 0 && (
               <div className='mt-8 flex flex-col items-center space-y-4'>
                 <Pagination>
                   <PaginationContent>
@@ -346,7 +442,7 @@ function WarrantyManagementSystem() {
                 {/* Pagination Info */}
                 <div className='text-center'>
                   <span className='text-sm text-gray-600 dark:text-gray-300'>
-                    Trang {currentPage} • Hiển thị {displayRequests.length} yêu cầu • Tổng: {stats.total} yêu cầu
+                    Trang {currentPage} • Hiển thị {filteredRequests.length} yêu cầu • Tổng: {stats.total} yêu cầu
                   </span>
                 </div>
               </div>

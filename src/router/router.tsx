@@ -32,6 +32,7 @@ import {
 } from '@/pages/branch'
 import { OrderItemDetailPage, StaffTasksPage } from '@/pages/staff'
 import StaffDashboardPage from '@/pages/staff/dashboard'
+import ManageAddOnPage from '@/pages/admin/manage-add-on'
 
 export const router = createBrowserRouter([
   {
@@ -80,7 +81,8 @@ export const router = createBrowserRouter([
           { path: 'manage-warranty', element: <WarrantyManagementSystem /> },
           { path: 'system-notifications', element: <NotificationSettingPage /> },
           { path: 'settings', element: <SystemConfigPage /> },
-          { path: 'manage-ticket', element: <ManageTicketPage /> }
+          { path: 'manage-ticket', element: <ManageTicketPage /> },
+          { path: 'manage-add-on', element: <ManageAddOnPage /> }
         ]
       },
 

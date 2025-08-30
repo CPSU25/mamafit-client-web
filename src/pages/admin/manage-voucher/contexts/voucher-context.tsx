@@ -3,7 +3,7 @@ import { VoucherBatch, VoucherDiscount } from '../data/schema'
 import { VoucherTabType } from '../data/data'
 import useDialogState from '@/hooks/use-dialog-state'
 
-type VoucherDialogType = 'add-batch' | 'edit-batch' | 'delete-batch' | 'delete-discount' | 'assign-voucher'
+type VoucherDialogType = 'add-batch' | 'edit-batch' | 'delete-batch' | 'delete-discount' | 'assign-voucher' | 'view'
 
 interface VoucherContextType {
   // Dialog management

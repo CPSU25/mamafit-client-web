@@ -1,6 +1,6 @@
 // index.tsx - Trang Quản Lý Ticket Report
 import { useMemo } from 'react'
-import { AlertTriangle, MessageSquare, Package, Clock } from 'lucide-react'
+import { AlertTriangle, MessageSquare, Package, Clock, Bug, Sparkles } from 'lucide-react'
 
 import { Main } from '@/components/layout/main'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,7 +12,6 @@ import { TicketProvider, useTickets as useTicketsContext } from './contexts'
 
 import type { TicketList } from '@/@types/ticket.types'
 
-// Component Statistics Cards theo pattern dự án
 interface TicketStatisticsProps {
   totalTickets: number
   warrantyTickets: number
@@ -112,7 +111,6 @@ function TicketStatistics({
   )
 }
 
-// Component chính
 function ManageTicketContent() {
   const { data: ticketsData, isLoading, error } = useGetTickets()
   const { selectedTicket, setSelectedTicket } = useTicketsContext()
@@ -135,13 +133,23 @@ function ManageTicketContent() {
 
   return (
     <div className='space-y-6'>
-      {/* Header */}
-      <div className='flex flex-col gap-2'>
-        <h1 className='text-3xl font-bold tracking-tight'>Quản Lý Ticket Report</h1>
-        <p className='text-muted-foreground'>Quản lý các ticket báo cáo từ khách hàng về sản phẩm và dịch vụ</p>
+      <div className='space-y-1'>
+        <div className='flex items-center gap-2'>
+          <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg'>
+            <Bug className='h-6 w-6 text-white' />
+          </div>
+          <div>
+            <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
+              Quản Lý Khiếu Nại
+            </h1>
+            <p className='text-sm text-muted-foreground flex items-center gap-1'>
+              Quản lý các các khiếu nại của khách hàng về sản phẩm
+              <Sparkles className='h-3 w-3 text-violet-500' />
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Statistics */}
       <TicketStatistics
         totalTickets={statistics.total}
         warrantyTickets={statistics.warranty || 0}
@@ -150,7 +158,6 @@ function ManageTicketContent() {
         isLoading={isLoading}
       />
 
-      {/* Ticket Grid */}
       <TicketGrid
         tickets={ticketsData?.data || []}
         isLoading={isLoading}
@@ -158,7 +165,6 @@ function ManageTicketContent() {
         onTicketSelect={handleTicketSelect}
       />
 
-      {/* Ticket Detail Dialog */}
       <TicketDetailDialog ticket={selectedTicket} isOpen={!!selectedTicket} onClose={handleCloseSidebar} />
     </div>
   )

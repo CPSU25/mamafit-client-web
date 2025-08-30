@@ -10,7 +10,6 @@ import {
   Award,
   Tags,
   MessagesSquare,
-  Building,
   Ticket,
   CalendarDays,
   // FileText,
@@ -18,7 +17,6 @@ import {
   Clock,
   Boxes,
   ClipboardList,
-  DollarSign,
   // UserCheck,
   Shirt,
   Scissors,
@@ -28,7 +26,9 @@ import {
   Shield,
   PenTool,
   Bell,
-  Eye
+  Eye,
+  Bug,
+  CreditCard
 } from 'lucide-react'
 import { SidebarData } from '../types'
 
@@ -61,22 +61,23 @@ export const sidebarData: SidebarData = {
               ]
             },
             {
-              title: 'Quản lý chi nhánh',
-              icon: Building,
-              items: [{ title: 'Danh sách chi nhánh', url: 'manage-branch', icon: Store }]
+              title: 'Danh sách chi nhánh',
+              url: 'manage-branch',
+              icon: Store
             },
             { title: 'Quản lý danh mục', url: 'manage-category', icon: Tags },
+            { title: 'Quản lý phụ kiện', url: 'manage-add-on', icon: Package },
             { title: 'Quản lý váy bầu', url: 'manage-maternity-dress', icon: Shirt },
             { title: 'Quản lý thành phần', url: 'manage-component', icon: Boxes },
             { title: 'Quản lý mốc nhiệm vụ', url: 'manage-milestone', icon: Clock },
             { title: 'Yêu cầu bảo hành', url: 'manage-warranty', icon: Shield },
-
+            { title: 'Quản lý khiếu nại', url: 'manage-ticket', icon: Bug },
             { title: 'Quản lý khuyến mãi', url: 'manage-voucher', icon: Ticket }
           ]
         },
         {
           title: 'Giao dịch',
-          items: [{ title: 'Quản lý thanh toán', url: 'manage-transaction', icon: DollarSign }]
+          items: [{ title: 'Quản lý giao dịch', url: 'manage-transaction', icon: CreditCard }]
         },
         {
           title: 'Cài đặt',
