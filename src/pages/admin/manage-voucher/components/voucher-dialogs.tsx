@@ -2,6 +2,7 @@ import { useVoucher } from '../contexts/voucher-context'
 import { VoucherBatchFormDialog } from './voucher-action-dialog'
 import { VoucherBatchDeleteDialog } from './voucher-delete-dialog'
 import { VoucherAssignDialog } from './voucher-assign-dialog'
+import { VoucherViewDialog } from './voucher-view-dialog'
 
 export function VoucherDialogs() {
   const { open, setOpen, currentVoucherBatch, setCurrentVoucherBatch, currentVoucherDiscount } = useVoucher()
@@ -55,6 +56,22 @@ export function VoucherDialogs() {
           />
         </>
       )}
+
+      {/* View Dialog - for both voucher batch and voucher discount */}
+      <VoucherViewDialog
+        key={`voucher-view-${currentVoucherBatch?.id || currentVoucherDiscount?.id || 'none'}`}
+        open={open === 'view'}
+        onOpenChange={(state) => {
+          if (state) {
+            setOpen('view')
+          } else {
+            setOpen(null)
+            // Don't reset current data when closing view dialog
+          }
+        }}
+        voucherBatch={currentVoucherBatch}
+        voucherDiscount={currentVoucherDiscount}
+      />
 
       {/* TODO: Add voucher discount dialogs when needed */}
       {currentVoucherDiscount && (
