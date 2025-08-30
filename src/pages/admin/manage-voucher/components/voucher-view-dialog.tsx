@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   Dialog,
   DialogContent,
@@ -117,12 +116,12 @@ export function VoucherViewDialog({ open, onOpenChange, voucherBatch, voucherDis
           <div className='rounded-lg border p-4 space-y-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                  isVoucherBatch ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-green-100 dark:bg-green-900/30'
-                }`}>
-                  <Ticket className={`h-6 w-6 ${
-                    isVoucherBatch ? 'text-orange-600' : 'text-green-600'
-                  }`} />
+                <div
+                  className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                    isVoucherBatch ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-green-100 dark:bg-green-900/30'
+                  }`}
+                >
+                  <Ticket className={`h-6 w-6 ${isVoucherBatch ? 'text-orange-600' : 'text-green-600'}`} />
                 </div>
                 <div>
                   <h3 className='text-lg font-semibold'>
@@ -179,7 +178,8 @@ export function VoucherViewDialog({ open, onOpenChange, voucherBatch, voucherDis
                     Số lượng
                   </div>
                   <p className='text-lg font-semibold'>
-                    {voucherBatch.remainingQuantity.toLocaleString('vi-VN')} / {voucherBatch.totalQuantity.toLocaleString('vi-VN')}
+                    {voucherBatch.remainingQuantity.toLocaleString('vi-VN')} /{' '}
+                    {voucherBatch.totalQuantity.toLocaleString('vi-VN')}
                   </p>
                   <p className='text-xs text-muted-foreground'>Còn lại / Tổng số</p>
                 </div>

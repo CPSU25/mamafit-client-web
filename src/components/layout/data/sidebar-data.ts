@@ -66,6 +66,7 @@ export const sidebarData: SidebarData = {
               icon: Store
             },
             { title: 'Quản lý danh mục', url: 'manage-category', icon: Tags },
+            { title: 'Quản lý phụ kiện', url: 'manage-add-on', icon: Package },
             { title: 'Quản lý váy bầu', url: 'manage-maternity-dress', icon: Shirt },
             { title: 'Quản lý thành phần', url: 'manage-component', icon: Boxes },
             { title: 'Quản lý mốc nhiệm vụ', url: 'manage-milestone', icon: Clock },
