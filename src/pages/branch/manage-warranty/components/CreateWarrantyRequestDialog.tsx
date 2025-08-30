@@ -10,9 +10,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { PlusCircle, Loader2, Calendar, Shield, Package } from 'lucide-react'
+import { PlusCircle, Loader2, CreditCard, Banknote, AlertTriangle, Calendar, Shield, Package } from 'lucide-react'
 
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 import { FirebaseVideoUpload } from '@/components/firebase-video-upload'
@@ -20,6 +23,7 @@ import { useCreateBranchWarrantyRequest } from '@/services/global/warranty.servi
 import type { OrderItemType } from '@/@types/manage-order.types'
 import { PaymentMethod } from '@/@types/manage-order.types'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
+import { useGetConfigs } from '@/services/global/system-config.service'
 
 interface CreateWarrantyRequestDialogProps {
   open: boolean
@@ -37,8 +41,21 @@ export function CreateWarrantyRequestDialog({
   const [descriptions, setDescriptions] = useState<Record<string, string>>({})
   const [images, setImages] = useState<Record<string, string[]>>({})
   const [videos, setVideos] = useState<Record<string, string[]>>({})
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH)
+  const [feeAmount, setFeeAmount] = useState<number | null>(null)
 
   const { mutateAsync: createRequest, isPending: creating } = useCreateBranchWarrantyRequest()
+  const { data: configData } = useGetConfigs()
+  const warrantyPeriod = configData?.data.fields.warrantyTime
+
+  // Check if any item needs fee (warranty round >= warrantyPeriod) - memoized to prevent infinite re-renders
+  const needsFee = useMemo(() => {
+    if (!warrantyPeriod) return false
+    return selectedItems.some((item) => {
+      const warrantyRound = item.warrantyRound || 0
+      return warrantyRound >= warrantyPeriod
+    })
+  }, [selectedItems, warrantyPeriod])
 
   const setItemDescription = useCallback((id: string, val: string) => {
     setDescriptions((prev) => ({ ...prev, [id]: val }))
@@ -52,9 +69,17 @@ export function CreateWarrantyRequestDialog({
     setVideos((prev) => ({ ...prev, [id]: urls }))
   }, [])
 
+  const handlePaymentMethodChange = useCallback((value: string) => {
+    setPaymentMethod(value as PaymentMethod)
+  }, [])
+
+  const handleFeeAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFeeAmount(e.target.value ? Number(e.target.value) : null)
+  }, [])
+
   const canCreate = useMemo(() => {
-    return selectedItems.length > 0
-  }, [selectedItems.length])
+    return selectedItems.length > 0 && (!needsFee || (needsFee && feeAmount !== null))
+  }, [selectedItems.length, needsFee, feeAmount])
 
   const handleCreate = useCallback(async () => {
     try {
@@ -66,8 +91,8 @@ export function CreateWarrantyRequestDialog({
       }))
 
       await createRequest({
-        paymentMethod: PaymentMethod.CASH,
-        fee: null,
+        paymentMethod,
+        fee: needsFee ? feeAmount : null,
         items: itemsPayload
       })
 
@@ -75,17 +100,19 @@ export function CreateWarrantyRequestDialog({
       setDescriptions({})
       setImages({})
       setVideos({})
+      setFeeAmount(null)
 
       onSuccess()
     } catch (error) {
       console.error('Error creating warranty request:', error)
     }
-  }, [selectedItems, descriptions, images, videos, createRequest, onSuccess])
+  }, [selectedItems, descriptions, images, videos, paymentMethod, needsFee, feeAmount, createRequest, onSuccess])
 
   const handleClose = useCallback(() => {
     setDescriptions({})
     setImages({})
     setVideos({})
+    setFeeAmount(null)
     onOpenChange(false)
   }, [onOpenChange])
 
@@ -104,15 +131,25 @@ export function CreateWarrantyRequestDialog({
           {/* Selected Items Summary */}
           <Card className='border-violet-200 bg-violet-50/50 dark:border-violet-800 dark:bg-violet-950/20'>
             <CardContent className='p-4'>
-              <div className='flex items-center gap-2'>
-                <Package className='h-5 w-5 text-violet-600' />
-                <span className='font-medium'>Sản phẩm đã chọn</span>
-                <Badge
-                  variant='secondary'
-                  className='bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400'
-                >
-                  {selectedItems.length} sản phẩm
-                </Badge>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-2'>
+                  <Package className='h-5 w-5 text-violet-600' />
+                  <span className='font-medium'>Sản phẩm đã chọn</span>
+                  <Badge
+                    variant='secondary'
+                    className='bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400'
+                  >
+                    {selectedItems.length} sản phẩm
+                  </Badge>
+                </div>
+                {needsFee && (
+                  <Badge
+                    variant='outline'
+                    className='border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400'
+                  >
+                    Có phí bảo hành
+                  </Badge>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -121,6 +158,7 @@ export function CreateWarrantyRequestDialog({
           <div className='space-y-6'>
             {selectedItems.map((item, index) => {
               const warrantyRound = item.warrantyRound || 0
+              const needsFeeForItem = warrantyPeriod ? warrantyRound >= warrantyPeriod : false
 
               return (
                 <Card key={item.id} className='border border-border/50'>
@@ -210,9 +248,19 @@ export function CreateWarrantyRequestDialog({
                             </span>
                           </div>
                         )}
-                        <div className='flex items-center gap-2 text-emerald-600 dark:text-emerald-400'>
+                        <div
+                          className={`flex items-center gap-2 ${needsFeeForItem ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+                        >
                           <Shield className='h-4 w-4' />
                           <span className='font-medium'>Lần BH: {warrantyRound}</span>
+                          {needsFeeForItem && (
+                            <Badge
+                              variant='outline'
+                              className='ml-1 text-xs border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400'
+                            >
+                              Có phí
+                            </Badge>
+                          )}
                         </div>
                       </div>
 
@@ -266,6 +314,68 @@ export function CreateWarrantyRequestDialog({
               )
             })}
           </div>
+
+          {/* Fee Management Section */}
+          {needsFee && (
+            <Card className='border-2 border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/30 dark:border-amber-800 dark:from-amber-950/20 dark:to-orange-950/10'>
+              <CardContent className='p-6 space-y-4'>
+                <div className='flex items-center gap-2'>
+                  <CreditCard className='h-5 w-5 text-amber-600' />
+                  <div className='font-semibold text-amber-700 dark:text-amber-400'>Thanh toán & Phí bảo hành</div>
+                </div>
+
+                {/* Fee Amount Input */}
+
+                <div className='space-y-3'>
+                  <Alert className='border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20'>
+                    <AlertTriangle className='h-4 w-4' />
+                    <AlertDescription className='text-amber-800 dark:text-amber-400'>
+                      Có sản phẩm yêu cầu bảo hành lần thứ {warrantyPeriod} trở đi. Vui lòng nhập số tiền phí cần thu.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className='space-y-2'>
+                    <Label className='text-sm font-medium'>Số tiền phí *</Label>
+                    <div className='relative'>
+                      <Banknote className='absolute left-3 top-3 h-4 w-4 text-muted-foreground' />
+                      <Input
+                        type='number'
+                        placeholder='Nhập số tiền phí...'
+                        value={feeAmount || ''}
+                        onChange={handleFeeAmountChange}
+                        className='pl-10'
+                      />
+                      <div className='absolute right-3 top-3 text-sm text-muted-foreground'>VNĐ</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Method */}
+                <div className='space-y-2'>
+                  <Label className='text-sm font-medium'>Phương thức thanh toán</Label>
+                  <Select value={paymentMethod} onValueChange={handlePaymentMethodChange}>
+                    <SelectTrigger className='bg-white dark:bg-background'>
+                      <SelectValue placeholder='Chọn phương thức thanh toán' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={PaymentMethod.CASH}>
+                        <div className='flex items-center gap-2'>
+                          <Banknote className='h-4 w-4' />
+                          Tiền mặt
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={PaymentMethod.ONLINE_BANKING}>
+                        <div className='flex items-center gap-2'>
+                          <CreditCard className='h-4 w-4' />
+                          Chuyển khoản
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <DialogFooter>
