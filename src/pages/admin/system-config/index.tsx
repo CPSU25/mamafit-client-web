@@ -12,12 +12,11 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertTriangle, Settings, Save, RefreshCw, X } from 'lucide-react'
+import { AlertTriangle, Settings, Save, RefreshCw, X, Sparkles } from 'lucide-react'
 import { useGetConfigs, useUpdateConfig } from '@/services/global/system-config.service'
 import { ConfigFormData } from '@/@types/system-config.types'
 import { configPatchSchema, type ConfigPatch } from './schema'
 
-// -------- TagEditor component (lightweight) ----------
 type TagEditorProps = {
   value: string[] | undefined
   onChange: (next: string[]) => void
@@ -70,7 +69,6 @@ function TagEditor({ value = [], onChange, placeholder }: TagEditorProps) {
     </div>
   )
 }
-// -----------------------------------------------------
 
 const SystemConfig = () => {
   const { data: configResponse, isLoading, error, refetch } = useGetConfigs()
@@ -78,13 +76,9 @@ const SystemConfig = () => {
 
   const form = useForm<ConfigPatch>({
     resolver: zodResolver(configPatchSchema),
-    defaultValues: {
-      // để trống -> PATCH chỉ gửi khi user đổi giá trị (react-hook-form đánh dấu dirty)
-      // bạn vẫn có thể set default để hiển thị, nhưng khi submit mình sẽ chỉ pick dirty fields
-    }
+    defaultValues: {}
   })
 
-  // Fill form from API (hiển thị giá trị), nhưng khi submit sẽ chỉ gửi field dirty
   React.useEffect(() => {
     if (configResponse?.data.fields) {
       const f = configResponse.data.fields
@@ -110,7 +104,6 @@ const SystemConfig = () => {
   }, [configResponse])
 
   const onSubmit = async (data: ConfigFormData) => {
-    // chỉ gửi các field dirty để đúng tinh thần PATCH
     const dirty = form.formState.dirtyFields
     const payload: ConfigFormData = {}
 
@@ -122,7 +115,7 @@ const SystemConfig = () => {
     try {
       await updateConfigMutation.mutateAsync(payload)
       toast.success('Cập nhật cấu hình hệ thống thành công!')
-      form.reset(data) // reset dirty state
+      form.reset(data)
     } catch (err) {
       toast.error('Cập nhật cấu hình thất bại. Vui lòng thử lại!')
       console.error('Update config error:', err)
@@ -137,7 +130,7 @@ const SystemConfig = () => {
   if (isLoading) {
     return (
       <Main>
-        <div className='container mx-auto py-6 space-y-6'>
+        <div className='space-y-6'>
           <div className='flex items-center justify-between'>
             <div className='space-y-2'>
               <Skeleton className='h-8 w-64' />
@@ -181,15 +174,23 @@ const SystemConfig = () => {
 
   return (
     <Main>
-      <div className='container mx-auto py-6 space-y-6'>
-        {/* Header */}
+      <div className='space-y-6'>
         <div className='flex items-center justify-between'>
           <div className='space-y-1'>
             <div className='flex items-center gap-2'>
-              <Settings className='h-6 w-6' />
-              <h1 className='text-2xl font-bold tracking-tight'>Cấu hình hệ thống</h1>
+              <div className='h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg'>
+                <Settings className='h-6 w-6 text-white' />
+              </div>
+              <div>
+                <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-violet-500 bg-clip-text text-transparent'>
+                  Cấu hình hệ thống
+                </h1>
+                <p className='text-sm text-muted-foreground flex items-center gap-1'>
+                  Quản lý các thông số cấu hình cho toàn bộ hệ thống MamaFit
+                  <Sparkles className='h-3 w-3 text-violet-500' />
+                </p>
+              </div>
             </div>
-            <p className='text-muted-foreground'>Quản lý các thông số cấu hình cho toàn bộ hệ thống MamaFit</p>
           </div>
           <Button variant='outline' onClick={handleRefresh} disabled={isLoading}>
             <RefreshCw className='h-4 w-4' />
@@ -197,11 +198,9 @@ const SystemConfig = () => {
           </Button>
         </div>
 
-        {/* Form */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <div className='grid gap-6 md:grid-cols-2'>
-              {/* Cấu hình dịch vụ */}
               <Card>
                 <CardHeader>
                   <CardTitle>Cấu hình dịch vụ</CardTitle>
@@ -253,7 +252,6 @@ const SystemConfig = () => {
                 </CardContent>
               </Card>
 
-              {/* Cấu hình thiết kế */}
               <Card>
                 <CardHeader>
                   <CardTitle>Cấu hình thiết kế</CardTitle>
@@ -282,7 +280,6 @@ const SystemConfig = () => {
                 </CardContent>
               </Card>
 
-              {/* Cấu hình bảo hành */}
               <Card>
                 <CardHeader>
                   <CardTitle>Cấu hình bảo hành</CardTitle>
@@ -331,7 +328,6 @@ const SystemConfig = () => {
                 </CardContent>
               </Card>
 
-              {/* Cấu hình lịch hẹn */}
               <Card>
                 <CardHeader>
                   <CardTitle>Cấu hình lịch hẹn</CardTitle>
@@ -400,7 +396,6 @@ const SystemConfig = () => {
                 </CardContent>
               </Card>
 
-              {/* Từ điển thuộc tính */}
               <Card>
                 <CardHeader>
                   <CardTitle>Thuộc tính mặc định khi tạo váy</CardTitle>
@@ -437,7 +432,6 @@ const SystemConfig = () => {
                   />
                 </CardContent>
               </Card>
-              {/* Cấu hình chức vụ nhân viên */}
               <Card>
                 <CardHeader>
                   <CardTitle>Cấu hình chức vụ nhân viên</CardTitle>
@@ -466,7 +460,6 @@ const SystemConfig = () => {
               </Card>
             </div>
 
-            {/* Submit button */}
             <div className='flex justify-end'>
               <Button type='submit' isLoading={updateConfigMutation.isPending} disabled={!form.formState.isDirty}>
                 <Save className='h-4 w-4' />

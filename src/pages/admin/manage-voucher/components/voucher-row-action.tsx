@@ -26,10 +26,10 @@ export function VoucherTableRowActions<TData extends object>({ row }: DataTableR
   const handleView = () => {
     if (voucherBatch) {
       setCurrentVoucherBatch(voucherBatch)
-      // TODO: Add view detail logic for voucher batch
+      setOpen('view')
     } else if (voucherDiscount) {
       setCurrentVoucherDiscount(voucherDiscount)
-      // TODO: Add view detail logic for voucher discount
+      setOpen('view')
     }
   }
 
