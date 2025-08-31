@@ -2,8 +2,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ImageUpload } from '@/components/ui/image-upload'
 import { CheckCircle, Calendar, Camera, User, DollarSign, AlertCircle } from 'lucide-react'
 import dayjs from 'dayjs'
 import { CompleteDesignDialogProps } from '../types'
@@ -20,15 +20,9 @@ export const CompleteDesignDialog = ({
 }: CompleteDesignDialogProps) => {
   if (!request) return null
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        onImageChange(event.target?.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
+  const handleImageUpload = (urls: string[]) => {
+    // Chỉ lấy ảnh đầu tiên vì dialog này chỉ cần 1 ảnh
+    onImageChange(urls[0] || '')
   }
 
   return (
@@ -100,33 +94,14 @@ export const CompleteDesignDialog = ({
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='image'>Hình ảnh thiết kế hoàn thành</Label>
-              <div className='space-y-3'>
-                <Input
-                  id='image'
-                  type='file'
-                  accept='image/*'
-                  onChange={handleImageUpload}
-                  className='cursor-pointer'
-                />
-                {image && (
-                  <div className='relative'>
-                    <img
-                      src={image}
-                      alt='Thiết kế hoàn thành'
-                      className='w-full max-w-md rounded-lg border shadow-sm'
-                    />
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={() => onImageChange('')}
-                      className='absolute top-2 right-2 bg-white/80 hover:bg-white'
-                    >
-                      Xóa
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <Label>Hình ảnh thiết kế hoàn thành</Label>
+              <ImageUpload
+                value={image ? [image] : []}
+                onChange={handleImageUpload}
+                maxFiles={1}
+                placeholder='Upload hình ảnh thiết kế hoàn thành'
+                accept='image/*'
+              />
             </div>
           </div>
 

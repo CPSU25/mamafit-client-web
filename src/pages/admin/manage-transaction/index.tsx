@@ -1,10 +1,9 @@
 // src/pages/admin/manage-transaction/index.tsx
 // Refactored to follow manage-category pattern
-import { useState, useMemo } from 'react'
-import clsx from 'clsx'
+import { useState } from 'react'
+// import clsx from 'clsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CreditCard, TrendingUp, Activity, Sparkles, DollarSign, BarChart3, Package2 } from 'lucide-react'
-import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, LineChart, Line } from 'recharts'
+import { CreditCard, Sparkles, Package2 } from 'lucide-react'
 import { Main } from '@/components/layout/main'
 import { DateRange } from 'react-day-picker'
 import dayjs from 'dayjs'
@@ -16,60 +15,60 @@ import { mockTransactionData, transformTransactionTypeToTransaction } from './da
 import { useTransactions } from '@/services/admin/transaction.service'
 
 // Mock data cho charts (giữ nguyên từ file cũ)
-const barSeries = [
-  { name: 'Jan', value: 8 },
-  { name: 'Feb', value: 6 },
-  { name: 'Mar', value: 2 },
-  { name: 'Apr', value: 4 },
-  { name: 'May', value: 7 },
-  { name: 'Jun', value: 9 },
-  { name: 'Jul', value: 5 },
-  { name: 'Aug', value: 10 }
-]
+// const barSeries = [
+//   { name: 'Jan', value: 8 },
+//   { name: 'Feb', value: 6 },
+//   { name: 'Mar', value: 2 },
+//   { name: 'Apr', value: 4 },
+//   { name: 'May', value: 7 },
+//   { name: 'Jun', value: 9 },
+//   { name: 'Jul', value: 5 },
+//   { name: 'Aug', value: 10 }
+// ]
 
-const lineSeries = [
-  { name: 'Jan', income: 1200, expense: 250 },
-  { name: 'Feb', income: 1100, expense: 300 },
-  { name: 'Mar', income: 1400, expense: 280 },
-  { name: 'Apr', income: 900, expense: 260 },
-  { name: 'May', income: 1000, expense: 290 },
-  { name: 'Jun', income: 1300, expense: 310 },
-  { name: 'Jul', income: 1500, expense: 320 },
-  { name: 'Aug', income: 1600, expense: 330 }
-]
+// const lineSeries = [
+//   { name: 'Jan', income: 1200, expense: 250 },
+//   { name: 'Feb', income: 1100, expense: 300 },
+//   { name: 'Mar', income: 1400, expense: 280 },
+//   { name: 'Apr', income: 900, expense: 260 },
+//   { name: 'May', income: 1000, expense: 290 },
+//   { name: 'Jun', income: 1300, expense: 310 },
+//   { name: 'Jul', income: 1500, expense: 320 },
+//   { name: 'Aug', income: 1600, expense: 330 }
+// ]
 
-function currency(v: number) {
-  return v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 })
-}
+// function currency(v: number) {
+//   return v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 })
+// }
 
-function KpiCard({
-  title,
-  value,
-  delta,
-  icon: Icon
-}: {
-  title: string
-  value: string
-  delta: string
-  icon: React.ElementType
-}) {
-  return (
-    <Card className='border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/30 dark:to-background hover:shadow-lg transition-all duration-300'>
-      <CardContent className='p-4'>
-        <div className='flex items-center justify-between'>
-          <div className='space-y-2'>
-            <p className='text-sm font-medium text-muted-foreground'>{title}</p>
-            <p className='text-2xl font-bold text-violet-700 dark:text-violet-300'>{value}</p>
-            <div className={clsx('text-xs', delta.startsWith('-') ? 'text-rose-600' : 'text-emerald-600')}>{delta}</div>
-          </div>
-          <div className='h-12 w-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center'>
-            <Icon className='h-6 w-6 text-violet-600 dark:text-violet-400' />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+// function KpiCard({
+//   title,
+//   value,
+//   delta,
+//   icon: Icon
+// }: {
+//   title: string
+//   value: string
+//   delta: string
+//   icon: React.ElementType
+// }) {
+//   return (
+//     <Card className='border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/30 dark:to-background hover:shadow-lg transition-all duration-300'>
+//       <CardContent className='p-4'>
+//         <div className='flex items-center justify-between'>
+//           <div className='space-y-2'>
+//             <p className='text-sm font-medium text-muted-foreground'>{title}</p>
+//             <p className='text-2xl font-bold text-violet-700 dark:text-violet-300'>{value}</p>
+//             <div className={clsx('text-xs', delta.startsWith('-') ? 'text-rose-600' : 'text-emerald-600')}>{delta}</div>
+//           </div>
+//           <div className='h-12 w-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center'>
+//             <Icon className='h-6 w-6 text-violet-600 dark:text-violet-400' />
+//           </div>
+//         </div>
+//       </CardContent>
+//     </Card>
+//   )
+// }
 
 export default function ManageTransactionPage() {
   const [queryParams, setQueryParams] = useState({
@@ -100,17 +99,17 @@ export default function ManageTransactionPage() {
     ? apiResponse.data.items.map(transformTransactionTypeToTransaction)
     : mockTransactionData
 
-  const totalTransactions = transactionList.length
-  const successfulTransactions = transactionList.filter((t) => t.transferAmount > 0).length
-  const utilizationRate = totalTransactions > 0 ? Math.round((successfulTransactions / totalTransactions) * 100) : 0
+  // const totalTransactions = transactionList.length
+  // const successfulTransactions = transactionList.filter((t) => t.transferAmount > 0).length
+  // const utilizationRate = totalTransactions > 0 ? Math.round((successfulTransactions / totalTransactions) * 100) : 0
 
-  const totals = useMemo(() => {
-    const income = transactionList.reduce((sum, t) => sum + t.transferAmount, 0)
-    const expense = 3134500
-    const returnCost = 134000
-    const shippingCost = 3000000
-    return { income, expense, returnCost, shippingCost }
-  }, [transactionList])
+  // const totals = useMemo(() => {
+  //   const income = transactionList.reduce((sum, t) => sum + t.transferAmount, 0)
+  //   const expense = 3134500
+  //   const returnCost = 134000
+  //   const shippingCost = 3000000
+  //   return { income, expense, returnCost, shippingCost }
+  // }, [transactionList])
 
   if (isLoading) {
     return (
@@ -182,15 +181,15 @@ export default function ManageTransactionPage() {
           </div>
         </div>
 
-        <div className='grid gap-4 md:grid-cols-4'>
+        {/* <div className='grid gap-4 md:grid-cols-4'>
           <KpiCard title='Tổng giao dịch' value={totalTransactions.toString()} delta='+2.75%' icon={BarChart3} />
           <KpiCard title='Doanh thu' value={currency(totals.income)} delta='+2.75%' icon={DollarSign} />
           <KpiCard title='Chi phí' value={currency(totals.expense)} delta='+1.50%' icon={TrendingUp} />
           <KpiCard title='Tỷ lệ thành công' value={`${utilizationRate}%`} delta='-2.65%' icon={Activity} />
-        </div>
+        </div> */}
       </div>
 
-      <div className='grid gap-4 lg:grid-cols-3'>
+      {/* <div className='grid gap-4 lg:grid-cols-3'>
         <Card className='lg:col-span-1 border-violet-200 dark:border-violet-800'>
           <CardHeader>
             <CardTitle className='text-violet-700 dark:text-violet-300'>Tổng quan</CardTitle>
@@ -213,7 +212,6 @@ export default function ManageTransactionPage() {
           </CardContent>
         </Card>
 
-        {/* Revenue generated line */}
         <Card className='lg:col-span-2 border-violet-200 dark:border-violet-800'>
           <CardHeader className='flex-row items-center justify-between space-y-0'>
             <CardTitle className='text-violet-700 dark:text-violet-300'>Doanh thu tạo ra</CardTitle>
@@ -243,7 +241,7 @@ export default function ManageTransactionPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Table Section with Enhanced Styling */}
       <Card className='border-0 shadow-xl bg-gradient-to-br from-background via-background to-violet-50/30 dark:to-violet-950/10'>

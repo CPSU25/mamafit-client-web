@@ -8,7 +8,7 @@ const getDashboardRoute = (role: string) => {
     case 'Admin':
       return '/system/admin/dashboard'
     case 'BranchManager':
-      return '/system/branch/dashboard'
+      return '/system/branch/manage-order'
     case 'Designer':
       return '/system/designer/dashboard'
     case 'Manager':

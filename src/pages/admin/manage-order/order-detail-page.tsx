@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Input } from '@/components/ui/input'
+// import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
 
@@ -17,8 +17,8 @@ import {
   Mail,
   Phone,
   MapPin,
-  MessageSquare,
-  Send,
+  // MessageSquare,
+  // Send,
   Package,
   ShoppingBag,
   User,
@@ -48,22 +48,22 @@ const CURRENCY_LOCALE = 'vi-VN'
 const CURRENCY_CODE = 'VND'
 const DATE_FORMAT = 'DD/MM/YYYY HH:mm'
 
-const MOCK_CHAT_MESSAGES = [
-  {
-    id: 1,
-    sender: 'Alex Smith',
-    message: 'Hi!',
-    time: '9:00 pm',
-    isCustomer: true
-  },
-  {
-    id: 2,
-    sender: 'Mr. Jack Mario',
-    message: 'Adminiuix is amazing and we thank you. How can we thank you.',
-    time: '9:10 pm',
-    isCustomer: false
-  }
-] as const
+// const MOCK_CHAT_MESSAGES = [
+//   {
+//     id: 1,
+//     sender: 'Alex Smith',
+//     message: 'Hi!',
+//     time: '9:00 pm',
+//     isCustomer: true
+//   },
+//   {
+//     id: 2,
+//     sender: 'Mr. Jack Mario',
+//     message: 'Adminiuix is amazing and we thank you. How can we thank you.',
+//     time: '9:10 pm',
+//     isCustomer: false
+//   }
+// ] as const
 
 const ORDER_STATUS_FLOW = [
   { key: 'CREATED', label: 'Đơn hàng đã tạo', icon: ShoppingBag },
@@ -193,7 +193,7 @@ export default function OrderDetailPage() {
   }
 
   const navigate = useNavigate()
-  const [chatMessage, setChatMessage] = useState('')
+  // const [chatMessage, setChatMessage] = useState('')
   const roleBasePath = hasRole('Admin') ? '/system/admin' : hasRole('Manager') ? '/system/manager' : '/system/admin'
 
   // Data fetching
@@ -209,12 +209,12 @@ export default function OrderDetailPage() {
     allMilestonesCompleted && (order?.data?.status === 'IN_PROGRESS' || order?.data?.status === 'PACKAGING')
 
   // Event handlers
-  const handleSendMessage = useCallback(() => {
-    if (chatMessage.trim()) {
-      console.log('Sending message:', chatMessage)
-      setChatMessage('')
-    }
-  }, [chatMessage])
+  // const handleSendMessage = useCallback(() => {
+  //   if (chatMessage.trim()) {
+  //     console.log('Sending message:', chatMessage)
+  //     setChatMessage('')
+  //   }
+  // }, [chatMessage])
 
   const handleNavigateBack = useCallback(() => {
     navigate(`${roleBasePath}/manage-order`)
@@ -1134,7 +1134,7 @@ export default function OrderDetailPage() {
               </CardContent>
             </Card>
             {/* Chat Section - Enhanced violet theme */}
-            <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card'>
+            {/* <Card className='border-violet-200 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 bg-gradient-to-br from-white via-violet-50/30 to-white dark:from-card dark:via-violet-950/10 dark:to-card'>
               <CardHeader className='pb-3'>
                 <CardTitle className='text-base font-semibold flex items-center text-violet-700 dark:text-violet-300'>
                   <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center mr-3'>
@@ -1178,7 +1178,7 @@ export default function OrderDetailPage() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
       </div>

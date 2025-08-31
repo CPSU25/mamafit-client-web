@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { CalendarDays } from 'lucide-react'
-import { toast } from 'sonner'
+// import { toast } from 'sonner'
 import { format } from 'date-fns'
 
 import {
@@ -63,7 +63,7 @@ const ManageAppointmentPage = () => {
     setIsDetailSheetOpen(false)
     setSelectedAppointment(null)
   }
-  const handleCreateAppointment = () => toast.info('Chức năng sẽ được triển khai')
+  // const handleCreateAppointment = () => toast.info('Chức năng sẽ được triển khai')
   const showConfirmDialog = (
     type: 'check-in' | 'check-out' | 'cancel',
     appointmentId: string,
@@ -192,7 +192,7 @@ const ManageAppointmentPage = () => {
         <AppointmentToolbar
           filters={filters}
           onFiltersChange={handleFiltersChange}
-          onCreateAppointment={handleCreateAppointment}
+          // onCreateAppointment={handleCreateAppointment}
         />
       </section>
 
