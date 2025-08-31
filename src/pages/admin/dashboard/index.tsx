@@ -80,44 +80,44 @@ const getVietnameseStatus = (status: string): string => {
 }
 
 // Notification helper functions
-const getNotificationIcon = (type?: string) => {
-  const iconMapping: Record<string, React.ComponentType<{ className?: string }>> = {
-    PAYMENT: DollarSign,
-    ORDER_PROGRESS: Package,
-    WARRANTY: AlertCircle,
-    SYSTEM: TrendingUp
-  }
+// const getNotificationIcon = (type?: string) => {
+//   const iconMapping: Record<string, React.ComponentType<{ className?: string }>> = {
+//     PAYMENT: DollarSign,
+//     ORDER_PROGRESS: Package,
+//     WARRANTY: AlertCircle,
+//     SYSTEM: TrendingUp
+//   }
 
-  return iconMapping[type || 'SYSTEM'] || AlertCircle
-}
+//   return iconMapping[type || 'SYSTEM'] || AlertCircle
+// }
 
-const getNotificationColor = (type?: string) => {
-  const colorMapping: Record<string, string> = {
-    PAYMENT: 'text-green-500',
-    ORDER_PROGRESS: 'text-blue-500',
-    WARRANTY: 'text-yellow-500',
-    SYSTEM: 'text-violet-500'
-  }
+// const getNotificationColor = (type?: string) => {
+//   const colorMapping: Record<string, string> = {
+//     PAYMENT: 'text-green-500',
+//     ORDER_PROGRESS: 'text-blue-500',
+//     WARRANTY: 'text-yellow-500',
+//     SYSTEM: 'text-violet-500'
+//   }
 
-  return colorMapping[type || 'SYSTEM'] || 'text-gray-500'
-}
+//   return colorMapping[type || 'SYSTEM'] || 'text-gray-500'
+// }
 
-const formatTimeAgo = (dateString: string): string => {
-  const date = dayjs(dateString)
-  const now = dayjs()
-  const diffMinutes = now.diff(date, 'minute')
+// const formatTimeAgo = (dateString: string): string => {
+//   const date = dayjs(dateString)
+//   const now = dayjs()
+//   const diffMinutes = now.diff(date, 'minute')
 
-  if (diffMinutes < 1) return 'Vừa xong'
-  if (diffMinutes < 60) return `${diffMinutes} phút trước`
+//   if (diffMinutes < 1) return 'Vừa xong'
+//   if (diffMinutes < 60) return `${diffMinutes} phút trước`
 
-  const diffHours = now.diff(date, 'hour')
-  if (diffHours < 24) return `${diffHours} giờ trước`
+//   const diffHours = now.diff(date, 'hour')
+//   if (diffHours < 24) return `${diffHours} giờ trước`
 
-  const diffDays = now.diff(date, 'day')
-  if (diffDays < 7) return `${diffDays} ngày trước`
+//   const diffDays = now.diff(date, 'day')
+//   if (diffDays < 7) return `${diffDays} ngày trước`
 
-  return date.format('DD/MM/YYYY')
-}
+//   return date.format('DD/MM/YYYY')
+// }
 
 // Format currency helper
 const formatCurrency = (amount: number): string => {
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
     refetch: refetchRecentOrders
   } = useRecentOrders({ limit: 4 })
   const {
-    data: notificationsData,
+    // data: notificationsData,
     isLoading: notificationsLoading,
     error: notificationsError,
     refetch: refetchNotifications
@@ -767,7 +767,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Notification Timeline */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <div className='flex items-center justify-between'>
             <div>
@@ -811,7 +811,6 @@ export default function AdminDashboard() {
               )
             })}
 
-            {/* Empty state */}
             {(!notificationsData?.data?.items || notificationsData.data.items.length === 0) && (
               <div className='text-center py-8'>
                 <AlertCircle className='h-12 w-12 text-muted-foreground mx-auto mb-4' />
@@ -820,7 +819,7 @@ export default function AdminDashboard() {
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   )
 }
