@@ -5,7 +5,7 @@ import { DataTableFacetedFilter } from '../../components/data-table-faceted-filt
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { X, Search, Calendar, Filter } from 'lucide-react'
+import { X, Search, Filter } from 'lucide-react'
 import { orderStatusOptions, paymentStatusOptions, paymentMethodOptions, typeOrderOptions } from '../data/data'
 
 interface DataTableToolbarProps<TData> {
@@ -97,7 +97,7 @@ export function OrderTableToolbar<TData>({ table, isFiltered: customIsFiltered }
           </div>
         )}
         {/* Date Filter */}
-        <div className='flex items-center space-x-2'>
+        {/* <div className='flex items-center space-x-2'>
           <span className='text-sm font-medium text-muted-foreground'>Ngày tạo:</span>
           <Button
             variant='outline'
@@ -107,7 +107,7 @@ export function OrderTableToolbar<TData>({ table, isFiltered: customIsFiltered }
             <Calendar className='mr-2 h-4 w-4' />
             Chọn ngày
           </Button>
-        </div>
+        </div> */}
 
         {/* Clear filters */}
         {isFiltered && (

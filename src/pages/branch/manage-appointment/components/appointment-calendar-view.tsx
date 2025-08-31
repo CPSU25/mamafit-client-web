@@ -305,9 +305,6 @@ const AppointmentItem = ({
         {/* Action buttons */}
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
-            <Button variant='outline' size='sm' className='h-8'>
-              Đặt lại lịch
-            </Button>
             {appointment.status === AppointmentStatus.UP_COMING && (
               <Button
                 variant='default'

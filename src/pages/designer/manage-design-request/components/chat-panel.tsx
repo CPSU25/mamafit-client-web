@@ -213,35 +213,44 @@ export const ChatPanel = ({
               </div>
             ) : (
               <div className='space-y-3'>
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${message.senderId === user?.userId ? 'justify-end' : 'justify-start'} mb-3`}
-                  >
-                    <div className={`max-w-[80%] ${message.senderId === user?.userId ? 'order-2' : 'order-1'}`}>
-                      <div
-                        className={`p-3 rounded-lg shadow-sm ${
-                          message.senderId === user?.userId
-                            ? 'bg-violet-600 text-white'
-                            : 'bg-white text-gray-800 border border-gray-200'
-                        }`}
-                      >
-                        <MessageContent
-                          message={message.message}
-                          type={typeof message.type === 'number' ? message.type : Number(message.type) || 0}
-                          className={message.senderId === user?.userId ? 'text-white' : ''}
-                        />
-                        <p
-                          className={`text-xs mt-2 ${
-                            message.senderId === user?.userId ? 'text-violet-100' : 'text-gray-500'
+                {messages.map((message, index) => {
+                  // Kiểm tra xem có phải tin nhắn của designer không
+                  const isDesignerMessage = message.senderId === user?.userId
+                  // Kiểm tra xem có phải tin nhắn TEXT không (type = 0)
+                  const isTextMessage = (typeof message.type === 'number' ? message.type : Number(message.type) || 0) === 0
+                  // Chỉ áp dụng style tím cho tin nhắn không phải TEXT của designer
+                  const shouldUseVioletStyle = isDesignerMessage && !isTextMessage
+                  
+                  return (
+                    <div
+                      key={index}
+                      className={`flex ${isDesignerMessage ? 'justify-end' : 'justify-start'} mb-3`}
+                    >
+                      <div className={`max-w-[80%] ${isDesignerMessage ? 'order-2' : 'order-1'}`}>
+                        <div
+                          className={`p-3 rounded-lg shadow-sm ${
+                            shouldUseVioletStyle
+                              ? 'bg-violet-600 text-white'
+                              : 'bg-white text-gray-800 border border-gray-200'
                           }`}
                         >
-                          {message.senderName} • {new Date(message.timestamp).toLocaleTimeString('vi-VN')}
-                        </p>
+                          <MessageContent
+                            message={message.message}
+                            type={typeof message.type === 'number' ? message.type : Number(message.type) || 0}
+                            className={shouldUseVioletStyle ? 'text-white' : ''}
+                          />
+                          <p
+                            className={`text-xs mt-2 ${
+                              shouldUseVioletStyle ? 'text-violet-100' : 'text-gray-500'
+                            }`}
+                          >
+                            {message.senderName} • {new Date(message.timestamp).toLocaleTimeString('vi-VN')}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
                 <div ref={messagesEndRef} />
               </div>
             )}

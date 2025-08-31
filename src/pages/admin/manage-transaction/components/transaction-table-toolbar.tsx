@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Table } from '@tanstack/react-table'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { X, Search, Filter, Download, Calendar as CalendarIcon } from 'lucide-react'
+import { X, Search, Filter, Calendar as CalendarIcon } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { DateRange } from 'react-day-picker'
@@ -109,16 +109,6 @@ export function TransactionTableToolbar<TData>({ table, onDateRangeChange }: Tra
             {table.getFilteredSelectedRowModel().rows.length} được chọn
           </Badge>
         )}
-
-        {/* Export Button */}
-        <Button
-          variant='outline'
-          size='sm'
-          className='border-violet-300 text-violet-700 hover:bg-violet-50 dark:hover:bg-violet-950/20'
-        >
-          <Download className='mr-2 h-4 w-4' />
-          Xuất CSV
-        </Button>
       </div>
     </div>
   )

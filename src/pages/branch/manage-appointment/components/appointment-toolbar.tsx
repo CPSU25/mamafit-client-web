@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import { DateRange } from 'react-day-picker'
-import { Search, Plus, X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 
 import { AppointmentStatus, AppointmentFilters } from '@/@types/apointment.type'
 import { DateRangePicker } from '@/components/date-range-picker'
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 interface AppointmentToolbarProps {
   filters: AppointmentFilters
   onFiltersChange: (filters: AppointmentFilters) => void
-  onCreateAppointment: () => void
+  // onCreateAppointment: () => void
 }
 
 // Danh sách các tùy chọn trạng thái, được đưa ra ngoài để dễ quản lý
@@ -23,7 +23,7 @@ const statusOptions: { value: AppointmentStatus; label: string }[] = [
   { value: AppointmentStatus.CANCELED, label: 'Đã hủy' }
 ]
 
-export const AppointmentToolbar = ({ filters, onFiltersChange, onCreateAppointment }: AppointmentToolbarProps) => {
+export const AppointmentToolbar = ({ filters, onFiltersChange }: AppointmentToolbarProps) => {
   // Hàm generic này vẫn là giải pháp tốt nhất và được giữ lại
   const handleFilterChange = <K extends keyof AppointmentFilters>(key: K, value: AppointmentFilters[K] | undefined) => {
     // 1. Xác định giá trị cuối cùng trước
@@ -88,9 +88,9 @@ export const AppointmentToolbar = ({ filters, onFiltersChange, onCreateAppointme
         </div>
 
         {/* --- Create Button --- */}
-        <Button onClick={onCreateAppointment} className='w-full lg:w-auto'>
+        {/* <Button onClick={onCreateAppointment} className='w-full lg:w-auto'>
           <Plus className='mr-2 h-4 w-4' /> Tạo lịch hẹn
-        </Button>
+        </Button> */}
       </div>
 
       {/* --- Hiển thị các bộ lọc đang áp dụng --- */}

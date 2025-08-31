@@ -91,17 +91,17 @@ export const sidebarData: SidebarData = {
     {
       name: 'BranchManager',
       navGroups: [
-        {
-          title: 'Quản lý chi nhánh',
-          items: [
-            { title: 'Tổng quan chi nhánh', url: 'dashboard', icon: LayoutDashboard }
-            // { title: 'Báo cáo chi nhánh', url: 'reports', icon: BarChart3, badge: '3' }
-          ]
-        },
+        // {
+        //   title: 'Quản lý chi nhánh',
+        //   items: [
+        //     { title: 'Tổng quan chi nhánh', url: 'dashboard', icon: LayoutDashboard }
+        //     // { title: 'Báo cáo chi nhánh', url: 'reports', icon: BarChart }
+        //   ]
+        // },
         {
           title: 'Vận hành',
           items: [
-            { title: 'Quản lý lịch hẹn', url: 'manage-appointment', icon: CalendarDays, badge: '12' },
+            { title: 'Quản lý lịch hẹn', url: 'manage-appointment', icon: CalendarDays },
             {
               title: 'Quản lý đơn hàng',
               icon: Package,
@@ -117,7 +117,7 @@ export const sidebarData: SidebarData = {
         {
           title: 'Tương tác',
           items: [
-            { title: 'Tin nhắn khách hàng', url: 'messages', icon: MessagesSquare, badge: '8' }
+            { title: 'Tin nhắn khách hàng', url: 'messages', icon: MessagesSquare }
             // { title: 'Check-in/Check-out', url: 'check-in-out', icon: UserCheck }
           ]
         }
@@ -211,7 +211,7 @@ export const sidebarData: SidebarData = {
           title: 'Công việc',
           items: [
             { title: 'Bảng công việc', url: 'dashboard', icon: LayoutDashboard },
-            { title: 'Nhiệm vụ của tôi', url: 'manage-task', icon: ClipboardList, badge: '5' }
+            { title: 'Nhiệm vụ của tôi', url: 'manage-task', icon: ClipboardList }
           ]
         },
         {

@@ -22,7 +22,6 @@ import {
 } from 'lucide-react'
 import { useDesignRequestById } from '@/services/designer/design_request.service'
 
-// Helper function để normalize message type từ bất kỳ nguồn nào
 function normalizeMessageType(type: MessageType | number | string | undefined): number {
   // Nếu là undefined hoặc null, trả về Text (0)
   if (type === undefined || type === null) {
@@ -729,52 +728,25 @@ export function MessageContent({ message, type, className }: MessageContentProps
     }
   })()
 
-  // Debug log để kiểm tra messageType
-  console.log('🔍 MessageContent Debug:', {
-    originalType: type,
-    convertedType: messageType,
-    message: message.substring(0, 50) + '...',
-    isPresetType: messageType === 4,
-    isPresetMessage: isPresetMessage,
-    typeOfOriginalType: typeof type,
-    MessageTypeEnum: {
-      Text: MessageType.Text,
-      Image: MessageType.Image,
-      File: MessageType.File,
-      Design_Request: MessageType.Design_Request,
-      Preset: MessageType.Preset
-    }
-  })
 
   const content = (() => {
     // Ưu tiên kiểm tra nội dung preset trước khi kiểm tra type
     if (isPresetMessage) {
-      console.log('✨ Detected PRESET by content analysis!')
       return <EnhancedPresetMessage message={message} />
     }
 
     switch (messageType) {
       case 1: // MessageType.Image
-        console.log('📷 Rendering Image message')
         return <ImageMessage message={message} />
 
       case 2: // MessageType.File
-        console.log('📎 Rendering File message')
         return <FileMessage message={message} />
 
       case 3: // MessageType.Design_Request
-        console.log('🎨 Rendering Design Request message')
         // Kiểm tra nếu message có orderId và designRequestId thì dùng Enhanced version
         try {
           const parsed = JSON.parse(message)
-          console.log('🔍 Parsed design request message:', parsed)
           if (parsed.orderId && parsed.designRequestId) {
-            console.log(
-              '🎆 Using Enhanced Design Request Message with orderId:',
-              parsed.orderId,
-              'designRequestId:',
-              parsed.designRequestId
-            )
             return <EnhancedDesignRequestMessage message={message} />
           }
         } catch (parseError) {
@@ -784,7 +756,6 @@ export function MessageContent({ message, type, className }: MessageContentProps
         return <DesignRequestMessage message={message} />
 
       case 4: // MessageType.Preset
-        console.log('✨ Rendering Preset message by type')
         // Kiểm tra nếu message có presetId (từ SignalR) thì dùng Enhanced version
         try {
           const parsed = JSON.parse(message)
@@ -801,8 +772,7 @@ export function MessageContent({ message, type, className }: MessageContentProps
 
       case 0: // MessageType.Text
       default:
-        console.log('💬 Rendering Text message')
-        return <span className='text-sm whitespace-pre-wrap break-words text-white'>{message}</span>
+        return <span className='text-sm whitespace-pre-wrap break-words text-black'>{message}</span>
     }
   })()
 

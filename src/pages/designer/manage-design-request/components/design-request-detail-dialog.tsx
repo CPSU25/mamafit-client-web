@@ -205,10 +205,10 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
         </DialogHeader>
 
         <Tabs defaultValue='overview' className='space-y-4'>
-          <TabsList className='grid w-full grid-cols-3'>
+          <TabsList className='grid w-full grid-cols-2'>
             <TabsTrigger value='overview'>Tổng quan</TabsTrigger>
             <TabsTrigger value='images'>Hình ảnh tham khảo</TabsTrigger>
-            <TabsTrigger value='progress'>Tiến độ thiết kế</TabsTrigger>
+            {/* <TabsTrigger value='progress'>Tiến độ thiết kế</TabsTrigger> */}
           </TabsList>
 
           <TabsContent value='overview' className='space-y-4'>

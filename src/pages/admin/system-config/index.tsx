@@ -399,7 +399,7 @@ const SystemConfig = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Thuộc tính mặc định khi tạo váy</CardTitle>
-                  <CardDescription>Quản lý danh sách Colors, Sizes và Job Titles</CardDescription>
+                  <CardDescription>Quản lý danh sách Màu sắc, Sizes</CardDescription>
                 </CardHeader>
                 <CardContent className='grid gap-6 md:grid-cols-2'>
                   <FormField
@@ -407,7 +407,7 @@ const SystemConfig = () => {
                     name='colors'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Colors</FormLabel>
+                        <FormLabel>Màu sắc</FormLabel>
                         <FormControl>
                           <TagEditor value={field.value} onChange={field.onChange} placeholder='Nhập màu và Enter' />
                         </FormControl>
@@ -443,7 +443,7 @@ const SystemConfig = () => {
                     name='jobTitles'
                     render={({ field }) => (
                       <FormItem className='space-y-2'>
-                        <FormLabel>Job Titles</FormLabel>
+                        <FormLabel>Chức vụ nhân viên</FormLabel>
                         <FormControl>
                           <TagEditor
                             value={field.value}
