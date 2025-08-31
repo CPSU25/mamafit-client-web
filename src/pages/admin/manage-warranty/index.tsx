@@ -115,7 +115,7 @@ function WarrantyManagementSystem() {
     <Main className='min-h-screen'>
       {/* Modern Header */}
       <div className='sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200/50 dark:border-gray-700/50 -mx-4 -mt-6 mb-8'>
-        <div className='container mx-auto px-6 py-4'>
+        <div className='px-6 py-4'>
           <div className='flex flex-col lg:flex-row lg:items-center justify-between gap-4'>
             <div className='space-y-1'>
               <div className='flex items-center gap-2'>
@@ -137,7 +137,7 @@ function WarrantyManagementSystem() {
         </div>
       </div>
 
-      <div className='container mx-auto space-y-8'>
+      <div className='space-y-8'>
         {/* Enhanced Stats Cards with Modern Design */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
           <Card className='relative overflow-hidden bg-gradient-to-br from-violet-500 via-violet-600 to-purple-600 dark:from-violet-600 dark:via-violet-700 dark:to-purple-700 text-white border-0 shadow-xl'>
