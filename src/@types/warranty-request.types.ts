@@ -112,6 +112,8 @@ export interface BranchWarrantyRequestForm {
   paymentMethod: PaymentMethod
   fee: number | null
   items: BranchWarrantyRequestItemForm[]
+  estimateTime: string | null
+  
 }
 export interface BranchWarrantyRequestItemForm {
   orderItemId: string

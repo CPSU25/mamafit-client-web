@@ -176,7 +176,6 @@ export const ChatPanel = ({
                         <span className='text-xs text-green-700 font-medium'>Đang hoạt động</span>
                       </div>
                     </div>
-                    <p className='text-xs text-gray-500'>Đơn hàng #{activeRequest.orderCode}</p>
                   </div>
                 </div>
 

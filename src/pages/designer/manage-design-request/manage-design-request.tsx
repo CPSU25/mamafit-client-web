@@ -79,6 +79,31 @@ const ManageDesignRequestPage = () => {
     return requestsArray as ExtendedOrderTaskItem[]
   }, [designRequests])
 
+  // Helper functions
+  const getTaskStatus = (milestones: ExtendedOrderTaskItem['milestones'], orderStatus?: string) => {
+    // Nếu có orderStatus từ API, sử dụng nó
+    if (orderStatus) {
+      switch (orderStatus) {
+        case 'COMPLETED':
+          return 'COMPLETED'
+        case 'IN_PROGRESS':
+          return 'IN_PROGRESS'
+        case 'PENDING':
+          return 'PENDING'
+        default:
+          break
+      }
+    }
+
+    // Fallback về logic cũ nếu không có orderStatus
+    if (!milestones || milestones.length === 0) return 'PENDING'
+
+    const allTasks = milestones.flatMap((m) => m.maternityDressTasks)
+    if (allTasks.every((task) => task.status === 'COMPLETED')) return 'COMPLETED'
+    if (allTasks.some((task) => task.status === 'IN_PROGRESS')) return 'IN_PROGRESS'
+    return 'PENDING'
+  }
+
   // Filter and process data
   const filteredRequests = useMemo(() => {
     let filtered = processedRequests
@@ -114,31 +139,6 @@ const ManageDesignRequestPage = () => {
   useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm, statusFilter])
-
-  // Helper functions
-  const getTaskStatus = (milestones: ExtendedOrderTaskItem['milestones'], orderStatus?: string) => {
-    // Nếu có orderStatus từ API, sử dụng nó
-    if (orderStatus) {
-      switch (orderStatus) {
-        case 'COMPLETED':
-          return 'COMPLETED'
-        case 'IN_PROGRESS':
-          return 'IN_PROGRESS'
-        case 'PENDING':
-          return 'PENDING'
-        default:
-          break
-      }
-    }
-
-    // Fallback về logic cũ nếu không có orderStatus
-    if (!milestones || milestones.length === 0) return 'PENDING'
-
-    const allTasks = milestones.flatMap((m) => m.maternityDressTasks)
-    if (allTasks.every((task) => task.status === 'COMPLETED')) return 'COMPLETED'
-    if (allTasks.some((task) => task.status === 'IN_PROGRESS')) return 'IN_PROGRESS'
-    return 'PENDING'
-  }
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
