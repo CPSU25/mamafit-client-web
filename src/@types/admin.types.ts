@@ -145,7 +145,14 @@ export type ManageUserType = {
   createdBy?: string | null
   updatedBy?: string | null
 }
-
+export interface StaffList {
+  id: string 
+  userName: string |null
+  userEmail: string
+  jobTitle: string | null
+  fullName: string | null
+  jobCount: number
+}
 //Milestone Type
 export enum ApplyFor {
   READY_TO_BUY = 'READY_TO_BUY',
