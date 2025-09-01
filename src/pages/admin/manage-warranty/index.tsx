@@ -291,20 +291,6 @@ function WarrantyManagementSystem() {
                   </div>
                 </TabsTrigger>
                 <TabsTrigger
-                  value='awaiting_payment'
-                  className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-lg data-[state=active]:scale-105 rounded-xl py-4 px-5 text-sm font-semibold transition-all duration-200'
-                >
-                  <div className='flex flex-col items-center gap-2'>
-                    <span className='text-gray-900 dark:text-gray-100'>Chờ TT</span>
-                    <Badge
-                      variant='secondary'
-                      className='text-xs px-3 py-1 bg-gradient-to-r from-violet-500 to-purple-500 text-white border-0 shadow-md'
-                    >
-                      {stats.approved}
-                    </Badge>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger
                   value='completed'
                   className='data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-lg data-[state=active]:scale-105 rounded-xl py-4 px-5 text-sm font-semibold transition-all duration-200'
                 >

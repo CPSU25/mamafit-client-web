@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Clock,
   Play,
-  Pause,
   Lock,
   ShieldCheck,
   ShieldX,
@@ -19,7 +18,7 @@ import {
   XCircle,
   Package
 } from 'lucide-react'
-import { MilestoneUI, TaskStatus, QualityCheckStatus } from '@/pages/staff/manage-task/tasks/types'
+import { MilestoneUI, TaskStatus, QualityCheckStatus, MaternityDressTaskUI } from '@/pages/staff/manage-task/tasks/types'
 import { useStaffUpdateTaskStatus, useStaffGetCurrentSequence } from '@/services/staff/staff-task.service'
 import { useQualityCheckPostSubmitHandler } from '@/services/staff/quality-check.service'
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
@@ -144,40 +143,41 @@ const TaskCompletionDialog: React.FC<TaskCompletionDialogProps> = ({ taskId, tas
           Hoàn thành
         </Button>
       </DialogTrigger>
-      <DialogContent className='max-w-md'>
+      <DialogContent className='max-w-md w-[95vw] sm:w-full'>
         <DialogHeader>
-          <DialogTitle>Hoàn thành nhiệm vụ</DialogTitle>
+          <DialogTitle className='text-base md:text-lg'>Hoàn thành nhiệm vụ</DialogTitle>
         </DialogHeader>
-        <div className='space-y-4'>
-          <div className='bg-muted p-3 rounded-lg'>
-            <p className='font-medium'>{taskName}</p>
+        <div className='space-y-3 md:space-y-4'>
+          <div className='bg-muted p-2 md:p-3 rounded-lg'>
+            <p className='font-medium text-sm md:text-base'>{taskName}</p>
           </div>
 
           <div className='space-y-2'>
-            <Label>Hình ảnh kết quả (tùy chọn)</Label>
+            <Label className='text-sm'>Hình ảnh kết quả (tùy chọn)</Label>
             <CloudinaryImageUpload onChange={(urls) => setImage(urls[0] || '')} maxFiles={1} />
             {image && (
               <div className='mt-2'>
-                <img src={image} alt='Kết quả' className='w-full h-32 object-cover rounded' />
+                <img src={image} alt='Kết quả' className='w-full h-24 md:h-32 object-cover rounded' />
               </div>
             )}
           </div>
 
           <div className='space-y-2'>
-            <Label>Ghi chú (tùy chọn)</Label>
+            <Label className='text-sm'>Ghi chú (tùy chọn)</Label>
             <Textarea
               placeholder='Nhập ghi chú về kết quả công việc...'
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
+              className='text-sm'
             />
           </div>
         </div>
-        <DialogFooter>
-          <Button variant='outline' onClick={() => setOpen(false)}>
+        <DialogFooter className='flex flex-col sm:flex-row gap-2'>
+          <Button variant='outline' onClick={() => setOpen(false)} className='text-sm'>
             Hủy
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
+          <Button onClick={handleSubmit} disabled={isLoading} className='text-sm'>
             {isLoading ? 'Đang xử lý...' : 'Hoàn thành'}
           </Button>
         </DialogFooter>
@@ -263,11 +263,6 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
     )
   }
 
-  // Kiểm tra milestone có phải Packing không
-  const isPackingMilestone = (milestoneName: string) => {
-    const lowerName = milestoneName.toLowerCase()
-    return lowerName.includes('packing') || lowerName.includes('đóng gói')
-  }
 
   // Kiểm tra task có phải Create Shipping không
   const isCreateShippingTask = (taskName: string) => {
@@ -304,17 +299,44 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   // Kiểm tra milestone có bị khóa không dựa trên current sequence từ API
   const isMilestoneLocked = (milestone: MilestoneUI) => {
     // Trong lúc loading sequence, đừng khóa (tránh chớp Locked sai)
-    if (isLoadingCurrentSequence || currentSequence === undefined) {
+    if (isLoadingCurrentSequence || currentSequence?.milestone === undefined) {
       return false
     }
 
     // Nếu currentSequence = 0, có nghĩa là tất cả milestone đã hoàn thành 100%
     // => không khóa milestone nào cả
-    if (currentSequence === 0) {
+    if (currentSequence.milestone === 0) {
       return false
     }
     // Milestone bị khóa nếu sequenceOrder > currentSequence
-    return milestone.sequenceOrder > currentSequence
+    return milestone.sequenceOrder > (currentSequence.milestone)
+  }
+
+  // Kiểm tra task có bị khóa không dựa trên current sequence từ API
+  const isTaskLocked = (task: MaternityDressTaskUI, milestone: MilestoneUI) => {
+    // Trong lúc loading sequence, đừng khóa (tránh chớp Locked sai)
+    if (isLoadingCurrentSequence || currentSequence?.task === undefined) {
+      return false
+    }
+
+    // Kiểm tra milestone có phải là QC, QC FAILED, QC Warranty không
+    const isQualityCheck = isQualityCheckMilestone(milestone.name)
+    const isQualityCheckFailed = isQualityCheckFailedMilestone(milestone.name)
+    const isQualityCheckWarranty = isQualityCheckWarrantyMilestone(milestone.name)
+
+    // Nếu là milestone QC, QC FAILED, QC Warranty thì không khóa task
+    if (isQualityCheck || isQualityCheckFailed || isQualityCheckWarranty) {
+      return false
+    }
+
+    // Nếu currentSequence.task = 0, có nghĩa là tất cả task đã hoàn thành 100%
+    // => không khóa task nào cả
+    if (currentSequence.task === 0) {
+      return false
+    }
+
+    // Task bị khóa nếu sequenceOrder > currentSequence.task
+    return task.sequenceOrder > currentSequence.task
   }
 
   const handleTaskStatusChange = (taskId: string, status: TaskStatus, image?: string, note?: string) => {
@@ -403,18 +425,6 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
     // Logic khóa: ưu tiên khóa thanh toán trước, sau đó mới check sequence
     const resolvedLocked = paymentLocked || (!isCurrent && isLockedBySequence)
 
-    // Debug log để kiểm tra logic
-    console.log('Milestone Status Debug:', {
-      milestoneName: milestone.name,
-      sequenceOrder: milestone.sequenceOrder,
-      currentSequence,
-      orderStatus,
-      sortedMilestonesLength: sortedMilestones.length,
-      paymentLocked,
-      isLockedBySequence,
-      resolvedLocked
-    })
-
     // Bỏ sequential locking vì đã được xử lý trong logic currentSequence
     const hasInProgress = milestone.maternityDressTasks.some((task) => task.status === 'IN_PROGRESS')
 
@@ -430,23 +440,25 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   }
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-4 md:space-y-6'>
       <Card>
         <CardHeader>
-          <CardTitle>
-            Quy trình thực hiện ({sortedMilestones.length} giai đoạn)
-            {!isLoadingCurrentSequence && currentSequence !== undefined && (
-              <span className='text-sm font-normal text-muted-foreground ml-2'>
-                • {currentSequence === 0 ? 'Tất cả giai đoạn đã hoàn thành' : `Giai đoạn hiện tại: ${currentSequence}`}
-              </span>
-            )}
-            {isLoadingCurrentSequence && (
-              <span className='text-sm font-normal text-muted-foreground ml-2'>• Đang tải...</span>
-            )}
+          <CardTitle className='text-base md:text-lg'>
+            <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
+              <span>Quy trình thực hiện ({sortedMilestones.length} giai đoạn)</span>
+              {!isLoadingCurrentSequence && currentSequence !== undefined && (
+                <span className='text-xs md:text-sm font-normal text-muted-foreground'>
+                  • {currentSequence.milestone === 0 ? 'Tất cả giai đoạn đã hoàn thành' : `Giai đoạn hiện tại: ${currentSequence.milestone}`}
+                </span>
+              )}
+              {isLoadingCurrentSequence && (
+                <span className='text-xs md:text-sm font-normal text-muted-foreground'>• Đang tải...</span>
+              )}
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className='space-y-6'>
+          <div className='space-y-4 md:space-y-6'>
             {sortedMilestones.map((milestone, milestoneIndex) => {
               const milestoneStatus = getMilestoneStatus(milestone)
               const isLocked = milestoneStatus.status === 'locked'
@@ -460,9 +472,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
               // Có độ ưu tiên cao hơn logic milestone hiện tại
               const isPaymentLocked =
                 orderStatus === OrderStatus.AWAITING_PAID_REST &&
-                typeof currentSequence === 'number' &&
-                currentSequence > 0 &&
-                milestone.sequenceOrder === currentSequence
+                typeof currentSequence?.milestone === 'number' &&
+                currentSequence.milestone > 0 &&
+                milestone.sequenceOrder === currentSequence.milestone
 
               const completedTasks = milestone.maternityDressTasks.filter(
                 (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
@@ -487,41 +499,43 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
                       <Card className='overflow-hidden border-green-200 bg-green-50'>
                         <CardHeader className='bg-gradient-to-r from-green-50 to-emerald-50'>
-                          <CardTitle className='flex items-center gap-2 text-green-800'>
-                            <ShieldCheck className='h-5 w-5' />
-                            {milestone.sequenceOrder}. Quality Check Failed - Đã hoàn thành sửa chữa
+                          <CardTitle className='flex flex-col sm:flex-row sm:items-center gap-2 text-green-800'>
+                            <div className='flex items-center gap-2'>
+                              <ShieldCheck className='h-4 w-4 md:h-5 md:w-5' />
+                              <span className='text-sm md:text-base'>{milestone.sequenceOrder}. Quality Check Failed - Đã hoàn thành sửa chữa</span>
+                            </div>
                           </CardTitle>
                           <div className='flex items-center gap-2'>
-                            <Badge className='bg-green-100 text-green-800 border-green-200'>
+                            <Badge className='bg-green-100 text-green-800 border-green-200 text-xs'>
                               <CheckCircle2 className='h-3 w-3 mr-1' />
                               DONE - Đã sửa chữa hoàn thành
                             </Badge>
                           </div>
-                          <p className='text-sm text-green-700'>{milestone.description}</p>
+                          <p className='text-xs md:text-sm text-green-700'>{milestone.description}</p>
                           <Progress value={100} className='w-full' />
                         </CardHeader>
 
-                        <CardContent className='p-6'>
+                        <CardContent className='p-4 md:p-6'>
                           {/* Task Info */}
-                          <div className='bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4'>
-                            <div className='flex items-start gap-3'>
-                              <Badge variant='outline' className='text-xs font-mono mt-1'>
+                          <div className='bg-amber-50 p-3 md:p-4 rounded-lg border border-amber-200 mb-3 md:mb-4'>
+                            <div className='flex flex-col sm:flex-row sm:items-start gap-2 md:gap-3'>
+                              <Badge variant='outline' className='text-xs font-mono w-fit'>
                                 #{failedTask.sequenceOrder}
                               </Badge>
                               <div className='flex-1'>
-                                <h4 className='font-medium text-gray-900'>{failedTask.name}</h4>
+                                <h4 className='font-medium text-gray-900 text-sm md:text-base'>{failedTask.name}</h4>
                                 {failedTask.description && (
-                                  <p className='text-sm text-gray-600 mt-1'>{failedTask.description}</p>
+                                  <p className='text-xs md:text-sm text-gray-600 mt-1'>{failedTask.description}</p>
                                 )}
                               </div>
                             </div>
                           </div>
 
                           {/* Completed Tasks List */}
-                          <div className='bg-green-100 p-4 rounded-lg border border-green-200'>
-                            <div className='flex items-center gap-2 mb-3'>
-                              <CheckCircle2 className='h-4 w-4 text-green-600' />
-                              <span className='text-sm font-medium text-green-800'>
+                          <div className='bg-green-100 p-3 md:p-4 rounded-lg border border-green-200'>
+                            <div className='flex items-center gap-2 mb-2 md:mb-3'>
+                              <CheckCircle2 className='h-3 w-3 md:h-4 md:w-4 text-green-600' />
+                              <span className='text-xs md:text-sm font-medium text-green-800'>
                                 Đã hoàn thành sửa chữa tất cả vấn đề
                               </span>
                             </div>
@@ -530,8 +544,8 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                             {failedTask.note && (
                               <div className='space-y-2'>
                                 <p className='text-xs font-medium text-green-700'>Chi tiết sửa chữa:</p>
-                                <div className='bg-white/70 rounded-md p-3 border border-green-100'>
-                                  <p className='text-sm text-gray-700 leading-relaxed'>{failedTask.note}</p>
+                                <div className='bg-white/70 rounded-md p-2 md:p-3 border border-green-100'>
+                                  <p className='text-xs md:text-sm text-gray-700 leading-relaxed'>{failedTask.note}</p>
                                 </div>
                               </div>
                             )}
@@ -591,14 +605,16 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
                       <Card className='overflow-hidden border-yellow-200 bg-yellow-50'>
                         <CardHeader className='bg-gradient-to-r from-yellow-50 to-amber-50'>
-                          <CardTitle className='flex items-center gap-2 text-yellow-800'>
-                            <Lock className='h-5 w-5' />
-                            {milestone.sequenceOrder}. Quality Check Failed - Bị khóa
+                          <CardTitle className='flex flex-col sm:flex-row sm:items-center gap-2 text-yellow-800'>
+                            <div className='flex items-center gap-2'>
+                              <Lock className='h-4 w-4 md:h-5 md:w-5' />
+                              <span className='text-sm md:text-base'>{milestone.sequenceOrder}. Quality Check Failed - Bị khóa</span>
+                            </div>
                           </CardTitle>
-                          <Badge variant='secondary' className='w-fit'>
+                          <Badge variant='secondary' className='w-fit text-xs'>
                             {milestoneStatus.label}
                           </Badge>
-                          <p className='text-sm text-yellow-700'>{milestone.description}</p>
+                          <p className='text-xs md:text-sm text-yellow-700'>{milestone.description}</p>
                           <p className='text-xs text-yellow-700 bg-yellow-100 p-2 rounded mt-2'>
                             ⚠️ Cần hoàn thành milestone trước để mở khóa.
                           </p>
@@ -625,14 +641,16 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
                       <Card className='overflow-hidden border-yellow-200 bg-yellow-50'>
                         <CardHeader className='bg-gradient-to-r from-yellow-50 to-amber-50'>
-                          <CardTitle className='flex items-center gap-2 text-yellow-800'>
-                            <Lock className='h-5 w-5' />
-                            {milestone.sequenceOrder}. {milestone.name} - Bị khóa
+                          <CardTitle className='flex flex-col sm:flex-row sm:items-center gap-2 text-yellow-800'>
+                            <div className='flex items-center gap-2'>
+                              <Lock className='h-4 w-4 md:h-5 md:w-5' />
+                              <span className='text-sm md:text-base'>{milestone.sequenceOrder}. {milestone.name} - Bị khóa</span>
+                            </div>
                           </CardTitle>
-                          <Badge variant='secondary' className='w-fit'>
+                          <Badge variant='secondary' className='w-fit text-xs'>
                             {milestoneStatus.label}
                           </Badge>
-                          <p className='text-sm text-yellow-700'>{milestone.description}</p>
+                          <p className='text-xs md:text-sm text-yellow-700'>{milestone.description}</p>
                           <p className='text-xs text-yellow-700 bg-yellow-100 p-2 rounded mt-2'>
                             {isPaymentLocked
                               ? 'Chờ khách hàng thanh toán số tiền còn lại'
@@ -666,34 +684,36 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
                       <Card className='overflow-hidden border-green-200 bg-green-50'>
                         <CardHeader className='bg-gradient-to-r from-green-50 to-emerald-50'>
-                          <CardTitle className='flex items-center gap-2 text-green-800'>
-                            <ShieldCheck className='h-5 w-5' />
-                            {milestone.sequenceOrder}. {milestone.name} - Đã hoàn thành
+                          <CardTitle className='flex flex-col sm:flex-row sm:items-center gap-2 text-green-800'>
+                            <div className='flex items-center gap-2'>
+                              <ShieldCheck className='h-4 w-4 md:h-5 md:w-5' />
+                              <span className='text-sm md:text-base'>{milestone.sequenceOrder}. {milestone.name} - Đã hoàn thành</span>
+                            </div>
                           </CardTitle>
-                          <div className='flex items-center gap-4 text-sm flex-wrap'>
-                            <Badge className='bg-green-100 text-green-800 border-green-200'>
+                          <div className='flex flex-col sm:flex-row sm:items-center gap-2 md:gap-4 text-xs md:text-sm flex-wrap'>
+                            <Badge className='bg-green-100 text-green-800 border-green-200 w-fit'>
                               <CheckCircle2 className='h-3 w-3 mr-1' />
                               {passedTasks} PASS
                             </Badge>
                             {failedTasks > 0 && (
-                              <Badge className='bg-red-100 text-red-800 border-red-200'>
+                              <Badge className='bg-red-100 text-red-800 border-red-200 w-fit'>
                                 <ShieldX className='h-3 w-3 mr-1' />
                                 {failedTasks} FAIL
                               </Badge>
                             )}
                             {severityTasks > 0 && (
-                              <Badge className='bg-red-200 text-red-900 border-red-300'>
+                              <Badge className='bg-red-200 text-red-900 border-red-300 w-fit'>
                                 <AlertTriangle className='h-3 w-3 mr-1' />
                                 {severityTasks} nghiêm trọng
                               </Badge>
                             )}
                           </div>
                           <Progress value={100} className='w-full' />
-                          {milestone.description && <p className='text-sm text-green-700'>{milestone.description}</p>}
+                          {milestone.description && <p className='text-xs md:text-sm text-green-700'>{milestone.description}</p>}
                         </CardHeader>
 
-                        <CardContent className='p-6'>
-                          <div className='space-y-4'>
+                        <CardContent className='p-4 md:p-6'>
+                          <div className='space-y-3 md:space-y-4'>
                             {milestone.maternityDressTasks
                               .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
                               .map((taskItem) => {
@@ -704,7 +724,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                 return (
                                   <div
                                     key={taskItem.id}
-                                    className={`p-4 border rounded-lg ${
+                                    className={`p-3 md:p-4 border rounded-lg ${
                                       isPass
                                         ? 'border-green-200 bg-green-50'
                                         : isFail
@@ -714,41 +734,41 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                           : 'border-gray-200'
                                     }`}
                                   >
-                                    <div className='space-y-3'>
+                                    <div className='space-y-2 md:space-y-3'>
                                       {/* Task Info */}
-                                      <div className='flex items-start gap-3'>
-                                        <Badge variant='outline' className='text-xs font-mono mt-1'>
+                                      <div className='flex flex-col sm:flex-row sm:items-start gap-2 md:gap-3'>
+                                        <Badge variant='outline' className='text-xs font-mono w-fit'>
                                           #{taskItem.sequenceOrder}
                                         </Badge>
                                         <div className='flex-1'>
-                                          <h4 className='font-medium text-gray-900'>{taskItem.name}</h4>
+                                          <h4 className='font-medium text-gray-900 text-sm md:text-base'>{taskItem.name}</h4>
                                           {taskItem.description && (
-                                            <p className='text-sm text-gray-600 mt-1'>{taskItem.description}</p>
+                                            <p className='text-xs md:text-sm text-gray-600 mt-1'>{taskItem.description}</p>
                                           )}
                                           {/* Không hiển thị deadline cho tasks đã PASS/FAIL (readonly) */}
                                         </div>
                                         <Badge
-                                          className={
+                                          className={`text-xs ${
                                             isPass
                                               ? 'bg-green-100 text-green-800 border-green-200'
                                               : 'bg-red-100 text-red-800 border-red-200'
-                                          }
+                                          }`}
                                         >
                                           {taskItem.status}
                                         </Badge>
                                       </div>
 
                                       {/* Status Display */}
-                                      <div className='flex items-center gap-6 ml-12'>
+                                      <div className='flex flex-col sm:flex-row sm:items-center gap-3 md:gap-6 ml-0 sm:ml-12'>
                                         <div
                                           className={`flex items-center space-x-2 ${
                                             isPass ? 'text-green-700' : 'text-gray-500'
                                           }`}
                                         >
                                           <CheckCircle2
-                                            className={`h-4 w-4 ${isPass ? 'text-green-600' : 'text-gray-400'}`}
+                                            className={`h-3 w-3 md:h-4 md:w-4 ${isPass ? 'text-green-600' : 'text-gray-400'}`}
                                           />
-                                          <span className='text-sm font-medium'>PASS - Đạt chất lượng</span>
+                                          <span className='text-xs md:text-sm font-medium'>PASS - Đạt chất lượng</span>
                                           {isPass && <Badge className='bg-green-600 text-white text-xs'>✓</Badge>}
                                         </div>
 
@@ -757,24 +777,24 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                             isFail ? 'text-red-700' : 'text-gray-500'
                                           }`}
                                         >
-                                          <XCircle className={`h-4 w-4 ${isFail ? 'text-red-600' : 'text-gray-400'}`} />
-                                          <span className='text-sm font-medium'>FAIL - Không đạt chất lượng</span>
+                                          <XCircle className={`h-3 w-3 md:h-4 md:w-4 ${isFail ? 'text-red-600' : 'text-gray-400'}`} />
+                                          <span className='text-xs md:text-sm font-medium'>FAIL - Không đạt chất lượng</span>
                                           {isFail && <Badge className='bg-red-600 text-white text-xs'>✓</Badge>}
                                         </div>
                                       </div>
 
                                       {/* Severity Display (chỉ hiện khi FAIL) */}
                                       {isFail && (
-                                        <div className='ml-12 p-3 bg-red-50 border border-red-200 rounded-md'>
+                                        <div className='ml-0 sm:ml-12 p-2 md:p-3 bg-red-50 border border-red-200 rounded-md'>
                                           <div
                                             className={`flex items-center space-x-2 ${
                                               hasSeverity ? 'text-red-800' : 'text-red-600'
                                             }`}
                                           >
                                             <AlertTriangle
-                                              className={`h-4 w-4 ${hasSeverity ? 'text-red-700' : 'text-gray-400'}`}
+                                              className={`h-3 w-3 md:h-4 md:w-4 ${hasSeverity ? 'text-red-700' : 'text-gray-400'}`}
                                             />
-                                            <span className='text-sm font-medium'>
+                                            <span className='text-xs md:text-sm font-medium'>
                                               Mức độ nghiêm trọng cao (cần reset Preset Production)
                                             </span>
                                             {hasSeverity && <Badge className='bg-red-700 text-white text-xs'>✓</Badge>}
@@ -848,11 +868,11 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                       }`}
                     />
 
-                    <div className='p-6'>
-                      <div className='flex items-start gap-4'>
+                    <div className='p-4 md:p-6'>
+                      <div className='flex flex-col sm:flex-row sm:items-start gap-3 md:gap-4'>
                         {/* Enhanced Status Icon */}
                         <div
-                          className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg ring-4 ${
+                          className={`relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg ring-4 ${
                             isCompleted
                               ? 'bg-gradient-to-br from-green-400 to-green-600 text-white ring-green-100'
                               : isLocked
@@ -861,30 +881,32 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                           }`}
                         >
                           {isCompleted ? (
-                            <CheckCircle2 className='h-7 w-7' />
+                            <CheckCircle2 className='h-5 w-5 md:h-7 md:w-7' />
                           ) : isLocked ? (
-                            <Lock className='h-7 w-7' />
+                            <Lock className='h-5 w-5 md:h-7 md:w-7' />
                           ) : (
-                            <span className='font-bold text-lg'>{milestone.sequenceOrder}</span>
+                            <span className='font-bold text-base md:text-lg'>{milestone.sequenceOrder}</span>
                           )}
                         </div>
 
                         <div className='flex-1'>
-                          <div className='flex items-center justify-between mb-3'>
-                            <div>
+                          <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3'>
+                            <div className='flex-1'>
                               <h3
-                                className={`font-bold text-xl mb-1 ${
+                                className={`font-bold text-lg md:text-xl mb-1 ${
                                   isCompleted ? 'text-green-700' : isLocked ? 'text-yellow-800' : 'text-blue-700'
                                 }`}
                               >
-                                {milestone.name}
-                                {isLocked && (
-                                  <Badge variant='secondary' className='ml-2'>
-                                    {milestoneStatus.label}
-                                  </Badge>
-                                )}
+                                <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
+                                  <span>{milestone.name}</span>
+                                  {isLocked && (
+                                    <Badge variant='secondary' className='w-fit text-xs'>
+                                      {milestoneStatus.label}
+                                    </Badge>
+                                  )}
+                                </div>
                               </h3>
-                              <p className='text-gray-600 leading-relaxed'>{milestone.description}</p>
+                              <p className='text-xs md:text-sm text-gray-600 leading-relaxed'>{milestone.description}</p>
                               {isLocked && (
                                 <p className='text-xs text-yellow-700 bg-yellow-100 p-2 rounded mt-2'>
                                   {isPaymentLocked
@@ -899,7 +921,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                             </div>
                             <Badge
                               variant={milestoneStatus.variant}
-                              className={`px-3 py-1 text-sm font-medium ${
+                              className={`px-2 md:px-3 py-1 text-xs md:text-sm font-medium w-fit ${
                                 isCompleted
                                   ? 'bg-green-100 text-green-800 border-green-200'
                                   : isLocked
@@ -912,8 +934,8 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                           </div>
 
                           {/* Enhanced Progress bar */}
-                          <div className='mb-6'>
-                            <div className='flex justify-between items-center text-sm mb-2'>
+                          <div className='mb-4 md:mb-6'>
+                            <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-xs md:text-sm mb-2'>
                               <span className='font-medium text-gray-700'>Tiến độ thực hiện</span>
                               <span
                                 className={`font-bold px-2 py-1 rounded-md text-xs ${
@@ -930,7 +952,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                             <div className='relative'>
                               <Progress
                                 value={progress}
-                                className={`h-3 ${
+                                className={`h-2 md:h-3 ${
                                   isCompleted
                                     ? '[&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-green-600'
                                     : 'hover:scale-105 transition-transform duration-200'
@@ -938,7 +960,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                               />
                               {progress === 100 && (
                                 <div className='absolute inset-0 flex items-center justify-center'>
-                                  <CheckCircle2 className='h-4 w-4 text-white drop-shadow-md' />
+                                  <CheckCircle2 className='h-3 w-3 md:h-4 md:w-4 text-white drop-shadow-md' />
                                 </div>
                               )}
                             </div>
@@ -952,6 +974,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                 .map((task) => {
                                   const taskStatus = task.status
                                   const canStart = !isLocked
+                                  const isTaskLockedBySequence = isTaskLocked(task, milestone)
+                                  const isTaskCompleted = taskStatus === 'DONE' || taskStatus === 'PASS' || taskStatus === 'FAIL'
+                                  const showLockedStatus = isTaskLockedBySequence && !isTaskCompleted
 
                                   return (
                                     <div
@@ -961,7 +986,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                           ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-sm'
                                           : taskStatus === 'IN_PROGRESS'
                                             ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm'
-                                            : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                                            : showLockedStatus
+                                              ? 'bg-yellow-50 border-yellow-200 shadow-sm'
+                                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
                                       }`}
                                     >
                                       {/* Status indicator line */}
@@ -971,42 +998,48 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                             ? 'bg-gradient-to-r from-green-400 to-emerald-500'
                                             : taskStatus === 'IN_PROGRESS'
                                               ? 'bg-gradient-to-r from-blue-400 to-indigo-500'
-                                              : 'bg-gray-300'
+                                              : showLockedStatus
+                                                ? 'bg-yellow-400'
+                                                : 'bg-gray-300'
                                         }`}
                                       />
 
-                                      <div className='p-4'>
-                                        <div className='flex flex-col space-y-3'>
-                                          <div className='flex items-center gap-3'>
+                                      <div className='p-3 md:p-4'>
+                                        <div className='flex flex-col space-y-2 md:space-y-3'>
+                                          <div className='flex flex-col sm:flex-row sm:items-center gap-2 md:gap-3'>
                                             <div
-                                              className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${
+                                              className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center shadow-sm ${
                                                 taskStatus === 'DONE' || taskStatus === 'PASS' || taskStatus === 'FAIL'
                                                   ? 'bg-green-100 text-green-600'
                                                   : taskStatus === 'IN_PROGRESS'
                                                     ? 'bg-blue-100 text-blue-600'
-                                                    : 'bg-gray-100 text-gray-500'
+                                                    : showLockedStatus
+                                                      ? 'bg-yellow-100 text-yellow-600'
+                                                      : 'bg-gray-100 text-gray-500'
                                               }`}
                                             >
                                               {taskStatus === 'DONE' ||
                                               taskStatus === 'PASS' ||
                                               taskStatus === 'FAIL' ? (
-                                                <CheckCircle2 className='h-4 w-4' />
+                                                <CheckCircle2 className='h-3 w-3 md:h-4 md:w-4' />
                                               ) : taskStatus === 'IN_PROGRESS' ? (
-                                                <Clock className='h-4 w-4' />
+                                                <Clock className='h-3 w-3 md:h-4 md:w-4' />
+                                              ) : showLockedStatus ? (
+                                                <Lock className='h-3 w-3 md:h-4 md:w-4' />
                                               ) : (
-                                                <div className='h-3 w-3 rounded-full border-2 border-current' />
+                                                <div className='h-2 w-2 md:h-3 md:w-3 rounded-full border-2 border-current' />
                                               )}
                                             </div>
                                             <div className='flex-1'>
-                                              <h4 className='font-semibold text-gray-900'>{task.name}</h4>
-                                              <p className='text-sm text-gray-600 mt-0.5'>Bước #{task.sequenceOrder}</p>
+                                              <h4 className='font-semibold text-gray-900 text-sm md:text-base'>{task.name}</h4>
+                                              <p className='text-xs md:text-sm text-gray-600 mt-0.5'>Bước #{task.sequenceOrder}</p>
                                               {/* Deadline pill for active tasks (pending/in-progress) */}
                                               {task.deadline &&
                                                 (taskStatus === 'PENDING' || taskStatus === 'IN_PROGRESS') && (
-                                                  <div className='mt-1 flex flex-wrap items-center gap-2'>
+                                                  <div className='mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2'>
                                                     {renderDeadlinePill(task.deadline, minuteTick)}
                                                     {typeof task.estimateTimeSpan === 'number' && (
-                                                      <Badge variant='outline' className='text-xs'>
+                                                      <Badge variant='outline' className='text-xs w-fit'>
                                                         Ước tính: {task.estimateTimeSpan} phút
                                                       </Badge>
                                                     )}
@@ -1015,28 +1048,32 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                             </div>
                                             <Badge
                                               variant='outline'
-                                              className={`text-xs font-medium ${getStatusColor(taskStatus)}`}
+                                              className={`text-xs font-medium w-fit ${
+                                                showLockedStatus
+                                                  ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                                                  : getStatusColor(taskStatus)
+                                              }`}
                                             >
-                                              {getStatusText(taskStatus)}
+                                              {showLockedStatus ? 'Bị khóa' : getStatusText(taskStatus)}
                                             </Badge>
                                           </div>
 
                                           {task.description && (
-                                            <p className='text-sm text-gray-600 pl-11'>{task.description}</p>
+                                            <p className='text-xs md:text-sm text-gray-600 pl-0 sm:pl-11'>{task.description}</p>
                                           )}
 
                                           {/* Show image and note if completed */}
                                           {(taskStatus === 'DONE' || taskStatus === 'PASS' || taskStatus === 'FAIL') &&
                                             (task.image || task.note) && (
-                                              <div className='ml-11 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200'>
-                                                <div className='flex items-center gap-2 mb-3'>
-                                                  <CheckCircle2 className='h-4 w-4 text-green-600' />
-                                                  <span className='text-sm font-medium text-green-800'>
+                                              <div className='ml-0 sm:ml-11 p-3 md:p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200'>
+                                                <div className='flex items-center gap-2 mb-2 md:mb-3'>
+                                                  <CheckCircle2 className='h-3 w-3 md:h-4 md:w-4 text-green-600' />
+                                                  <span className='text-xs md:text-sm font-medium text-green-800'>
                                                     Kết quả hoàn thành
                                                   </span>
                                                 </div>
 
-                                                <div className='space-y-3'>
+                                                <div className='space-y-2 md:space-y-3'>
                                                   {task.image && (
                                                     <div className='space-y-2'>
                                                       <p className='text-xs font-medium text-green-700'>
@@ -1046,7 +1083,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                         <img
                                                           src={task.image}
                                                           alt='Kết quả công việc'
-                                                          className='w-full max-w-xs h-32 object-cover rounded-lg shadow-sm border border-green-200 transition-transform group-hover:scale-105'
+                                                          className='w-full max-w-xs h-24 md:h-32 object-cover rounded-lg shadow-sm border border-green-200 transition-transform group-hover:scale-105'
                                                         />
                                                         <div className='absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg' />
                                                       </div>
@@ -1056,8 +1093,8 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                   {task.note && (
                                                     <div className='space-y-2'>
                                                       <p className='text-xs font-medium text-green-700'>Ghi chú:</p>
-                                                      <div className='bg-white/70 rounded-md p-3 border border-green-100'>
-                                                        <p className='text-sm text-gray-700 leading-relaxed'>
+                                                      <div className='bg-white/70 rounded-md p-2 md:p-3 border border-green-100'>
+                                                        <p className='text-xs md:text-sm text-gray-700 leading-relaxed'>
                                                           {task.note}
                                                         </p>
                                                       </div>
@@ -1069,9 +1106,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
                                           {/* Action buttons cho Quality Check tasks hiển thị kết quả */}
                                           {(taskStatus === 'PASS' || taskStatus === 'FAIL') && (
-                                            <div className='ml-11 p-3 bg-gray-50 border border-gray-200 rounded-md'>
+                                            <div className='ml-0 sm:ml-11 p-2 md:p-3 bg-gray-50 border border-gray-200 rounded-md'>
                                               <div className='flex items-center gap-2'>
-                                                <span className='text-sm text-muted-foreground'>
+                                                <span className='text-xs md:text-sm text-muted-foreground'>
                                                   Kết quả Quality Check:
                                                 </span>
                                                 {getQualityStatusBadge(taskStatus as QualityCheckStatus)}
@@ -1079,8 +1116,14 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                             </div>
                                           )}
 
-                                          <div className='flex gap-2 pl-11'>
-                                            {taskStatus === 'PENDING' && canStart && (
+                                          <div className='flex flex-col sm:flex-row gap-2 pl-0 sm:pl-11'>
+                                            {showLockedStatus && (
+                                              <div className='flex items-center gap-2 text-yellow-700 bg-yellow-100 px-2 md:px-3 py-2 rounded-md'>
+                                                <Lock className='h-3 w-3 md:h-4 md:w-4' />
+                                                <span className='text-xs md:text-sm font-medium'>Task bị khóa - Cần hoàn thành task trước</span>
+                                              </div>
+                                            )}
+                                            {taskStatus === 'PENDING' && canStart && !showLockedStatus && (
                                               <>
                                                 {/* Với Staff: không auto-complete Packing; hiển thị nút Bắt đầu như bình thường */}
                                                 {isCreateShippingTask(task.name) ? (
@@ -1089,10 +1132,11 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                     variant='default'
                                                     onClick={() => handleCreateShipping(task.id)}
                                                     disabled={isCreatingShipping}
-                                                    className='gap-2 bg-blue-600 hover:bg-blue-700'
+                                                    className='gap-2 bg-blue-600 hover:bg-blue-700 text-xs'
                                                   >
-                                                    <Package className='h-4 w-4' />
-                                                    {isCreatingShipping ? 'Đang tạo...' : 'Tạo đơn giao hàng'}
+                                                    <Package className='h-3 w-3 md:h-4 md:w-4' />
+                                                    <span className='hidden sm:inline'>{isCreatingShipping ? 'Đang tạo...' : 'Tạo đơn giao hàng'}</span>
+                                                    <span className='sm:hidden'>{isCreatingShipping ? 'Đang tạo...' : 'Tạo đơn'}</span>
                                                   </Button>
                                                 ) : (
                                                   <Button
@@ -1100,31 +1144,17 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                     variant='outline'
                                                     onClick={() => handleTaskStatusChange(task.id, 'IN_PROGRESS')}
                                                     disabled={updateTaskStatusMutation.isPending}
-                                                    className='gap-2'
+                                                    className='gap-2 text-xs'
                                                   >
-                                                    <Play className='h-4 w-4' />
+                                                    <Play className='h-3 w-3 md:h-4 md:w-4' />
                                                     Bắt đầu
                                                   </Button>
                                                 )}
                                               </>
                                             )}
 
-                                            {taskStatus === 'IN_PROGRESS' && (
+                                            {taskStatus === 'IN_PROGRESS' && !showLockedStatus && (
                                               <>
-                                                {/* Chỉ cho phép tạm dừng với milestone thường (không phải Packing) */}
-                                                {!isPackingMilestone(milestone.name) && (
-                                                  <Button
-                                                    size='sm'
-                                                    variant='outline'
-                                                    onClick={() => handleTaskStatusChange(task.id, 'PENDING')}
-                                                    disabled={updateTaskStatusMutation.isPending}
-                                                    className='gap-2'
-                                                  >
-                                                    <Pause className='h-4 w-4' />
-                                                    Tạm dừng
-                                                  </Button>
-                                                )}
-
                                                 {/* Nút Hoàn thành cho milestone thường và Packing */}
                                                 {!isQualityCheck && (
                                                   <TaskCompletionDialog
@@ -1142,7 +1172,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                             {(taskStatus === 'DONE' ||
                                               taskStatus === 'PASS' ||
                                               taskStatus === 'FAIL') && (
-                                              <Badge variant='default' className='gap-1'>
+                                              <Badge variant='default' className='gap-1 text-xs'>
                                                 <CheckCircle2 className='h-3 w-3' />
                                                 Đã xong
                                               </Badge>
@@ -1158,8 +1188,8 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
 
                           {isLocked && (
                             <div className='text-center py-4 text-muted-foreground'>
-                              <Lock className='h-8 w-8 mx-auto mb-2 opacity-50' />
-                              <p className='text-sm'>Cần hoàn thành milestone trước để mở khóa</p>
+                              <Lock className='h-6 w-6 md:h-8 md:w-8 mx-auto mb-2 opacity-50' />
+                              <p className='text-xs md:text-sm'>Cần hoàn thành milestone trước để mở khóa</p>
                             </div>
                           )}
                         </div>

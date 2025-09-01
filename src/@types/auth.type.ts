@@ -37,3 +37,4 @@ export interface PermissionResponse {
   roleName: string
   profilePicture: string
 }
+

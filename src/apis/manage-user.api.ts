@@ -1,4 +1,4 @@
-import { ManageUserType } from '@/@types/admin.types'
+import { ManageUserType, StaffList } from '@/@types/admin.types'
 import { ItemBaseResponse, ListBaseResponse } from '@/@types/response'
 import { api } from '@/lib/axios/axios'
 import { RoleTypes } from '@/@types/role.types'
@@ -58,7 +58,8 @@ const manageUserAPI = {
 
   updateUser: (id: string, data: ManageUserType) => api.put<ItemBaseResponse<[]>>(`/user/${id}`, data),
   deleteUser: (id: string) => api.delete<ItemBaseResponse<[]>>(`/user/${id}`),
-  getRoles: () => api.get<ListBaseResponse<RoleTypes>>('/role')
+  getRoles: () => api.get<ListBaseResponse<RoleTypes>>('/role'),
+  getStaff: () => api.get<{data: StaffList[], message: string, statusCode: number, code: string}>('/user/staff')
 }
 
 export default manageUserAPI
