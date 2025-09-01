@@ -32,7 +32,7 @@ import {
 } from 'lucide-react'
 
 import { useOrder, useOrdersByDesignRequest } from '@/services/admin/manage-order.service'
-import { ItemType, type OrderItemType } from '@/@types/manage-order.types'
+import { ItemType, OrderStatus, type OrderItemType } from '@/@types/manage-order.types'
 import { useGetUserById } from '@/services/admin/manage-user.service'
 import GoongMap from '@/components/Goong/GoongMap'
 import { getItemTypeLabel, getStatusColor, getStatusLabel } from './data/data'
@@ -48,22 +48,7 @@ const CURRENCY_LOCALE = 'vi-VN'
 const CURRENCY_CODE = 'VND'
 const DATE_FORMAT = 'DD/MM/YYYY HH:mm'
 
-// const MOCK_CHAT_MESSAGES = [
-//   {
-//     id: 1,
-//     sender: 'Alex Smith',
-//     message: 'Hi!',
-//     time: '9:00 pm',
-//     isCustomer: true
-//   },
-//   {
-//     id: 2,
-//     sender: 'Mr. Jack Mario',
-//     message: 'Adminiuix is amazing and we thank you. How can we thank you.',
-//     time: '9:10 pm',
-//     isCustomer: false
-//   }
-// ] as const
+
 
 const ORDER_STATUS_FLOW = [
   { key: 'CREATED', label: 'Đơn hàng đã tạo', icon: ShoppingBag },
@@ -98,11 +83,6 @@ const formatDate = (dateString: string | undefined | null): string => {
   }
 }
 
-/**
- * Get status timeline for order progression
- * @param currentStatus - Current status of the order
- * @returns Status timeline for order progression
- */
 const getStatusTimeline = (currentStatus?: string) => {
   const currentStatusIndex = ORDER_STATUS_FLOW.findIndex((s) => s.key === currentStatus)
 
@@ -113,10 +93,6 @@ const getStatusTimeline = (currentStatus?: string) => {
   }))
 }
 
-/**
- * Order Detail Page Component
- * @returns Order detail page component
- */
 export default function OrderDetailPage() {
   const { orderId } = useParams()
   const { data: orderDetail } = useOrder(orderId ?? '')
@@ -206,15 +182,10 @@ export default function OrderDetailPage() {
   // Kiểm tra điều kiện tạo shipping
   const allMilestonesCompleted = areAllMilestonesCompleted()
   const canCreateShipping =
-    allMilestonesCompleted && (order?.data?.status === 'IN_PROGRESS' || order?.data?.status === 'PACKAGING')
+    allMilestonesCompleted && 
+    order?.data?.status !== OrderStatus.AWAITING_PAID_REST &&
+    (order?.data?.status === OrderStatus.IN_PROGRESS || order?.data?.status === OrderStatus.PACKAGING)
 
-  // Event handlers
-  // const handleSendMessage = useCallback(() => {
-  //   if (chatMessage.trim()) {
-  //     console.log('Sending message:', chatMessage)
-  //     setChatMessage('')
-  //   }
-  // }, [chatMessage])
 
   const handleNavigateBack = useCallback(() => {
     navigate(`${roleBasePath}/manage-order`)
