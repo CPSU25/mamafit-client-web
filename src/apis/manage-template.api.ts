@@ -58,6 +58,7 @@ export const presetApi = {
     price: number
     designRequestId: string
     orderId: string
+    name: string
   }): Promise<ItemBaseResponse<SendPresetToDesignRequestResponse>> => {
     const response = await api.post('/preset/design-request', data)
     return response.data

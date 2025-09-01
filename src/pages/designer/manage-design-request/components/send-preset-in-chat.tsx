@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { LoaderCircle, Package, Plus, Send } from 'lucide-react'
+import PriceInput from '@/components/ui/price-input'
 
 export interface SendPresetInChatProps {
   isOpen: boolean
@@ -36,9 +37,9 @@ export function SendPresetInChat({
   // Custom preset states
   const [customPreset, setCustomPreset] = useState({
     name: '',
-    price: '',
+    price: 0,
     description: '',
-    imageUrls: [] as string[]
+    imageUrls: [] as string[],
   })
 
   const { data: presetsData, isLoading: isLoadingPresets } = usePresets({
@@ -64,6 +65,7 @@ export function SendPresetInChat({
       }
 
       await sendPresetMutation.mutateAsync({
+        name: selectedPreset.name,
         images: selectedPreset.images || [],
         type: 'SYSTEM' as const,
         isDefault: false,
@@ -85,7 +87,7 @@ export function SendPresetInChat({
   const handleSendCustomPreset = async () => {
     if (
       !customPreset.name.trim() ||
-      !customPreset.price.trim() ||
+      !customPreset.price ||
       Number(customPreset.price) <= 0 ||
       customPreset.imageUrls.length === 0 ||
       !roomId
@@ -97,6 +99,7 @@ export function SendPresetInChat({
     setIsSubmitting(true)
     try {
       await sendPresetMutation.mutateAsync({
+        name: customPreset.name,
         images: customPreset.imageUrls,
         type: 'SYSTEM' as const,
         isDefault: false,
@@ -204,13 +207,12 @@ export function SendPresetInChat({
 
               <div className='grid gap-2'>
                 <Label htmlFor='preset-price'>Giá Preset (VNĐ)</Label>
-                <Input
+                <PriceInput
                   id='preset-price'
-                  type='number'
                   min='0'
                   placeholder='Nhập giá preset...'
                   value={customPreset.price}
-                  onChange={(e) => setCustomPreset((prev) => ({ ...prev, price: e.target.value }))}
+                  onChange={(e) => setCustomPreset((prev) => ({ ...prev, price: e }))}
                 />
                 <p className='text-xs text-muted-foreground'>Giá preset sẽ được hiển thị cho khách hàng</p>
               </div>
@@ -249,7 +251,7 @@ export function SendPresetInChat({
                 onClick={handleSendCustomPreset}
                 disabled={
                   !customPreset.name.trim() ||
-                  !customPreset.price.trim() ||
+                  !customPreset.price ||
                   Number(customPreset.price) <= 0 ||
                   customPreset.imageUrls.length === 0 ||
                   isSubmitting

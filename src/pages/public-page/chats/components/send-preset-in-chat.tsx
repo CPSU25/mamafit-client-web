@@ -61,7 +61,8 @@ export function SendPresetInChat({ isOpen, onClose, designRequestId, orderId, cu
         isDefault: false,
         price: Number(customPrice),
         designRequestId,
-        orderId
+        orderId,
+        name: 'Preset '
       })
 
       toast.success('🎉 Đã gửi preset xinh đẹp cho mẹ bầu thành công!')

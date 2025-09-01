@@ -124,6 +124,7 @@ export function useSendPresetToCustomer() {
       price: number
       designRequestId: string
       orderId: string
+      name: string 
     }) => presetApi.sendPresetToDesignRequest(data),
     onSuccess: () => {
       toast.success('Đã gửi preset cho khách hàng thành công!')
