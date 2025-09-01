@@ -19,7 +19,7 @@ import {
   XCircle,
   Package
 } from 'lucide-react'
-import { MilestoneUI, TaskStatus, QualityCheckStatus } from '@/pages/staff/manage-task/tasks/types'
+import { MilestoneUI, TaskStatus, QualityCheckStatus, MaternityDressTaskUI } from '@/pages/staff/manage-task/tasks/types'
 import { useStaffUpdateTaskStatus, useStaffGetCurrentSequence } from '@/services/staff/staff-task.service'
 import { useQualityCheckPostSubmitHandler } from '@/services/staff/quality-check.service'
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
@@ -304,17 +304,44 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
   // Kiểm tra milestone có bị khóa không dựa trên current sequence từ API
   const isMilestoneLocked = (milestone: MilestoneUI) => {
     // Trong lúc loading sequence, đừng khóa (tránh chớp Locked sai)
-    if (isLoadingCurrentSequence || currentSequence === undefined) {
+    if (isLoadingCurrentSequence || currentSequence?.milestone === undefined) {
       return false
     }
 
     // Nếu currentSequence = 0, có nghĩa là tất cả milestone đã hoàn thành 100%
     // => không khóa milestone nào cả
-    if (currentSequence === 0) {
+    if (currentSequence.milestone === 0) {
       return false
     }
     // Milestone bị khóa nếu sequenceOrder > currentSequence
-    return milestone.sequenceOrder > currentSequence
+    return milestone.sequenceOrder > (currentSequence.milestone)
+  }
+
+  // Kiểm tra task có bị khóa không dựa trên current sequence từ API
+  const isTaskLocked = (task: MaternityDressTaskUI, milestone: MilestoneUI) => {
+    // Trong lúc loading sequence, đừng khóa (tránh chớp Locked sai)
+    if (isLoadingCurrentSequence || currentSequence?.task === undefined) {
+      return false
+    }
+
+    // Kiểm tra milestone có phải là QC, QC FAILED, QC Warranty không
+    const isQualityCheck = isQualityCheckMilestone(milestone.name)
+    const isQualityCheckFailed = isQualityCheckFailedMilestone(milestone.name)
+    const isQualityCheckWarranty = isQualityCheckWarrantyMilestone(milestone.name)
+
+    // Nếu là milestone QC, QC FAILED, QC Warranty thì không khóa task
+    if (isQualityCheck || isQualityCheckFailed || isQualityCheckWarranty) {
+      return false
+    }
+
+    // Nếu currentSequence.task = 0, có nghĩa là tất cả task đã hoàn thành 100%
+    // => không khóa task nào cả
+    if (currentSequence.task === 0) {
+      return false
+    }
+
+    // Task bị khóa nếu sequenceOrder > currentSequence.task
+    return task.sequenceOrder > currentSequence.task
   }
 
   const handleTaskStatusChange = (taskId: string, status: TaskStatus, image?: string, note?: string) => {
@@ -403,18 +430,6 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
     // Logic khóa: ưu tiên khóa thanh toán trước, sau đó mới check sequence
     const resolvedLocked = paymentLocked || (!isCurrent && isLockedBySequence)
 
-    // Debug log để kiểm tra logic
-    console.log('Milestone Status Debug:', {
-      milestoneName: milestone.name,
-      sequenceOrder: milestone.sequenceOrder,
-      currentSequence,
-      orderStatus,
-      sortedMilestonesLength: sortedMilestones.length,
-      paymentLocked,
-      isLockedBySequence,
-      resolvedLocked
-    })
-
     // Bỏ sequential locking vì đã được xử lý trong logic currentSequence
     const hasInProgress = milestone.maternityDressTasks.some((task) => task.status === 'IN_PROGRESS')
 
@@ -437,7 +452,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
             Quy trình thực hiện ({sortedMilestones.length} giai đoạn)
             {!isLoadingCurrentSequence && currentSequence !== undefined && (
               <span className='text-sm font-normal text-muted-foreground ml-2'>
-                • {currentSequence === 0 ? 'Tất cả giai đoạn đã hoàn thành' : `Giai đoạn hiện tại: ${currentSequence}`}
+                • {currentSequence.milestone === 0 ? 'Tất cả giai đoạn đã hoàn thành' : `Giai đoạn hiện tại: ${currentSequence.milestone}`}
               </span>
             )}
             {isLoadingCurrentSequence && (
@@ -460,9 +475,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
               // Có độ ưu tiên cao hơn logic milestone hiện tại
               const isPaymentLocked =
                 orderStatus === OrderStatus.AWAITING_PAID_REST &&
-                typeof currentSequence === 'number' &&
-                currentSequence > 0 &&
-                milestone.sequenceOrder === currentSequence
+                typeof currentSequence?.milestone === 'number' &&
+                currentSequence.milestone > 0 &&
+                milestone.sequenceOrder === currentSequence.milestone
 
               const completedTasks = milestone.maternityDressTasks.filter(
                 (task) => task.status === 'DONE' || task.status === 'PASS' || task.status === 'FAIL'
@@ -952,6 +967,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                 .map((task) => {
                                   const taskStatus = task.status
                                   const canStart = !isLocked
+                                  const isTaskLockedBySequence = isTaskLocked(task, milestone)
 
                                   return (
                                     <div
@@ -961,7 +977,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                           ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-sm'
                                           : taskStatus === 'IN_PROGRESS'
                                             ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm'
-                                            : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                                            : isTaskLockedBySequence
+                                              ? 'bg-yellow-50 border-yellow-200 shadow-sm'
+                                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
                                       }`}
                                     >
                                       {/* Status indicator line */}
@@ -971,7 +989,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                             ? 'bg-gradient-to-r from-green-400 to-emerald-500'
                                             : taskStatus === 'IN_PROGRESS'
                                               ? 'bg-gradient-to-r from-blue-400 to-indigo-500'
-                                              : 'bg-gray-300'
+                                              : isTaskLockedBySequence
+                                                ? 'bg-yellow-400'
+                                                : 'bg-gray-300'
                                         }`}
                                       />
 
@@ -984,7 +1004,9 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                   ? 'bg-green-100 text-green-600'
                                                   : taskStatus === 'IN_PROGRESS'
                                                     ? 'bg-blue-100 text-blue-600'
-                                                    : 'bg-gray-100 text-gray-500'
+                                                    : isTaskLockedBySequence
+                                                      ? 'bg-yellow-100 text-yellow-600'
+                                                      : 'bg-gray-100 text-gray-500'
                                               }`}
                                             >
                                               {taskStatus === 'DONE' ||
@@ -993,6 +1015,8 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                                 <CheckCircle2 className='h-4 w-4' />
                                               ) : taskStatus === 'IN_PROGRESS' ? (
                                                 <Clock className='h-4 w-4' />
+                                              ) : isTaskLockedBySequence ? (
+                                                <Lock className='h-4 w-4' />
                                               ) : (
                                                 <div className='h-3 w-3 rounded-full border-2 border-current' />
                                               )}
@@ -1015,9 +1039,13 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                             </div>
                                             <Badge
                                               variant='outline'
-                                              className={`text-xs font-medium ${getStatusColor(taskStatus)}`}
+                                              className={`text-xs font-medium ${
+                                                isTaskLockedBySequence
+                                                  ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                                                  : getStatusColor(taskStatus)
+                                              }`}
                                             >
-                                              {getStatusText(taskStatus)}
+                                              {isTaskLockedBySequence ? 'Bị khóa' : getStatusText(taskStatus)}
                                             </Badge>
                                           </div>
 
@@ -1080,7 +1108,13 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                           )}
 
                                           <div className='flex gap-2 pl-11'>
-                                            {taskStatus === 'PENDING' && canStart && (
+                                            {isTaskLockedBySequence && (
+                                              <div className='flex items-center gap-2 text-yellow-700 bg-yellow-100 px-3 py-2 rounded-md'>
+                                                <Lock className='h-4 w-4' />
+                                                <span className='text-sm font-medium'>Task bị khóa - Cần hoàn thành task trước</span>
+                                              </div>
+                                            )}
+                                            {taskStatus === 'PENDING' && canStart && !isTaskLockedBySequence && (
                                               <>
                                                 {/* Với Staff: không auto-complete Packing; hiển thị nút Bắt đầu như bình thường */}
                                                 {isCreateShippingTask(task.name) ? (
@@ -1109,7 +1143,7 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
                                               </>
                                             )}
 
-                                            {taskStatus === 'IN_PROGRESS' && (
+                                            {taskStatus === 'IN_PROGRESS' && !isTaskLockedBySequence && (
                                               <>
                                                 {/* Chỉ cho phép tạm dừng với milestone thường (không phải Packing) */}
                                                 {!isPackingMilestone(milestone.name) && (

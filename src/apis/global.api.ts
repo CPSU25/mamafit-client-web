@@ -12,9 +12,13 @@ interface ShippingFeeResponse {
     fee: number
   }
 }
+interface SequenceCurrentResponse{
+  milestone: number 
+  task: number
+}
 const globalAPI = {
   getCurrentSequence: (orderItemId: string) =>
-    api.get<ItemBaseResponse<number>>(`/order-items/current-sequence/${orderItemId}`),
+    api.get<ItemBaseResponse<SequenceCurrentResponse>>(`/order-items/current-sequence/${orderItemId}`),
   getAddress: (id: string) => api.get<ItemBaseResponse<AddressType>>(`/address/${id}`),
   getShippingFee: (query: ShippingFeeQuery) => api.get<ShippingFeeResponse>(`/ghtk-fee`, { params: query })
 }
