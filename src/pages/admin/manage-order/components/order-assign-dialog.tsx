@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-import { useGetListUser } from '@/services/admin/manage-user.service'
+import { useGetStaffs } from '@/services/admin/manage-user.service'
 import { useAssignCharge } from '@/services/admin/manage-order.service'
 
 interface OrderAssignDialogProps {
@@ -27,12 +27,9 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
   const [selectedCharges, setSelectedCharges] = useState<Record<string, string>>({})
   const queryClient = useQueryClient()
 
-  // Get list of users
-  const { data: usersResponse, isLoading: isLoadingUsers } = useGetListUser({
-    pageSize: 100
-  })
-  const availableUsers =
-    usersResponse?.data?.items.filter((user) => user.roleName === 'Designer' || user.roleName === 'Staff') || []
+  // Get list of staffs
+  const { data: staffsResponse, isLoading: isLoadingUsers } = useGetStaffs()
+  const availableUsers = staffsResponse || []
   const assignMutation = useAssignCharge()
 
   // Group milestones and merge all tasks with same milestone ID
@@ -130,7 +127,7 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
   }
 
   const getUserRole = (userId: string) => {
-    return availableUsers.find((user) => user.id === userId)?.roleName || ''
+    return availableUsers.find((user) => user.id === userId)?.jobTitle || 'N/A'
   }
 
   const isSubmitting = assignMutation.isPending
@@ -199,6 +196,12 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                   <Users className='h-4 w-4 text-violet-500' />
                   <span className='text-sm text-muted-foreground'>
                     {isLoadingUsers ? 'Đang tải...' : `${availableUsers.length} người có thể giao việc`}
+                  </span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <Clock className='h-4 w-4 text-blue-500' />
+                  <span className='text-sm text-muted-foreground'>
+                    Tổng cộng {availableUsers.reduce((sum, user) => sum + user.jobCount, 0)} tasks đang thực hiện
                   </span>
                 </div>
               </div>
@@ -321,6 +324,12 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                                       {milestone.tasks?.find((t) => t.detail?.chargeName)?.detail?.chargeName}
                                     </strong>
                                   </div>
+                                  <div className='text-sm mt-1'>
+                                    Hiện tại đang thực hiện:{' '}
+                                    <strong>
+                                      {availableUsers.find((user) => user.fullName === milestone.tasks?.find((t) => t.detail?.chargeName)?.detail?.chargeName)?.jobCount || 0} tasks
+                                    </strong>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -344,14 +353,22 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                                         <div className='w-8 h-8 bg-violet-100 dark:bg-violet-900/50 rounded-lg flex items-center justify-center'>
                                           <User className='h-4 w-4 text-violet-600 dark:text-violet-400' />
                                         </div>
-                                        <div>
+                                        <div className='flex-1'>
                                           <div className='font-medium'>{user.fullName}</div>
-                                          <Badge
-                                            variant='outline'
-                                            className='text-xs bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-700'
-                                          >
-                                            {user.jobTitle}
-                                          </Badge>
+                                          <div className='flex items-center gap-2 mt-1'>
+                                            <Badge
+                                              variant='outline'
+                                              className='text-xs bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-700'
+                                            >
+                                              {user.jobTitle}
+                                            </Badge>
+                                            <Badge
+                                              variant='secondary'
+                                              className='text-xs bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                            >
+                                              {user.jobCount} tasks
+                                            </Badge>
+                                          </div>
                                         </div>
                                       </div>
                                     </SelectItem>
@@ -369,6 +386,12 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                                       <div className='font-semibold'>
                                         Sẽ giao cho: {getUserName(selectedCharges[milestone.id])} (
                                         {getUserRole(selectedCharges[milestone.id])})
+                                      </div>
+                                      <div className='text-sm text-violet-600 dark:text-violet-400 mt-1'>
+                                        Hiện tại đang thực hiện:{' '}
+                                        <strong>
+                                          {availableUsers.find((user) => user.id === selectedCharges[milestone.id])?.jobCount || 0} tasks
+                                        </strong>
                                       </div>
                                       <div className='text-sm text-violet-600 dark:text-violet-400 mt-1'>
                                         Người này sẽ thực hiện tất cả {milestone.tasks?.length || 0} tasks trong
@@ -421,6 +444,12 @@ export function OrderAssignDialog({ open, onOpenChange, orderItem, onSuccess }: 
                               <span className='font-semibold text-sm text-violet-600 dark:text-violet-400'>
                                 {getUserName(userId)}
                               </span>
+                              <Badge
+                                variant='secondary'
+                                className='text-xs bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                              >
+                                {availableUsers.find((user) => user.id === userId)?.jobCount || 0} tasks
+                              </Badge>
                             </div>
                           </div>
                         </div>

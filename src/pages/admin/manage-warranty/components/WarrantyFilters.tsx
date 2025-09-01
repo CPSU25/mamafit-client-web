@@ -30,8 +30,6 @@ export const WarrantyFilters = ({
         return 'Đã duyệt'
       case 'repairing':
         return 'Sửa chữa'
-      case 'awaiting_payment':
-        return 'Chờ TT'
       case 'completed':
         return 'Hoàn thành'
       case 'rejected':

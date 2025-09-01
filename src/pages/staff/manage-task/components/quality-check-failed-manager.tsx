@@ -100,8 +100,8 @@ export const QualityCheckFailedManager: React.FC<QualityCheckFailedManagerProps>
 
   if (totalSubTasks === 0) {
     return (
-      <Card className='overflow-hidden border-orange-200'>
-        <CardHeader className='bg-gradient-to-r from-orange-50 to-amber-50'>
+      <Card className='overflow-hidden border-orange-200 py-0'>
+        <CardHeader className='bg-gradient-to-r from-orange-50 to-amber-50 p-5'>
           <CardTitle className='flex items-center gap-2 text-orange-800'>
             <RefreshCw className='h-5 w-5' />
             Quality Check Failed - Không có nhiệm vụ sửa chữa
@@ -131,8 +131,8 @@ export const QualityCheckFailedManager: React.FC<QualityCheckFailedManagerProps>
   ) : null
 
   return (
-    <Card className='overflow-hidden border-orange-200'>
-      <CardHeader className='bg-gradient-to-r from-orange-50 to-amber-50'>
+    <Card className='overflow-hidden border-orange-200 py-0'>
+      <CardHeader className='bg-gradient-to-r from-orange-50 to-amber-50 p-5'>
         <CardTitle className='flex items-center gap-2 text-orange-800'>
           <RefreshCw className='h-5 w-5' />
           Quality Check Failed - Sửa chữa các vấn đề

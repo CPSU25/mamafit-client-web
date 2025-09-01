@@ -1,11 +1,11 @@
 import manageUserAPI, { CreateUserData, CreateSystemAccountData } from '@/apis/manage-user.api'
-import { ManageUserType } from '@/@types/admin.types'
+import { ManageUserType, StaffList } from '@/@types/admin.types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 interface ManageUserQueryParams {
   index?: number
-  pageSize?: number
+  pageSize?: number 
   nameSearch?: string
   roleName?: string
 }
@@ -19,7 +19,8 @@ export const manageUserKeys = {
   update: (id: string) => [...manageUserKeys.all, 'update', id] as const,
   create: () => [...manageUserKeys.all, 'create'] as const,
   createSystemAccount: () => [...manageUserKeys.all, 'create-system-account'] as const,
-  getRoles: () => [...manageUserKeys.all, 'get-roles'] as const
+  getRoles: () => [...manageUserKeys.all, 'get-roles'] as const,
+  getStaffs: () => [...manageUserKeys.all, 'get-staffs'] as const
 }
 
 export const useGetListUser = (params?: ManageUserQueryParams) => {
@@ -139,6 +140,18 @@ export const useUpdateUser = () => {
     },
     onError: () => {
       toast.error('Cập nhật người dùng thất bại!')
+    }
+  })
+}
+export const useGetStaffs = () =>{
+  return useQuery<StaffList[]>({
+    queryKey: manageUserKeys.getStaffs(),
+    queryFn: async () => {
+      const response = await manageUserAPI.getStaff()
+      if (response.data.statusCode === 200) {
+        return response.data.data
+      }
+      return []
     }
   })
 }
