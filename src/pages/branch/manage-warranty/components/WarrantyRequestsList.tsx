@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useWarrantyRequestOfBranchs, useCompleteWarrantyRequest } from '@/services/global/warranty.service'
 import { StatusWarrantyRequest } from '@/@types/warranty-request.types'
 import { WarrantyRequestDetailDialog } from './WarrantyRequestDetailDialog'
@@ -31,6 +32,8 @@ export function WarrantyRequestsList() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRequestId, setSelectedRequestId] = useState<string>('')
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmRequestId, setConfirmRequestId] = useState<string | null>(null)
   const pageSize = 8 // Fewer items for horizontal layout
 
   const { data, isLoading, error, refetch } = useWarrantyRequestOfBranchs({
@@ -121,17 +124,20 @@ export function WarrantyRequestsList() {
     setCurrentPage(1) // Reset to first page when filtering
   }
 
-  const handleCompleteWarranty = async (requestId: string) => {
-    // Show confirmation dialog
-    const confirmed = window.confirm('Bạn có chắc chắn muốn hoàn thành yêu cầu bảo hành này không?')
+  const handleCompleteWarranty = (requestId: string) => {
+    setConfirmRequestId(requestId)
+    setConfirmOpen(true)
+  }
 
-    if (!confirmed) return
-
+  const handleConfirmComplete = async () => {
+    if (!confirmRequestId) return
     try {
-      await completeWarrantyRequest(requestId)
-      // The service will automatically invalidate queries and refresh the list
+      await completeWarrantyRequest(confirmRequestId)
     } catch (error) {
       console.error('Error completing warranty request:', error)
+    } finally {
+      setConfirmOpen(false)
+      setConfirmRequestId(null)
     }
   }
 
@@ -157,6 +163,27 @@ export function WarrantyRequestsList() {
             </Alert>
           </CardContent>
         </Card>
+
+        {/* Confirm Complete Dialog */}
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={(open) => {
+            setConfirmOpen(open)
+            if (!open) setConfirmRequestId(null)
+          }}
+          title='Xác nhận hoàn thành'
+          desc='Bạn có chắc chắn muốn hoàn thành yêu cầu bảo hành này không? Hành động này sẽ cập nhật trạng thái yêu cầu thành Hoàn thành.'
+          cancelBtnText='Hủy'
+          confirmText={isCompleting ? (
+            <span className='inline-flex items-center gap-2'>
+              <Loader2 className='h-4 w-4 animate-spin' /> Đang xử lý...
+            </span>
+          ) : (
+            'Xác nhận'
+          )}
+          handleConfirm={handleConfirmComplete}
+          isLoading={isCompleting}
+        />
 
         {/* Detail Dialog */}
         <WarrantyRequestDetailDialog
@@ -258,13 +285,11 @@ export function WarrantyRequestsList() {
                             <StatusIcon className='h-3 w-3 mr-1' />
                             {statusConfig.label}
                           </Badge>
-                          <span className='text-xs text-muted-foreground'>#{request.id.slice(-8)}</span>
                         </div>
 
                         {/* SKU */}
                         <div>
                           <p className='font-medium text-sm'>SKU: {request.sku}</p>
-                          <p className='text-xs text-muted-foreground'>ID: {request.id.slice(0, 8)}...</p>
                         </div>
 
                         {/* Customer Info */}
@@ -282,11 +307,9 @@ export function WarrantyRequestsList() {
                         <div className='flex items-center justify-between text-xs'>
                           <div className='flex items-center gap-1'>
                             <Package className='h-3 w-3' />
-                            <span>Lần BH: {request.warrantyRound}</span>
+                            <span>Sản phẩm bảo hành: {request.countItem}</span>
                           </div>
-                          <div className='flex items-center gap-1'>
-                            <span>{request.countItem} SP</span>
-                          </div>
+                         
                         </div>
 
                         {/* Fee Info */}
@@ -404,6 +427,27 @@ export function WarrantyRequestsList() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirm Complete Dialog */}
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          setConfirmOpen(open)
+          if (!open) setConfirmRequestId(null)
+        }}
+        title='Xác nhận hoàn thành'
+        desc='Bạn có chắc chắn muốn hoàn thành yêu cầu bảo hành này không? Hành động này sẽ cập nhật trạng thái yêu cầu thành Hoàn thành.'
+        cancelBtnText='Hủy'
+        confirmText={isCompleting ? (
+          <span className='inline-flex items-center gap-2'>
+            <Loader2 className='h-4 w-4 animate-spin' /> Đang xử lý...
+          </span>
+        ) : (
+          'Xác nhận'
+        )}
+        handleConfirm={handleConfirmComplete}
+        isLoading={isCompleting}
+      />
 
       {/* Detail Dialog */}
       <WarrantyRequestDetailDialog

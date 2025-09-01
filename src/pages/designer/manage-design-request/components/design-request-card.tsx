@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Progress } from '@/components/ui/progress'
+// import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import {
   CheckCircle,
@@ -13,7 +13,6 @@ import {
   Eye,
   Play,
   Calendar,
-  DollarSign,
   Camera
 } from 'lucide-react'
 import dayjs from 'dayjs'
@@ -35,7 +34,7 @@ export const DesignRequestCard = ({
   onComplete
 }: DesignRequestCardProps) => {
   const taskStatus = getTaskStatus(request.milestones, request.orderStatus)
-  const progress = calculateProgress(request.milestones)
+  // const progress = calculateProgress(request.milestones)
   const priority = getPriorityLevel(request)
 
   return (
@@ -66,13 +65,13 @@ export const DesignRequestCard = ({
 
       <CardContent className='space-y-4'>
         {/* Progress */}
-        <div className='space-y-2'>
+        {/* <div className='space-y-2'>
           <div className='flex items-center justify-between text-sm'>
             <span className='text-muted-foreground'>Tiến độ thiết kế</span>
             <span className='font-medium'>{progress}%</span>
           </div>
           <Progress value={progress} className='h-2' />
-        </div>
+        </div> */}
 
         {/* Order Details */}
         <div className='grid grid-cols-2 gap-3 text-sm'>
@@ -81,8 +80,7 @@ export const DesignRequestCard = ({
             <span>{formatDate(request.orderItem.createdAt)}</span>
           </div>
           <div className='flex items-center gap-2 text-muted-foreground'>
-            <DollarSign className='w-4 h-4' />
-            <span>{request.orderItem.price?.toLocaleString('vi-VN')} ₫</span>
+            <span>Giá: {request.orderItem.price?.toLocaleString('vi-VN')} ₫</span>
           </div>
         </div>
 
@@ -184,15 +182,15 @@ const getTaskStatus = (milestones: ExtendedOrderTaskItem['milestones'], orderSta
   return 'PENDING'
 }
 
-const calculateProgress = (milestones: ExtendedOrderTaskItem['milestones']) => {
-  if (!milestones || milestones.length === 0) return 0
+// const calculateProgress = (milestones: ExtendedOrderTaskItem['milestones']) => {
+//   if (!milestones || milestones.length === 0) return 0
 
-  const allTasks = milestones.flatMap((m) => m.maternityDressTasks)
-  if (allTasks.length === 0) return 0
+//   const allTasks = milestones.flatMap((m) => m.maternityDressTasks)
+//   if (allTasks.length === 0) return 0
 
-  const completedTasks = allTasks.filter((task) => task.status === 'COMPLETED').length
-  return Math.round((completedTasks / allTasks.length) * 100)
-}
+//   const completedTasks = allTasks.filter((task) => task.status === 'COMPLETED').length
+//   return Math.round((completedTasks / allTasks.length) * 100)
+// }
 
 const getPriorityLevel = (request: ExtendedOrderTaskItem) => {
   const createdAt = dayjs(request.orderItem.createdAt)
