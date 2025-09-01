@@ -10,12 +10,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { PlusCircle, Loader2, CreditCard, Banknote, AlertTriangle, Calendar, Shield, Package } from 'lucide-react'
+import { PlusCircle, Loader2, CreditCard, Banknote, AlertTriangle, Shield, Package } from 'lucide-react'
 
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 import { FirebaseVideoUpload } from '@/components/firebase-video-upload'
@@ -24,6 +24,7 @@ import type { OrderItemType } from '@/@types/manage-order.types'
 import { PaymentMethod } from '@/@types/manage-order.types'
 import { ProductImageViewer } from '@/components/ui/image-viewer'
 import { useGetConfigs } from '@/services/global/system-config.service'
+import PriceInput from '@/components/ui/price-input'
 
 interface CreateWarrantyRequestDialogProps {
   open: boolean
@@ -41,8 +42,9 @@ export function CreateWarrantyRequestDialog({
   const [descriptions, setDescriptions] = useState<Record<string, string>>({})
   const [images, setImages] = useState<Record<string, string[]>>({})
   const [videos, setVideos] = useState<Record<string, string[]>>({})
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH)
-  const [feeAmount, setFeeAmount] = useState<number | null>(null)
+  const [paymentMethod] = useState<PaymentMethod>(PaymentMethod.ONLINE_BANKING)
+  const [feeAmount, setFeeAmount] = useState<number>(0)
+  const [estimateDays, setEstimateDays] = useState<number | null>(null)
 
   const { mutateAsync: createRequest, isPending: creating } = useCreateBranchWarrantyRequest()
   const { data: configData } = useGetConfigs()
@@ -69,16 +71,28 @@ export function CreateWarrantyRequestDialog({
     setVideos((prev) => ({ ...prev, [id]: urls }))
   }, [])
 
-  const handlePaymentMethodChange = useCallback((value: string) => {
-    setPaymentMethod(value as PaymentMethod)
+  // const handlePaymentMethodChange = useCallback((value: string) => {
+  //   setPaymentMethod(value as PaymentMethod)
+  // }, [])
+
+  const handleFeeAmountChange = useCallback((value: number) => {
+    setFeeAmount(value)
   }, [])
 
-  const handleFeeAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFeeAmount(e.target.value ? Number(e.target.value) : null)
+  const handleEstimateDaysChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    const days = value ? Number(value) : null
+    
+    // Validate: prevent negative numbers
+    if (days !== null && days < 0) {
+      return
+    }
+    
+    setEstimateDays(days)
   }, [])
 
   const canCreate = useMemo(() => {
-    return selectedItems.length > 0 && (!needsFee || (needsFee && feeAmount !== null))
+    return selectedItems.length > 0 && (!needsFee || (needsFee && feeAmount > 0))
   }, [selectedItems.length, needsFee, feeAmount])
 
   const handleCreate = useCallback(async () => {
@@ -90,29 +104,47 @@ export function CreateWarrantyRequestDialog({
         videos: videos[item.id] || []
       }))
 
+      const estimateTimeISO = estimateDays !== null
+        ? (() => {
+            const d = new Date()
+            if (estimateDays === 0) {
+              // If 0 days, set to end of current day (23:59:59)
+              d.setHours(23, 59, 59, 999)
+            } else if (estimateDays > 0) {
+              // If positive days, add days and set to end of that day
+              d.setDate(d.getDate() + estimateDays)
+              d.setHours(23, 59, 59, 999)
+            }
+            return d.toISOString()
+          })()
+        : null
+
       await createRequest({
         paymentMethod,
-        fee: needsFee ? feeAmount : null,
-        items: itemsPayload
+        fee: needsFee && feeAmount > 0 ? feeAmount : null,
+        items: itemsPayload,
+        estimateTime: estimateTimeISO
       })
 
       // Reset form
       setDescriptions({})
       setImages({})
       setVideos({})
-      setFeeAmount(null)
+      setFeeAmount(0)
+      setEstimateDays(null)
 
       onSuccess()
     } catch (error) {
       console.error('Error creating warranty request:', error)
     }
-  }, [selectedItems, descriptions, images, videos, paymentMethod, needsFee, feeAmount, createRequest, onSuccess])
+  }, [selectedItems, descriptions, images, videos, paymentMethod, needsFee, feeAmount, estimateDays, createRequest, onSuccess])
 
   const handleClose = useCallback(() => {
     setDescriptions({})
     setImages({})
     setVideos({})
-    setFeeAmount(null)
+          setFeeAmount(0)
+    setEstimateDays(null)
     onOpenChange(false)
   }, [onOpenChange])
 
@@ -240,27 +272,13 @@ export function CreateWarrantyRequestDialog({
 
                       {/* Warranty Info */}
                       <div className='flex items-center gap-4 text-sm p-3 bg-muted/30 rounded-lg border'>
-                        {item.warrantyDate && (
-                          <div className='flex items-center gap-2 text-blue-600 dark:text-blue-400'>
-                            <Calendar className='h-4 w-4' />
-                            <span className='font-medium'>
-                              BH đến: {new Date(item.warrantyDate).toLocaleDateString('vi-VN')}
-                            </span>
-                          </div>
-                        )}
+                       
                         <div
                           className={`flex items-center gap-2 ${needsFeeForItem ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}
                         >
                           <Shield className='h-4 w-4' />
-                          <span className='font-medium'>Lần BH: {warrantyRound}</span>
-                          {needsFeeForItem && (
-                            <Badge
-                              variant='outline'
-                              className='ml-1 text-xs border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400'
-                            >
-                              Có phí
-                            </Badge>
-                          )}
+                          <span className='font-medium'>Đã được bảo hành: {warrantyRound} lần</span>
+                          
                         </div>
                       </div>
 
@@ -315,6 +333,33 @@ export function CreateWarrantyRequestDialog({
             })}
           </div>
 
+          {/* Estimate Time (Days) */}
+          <div className='space-y-3'>
+            <div>
+              <Label className='text-sm font-medium'>⏱️ Thời gian ước tính (ngày)</Label>
+              <Input
+                type='number'
+                placeholder='Ví dụ: 7'
+                min='1'
+                max='30'
+                value={estimateDays ?? ''}
+                onChange={handleEstimateDaysChange}
+                className='mt-2'
+              />
+              <p className='text-xs text-muted-foreground mt-1'>Không bắt buộc. Từ 1-30 ngày làm việc.</p>
+            </div>
+
+            {typeof estimateDays === 'number' && estimateDays > 0 && (
+              <div className='p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm'>
+                Dự kiến hoàn thành: {(() => {
+                  const d = new Date()
+                  d.setDate(d.getDate() + (estimateDays || 0))
+                  return d.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+                })()}
+              </div>
+            )}
+          </div>
+
           {/* Fee Management Section */}
           {needsFee && (
             <Card className='border-2 border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/30 dark:border-amber-800 dark:from-amber-950/20 dark:to-orange-950/10'>
@@ -338,10 +383,9 @@ export function CreateWarrantyRequestDialog({
                     <Label className='text-sm font-medium'>Số tiền phí *</Label>
                     <div className='relative'>
                       <Banknote className='absolute left-3 top-3 h-4 w-4 text-muted-foreground' />
-                      <Input
-                        type='number'
+                      <PriceInput
                         placeholder='Nhập số tiền phí...'
-                        value={feeAmount || ''}
+                        value={feeAmount}
                         onChange={handleFeeAmountChange}
                         className='pl-10'
                       />
@@ -351,7 +395,7 @@ export function CreateWarrantyRequestDialog({
                 </div>
 
                 {/* Payment Method */}
-                <div className='space-y-2'>
+                {/* <div className='space-y-2'>
                   <Label className='text-sm font-medium'>Phương thức thanh toán</Label>
                   <Select value={paymentMethod} onValueChange={handlePaymentMethodChange}>
                     <SelectTrigger className='bg-white dark:bg-background'>
@@ -372,7 +416,7 @@ export function CreateWarrantyRequestDialog({
                       </SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
           )}
