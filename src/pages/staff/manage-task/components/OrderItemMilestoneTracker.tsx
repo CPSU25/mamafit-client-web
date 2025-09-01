@@ -24,6 +24,7 @@ import { useQualityCheckPostSubmitHandler } from '@/services/staff/quality-check
 import { CloudinaryImageUpload } from '@/components/cloudinary-image-upload'
 import { QualityCheckTaskManager } from '@/pages/staff/manage-task/components/quality-check-task-manager'
 import { QualityCheckFailedManager } from './quality-check-failed-manager'
+import { DemoQuickComplete } from './demo-quick-complete'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import ghtkAPI from '@/apis/ghtk.api'
@@ -444,16 +445,27 @@ export const OrderItemMilestoneTracker: React.FC<OrderItemMilestoneTrackerProps>
       <Card>
         <CardHeader>
           <CardTitle className='text-base md:text-lg'>
-            <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
-              <span>Quy trình thực hiện ({sortedMilestones.length} giai đoạn)</span>
-              {!isLoadingCurrentSequence && currentSequence !== undefined && (
-                <span className='text-xs md:text-sm font-normal text-muted-foreground'>
-                  • {currentSequence.milestone === 0 ? 'Tất cả giai đoạn đã hoàn thành' : `Giai đoạn hiện tại: ${currentSequence.milestone}`}
-                </span>
-              )}
-              {isLoadingCurrentSequence && (
-                <span className='text-xs md:text-sm font-normal text-muted-foreground'>• Đang tải...</span>
-              )}
+            <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2'>
+              <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
+                <span>Quy trình thực hiện ({sortedMilestones.length} giai đoạn)</span>
+                {!isLoadingCurrentSequence && currentSequence !== undefined && (
+                  <span className='text-xs md:text-sm font-normal text-muted-foreground'>
+                    • {currentSequence.milestone === 0 ? 'Tất cả giai đoạn đã hoàn thành' : `Giai đoạn hiện tại: ${currentSequence.milestone}`}
+                  </span>
+                )}
+                {isLoadingCurrentSequence && (
+                  <span className='text-xs md:text-sm font-normal text-muted-foreground'>• Đang tải...</span>
+                )}
+              </div>
+              
+              {/* Nút hoàn thành nhanh cho demo */}
+              <DemoQuickComplete
+                orderItemId={orderItemId}
+                milestones={sortedMilestones}
+                currentSequence={currentSequence}
+                size='sm'
+                variant='outline'
+              />
             </div>
           </CardTitle>
         </CardHeader>

@@ -18,12 +18,14 @@ import {
   Package,
   Flame,
   ShoppingBag,
-  Tag
+  Tag,
+  Zap
 } from 'lucide-react'
 import { ProductTaskGroup } from '@/pages/staff/manage-task/tasks/types'
-import { useStaffGetOrderTasks } from '@/services/staff/staff-task.service'
+import { useStaffGetOrderTasks, useStaffCompleteAllTasksForDemo } from '@/services/staff/staff-task.service'
 import { useNavigate } from 'react-router-dom'
 import { Main } from '@/components/layout/main'
+import { toast } from 'sonner'
 
 type AnyMilestone = { maternityDressTasks: Array<{ status: string }> }
 
@@ -34,6 +36,7 @@ export default function StaffTasksPage() {
 
   const navigate = useNavigate()
   const { data: orderItems, isLoading, isError } = useStaffGetOrderTasks()
+  const completeAllTasksForDemoMutation = useStaffCompleteAllTasksForDemo()
   console.log('Order Items:', orderItems)
 
   const getTaskStatus = useCallback((milestones: ProductTaskGroup['milestones']) => {
@@ -228,6 +231,32 @@ export default function StaffTasksPage() {
           <Badge variant='outline' className='gap-1'>
             <Clock className='w-3 h-3' /> ≤ 1 giờ: {dueSoonCount}
           </Badge>
+          <Button
+            size='sm'
+            variant='outline'
+            onClick={() => {
+              if (orderItems && orderItems.length > 0) {
+                // Hoàn thành nhanh milestone hiện tại của tất cả order items
+                const promises = orderItems.map(orderItem => 
+                  completeAllTasksForDemoMutation.mutateAsync({
+                    orderItemId: orderItem.orderItemId,
+                    milestones: orderItem.milestones,
+                    currentSequence: null // Sẽ tự động tìm milestone đầu tiên chưa hoàn thành
+                  })
+                )
+                Promise.all(promises).then(() => {
+                  toast.success('Đã hoàn thành nhanh milestone hiện tại của tất cả công việc cho demo!')
+                }).catch((error) => {
+                  console.error('Error completing milestone tasks:', error)
+                })
+              }
+            }}
+            disabled={completeAllTasksForDemoMutation.isPending}
+            className='gap-2 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100'
+          >
+            <Zap className='h-4 w-4' />
+            {completeAllTasksForDemoMutation.isPending ? 'Đang hoàn thành...' : 'Hoàn thành milestone (Demo)'}
+          </Button>
         </div>
       </div>
 

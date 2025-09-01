@@ -3,7 +3,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { PositionSchema } from '../data/schema'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
 import { PositionTableRowActions } from './position-row-action'
-import { Hash, Image } from 'lucide-react'
+import { Hash } from 'lucide-react'
 import { cn } from '@/lib/utils/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
@@ -74,40 +74,6 @@ export const positionColumns: ColumnDef<PositionSchema>[] = [
         'sticky left-24 md:table-cell'
       )
     },
-    enableHiding: false
-  },
-  {
-    accessorKey: 'image',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Hình Ảnh' className='text-green-700 dark:text-green-300' />
-    ),
-    cell: ({ row }) => {
-      const image = row.getValue('image') as string | null
-
-      if (!image) {
-        return (
-          <div className='flex items-center gap-2 text-muted-foreground'>
-            <Image className='h-5 w-5' />
-            <span className='text-sm'>Chưa có</span>
-          </div>
-        )
-      }
-
-      return (
-        <div className='flex items-center gap-2'>
-          <img
-            src={image}
-            alt='Position preview'
-            className='w-12 h-12 rounded-lg object-cover border border-green-200 dark:border-green-800'
-            onError={(e) => {
-              const target = e.target as HTMLImageElement
-              target.style.display = 'none'
-            }}
-          />
-        </div>
-      )
-    },
-    enableSorting: false,
     enableHiding: false
   },
   {
