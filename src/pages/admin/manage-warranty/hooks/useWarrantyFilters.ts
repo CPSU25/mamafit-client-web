@@ -17,7 +17,6 @@ export const useWarrantyFilters = ({ requests, selectedTab, searchQuery, statusF
         pending: [StatusWarrantyRequest.PENDING],
         approved: [StatusWarrantyRequest.APPROVED],
         repairing: [StatusWarrantyRequest.REPAIRING],
-        awaiting_payment: [StatusWarrantyRequest.APPROVED], // Chờ thanh toán = đã duyệt
         completed: [StatusWarrantyRequest.COMPLETED],
         rejected: [StatusWarrantyRequest.REJECTED, StatusWarrantyRequest.PARTIALLY_REJECTED]
       }
