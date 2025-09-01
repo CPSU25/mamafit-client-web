@@ -344,3 +344,100 @@ export const useStaffGetCurrentSequence = (orderItemId: string) => {
     retryDelay: 1000
   })
 }
+
+/**
+ * Hook để hoàn thành nhanh tất cả task cho demo
+ * Chỉ sử dụng cho mục đích demo, không nên dùng trong production
+ */
+export const useStaffCompleteAllTasksForDemo = () => {
+  const queryClient = useQueryClient()
+  const updateTaskStatusMutation = useStaffUpdateTaskStatus()
+
+  return useMutation({
+    mutationFn: async ({
+      orderItemId,
+      milestones,
+      currentSequence
+    }: {
+      orderItemId: string
+      milestones: MilestoneUI[]
+      currentSequence?: { milestone: number; task: number } | null
+    }) => {
+      // Xác định milestone hiện tại cần hoàn thành
+      let targetMilestone: MilestoneUI | null = null
+      
+      if (currentSequence && currentSequence.milestone > 0) {
+        // Nếu có currentSequence, hoàn thành milestone hiện tại
+        targetMilestone = milestones.find(m => m.sequenceOrder === currentSequence.milestone) || null
+      } else {
+        // Nếu không có currentSequence, tìm milestone đầu tiên chưa hoàn thành
+        targetMilestone = milestones.find(m => {
+          const hasIncompleteTasks = m.maternityDressTasks.some(task => 
+            task.status !== 'DONE' && task.status !== 'PASS' && task.status !== 'FAIL'
+          )
+          return hasIncompleteTasks
+        }) || null
+      }
+
+      if (!targetMilestone) {
+        throw new Error('Không tìm thấy milestone cần hoàn thành')
+      }
+
+      // Lấy tất cả task trong milestone hiện tại cần update
+      const tasksToComplete = targetMilestone.maternityDressTasks.filter((task) => 
+        task.status !== 'DONE' && task.status !== 'PASS' && task.status !== 'FAIL'
+      )
+
+      if (tasksToComplete.length === 0) {
+        throw new Error(`Milestone "${targetMilestone.name}" đã hoàn thành tất cả task`)
+      }
+
+      // Update từng task một cách tuần tự
+      const results = []
+      for (const task of tasksToComplete) {
+        try {
+          // Xác định status phù hợp cho từng loại task
+          let targetStatus: StaffTaskStatus = 'DONE'
+          
+          // Nếu là Quality Check task, sử dụng PASS
+          if (targetMilestone.name.toLowerCase().includes('quality') || 
+              targetMilestone.name.toLowerCase().includes('kiểm tra')) {
+            targetStatus = 'PASS'
+          }
+
+          const result = await updateTaskStatusMutation.mutateAsync({
+            dressTaskId: task.id,
+            orderItemId,
+            status: targetStatus,
+            note: `Hoàn thành nhanh cho demo - ${new Date().toLocaleString('vi-VN')}`
+          })
+          results.push(result)
+          
+          // Delay nhỏ để tránh spam API
+          await new Promise(resolve => setTimeout(resolve, 100))
+        } catch (error) {
+          console.error(`Error updating task ${task.id}:`, error)
+          // Tiếp tục với task tiếp theo thay vì dừng
+        }
+      }
+
+      return {
+        results,
+        milestoneName: targetMilestone.name,
+        completedTasks: results.length
+      }
+    },
+    onSuccess: (data, variables) => {
+      toast.success(`Đã hoàn thành nhanh ${data.completedTasks} nhiệm vụ trong milestone "${data.milestoneName}" cho demo!`)
+      
+      // Invalidate tất cả queries liên quan
+      queryClient.invalidateQueries({ queryKey: staffTaskQueryKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: staffTaskQueryKeys.byOrderItem(variables.orderItemId) })
+      queryClient.invalidateQueries({ queryKey: ['staff-current-sequence', variables.orderItemId] })
+    },
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra khi hoàn thành nhanh'
+      toast.error(`Lỗi: ${errorMessage}`)
+    }
+  })
+}
