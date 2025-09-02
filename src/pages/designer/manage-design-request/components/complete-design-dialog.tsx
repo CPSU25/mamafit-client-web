@@ -27,8 +27,8 @@ export const CompleteDesignDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className='max-w-3xl'>
-        <DialogHeader>
+      <DialogContent className='max-w-3xl max-h-[90vh] flex flex-col'>
+        <DialogHeader className='flex-shrink-0'>
           <DialogTitle className='flex items-center gap-2'>
             <CheckCircle className='w-5 h-5 text-green-600' />
             Hoàn thành thiết kế
@@ -38,7 +38,7 @@ export const CompleteDesignDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className='space-y-6'>
+        <div className='flex-1 overflow-y-auto space-y-6 pr-2'>
           {/* Request Summary */}
           <div className='bg-muted/30 rounded-lg p-4 space-y-4'>
             <div className='flex items-center justify-between'>
@@ -98,7 +98,7 @@ export const CompleteDesignDialog = ({
               <ImageUpload
                 value={image ? [image] : []}
                 onChange={handleImageUpload}
-                maxFiles={1}
+                maxFiles={5}
                 placeholder='Upload hình ảnh thiết kế hoàn thành'
                 accept='image/*'
               />
@@ -116,20 +116,21 @@ export const CompleteDesignDialog = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className='flex justify-end gap-3 pt-4 border-t'>
-            <Button variant='outline' onClick={onClose}>
-              Hủy
-            </Button>
-            <Button
-              onClick={onConfirm}
-              disabled={!note.trim() || !image}
-              className='bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-            >
-              <CheckCircle className='w-4 h-4 mr-2' />
-              Hoàn thành thiết kế
-            </Button>
-          </div>
+        </div>
+
+        {/* Action Buttons - Fixed at bottom */}
+        <div className='flex-shrink-0 flex justify-end gap-3 pt-4 border-t bg-background'>
+          <Button variant='outline' onClick={onClose}>
+            Hủy
+          </Button>
+          <Button
+            onClick={onConfirm}
+            disabled={!note.trim() || !image}
+            className='bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+          >
+            <CheckCircle className='w-4 h-4 mr-2' />
+            Hoàn thành thiết kế
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

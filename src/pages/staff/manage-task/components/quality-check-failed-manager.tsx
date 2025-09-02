@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, ShieldCheck, RefreshCw } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { CheckCircle2, ShieldCheck, RefreshCw, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useStaffUpdateTaskStatus } from '@/services/staff/staff-task.service'
 
@@ -38,6 +39,7 @@ export const QualityCheckFailedManager: React.FC<QualityCheckFailedManagerProps>
   isDisabled = false
 }) => {
   const [subTasks, setSubTasks] = useState<QualityCheckFailedSubTask[]>([])
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const updateTaskStatusMutation = useStaffUpdateTaskStatus()
   const [minuteTick, setMinuteTick] = useState(0)
   useEffect(() => {
@@ -75,6 +77,11 @@ export const QualityCheckFailedManager: React.FC<QualityCheckFailedManagerProps>
       return
     }
 
+    setShowConfirmDialog(true)
+  }
+
+  // Xác nhận submit
+  const handleConfirmSubmit = async () => {
     try {
       // Update task status thành DONE với note mới
       const completedNote = `Đã hoàn thành sửa chữa: ${subTasks.map((st) => st.name).join(', ')}`
@@ -87,6 +94,7 @@ export const QualityCheckFailedManager: React.FC<QualityCheckFailedManagerProps>
       })
 
       toast.success('Hoàn thành Quality Check Failed! Tất cả vấn đề đã được sửa chữa.')
+      setShowConfirmDialog(false)
       onSubmitSuccess()
     } catch (error) {
       console.error('Error completing Quality Check Failed:', error)
@@ -232,6 +240,78 @@ export const QualityCheckFailedManager: React.FC<QualityCheckFailedManagerProps>
           </div>
         </div>
       </CardContent>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className='max-w-md'>
+          <DialogHeader>
+            <DialogTitle className='flex items-center gap-2 text-orange-600'>
+              <AlertCircle className='h-5 w-5' />
+              Xác nhận hoàn thành sửa chữa
+            </DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn hoàn thành tất cả các nhiệm vụ sửa chữa không?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className='space-y-4'>
+            <div className='bg-orange-50 border border-orange-200 rounded-lg p-4'>
+              <div className='flex items-start gap-3'>
+                <AlertCircle className='h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0' />
+                <div className='space-y-2'>
+                  <p className='text-sm font-medium text-orange-800'>
+                    ⚠️ Trách nhiệm và cam kết
+                  </p>
+                  <ul className='text-xs text-orange-700 space-y-1'>
+                    <li>• Tôi đã kiểm tra kỹ tất cả các vấn đề đã được sửa chữa</li>
+                    <li>• Tôi chịu trách nhiệm về chất lượng sản phẩm sau khi sửa chữa</li>
+                    <li>• Tôi cam kết rằng sản phẩm đã đạt tiêu chuẩn chất lượng</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className='bg-gray-50 rounded-lg p-3'>
+              <p className='text-sm font-medium text-gray-800 mb-2'>Các nhiệm vụ đã hoàn thành:</p>
+              <ul className='text-xs text-gray-600 space-y-1'>
+                {subTasks.map((subTask) => (
+                  <li key={subTask.id} className='flex items-center gap-2'>
+                    <CheckCircle2 className='h-3 w-3 text-green-600' />
+                    {subTask.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter className='gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => setShowConfirmDialog(false)}
+              disabled={updateTaskStatusMutation.isPending}
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={handleConfirmSubmit}
+              disabled={updateTaskStatusMutation.isPending}
+              className='bg-orange-600 hover:bg-orange-700 text-white'
+            >
+              {updateTaskStatusMutation.isPending ? (
+                <>
+                  <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
+                  Đang xử lý...
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className='h-4 w-4 mr-2' />
+                  Xác nhận hoàn thành
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }
