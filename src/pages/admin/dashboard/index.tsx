@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   TrendingUp,
   Users,
@@ -50,6 +50,8 @@ import {
 } from '@/services/admin/dashboard.service'
 import { ErrorAlert } from './component/error-fallback'
 import { toast } from 'sonner'
+import { useNavigate } from 'react-router'
+import { useAuth } from '@/context/auth-context'
 
 // Color mapping for order status charts
 const statusColors = ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444']
@@ -131,7 +133,7 @@ const formatCurrency = (amount: number): string => {
 
 export default function AdminDashboard() {
   const [timeRange, setTimeRange] = useState('month')
-
+  const nagivate = useNavigate()
   // Calculate date range based on timeRange
   const getDateRange = () => {
     const today = dayjs()
@@ -162,6 +164,12 @@ export default function AdminDashboard() {
   }
 
   const { startTime, endTime } = getDateRange()
+  const { hasRole } = useAuth()
+  const roleBasePath = hasRole('Admin') ? '/system/admin' : hasRole('Manager') ? '/system/manager' : '/system/admin'
+  const handleNavigateBack = useCallback(() => {
+    nagivate(`${roleBasePath}/manage-order`)
+  }, [nagivate, roleBasePath])
+
 
   // API calls
   const {
@@ -643,15 +651,12 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                           <div className='font-semibold text-sm'>{branch.branchName}</div>
-                          <div className='text-xs text-muted-foreground'>{branch.orders} đơn hàng</div>
+                          
                         </div>
                       </div>
 
                       <div className='text-right'>
                         <div className='font-bold text-sm'>{formatCurrency(branch.revenue)}</div>
-                        <Badge variant={branch.growthPct > 0 ? 'default' : 'destructive'} className='text-xs mt-1'>
-                          {branch.growthPct > 0 ? '↗' : '↘'} {Math.abs(branch.growthPct).toFixed(1)}%
-                        </Badge>
                       </div>
                     </div>
 
@@ -688,12 +693,8 @@ export default function AdminDashboard() {
                   <ShoppingCart className='h-5 w-5 text-blue-600' />
                   Đơn hàng gần đây
                 </CardTitle>
-                <CardDescription className='flex items-center gap-1'>
-                  <div className='h-2 w-2 rounded-full bg-green-500 animate-pulse' />
-                  Cập nhật realtime
-                </CardDescription>
               </div>
-              <Button variant='outline' size='sm' className='gap-2'>
+              <Button variant='outline' size='sm' className='gap-2' onClick={handleNavigateBack}>
                 <FileText className='h-4 w-4' />
                 Xem tất cả
               </Button>
@@ -705,6 +706,7 @@ export default function AdminDashboard() {
                 <div
                   key={order.id}
                   className='p-4 rounded-lg border bg-gradient-to-r from-blue-50/30 to-cyan-50/30 hover:from-blue-50/50 hover:to-cyan-50/50 transition-all duration-200 hover:shadow-sm'
+                  onClick={() => nagivate(`${roleBasePath}/manage-order/${order.id}`)}
                 >
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-3 flex-1'>
