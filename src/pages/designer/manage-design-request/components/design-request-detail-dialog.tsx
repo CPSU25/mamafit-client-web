@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -145,12 +144,6 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
     }
   }
 
-  const calculateProgress = () => {
-    const allTasks = designRequest.milestones?.flatMap((m) => m.maternityDressTasks) || []
-    if (allTasks.length === 0) return 0
-    const completedTasks = allTasks.filter((task) => task.status === 'COMPLETED').length
-    return Math.round((completedTasks / allTasks.length) * 100)
-  }
 
   // Handle chat với khách hàng
   const handleChatWithCustomer = async () => {
@@ -187,7 +180,7 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
             <div>
               <DialogTitle className='flex items-center gap-2'>
                 <Palette className='h-5 w-5' />
-                Chi tiết Design Request - #{designRequest.orderCode || 'N/A'}
+                Chi tiết yêu cầu thiết kế - #{designRequest.orderCode || 'N/A'}
               </DialogTitle>
               <DialogDescription>
                 Xem thông tin chi tiết và tiến độ thiết kế cho yêu cầu của khách hàng
@@ -286,35 +279,6 @@ export function DesignRequestDetailDialog({ isOpen, onClose, designRequest }: De
                 </CardContent>
               </Card>
             </div>
-
-            {/* Progress Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className='flex items-center gap-2'>
-                  <Clock className='h-4 w-4' />
-                  Tổng quan tiến độ
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className='space-y-3'>
-                  <div className='flex items-center justify-between'>
-                    <span className='text-sm font-medium'>Tiến độ hoàn thành:</span>
-                    <span className='text-sm font-bold'>{calculateProgress()}%</span>
-                  </div>
-                  <Progress value={calculateProgress()} className='h-2' />
-                  <div className='flex justify-between text-xs text-muted-foreground'>
-                    <span>
-                      {
-                        designRequest.milestones
-                          ?.flatMap((m) => m.maternityDressTasks)
-                          .filter((t) => t.status === 'COMPLETED').length
-                      }{' '}
-                      /{designRequest.milestones?.flatMap((m) => m.maternityDressTasks).length} công việc đã hoàn thành
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value='images' className='space-y-4'>

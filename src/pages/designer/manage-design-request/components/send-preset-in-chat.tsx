@@ -126,9 +126,9 @@ export function SendPresetInChat({
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <Package className='h-5 w-5' />
-            Gửi Preset cho Đơn Hàng #{orderCode}
+            Gửi thiết kế cho Đơn Hàng #{orderCode}
           </DialogTitle>
-          <DialogDescription>Chọn preset có sẵn hoặc tạo preset tùy chỉnh để gửi cho khách hàng</DialogDescription>
+          <DialogDescription>Chọn thiết kế có sẵn hoặc tạo thiết kế mới tùy chỉnh để gửi cho khách hàng</DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-4'>
