@@ -20,7 +20,7 @@ import WarrantyOrderPage from '@/pages/admin/manage-order/warranty'
 import DesignRequestPage from '@/pages/admin/manage-order/design-request'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { NotFoundPage, LoginSystem, ChatPage, NotificationSettingPage } from '@/pages/public-page'
-// import { FactoryManagerDashboard } from '@/pages/factory-manager'
+import { FactoryManagerDashboardPage } from '@/pages/factory-manager'
 import { DesignerDashboard, ManageTemplatePage, ManageDesignRequestPage } from '@/pages/designer'
 import {
   BranchDashboard,
@@ -170,7 +170,7 @@ export const router = createBrowserRouter([
         children: [
           {
             path: 'dashboard',
-            element: <AdminDashboardPage />
+            element: <FactoryManagerDashboardPage />
           },
           {
             path: 'manage-production',

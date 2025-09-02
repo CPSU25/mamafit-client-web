@@ -1,1 +1,1 @@
-export { default as FactoryManagerDashboard } from './dashboard'
+export { default as FactoryManagerDashboardPage } from './dashboard'

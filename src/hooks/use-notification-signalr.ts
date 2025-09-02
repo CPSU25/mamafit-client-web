@@ -131,19 +131,16 @@ export function useNotificationSignalR(options: UseNotificationSignalROptions = 
       return
     }
 
-    console.log('🔧 Setting up notification SignalR event listeners')
     listenersSetupRef.current = true
 
     const handlers: NotificationEventHandlers = {
       onReceiveNotification: (notification: NotificationResponseDto) => {
-        console.log('🔔 Received new notification:', notification)
 
         // Add new notification to the top of the list
         setNotifications((prev) => {
           // Prevent duplicates
           const exists = prev.some((n) => n.id === notification.id)
           if (exists) {
-            console.log('⏭️ Notification already exists, skipping')
             return prev
           }
           return [notification, ...prev]
@@ -179,7 +176,6 @@ export function useNotificationSignalR(options: UseNotificationSignalROptions = 
       },
 
       onConnectionStateChange: (connected: boolean) => {
-        console.log('🔗 Connection state changed:', connected)
         setIsConnected(connected)
 
         // Call custom handler if provided
@@ -189,7 +185,6 @@ export function useNotificationSignalR(options: UseNotificationSignalROptions = 
       },
 
       onError: (error: string) => {
-        console.error('❌ Notification SignalR Error:', error)
 
         // Call custom handler if provided
         if (onError) {
@@ -203,7 +198,6 @@ export function useNotificationSignalR(options: UseNotificationSignalROptions = 
 
     // Cleanup function
     return () => {
-      console.log('🧹 Cleaning up notification SignalR event listeners')
       cleanup()
       listenersSetupRef.current = false
     }
@@ -211,41 +205,34 @@ export function useNotificationSignalR(options: UseNotificationSignalROptions = 
 
   // Memoized methods
   const connect = useCallback(async () => {
-    console.log('🚀 Connecting via hook...')
     await notificationSignalRService.connect()
   }, [])
 
   const disconnect = useCallback(async () => {
-    console.log('🔌 Disconnecting via hook...')
     await notificationSignalRService.disconnect()
     // Clear notifications when disconnecting
     setNotifications([])
   }, [])
 
   const forceConnect = useCallback(async () => {
-    console.log('🔧 Force connecting via hook...')
     await notificationSignalRService.forceConnect()
   }, [])
 
   const forceDisconnect = useCallback(async () => {
-    console.log('🔧 Force disconnecting via hook...')
     await notificationSignalRService.forceDisconnect()
     // Clear notifications when disconnecting
     setNotifications([])
   }, [])
 
   const clearNotifications = useCallback(() => {
-    console.log('🧹 Clearing notifications')
     setNotifications([])
   }, [])
 
   const markAsReadLocally = useCallback((notificationId: string) => {
-    console.log(`✅ Marking notification as read locally: ${notificationId}`)
     setNotifications((prev) => prev.map((notif) => (notif.id === notificationId ? { ...notif, isRead: true } : notif)))
   }, [])
 
   const removeNotification = useCallback((notificationId: string) => {
-    console.log(`🗑️ Removing notification locally: ${notificationId}`)
     setNotifications((prev) => prev.filter((notif) => notif.id !== notificationId))
   }, [])
 
