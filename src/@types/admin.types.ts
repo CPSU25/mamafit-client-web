@@ -182,6 +182,7 @@ export interface TaskType {
   description: string
   milestoneId: string
   sequenceOrder: number
+  estimateTimeSpan: number
   createdAt: string
   updatedAt: string
   createdBy: string
@@ -197,6 +198,7 @@ export interface TaskFormData {
   description: string
   milestoneId: string
   sequenceOrder: number
+  estimateTimeSpan: number
 }
 
 //Voucher Type

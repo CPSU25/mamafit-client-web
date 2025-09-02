@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { ArrowRight, MessageSquare, Palette, Plus, Sparkles } from 'lucide-react'
+import {  MessageSquare, Palette, Plus, Sparkles } from 'lucide-react'
 import { useAuthStore } from '@/lib/zustand/use-auth-store'
 import { useDesignerTasks } from '@/hooks/use-designer-tasks'
-import { DesignRequestStats, DesignRequestGrid } from '@/pages/designer/manage-design-request/components'
+import {  DesignRequestGrid } from '@/pages/designer/manage-design-request/components'
 import { ExtendedOrderTaskItem } from '@/pages/designer/manage-design-request/types'
 
 export default function DesignerDashboard() {
@@ -134,16 +134,6 @@ export default function DesignerDashboard() {
         </div>
       </div>
 
-      {/* Overall Stats (reuse component) */}
-      <div>
-        <div className='flex items-center justify-between mb-2'>
-          <h2 className='text-xl font-semibold'>Thống kê yêu cầu</h2>
-          <Button variant='ghost' size='sm' onClick={() => navigate('/system/designer/manage-design-request')}>
-            Xem tất cả <ArrowRight className='w-4 h-4 ml-1' />
-          </Button>
-        </div>
-        <DesignRequestStats designRequests={requests} />
-      </div>
 
       <Separator />
 

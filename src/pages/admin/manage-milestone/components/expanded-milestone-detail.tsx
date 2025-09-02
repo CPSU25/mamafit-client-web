@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Package, Plus, Trash, Edit, X, Clock, User } from 'lucide-react'
+import { Package, Plus, Trash, Edit, X, Clock, User, Timer } from 'lucide-react'
 import { useCreateTask, useDeleteTask, useMilestone, useUpdateTask } from '@/services/admin/manage-milestone.service'
 import { TaskFormData, transformMilestoneTypeToMilestone, Task } from '../data/schema'
 import dayjs from 'dayjs'
@@ -30,7 +30,8 @@ export function ExpandedMilestoneDetail({ milestoneId }: ExpandedMilestoneDetail
     defaultValues: {
       name: '',
       description: '',
-      sequenceOrder: 1
+      sequenceOrder: 1,
+      estimateTimeSpan: 1
     }
   })
 
@@ -38,7 +39,8 @@ export function ExpandedMilestoneDetail({ milestoneId }: ExpandedMilestoneDetail
     form.reset({
       name: '',
       description: '',
-      sequenceOrder: 1
+      sequenceOrder: 1,
+      estimateTimeSpan: 1
     })
     setShowAddTaskForm(false)
     setEditingTask(null)
@@ -71,7 +73,8 @@ export function ExpandedMilestoneDetail({ milestoneId }: ExpandedMilestoneDetail
         form.reset({
           name: '',
           description: '',
-          sequenceOrder: 1
+          sequenceOrder: 1,
+          estimateTimeSpan: 1
         })
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Có lỗi xảy ra')
@@ -94,12 +97,13 @@ export function ExpandedMilestoneDetail({ milestoneId }: ExpandedMilestoneDetail
   )
 
   const handleEditTask = useCallback(
-    (taskId: string, taskData: { name: string; description: string; sequenceOrder: number }) => {
+    (taskId: string, taskData: { name: string; description: string; sequenceOrder: number; estimateTimeSpan: number }) => {
       setEditingTask(taskId)
       form.reset({
         name: taskData.name,
         description: taskData.description,
-        sequenceOrder: taskData.sequenceOrder
+        sequenceOrder: taskData.sequenceOrder,
+        estimateTimeSpan: taskData.estimateTimeSpan
       })
       setShowAddTaskForm(true)
     },
@@ -117,7 +121,8 @@ export function ExpandedMilestoneDetail({ milestoneId }: ExpandedMilestoneDetail
           form.reset({
             name: '',
             description: '',
-            sequenceOrder: 1
+            sequenceOrder: 1,
+            estimateTimeSpan: 1
           })
         }
         return !prev
@@ -131,7 +136,8 @@ export function ExpandedMilestoneDetail({ milestoneId }: ExpandedMilestoneDetail
     form.reset({
       name: '',
       description: '',
-      sequenceOrder: 1
+      sequenceOrder: 1,
+      estimateTimeSpan: 1
     })
   }, [form])
 
@@ -235,7 +241,7 @@ export function ExpandedMilestoneDetail({ milestoneId }: ExpandedMilestoneDetail
                   <CardContent className='pt-0'>
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleAddTask)} className='space-y-4'>
-                        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                           <FormField
                             control={form.control}
                             name='name'
@@ -261,6 +267,28 @@ export function ExpandedMilestoneDetail({ milestoneId }: ExpandedMilestoneDetail
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className='text-foreground'>Thứ tự *</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type='number'
+                                    placeholder='1'
+                                    min={1}
+                                    className='border-border focus:border-primary focus:ring-primary'
+                                    disabled={createTaskMutation.isPending}
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name='estimateTimeSpan'
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className='text-foreground'>Thời gian ước tính (phút) *</FormLabel>
                                 <FormControl>
                                   <Input
                                     type='number'
@@ -401,6 +429,10 @@ export function ExpandedMilestoneDetail({ milestoneId }: ExpandedMilestoneDetail
                           <span className='flex items-center gap-1'>
                             <User className='h-3 w-3' />
                             {task.createdBy}
+                          </span>
+                          <span className='flex items-center gap-1'>
+                            <Timer className='h-3 w-3' />
+                            {task.estimateTimeSpan} phút
                           </span>
                         </div>
                       </CardContent>

@@ -60,7 +60,7 @@ export function BranchOrderDetailDialog({ order, isOpen, onClose }: BranchOrderD
   }
 
   const handleNavigateToDetail = () => {
-    navigate(`/system/branch/manage-branch-order/${order?.id}`)
+    navigate(`/system/branch/manage-order/${order?.id}`)
     onClose()
   }
 

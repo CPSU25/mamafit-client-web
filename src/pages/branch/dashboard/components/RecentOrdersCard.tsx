@@ -38,7 +38,7 @@ export function RecentOrdersCard({ orders }: { orders: RecentOrder[] }) {
           </div>
         ))}
         <Separator />
-        <Link to='/system/branch/manage-branch-order'>
+        <Link to='/system/branch/manage-order'>
           <Button variant='outline' className='w-full'>
             Xem tất cả đơn hàng
           </Button>

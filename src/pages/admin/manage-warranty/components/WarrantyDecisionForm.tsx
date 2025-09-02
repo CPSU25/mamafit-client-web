@@ -91,11 +91,11 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
     loadAddress()
   }, [warrantyRequest.pickAddressId])
 
-  // Tính shipping fee cho item khi có địa chỉ
-  const calculateShippingFee = async (itemId: string) => {
+  // Tính shipping fee cho toàn bộ đơn hàng
+  const calculateShippingFee = async () => {
     if (!address || warrantyRequest.requestType !== RequestType.FEE) return
 
-    setLoadingShippingFee((prev) => ({ ...prev, [itemId]: true }))
+    setLoadingShippingFee((prev) => ({ ...prev, 'all': true }))
     try {
       const response = await globalAPI.getShippingFee({
         Province: address.province,
@@ -103,22 +103,26 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
         Weight: 500
       })
 
-      handleItemDetailChange(itemId, 'shippingFee', response.data.fee.fee)
+      // Cập nhật phí ship cho tất cả items
+      const shippingFee = response.data.fee.fee
+      const updatedDecisions = { ...itemDecisions }
+      Object.keys(updatedDecisions).forEach(itemId => {
+        updatedDecisions[itemId] = {
+          ...updatedDecisions[itemId],
+          shippingFee: shippingFee
+        }
+      })
+      setItemDecisions(updatedDecisions)
     } catch (error) {
       console.error('Failed to calculate shipping fee:', error)
     } finally {
-      setLoadingShippingFee((prev) => ({ ...prev, [itemId]: false }))
+      setLoadingShippingFee((prev) => ({ ...prev, 'all': false }))
     }
   }
 
   // Tính phí ship cho tất cả items (nếu là FEE và có địa chỉ)
   const calculateAllShippingFees = async () => {
-    if (!address || warrantyRequest.requestType !== RequestType.FEE) return
-    const ids = warrantyRequest.items?.map((i) => i.orderItemId) || []
-    for (const id of ids) {
-      // tuần tự để tránh spam API
-      await calculateShippingFee(id)
-    }
+    await calculateShippingFee()
   }
 
   useEffect(() => {
@@ -510,14 +514,22 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
                     variant='outline'
                     size='sm'
                     onClick={calculateAllShippingFees}
+                    disabled={loadingShippingFee['all']}
                     className='text-xs px-3 py-1.5 bg-sky-50 hover:bg-sky-100 border-sky-300 text-sky-700'
                   >
-                    🧮 Tính phí ship
+                    {loadingShippingFee['all'] ? (
+                      <>
+                        <div className='animate-spin rounded-full h-3 w-3 border-b-2 border-sky-500 mr-1'></div>
+                        Đang tính...
+                      </>
+                    ) : (
+                      '🧮 Tính phí ship'
+                    )}
                   </Button>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className='pt-0'>
+            <CardContent className='pt-0 space-y-4'>
               {loadingAddress ? (
                 <div className='flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg'>
                   <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-sky-500'></div>
@@ -548,6 +560,37 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
                 <div className='p-3 bg-amber-50 border border-amber-200 rounded-lg text-center'>
                   <p className='text-sm text-amber-800 font-medium'>⚠️ Chưa có địa chỉ giao nhận</p>
                   <p className='text-xs text-amber-600 mt-1'>Cần yêu cầu khách hàng cung cấp</p>
+                </div>
+              )}
+
+              {/* Phí vận chuyển - chỉ hiển thị cho FEE type */}
+              {isRequestTypeFee && (
+                <div className='bg-white p-4 rounded-lg border border-gray-200 shadow-sm'>
+                  <Label className='text-sm font-semibold text-gray-800 mb-2 block'>
+                    🚚 Phí vận chuyển (VNĐ) *
+                  </Label>
+                  <Input
+                    type='number'
+                    placeholder='Ví dụ: 50000'
+                    min='0'
+                    value={warrantyRequest.items?.[0] ? itemDecisions[warrantyRequest.items[0].orderItemId]?.shippingFee || '' : ''}
+                    onChange={(e) => {
+                      const shippingFee = Number(e.target.value) || 0
+                      // Cập nhật phí ship cho tất cả items
+                      const updatedDecisions = { ...itemDecisions }
+                      Object.keys(updatedDecisions).forEach(itemId => {
+                        updatedDecisions[itemId] = {
+                          ...updatedDecisions[itemId],
+                          shippingFee: shippingFee
+                        }
+                      })
+                      setItemDecisions(updatedDecisions)
+                    }}
+                    className='ransition-all duration-200'
+                  />
+                  {!address && (
+                    <p className='text-xs text-amber-600 mt-1'>⚠️ Cần có địa chỉ để tính phí vận chuyển</p>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -968,7 +1011,7 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
                         <Label className='text-sm font-semibold text-emerald-800'>Chi tiết xử lý</Label>
                       </div>
 
-                      <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
+                      <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
                         {/* Thời gian ước tính - bắt buộc cho cả FREE và FEE */}
                         <div className='bg-white p-4 rounded-lg border border-emerald-200'>
                           <Label className='text-sm font-semibold text-emerald-800 mb-2 block'>
@@ -981,7 +1024,7 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
                             max='30'
                             value={itemDecisions[item.orderItemId]?.estimateDays || ''}
                             onChange={(e) => handleEstimateDaysChange(item.orderItemId, Number(e.target.value) || 0)}
-                            className='border-2 border-emerald-300 focus:border-emerald-500'
+                            className=''
                           />
                           <p className='text-xs text-emerald-600 mt-1'>Từ 1-30 ngày làm việc</p>
                         </div>
@@ -1000,49 +1043,13 @@ export const WarrantyDecisionForm = ({ warrantyRequest, onClose }: WarrantyDecis
                               onChange={(e) =>
                                 handleItemDetailChange(item.orderItemId, 'fee', Number(e.target.value) || 0)
                               }
-                              className='border-2 border-emerald-300 focus:border-emerald-500'
+                              className=''
                             />
                             <p className='text-xs text-emerald-600 mt-1'>Chi phí sửa chữa/thay thế</p>
                           </div>
                         )}
 
-                        {/* Phí vận chuyển - chỉ hiển thị cho FEE type */}
-                        {isRequestTypeFee && (
-                          <div className='bg-white p-4 rounded-lg border border-emerald-200'>
-                            <Label className='text-sm font-semibold text-emerald-800 mb-2 block'>
-                              🚚 Phí vận chuyển (VNĐ) *
-                            </Label>
-                            <div className='flex gap-2'>
-                              <Input
-                                type='number'
-                                placeholder='Ví dụ: 50000'
-                                min='0'
-                                value={itemDecisions[item.orderItemId]?.shippingFee || ''}
-                                onChange={(e) =>
-                                  handleItemDetailChange(item.orderItemId, 'shippingFee', Number(e.target.value) || 0)
-                                }
-                                className='flex-1 border-2 border-emerald-300 focus:border-emerald-500'
-                              />
-                              <Button
-                                type='button'
-                                variant='outline'
-                                size='sm'
-                                onClick={() => calculateShippingFee(item.orderItemId)}
-                                disabled={!address || loadingShippingFee[item.orderItemId]}
-                                className='px-3 whitespace-nowrap border-2 border-emerald-300 hover:bg-emerald-50'
-                              >
-                                {loadingShippingFee[item.orderItemId] ? (
-                                  <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-500'></div>
-                                ) : (
-                                  '🧮 Tính phí'
-                                )}
-                              </Button>
-                            </div>
-                            {!address && (
-                              <p className='text-xs text-amber-600 mt-1'>⚠️ Cần có địa chỉ để tính phí vận chuyển</p>
-                            )}
-                          </div>
-                        )}
+
                       </div>
 
                       {/* Hiển thị thông tin dự kiến */}
