@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PriceInput } from '@/components/ui/price-input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -72,6 +73,18 @@ const voucherBatchFormSchema = z
     },
     {
       message: 'Phần trăm giảm giá không được vượt quá 100%',
+      path: ['discountValue']
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.discountType === 'PERCENTAGE') {
+        return data.discountValue >= 0.01 && data.discountValue <= 100
+      }
+      return data.discountValue >= 0.01
+    },
+    {
+      message: 'Giá trị giảm giá phải lớn hơn 0',
       path: ['discountValue']
     }
   )
@@ -366,7 +379,15 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Loại giảm giá *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                      <Select 
+                        onValueChange={(value) => {
+                          field.onChange(value)
+                          // Reset discount value when changing type
+                          form.setValue('discountValue', 0)
+                        }} 
+                        defaultValue={field.value} 
+                        disabled={isLoading}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder='Chọn loại giảm giá' />
@@ -388,22 +409,39 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                 <FormField
                   control={form.control}
                   name='discountValue'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Giá trị giảm giá *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type='number'
-                          step='0.01'
-                          placeholder='Nhập giá trị'
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const discountType = form.watch('discountType')
+                    const isPercentage = discountType === 'PERCENTAGE'
+                    
+                    return (
+                      <FormItem>
+                        <FormLabel>Giá trị giảm giá *</FormLabel>
+                        <FormControl>
+                          {isPercentage ? (
+                            <Input
+                              type='number'
+                              min='0'
+                              max='100'
+                              step='0.01'
+                              placeholder='Nhập phần trăm (0-100)'
+                              value={field.value}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || "")}
+                              disabled={isLoading}
+                            />
+                          ) : (
+                            <PriceInput
+                              value={field.value}
+                              onChange={field.onChange}
+                              minValue={0}
+                              placeholder='Nhập số tiền (VND)'
+                              disabled={isLoading}
+                            />
+                          )}
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )
+                  }}
                 />
               </div>
 
@@ -415,11 +453,11 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                     <FormItem>
                       <FormLabel>Giá trị đơn hàng tối thiểu *</FormLabel>
                       <FormControl>
-                        <Input
-                          type='number'
+                        <PriceInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          minValue={0}
                           placeholder='VD: 100000'
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                           disabled={isLoading}
                         />
                       </FormControl>
@@ -435,11 +473,11 @@ export function VoucherBatchFormDialog({ open, onOpenChange, currentRow }: Vouch
                     <FormItem>
                       <FormLabel>Giá trị giảm giá tối đa *</FormLabel>
                       <FormControl>
-                        <Input
-                          type='number'
+                        <PriceInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          minValue={0}
                           placeholder='VD: 50000'
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                           disabled={isLoading}
                         />
                       </FormControl>

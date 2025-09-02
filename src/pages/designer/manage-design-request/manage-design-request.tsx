@@ -347,7 +347,6 @@ const ManageDesignRequestPage = () => {
 
   const handleSendPreset = () => {
     if (activeChatRequest) {
-      setSelectedRequest(activeChatRequest)
       setIsPresetDialogOpen(true)
     }
   }
@@ -508,10 +507,10 @@ const ManageDesignRequestPage = () => {
       <SendPresetInChat
         isOpen={isPresetDialogOpen}
         onClose={() => setIsPresetDialogOpen(false)}
-        designRequestId={selectedRequest?.orderItem.designRequest.id || ''}
-        orderCode={selectedRequest?.orderCode || ''}
+        designRequestId={activeChatRequest?.orderItem.designRequest.id || ''}
+        orderCode={activeChatRequest?.orderCode || ''}
         roomId={chatRoomId}
-        orderId={selectedRequest?.orderItem.orderId || ''}
+        orderId={activeChatRequest?.orderItem.orderId || ''}
       />
     </Main>
   )

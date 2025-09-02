@@ -86,7 +86,7 @@ function DesignRequestContent() {
 
   const orderList = useMemo(() => {
     const allOrders = ordersResponse?.data?.items?.map(transformOrderData) || []
-    return allOrders.filter((order) => order.type === 'DESIGN')
+    return allOrders.filter((order) => order.type === 'DESIGN').slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   }, [ordersResponse?.data?.items])
 
   console.log('orderList', orderList)

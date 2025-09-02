@@ -282,9 +282,7 @@ export function CloudinaryImageUpload({
                 {/* Cloudinary Badge */}
                 {image.publicId && !image.isUploading && (
                   <div className='absolute bottom-2 right-2'>
-                    <Badge variant='outline' className='text-xs bg-white/80'>
-                      Cloudinary
-                    </Badge>
+                    
                   </div>
                 )}
               </div>

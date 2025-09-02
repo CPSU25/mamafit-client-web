@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { PriceInput } from '@/components/ui/price-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Tiptap from '@/components/TipTap/TipTap'
 import {
@@ -200,14 +201,12 @@ export const MaternityDressDetailAction: React.FC<MaternityDressDetailActionProp
                       Giá (VNĐ) *
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        type='number'
-                        min='0'
-                        step='1000'
+                      <PriceInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        minValue={0}
                         placeholder='299000'
                         className='h-10'
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
