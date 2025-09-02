@@ -17,8 +17,23 @@ export interface NotificationResponseDto {
   updatedAt: string | Date
 }
 
+// ===== TASK UPDATED TYPES (từ backend SignalR) =====
+export interface TaskUpdatedData {
+  Type: 'ORDER_PROGRESS'
+  OrderId: string
+  OrderItemId: string
+  TaskId: string // format: "{MaternityDressTaskId}_{OrderItemId}"
+  TaskName: string
+  MilestoneName: string
+  ProductName: string
+  Status: string // task status
+  OrderCode: string
+  UpdatedAt: string // UTC DateTime
+}
+
 export interface NotificationEventHandlers {
   onReceiveNotification?: (notification: NotificationResponseDto) => void
+  onTaskUpdated?: (taskData: TaskUpdatedData) => void
   onConnectionStateChange?: (isConnected: boolean) => void
   onError?: (error: string) => void
 }
@@ -26,6 +41,7 @@ export interface NotificationEventHandlers {
 // Type-safe event system
 type EventMap = {
   ReceiveNotification: [NotificationResponseDto]
+  TaskUpdated: [TaskUpdatedData]
   connectionStateChange: [boolean]
   Error: [string]
 }
@@ -160,6 +176,37 @@ export class NotificationSignalRService {
       this.emit('ReceiveNotification', processedNotification)
       this.showNotificationUI(processedNotification)
     })
+
+    // 🔥 NEW: Bắt TaskUpdated event từ backend
+    this.connection.on('TaskUpdated', (taskData: TaskUpdatedData) => {
+      console.log('📋 [SignalR] TaskUpdated received:', taskData)
+      
+      // Transform backend data thành notification format
+      const notification: NotificationResponseDto = {
+        id: `task_${taskData.TaskId}_${Date.now()}`, // Generate unique ID
+        notificationTitle: `Cập nhật tiến độ: ${taskData.TaskName}`,
+        notificationContent: `${taskData.MilestoneName} - ${taskData.ProductName} (${taskData.OrderCode}) đã ${this.getStatusMessage(taskData.Status)}`,
+        type: 'ORDER_PROGRESS',
+        actionUrl: `/system/admin/manage-order/${taskData.OrderId}`, // Điều hướng đến order detail
+        metadata: JSON.stringify({
+          orderId: taskData.OrderId,
+          orderItemId: taskData.OrderItemId,
+          taskId: taskData.TaskId,
+          status: taskData.Status,
+          orderCode: taskData.OrderCode
+        }),
+        isRead: false,
+        createdAt: new Date(taskData.UpdatedAt),
+        updatedAt: new Date(taskData.UpdatedAt)
+      }
+
+      // Emit như notification thông thường
+      this.emit('ReceiveNotification', notification)
+      this.showNotificationUI(notification)
+      
+      // Emit riêng event TaskUpdated cho các component quan tâm
+      this.emit('TaskUpdated', taskData)
+    })
   }
 
   private setupConnectionEvents(): void {
@@ -279,6 +326,11 @@ export class NotificationSignalRService {
       cleanupFunctions.push(() => this.off('ReceiveNotification', handlers.onReceiveNotification!))
     }
 
+    if (handlers.onTaskUpdated) {
+      this.on('TaskUpdated', handlers.onTaskUpdated)
+      cleanupFunctions.push(() => this.off('TaskUpdated', handlers.onTaskUpdated!))
+    }
+
     if (handlers.onConnectionStateChange) {
       this.on('connectionStateChange', handlers.onConnectionStateChange)
       cleanupFunctions.push(() => this.off('connectionStateChange', handlers.onConnectionStateChange!))
@@ -293,6 +345,21 @@ export class NotificationSignalRService {
     return () => {
       cleanupFunctions.forEach((cleanup) => cleanup())
     }
+  }
+
+  /**
+   * Helper để format task status message
+   */
+  private getStatusMessage(status: string): string {
+    const statusMap: Record<string, string> = {
+      'STARTED': 'bắt đầu',
+      'IN_PROGRESS': 'đang thực hiện', 
+      'COMPLETED': 'hoàn thành',
+      'PAUSED': 'tạm dừng',
+      'CANCELLED': 'hủy bỏ',
+      'PENDING': 'chờ xử lý'
+    }
+    return statusMap[status] || status.toLowerCase()
   }
 
   /**

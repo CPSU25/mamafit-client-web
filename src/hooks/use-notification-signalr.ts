@@ -4,6 +4,9 @@ import {
   NotificationResponseDto,
   NotificationEventHandlers
 } from '@/services/notification/notification-signalr.service'
+import { useAuthStore } from '@/lib/zustand/use-auth-store'
+import { useNotificationCache } from '@/hooks/use-notification-cache'
+import { toast } from 'sonner'
 
 export interface UseNotificationSignalROptions {
   autoConnect?: boolean
@@ -43,9 +46,66 @@ export function useNotificationSignalR(options: UseNotificationSignalROptions = 
 
   // Refs to prevent duplicate operations
   const listenersSetupRef = useRef(false)
+  const autoConnectAttempted = useRef(false)
+
+  // 🔥 React Query integration
+  const notificationCache = useNotificationCache()
 
   // Calculate unread count
   const unreadCount = notifications.filter((notif) => !notif.isRead).length
+
+  // 🔧 FIX: Auto-connect based on auth state từ store
+  useEffect(() => {
+    const checkAndConnect = async () => {
+      try {
+        const authStore = useAuthStore.getState()
+        const isAuthenticated = !!authStore.accessToken && !!authStore.user
+        
+        console.log('🔍 [NotificationHook] Checking auth state:', {
+          isAuthenticated,
+          hasToken: !!authStore.accessToken,
+          hasUser: !!authStore.user,
+          isConnected: notificationSignalRService.isConnected,
+          autoConnectAttempted: autoConnectAttempted.current
+        })
+        
+        if (isAuthenticated && !notificationSignalRService.isConnected && !autoConnectAttempted.current) {
+          autoConnectAttempted.current = true
+          console.log('🚀 [NotificationHook] Triggering auto-connect...')
+          await notificationSignalRService.connect()
+        } else if (!isAuthenticated && notificationSignalRService.isConnected) {
+          console.log('🔌 [NotificationHook] User logged out, disconnecting...')
+          await notificationSignalRService.disconnect()
+          autoConnectAttempted.current = false
+        }
+      } catch (error) {
+        console.error('❌ [NotificationHook] Auto-connect error:', error)
+        autoConnectAttempted.current = false
+      }
+    }
+
+    // Check immediately
+    checkAndConnect()
+
+    // Subscribe to auth changes để đảm bảo không miss events
+    const unsubscribe = useAuthStore.subscribe((state) => {
+      const isAuthenticated = !!state.accessToken && !!state.user
+      console.log('📡 [NotificationHook] Auth state changed:', isAuthenticated)
+      
+      if (isAuthenticated && !autoConnectAttempted.current) {
+        checkAndConnect()
+      } else if (!isAuthenticated) {
+        autoConnectAttempted.current = false
+        if (notificationSignalRService.isConnected) {
+          notificationSignalRService.disconnect()
+        }
+      }
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [])
 
   // Update connection info periodically
   useEffect(() => {
@@ -89,6 +149,29 @@ export function useNotificationSignalR(options: UseNotificationSignalROptions = 
           return [notification, ...prev]
         })
 
+        // ✅ Update React Query cache real-time
+        notificationCache.addNewNotification(notification)
+
+        // ✅ Show smart toast for ORDER_PROGRESS
+        if (notification.type === 'ORDER_PROGRESS') {
+          toast.info(notification.notificationTitle || 'Cập nhật tiến độ', {
+            description: notification.notificationContent,
+            action: notification.actionUrl ? {
+              label: 'Xem chi tiết',
+              onClick: () => {
+                window.location.href = notification.actionUrl!
+              }
+            } : undefined,
+            duration: 6000
+          })
+        } else {
+          // Regular notification toast
+          toast(notification.notificationTitle || 'Thông báo mới', {
+            description: notification.notificationContent,
+            duration: 4000
+          })
+        }
+
         // Call custom handler if provided
         if (onReceiveNotification) {
           onReceiveNotification(notification)
@@ -124,7 +207,7 @@ export function useNotificationSignalR(options: UseNotificationSignalROptions = 
       cleanup()
       listenersSetupRef.current = false
     }
-  }, [onReceiveNotification, onConnectionStateChange, onError])
+  }, [onReceiveNotification, onConnectionStateChange, onError, notificationCache])
 
   // Memoized methods
   const connect = useCallback(async () => {

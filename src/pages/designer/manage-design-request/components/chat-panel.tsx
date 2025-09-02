@@ -107,8 +107,8 @@ export const ChatPanel = ({
 
   return (
     <div className='fixed bottom-4 right-4 z-50'>
-      <Card className='w-[480px] h-[650px] shadow-2xl border-violet-200 flex flex-col max-w-[95vw] max-h-[85vh] bg-gradient-to-br from-white to-violet-50/30 !py-0'>
-        <CardHeader className='pt-5 border-b border-violet-100 flex-shrink-0 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-t-lg'>
+      <Card className='w-[480px] h-[650px] shadow-2xl border-violet-200 flex flex-col max-w-[95vw] max-h-[85vh] bg-gradient-to-br from-white to-violet-50/30 !py-0 '>
+        <CardHeader className='p-4 flex-shrink-0 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-t-lg '>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3'>
               <div className='h-3 w-3 bg-green-400 rounded-full animate-pulse'></div>
@@ -138,7 +138,7 @@ export const ChatPanel = ({
         </CardHeader>
 
         {activeRequest && (
-          <div className='px-2 py-2 border-b bg-gradient-to-br from-violet-50 via-white to-indigo-50 flex-shrink-0'>
+          <div className='p-3 border-b border-violet-100 flex-shrink-0 bg-white/50'>
             {/* Collapsible Header */}
             <div className='flex items-center justify-between mb-3'>
               <h4 className='text-sm font-medium text-gray-700'>Thông tin khách hàng</h4>
@@ -158,41 +158,43 @@ export const ChatPanel = ({
 
             {/* Collapsible Content */}
             {!isCustomerInfoCollapsed && (
-              <>
-                {/* Customer Info Row */}
-                <div className='flex items-center gap-3 mb-4'>
-                  <Avatar className='h-10 w-10 border-2 border-violet-200 shadow-sm'>
-                    <AvatarFallback className='text-sm bg-gradient-to-r from-violet-500 to-indigo-500 text-white font-semibold'>
+              <div className='space-y-3'>
+                {/* Customer Info */}
+                <div className='flex items-center gap-3'>
+                  <Avatar className='h-9 w-9 border-2 border-violet-200 shadow-sm'>
+                    <AvatarFallback className='text-xs bg-gradient-to-r from-violet-500 to-indigo-500 text-white font-semibold'>
                       {activeRequest.orderItem.designRequest.username?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className='flex-1'>
-                    <div className='flex items-center gap-2 mb-1'>
-                      <span className='text-sm font-semibold text-gray-800'>
+                  <div className='flex-1 min-w-0'>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-sm font-semibold text-gray-800 truncate'>
                         {activeRequest.orderItem.designRequest.username || 'Khách hàng'}
                       </span>
-                      <div className='flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded-full'>
-                        <div className='h-2 w-2 bg-green-500 rounded-full animate-pulse'></div>
-                        <span className='text-xs text-green-700 font-medium'>Đang hoạt động</span>
+                      <div className='flex items-center gap-1 px-2 py-0.5 bg-green-100 rounded-full flex-shrink-0'>
+                        <div className='h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse'></div>
+                        <span className='text-xs text-green-700 font-medium'>Online</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Order Details Row */}
-                <div className='flex items-center gap-3'>
-                  <div className='flex items-center gap-2 px-3 py-2 bg-white/80 rounded-lg border border-violet-100 shadow-sm'>
-                    <Calendar className='w-4 h-4 text-violet-600' />
-                    <span className='text-sm font-medium text-gray-700'>Đơn: {activeRequest.orderCode}</span>
+                {/* Order Info */}
+                <div className='grid grid-cols-1 gap-2'>
+                  <div className='flex items-center gap-2 px-2 py-1.5 bg-violet-50/80 rounded-md border border-violet-100'>
+                    <Calendar className='w-3.5 h-3.5 text-violet-600 flex-shrink-0' />
+                    <span className='text-xs font-medium text-gray-700 truncate'>
+                      Đơn: {activeRequest.orderCode}
+                    </span>
                   </div>
-                  <div className='flex items-center gap-2 px-3 py-2 bg-white/80 rounded-lg border border-violet-100 shadow-sm flex-1'>
-                    <Camera className='w-4 h-4 text-violet-600' />
-                    <span className='text-sm text-gray-700 truncate'>
+                  <div className='flex items-center gap-2 px-2 py-1.5 bg-violet-50/80 rounded-md border border-violet-100'>
+                    <Camera className='w-3.5 h-3.5 text-violet-600 flex-shrink-0' />
+                    <span className='text-xs text-gray-700 truncate'>
                       {activeRequest.orderItem.designRequest.description || 'Thiết kế đầm bầu'}
                     </span>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         )}
@@ -286,16 +288,6 @@ export const ChatPanel = ({
                   }
                 }}
               />
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                className='px-2'
-                onClick={() => document.getElementById('chat-image-input')?.click()}
-                title='Gửi hình ảnh'
-              >
-                <Camera className='w-4 h-4' />
-              </Button>
               <Input
                 placeholder='Nhập tin nhắn...'
                 value={newMessage}

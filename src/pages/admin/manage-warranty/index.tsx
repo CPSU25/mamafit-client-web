@@ -30,7 +30,7 @@ function WarrantyManagementSystem() {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize] = useState(12) // 12 items per page for better grid layout
+  const [pageSize] = useState(6) // 6 items per page as requested
 
   // Debounce search query
   useEffect(() => {
@@ -56,7 +56,9 @@ function WarrantyManagementSystem() {
   )
 
   // Extract warranty requests and pagination info
-  const warrantyRequests = warrantyRequestsResponse?.items ?? []
+  const warrantyRequests = useMemo(() => {
+    return warrantyRequestsResponse?.items ?? []
+  }, [warrantyRequestsResponse?.items])
 
   // Apply local filtering based on selected tab
   const filteredRequests = useMemo(() => {
@@ -77,6 +79,11 @@ function WarrantyManagementSystem() {
       (r) => r.status === StatusWarrantyRequest.REJECTED || r.status === StatusWarrantyRequest.PARTIALLY_REJECTED
     ).length
   }
+
+  // Calculate pagination info
+  const totalPages = Math.ceil(stats.total / pageSize)
+  const hasNextPage = currentPage < totalPages
+  const hasPreviousPage = currentPage > 1
 
   const handleViewDetail = (request: WarrantyRequestList) => {
     setSelectedRequestId(request.id)
@@ -334,7 +341,7 @@ function WarrantyManagementSystem() {
             {/* Loading State với modern design */}
             {isLoading && (
               <div className='grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6'>
-                {[...Array(6)].map((_, i) => (
+                {[...Array(pageSize)].map((_, i) => (
                   <Card key={i} className='animate-pulse border-0 shadow-lg bg-white dark:bg-gray-800'>
                     <CardHeader className='space-y-3'>
                       <div className='flex items-center gap-3'>
@@ -393,33 +400,55 @@ function WarrantyManagementSystem() {
             )}
 
             {/* Pagination Component - Always show when we have data */}
-            {!isLoading && filteredRequests.length > 0 && (
+            {!isLoading && stats.total > 0 && (
               <div className='mt-8 flex flex-col items-center space-y-4'>
                 <Pagination>
                   <PaginationContent>
                     {/* Previous Button */}
                     <PaginationItem>
                       <PaginationPrevious
-                        onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                        onClick={() => hasPreviousPage && handlePageChange(currentPage - 1)}
                         className={cn(
                           'cursor-pointer select-none',
-                          currentPage <= 1 && 'opacity-50 cursor-not-allowed pointer-events-none'
+                          !hasPreviousPage && 'opacity-50 cursor-not-allowed pointer-events-none'
                         )}
                       />
                     </PaginationItem>
 
-                    {/* Current page number (simple version) */}
-                    <PaginationItem>
-                      <PaginationLink isActive className='cursor-default'>
-                        {currentPage}
-                      </PaginationLink>
-                    </PaginationItem>
+                    {/* Page numbers */}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNumber
+                      if (totalPages <= 5) {
+                        pageNumber = i + 1
+                      } else if (currentPage <= 3) {
+                        pageNumber = i + 1
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNumber = totalPages - 4 + i
+                      } else {
+                        pageNumber = currentPage - 2 + i
+                      }
+
+                      return (
+                        <PaginationItem key={pageNumber}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(pageNumber)}
+                            isActive={currentPage === pageNumber}
+                            className='cursor-pointer'
+                          >
+                            {pageNumber}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    })}
 
                     {/* Next Button */}
                     <PaginationItem>
                       <PaginationNext
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        className='cursor-pointer select-none'
+                        onClick={() => hasNextPage && handlePageChange(currentPage + 1)}
+                        className={cn(
+                          'cursor-pointer select-none',
+                          !hasNextPage && 'opacity-50 cursor-not-allowed pointer-events-none'
+                        )}
                       />
                     </PaginationItem>
                   </PaginationContent>
@@ -428,7 +457,7 @@ function WarrantyManagementSystem() {
                 {/* Pagination Info */}
                 <div className='text-center'>
                   <span className='text-sm text-gray-600 dark:text-gray-300'>
-                    Trang {currentPage} • Hiển thị {filteredRequests.length} yêu cầu • Tổng: {stats.total} yêu cầu
+                    Trang {currentPage} / {totalPages} • Hiển thị {filteredRequests.length} yêu cầu • Tổng: {stats.total} yêu cầu
                   </span>
                 </div>
               </div>

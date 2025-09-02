@@ -429,18 +429,6 @@ function EnhancedDesignRequestMessage({ message }: { message: string }) {
                   )}
                 </div>
               )}
-
-              {/* IDs Info */}
-              <div className='p-3 bg-slate-50 rounded-lg space-y-2'>
-                <div className='flex items-center gap-2 text-xs text-slate-600'>
-                  <Package className='h-3 w-3' />
-                  <span>Đơn hàng: #{orderId.substring(0, 8)}...</span>
-                </div>
-                <div className='flex items-center gap-2 text-xs text-slate-600'>
-                  <Palette className='h-3 w-3' />
-                  <span>Yêu cầu: #{designRequestId.substring(0, 8)}...</span>
-                </div>
-              </div>
             </div>
           )}
         </CardContent>
@@ -572,14 +560,6 @@ function EnhancedPresetMessage({ message }: { message: string }) {
                     <Badge variant='outline' className='text-xs border-slate-300 text-slate-700'>
                       {presetDetails.data.styleName}
                     </Badge>
-                  </div>
-                )}
-
-                {/* Order ID */}
-                {orderId && orderId !== 'N/A' && (
-                  <div className='flex items-center gap-2 p-2 bg-slate-50 rounded-lg'>
-                    <Package className='h-3 w-3 text-slate-500' />
-                    <span className='text-xs text-slate-600'>Đơn hàng: #{orderId}</span>
                   </div>
                 )}
               </div>

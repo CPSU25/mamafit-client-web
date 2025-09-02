@@ -105,7 +105,7 @@ export function TicketDetailDialog({ ticket, isOpen, onClose }: TicketDetailDial
                 <p className='text-sm text-muted-foreground whitespace-pre-wrap'>{ticket.description}</p>
               </div>
               <div>
-                <label className='text-sm font-medium text-muted-foreground'>Loại</label>
+                <label className='text-sm font-medium text-muted-foreground mr-5'>Loại</label>
                 <Badge className={`${getTicketTypeColor(ticket.type)} mt-1`}>
                   <TypeIcon className='h-3 w-3 mr-1' />
                   {getTicketTypeLabel(ticket.type)}
@@ -205,14 +205,14 @@ export function TicketDetailDialog({ ticket, isOpen, onClose }: TicketDetailDial
                 </div>
               )}
 
-              {ticket.order.discountSubtotal && ticket.order.discountSubtotal > 0 && (
+              {ticket.order.discountSubtotal && ticket.order.discountSubtotal > 0 ? (
                 <div>
                   <label className='text-sm font-medium text-muted-foreground'>Giảm giá</label>
                   <p className='text-sm text-muted-foreground text-green-600'>
                     -{formatCurrency(ticket.order.discountSubtotal)}
                   </p>
                 </div>
-              )}
+              ) : null}
 
               {ticket.order.shippingFee && ticket.order.shippingFee > 0 && (
                 <div>
@@ -230,7 +230,7 @@ export function TicketDetailDialog({ ticket, isOpen, onClose }: TicketDetailDial
 
               <div className='grid grid-cols-2 gap-4'>
                 <div>
-                  <label className='text-sm font-medium text-muted-foreground'>Trạng thái</label>
+                  <label className='text-sm font-medium text-muted-foreground mr-5'>Trạng thái</label>
                   <Badge className='mt-1'>
                     {ticket.order.status === 'COMPLETED'
                       ? 'Hoàn thành'
@@ -244,7 +244,7 @@ export function TicketDetailDialog({ ticket, isOpen, onClose }: TicketDetailDial
                   </Badge>
                 </div>
                 <div>
-                  <label className='text-sm font-medium text-muted-foreground'>Trạng thái thanh toán</label>
+                  <label className='text-sm font-medium text-muted-foreground mr-5'>Trạng thái thanh toán</label>
                   <Badge className='mt-1' variant='outline'>
                     {ticket.order.paymentStatus === 'PAID_FULL'
                       ? 'Đã thanh toán đủ'

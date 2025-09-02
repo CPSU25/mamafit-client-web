@@ -63,12 +63,12 @@ export function TransactionTable({ columns, data, onDateRangeChange }: Transacti
   })
 
   return (
-    <div className='space-y-2'>
+    <div className='space-y-6'>
       {/* Search Filter and Toolbar */}
       <TransactionTableToolbar<Transaction> table={table} onDateRangeChange={onDateRangeChange} />
 
       {/* Table */}
-      <div className='rounded-md border border-violet-200 dark:border-violet-800 shadow-sm'>
+      <div className='rounded-md border border-violet-200 dark:border-violet-800 shadow-sm '>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

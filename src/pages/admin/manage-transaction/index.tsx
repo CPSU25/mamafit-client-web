@@ -245,7 +245,7 @@ export default function ManageTransactionPage() {
 
       {/* Table Section with Enhanced Styling */}
       <Card className='border-0 shadow-xl bg-gradient-to-br from-background via-background to-violet-50/30 dark:to-violet-950/10'>
-        <CardHeader className='flex-row items-center justify-between space-y-0 p-6'>
+        <CardHeader className='flex-row items-center justify-between space-y-0 pt-6'>
           <CardTitle className='text-violet-700 dark:text-violet-300 flex items-center gap-2'>
             <CreditCard className='h-5 w-5' />
             Danh Sách Giao Dịch

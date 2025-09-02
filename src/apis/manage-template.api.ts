@@ -96,6 +96,5 @@ export const transformPresetDetail = (item: PresetDetailResponse) => ({
   price: item.price,
   componentOptions: item.componentOptions?.map((option) => ({
     ...option,
-    tag: Array.isArray(option.tag) ? option.tag.join(', ') : null
   }))
 })

@@ -7,6 +7,7 @@ const taskSchema = z.object({
   description: z.string(),
   milestoneId: z.string(),
   sequenceOrder: z.number(),
+  estimateTimeSpan: z.number(),
   createdAt: z.union([z.string(), z.date()]),
   updatedAt: z.union([z.string(), z.date()]),
   createdBy: z.string()
@@ -114,6 +115,7 @@ export const transformMilestoneTypeToMilestone = (apiMilestone: MilestoneByIdTyp
       description: task.description,
       milestoneId: task.milestoneId,
       sequenceOrder: task.sequenceOrder,
+      estimateTimeSpan: task.estimateTimeSpan || 0,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
       createdBy: task.createdBy
@@ -132,6 +134,7 @@ export const transformTaskTypeToTask = (apiTask: TaskType): Task => {
     description: apiTask.description,
     milestoneId: apiTask.milestoneId,
     sequenceOrder: apiTask.sequenceOrder,
+    estimateTimeSpan: apiTask.estimateTimeSpan || 0,
     createdAt: apiTask.createdAt,
     updatedAt: apiTask.updatedAt,
     createdBy: apiTask.createdBy

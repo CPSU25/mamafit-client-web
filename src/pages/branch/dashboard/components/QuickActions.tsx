@@ -10,7 +10,7 @@ export function QuickActions() {
         <CardTitle className='text-sm font-medium'>Lối tắt thao tác</CardTitle>
       </CardHeader>
       <CardContent className='grid gap-2'>
-        <Link to='/system/branch/manage-branch-order'>
+        <Link to='/system/branch/manage-order'>
           <Button variant='outline' className='w-full justify-between'>
             Quản lý đơn hàng <ArrowRight className='h-4 w-4' />
           </Button>

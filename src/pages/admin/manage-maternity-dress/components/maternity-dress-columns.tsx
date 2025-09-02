@@ -135,7 +135,7 @@ export const columns: ColumnDef<MaternityDress>[] = [
       return (
         <div className='flex items-center'>
           <div className='max-w-[200px]'>
-            <span className='font-semibold text-foreground block truncate' title={name}>
+            <span className='font-md text-foreground block truncate' title={name}>
               {name}
             </span>
           </div>
