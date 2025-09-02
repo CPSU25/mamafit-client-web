@@ -371,7 +371,7 @@ export default function StaffTasksPage() {
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                   {orderGroup.items.map((it) => {
                     const orderItem = it.base // it.base is ProductTaskGroup
-                    const displayName = orderItem.preset?.styleName ?? orderItem.maternityDressDetail?.name ?? '—'
+                    const displayName = orderItem.preset?.name ?? orderItem.maternityDressDetail?.name ?? '—'
                     const displaySku = orderItem.preset?.sku ?? orderItem.maternityDressDetail?.sku ?? '—'
                     const displayImage =
                       orderItem.preset?.images?.[0] ?? orderItem.maternityDressDetail?.image?.[0] ?? ''

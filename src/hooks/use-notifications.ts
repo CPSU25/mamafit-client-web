@@ -117,8 +117,6 @@ export const useMarkAsRead = () => {
   return useMutation({
     mutationFn: (request: MarkAsReadRequest) => notificationAPI.markAsRead(request),
     onMutate: async ({ notificationIds }) => {
-      // Optimistic update
-      console.log('🔄 [MarkAsRead] Optimistic update for:', notificationIds)
 
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: notificationKeys.lists() })

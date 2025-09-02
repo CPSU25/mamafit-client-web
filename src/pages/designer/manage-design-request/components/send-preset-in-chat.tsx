@@ -49,6 +49,23 @@ export function SendPresetInChat({
 
   const sendPresetMutation = useSendPresetToDesignRequest()
 
+  // Function để reset form
+  const resetForm = () => {
+    setCustomPreset({
+      name: '',
+      price: 0,
+      description: '',
+      imageUrls: [],
+    })
+    setSelectedPresetId(null)
+    setActiveTab('existing')
+  }
+
+  const handleClose = () => {
+    resetForm()
+    onClose()
+  }
+
   const handleSendExistingPreset = async () => {
     if (!selectedPresetId || !roomId) {
       toast.error('Vui lòng chọn preset và đảm bảo đang trong phòng chat')
@@ -74,11 +91,13 @@ export function SendPresetInChat({
         orderId: orderId || ''
       })
 
-      toast.success('Đã gửi preset thành công!')
+      // Reset form sau khi gửi thành công
+      resetForm()
+      
       onClose()
     } catch (error) {
       console.error('Error sending preset:', error)
-      toast.error('Gửi preset thất bại. Vui lòng thử lại.')
+      toast.error('Đã quá lượt version, bạn vui lòng nói chuyện với khách hàng về điều này')
     } finally {
       setIsSubmitting(false)
     }
@@ -107,8 +126,10 @@ export function SendPresetInChat({
         designRequestId,
         orderId: orderId || ''
       })
-
-      toast.success('Đã gửi preset tùy chỉnh thành công!')
+      
+      // Reset form sau khi gửi thành công
+      resetForm()
+      
       onClose()
     } catch (error) {
       console.error('Error sending custom preset:', error)
@@ -121,7 +142,7 @@ export function SendPresetInChat({
   const presets = presetsData?.data?.items || []
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className='max-w-4xl max-h-[80vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
@@ -179,7 +200,7 @@ export function SendPresetInChat({
             )}
 
             <div className='flex justify-end gap-2 pt-4'>
-              <Button variant='outline' onClick={onClose}>
+              <Button variant='outline' onClick={handleClose}>
                 Hủy
               </Button>
               <Button onClick={handleSendExistingPreset} disabled={!selectedPresetId || isSubmitting}>
@@ -244,7 +265,7 @@ export function SendPresetInChat({
             </div>
 
             <div className='flex justify-end gap-2 pt-4'>
-              <Button variant='outline' onClick={onClose}>
+              <Button variant='outline' onClick={handleClose}>
                 Hủy
               </Button>
               <Button
