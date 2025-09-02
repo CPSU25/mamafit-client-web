@@ -31,15 +31,11 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
   const form = useForm<{
     name: string
     description: string
-    price: number
-    tag: { parentTag: string[]; childTag: string[] }
     images: string[]
   }>({
     defaultValues: {
       name: '',
       description: '',
-      price: 0,
-      tag: { parentTag: [], childTag: [] },
       images: []
     }
   })
@@ -49,8 +45,6 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
     form.reset({
       name: '',
       description: '',
-      price: 0,
-      tag: { parentTag: [], childTag: [] },
       images: []
     })
     setShowAddForm(false)
@@ -60,8 +54,6 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
     async (data: {
       name: string
       description: string
-      price: number
-      tag: { parentTag: string[]; childTag: string[] }
       images: string[]
     }) => {
       try {
@@ -69,8 +61,6 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
           componentId: componentId,
           name: data.name,
           description: data.description,
-          price: data.price,
-          tag: data.tag, // This is always non-null from form
           images: data.images,
           componentOptionType: 'QUOTATION_PENDING' as const
         }
@@ -80,8 +70,6 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
         form.reset({
           name: '',
           description: '',
-          price: 0,
-          tag: { parentTag: [], childTag: [] },
           images: []
         })
       } catch (error) {
@@ -215,27 +203,6 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
                                 </FormItem>
                               )}
                             />
-
-                            <FormField
-                              control={form.control}
-                              name='price'
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className='text-foreground'>Giá (VND) *</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type='number'
-                                      placeholder='VD: 25000'
-                                      className='border-border focus:border-primary focus:ring-primary'
-                                      disabled={createOptionMutation.isPending}
-                                      {...field}
-                                      onChange={(e) => field.onChange(Number(e.target.value))}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
                           </div>
 
                           <FormField
@@ -257,60 +224,6 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
                               </FormItem>
                             )}
                           />
-
-                          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                            <FormField
-                              control={form.control}
-                              name='tag.parentTag'
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className='text-foreground'>Parent Tags</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      placeholder='VD: Premium, Basic (phân cách bằng dấu phẩy)'
-                                      className='border-border focus:border-primary focus:ring-primary'
-                                      disabled={createOptionMutation.isPending}
-                                      value={field.value?.join(', ') || ''}
-                                      onChange={(e) => {
-                                        const tags = e.target.value
-                                          .split(',')
-                                          .map((tag) => tag.trim())
-                                          .filter(Boolean)
-                                        field.onChange(tags)
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name='tag.childTag'
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className='text-foreground'>Child Tags</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      placeholder='VD: Size L, Color Red (phân cách bằng dấu phẩy)'
-                                      className='border-border focus:border-primary focus:ring-primary'
-                                      disabled={createOptionMutation.isPending}
-                                      value={field.value?.join(', ') || ''}
-                                      onChange={(e) => {
-                                        const tags = e.target.value
-                                          .split(',')
-                                          .map((tag) => tag.trim())
-                                          .filter(Boolean)
-                                        field.onChange(tags)
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
 
                           <FormField
                             control={form.control}
@@ -426,12 +339,6 @@ export const ExpandedComponentDetail = ({ componentId }: ExpandedComponentDetail
                               <span className='text-xs text-muted-foreground'>ID:</span>
                               <Badge variant='outline' className='text-xs font-mono'>
                                 {option.id.slice(-6)}
-                              </Badge>
-                            </div>
-                            <div className='flex items-center justify-between'>
-                              <span className='text-xs text-muted-foreground'>Price:</span>
-                              <Badge variant='outline' className='text-xs'>
-                                {option.price.toLocaleString()} VND
                               </Badge>
                             </div>
                           </div>

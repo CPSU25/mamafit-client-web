@@ -20,8 +20,6 @@ export interface ComponentOptionType {
   description: string
   componentId: string
   componentName: string
-  price: number
-  tag: string[] | null
   images: Array<string>
   createdBy: string
   updatedBy: string
@@ -33,11 +31,6 @@ export interface ComponentOptionFormData {
   componentId: string
   name: string
   description: string
-  price: number
-  tag: {
-    parentTag: Array<string>
-    childTag: Array<string>
-  }
   images: Array<string>
 }
 

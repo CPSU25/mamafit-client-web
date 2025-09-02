@@ -23,8 +23,8 @@ export const orderStatusOptions = [
   { value: 'DELIVERING', label: 'Đang giao', color: 'bg-green-100 text-green-800' },
   { value: 'COMPLETED', label: 'Hoàn thành', color: 'bg-green-100 text-green-800' },
   { value: 'PICKUP_IN_PROGRESS', label: 'Đang lấy hàng', color: 'bg-cyan-100 text-cyan-800' },
-  { value: 'AWAITING_PAID_WARRANTY', label: 'Chờ thanh toán bảo hành', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'RECEIVED_AT_BRANCH', label: 'Đã nhận tại cửa hàng', color: 'bg-teal-100 text-teal-800' },
+  { value: 'AWAITING_PAID_WARRANTY', label: 'Chờ thanh toán BH', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'RECEIVED_AT_BRANCH', label: 'Đã nhận tại CH', color: 'bg-teal-100 text-teal-800' },
 
   { value: 'CANCELLED', label: 'Đã hủy', color: 'bg-red-100 text-red-800' },
   { value: 'RETURNED', label: 'Đã trả lại', color: 'bg-red-100 text-red-800' },

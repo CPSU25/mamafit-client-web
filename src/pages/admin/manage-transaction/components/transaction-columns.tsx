@@ -1,7 +1,7 @@
 // transaction-columns.tsx - Enhanced Table Columns for Transaction
 import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
-import { Hash, Calendar, DollarSign, FileText, Building } from 'lucide-react'
+import { Hash, Calendar, FileText, Building } from 'lucide-react'
 import { Transaction } from '../data/schema'
 import LongText from '@/components/long-text'
 import dayjs from 'dayjs'
@@ -10,7 +10,7 @@ dayjs.extend(relativeTime)
 import { cn } from '@/lib/utils/utils'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '../../components/data-table-column-header'
-import { TransactionTableRowActions } from './transaction-row-action'
+// import { TransactionTableRowActions } from './transaction-row-action'
 // import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
@@ -200,7 +200,6 @@ export const columns: ColumnDef<Transaction>[] = [
           <Tooltip>
             <TooltipTrigger asChild>
               <div className='flex items-center gap-2'>
-                <DollarSign className='h-4 w-4 text-green-600' />
                 <span className='font-bold text-green-600 text-lg'>{formatCurrency(amount)}</span>
               </div>
             </TooltipTrigger>
@@ -296,12 +295,12 @@ export const columns: ColumnDef<Transaction>[] = [
     enableSorting: true,
     enableHiding: false
   },
-  {
-    id: 'actions',
-    cell: ({ row }) => (
-      <div data-action-button='true'>
-        <TransactionTableRowActions row={row} />
-      </div>
-    )
-  }
+  // {
+  //   id: 'actions',
+  //   cell: ({ row }) => (
+  //     <div data-action-button='true'>
+  //       <TransactionTableRowActions row={row} />
+  //     </div>
+  //   )
+  // }
 ]
