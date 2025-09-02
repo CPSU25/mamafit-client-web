@@ -114,13 +114,13 @@ export const sidebarData: SidebarData = {
           title: 'Bảo hành',
           items: [{ title: 'Quản lý bảo hành', url: 'manage-warranty', icon: Shield }]
         },
-        {
-          title: 'Tương tác',
-          items: [
-            { title: 'Tin nhắn khách hàng', url: 'messages', icon: MessagesSquare }
-            // { title: 'Check-in/Check-out', url: 'check-in-out', icon: UserCheck }
-          ]
-        }
+        // {
+        //   title: 'Tương tác',
+        //   items: [
+        //     { title: 'Tin nhắn khách hàng', url: 'messages', icon: MessagesSquare }
+        //     // { title: 'Check-in/Check-out', url: 'check-in-out', icon: UserCheck }
+        //   ]
+        // }
       ]
     },
     {

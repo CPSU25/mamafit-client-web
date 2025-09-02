@@ -108,7 +108,7 @@ export default function BranchOrderDetailPage() {
   // Event handlers
 
   const handleNavigateBack = useCallback(() => {
-    navigate('/system/branch/manage-branch-order')
+    navigate('/system/branch/manage-order')
   }, [navigate])
 
   // Loading state

@@ -1,10 +1,9 @@
-import { Link } from 'react-router-dom'
-import { Bell, ChevronsUpDown, LogOut } from 'lucide-react'
+// import { Link } from 'react-router-dom'
+import { ChevronsUpDown, LogOut } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -114,79 +113,6 @@ export function NavUser({ user }: { user: { username: string; email: string; ava
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem className='cursor-pointer group/item'>
-                <div className='flex items-center gap-2 w-full'>
-                  <Sparkles className='size-4 text-yellow-500 group-hover/item:animate-pulse' />
-                  <span className='flex-1'>Nâng cấp Premium</span>
-                  <span className='text-xs bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-2 py-0.5 rounded-full font-bold'>
-                    PRO
-                  </span>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuGroup> */}
-            <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
-            <DropdownMenuGroup>
-              {/* <DropdownMenuItem asChild className='cursor-pointer'>
-                <Link to='/settings/account' className='flex items-center gap-2'>
-                  <User className='size-4' />
-                  <span>Thông tin cá nhân</span>
-                </Link>
-              </DropdownMenuItem> */}
-              {/* <DropdownMenuItem asChild className='cursor-pointer'>
-                <Link to='/settings/preferences' className='flex items-center gap-2'>
-                  <Heart className='size-4' />
-                  <span>Tùy chỉnh</span>
-                </Link>
-              </DropdownMenuItem> */}
-              {/* <DropdownMenuItem asChild className='cursor-pointer'>
-                <Link to='/settings/billing' className='flex items-center gap-2'>
-                  <CreditCard className='size-4' />
-                  <span>Thanh toán</span>
-                </Link>
-              </DropdownMenuItem> */}
-              <DropdownMenuItem asChild className='cursor-pointer'>
-                <Link to='/settings/notifications' className='flex items-center gap-2'>
-                  <Bell className='size-4' />
-                  <span>Thông báo</span>
-                  <span className='ml-auto text-xs bg-red-500 text-white size-5 rounded-full flex items-center justify-center font-bold'>
-                    3
-                  </span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem asChild className='cursor-pointer'>
-                <Link to='/settings' className='flex items-center gap-2'>
-                  <Settings className='size-4' />
-                  <span>Cài đặt</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className='cursor-pointer'
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              >
-                {theme === 'dark' ? (
-                  <>
-                    <Sun className='size-4' />
-                    <span>Chế độ sáng</span>
-                  </>
-                ) : (
-                  <>
-                    <Moon className='size-4' />
-                    <span>Chế độ tối</span>
-                  </>
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className='cursor-pointer'>
-                <Link to='/help' className='flex items-center gap-2'>
-                  <HelpCircle className='size-4' />
-                  <span>Trợ giúp</span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup> */}
             <DropdownMenuSeparator className='bg-violet-100 dark:bg-violet-900' />
             <DropdownMenuItem
               onClick={handleLogout}

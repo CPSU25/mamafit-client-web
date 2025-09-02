@@ -152,7 +152,7 @@ export const useTaskUpdates = () => {
             let targetUrl = `/system/admin/manage-order/${taskData.OrderId}`
             
             if (currentPath.includes('/system/branch/')) {
-              targetUrl = `/system/branch/manage-branch-order/${taskData.OrderId}`
+              targetUrl = `/system/branch/manage-order/${taskData.OrderId}`
             } else if (currentPath.includes('/system/manager/')) {
               targetUrl = `/system/manager/manage-order/${taskData.OrderId}`
             } else if (currentPath.includes('/system/staff/')) {
