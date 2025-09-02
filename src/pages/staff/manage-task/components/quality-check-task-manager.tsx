@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { AlertTriangle, CheckCircle2, XCircle, ShieldCheck, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQualityCheckSubmit } from '@/services/staff/quality-check.service'
 import { QualityCheckTaskStatus } from '@/apis/quality-check.api'
@@ -35,6 +36,7 @@ export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = (
   milestoneName
 }) => {
   const [taskStatuses, setTaskStatuses] = useState<QualityCheckTaskStatus[]>([])
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const qualityCheckMutation = useQualityCheckSubmit()
   // Tick every minute to update countdown badge
   const [minuteTick, setMinuteTick] = useState(0)
@@ -79,6 +81,11 @@ export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = (
       return
     }
 
+    setShowConfirmDialog(true)
+  }
+
+  // Xác nhận submit
+  const handleConfirmSubmit = async () => {
     try {
       // Gửi request submit Quality Check
       await qualityCheckMutation.mutateAsync({
@@ -91,6 +98,7 @@ export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = (
       const hasSeverity = taskStatuses.some((status) => status.status === 'FAIL' && status.severity)
 
       toast.success('Quality Check hoàn thành thành công!')
+      setShowConfirmDialog(false)
 
       // Gọi callback để parent component xử lý tiếp
       onSubmitSuccess(hasFailures, hasSeverity)
@@ -309,6 +317,96 @@ export const QualityCheckTaskManager: React.FC<QualityCheckTaskManagerProps> = (
           </div>
         </div>
       </CardContent>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className='max-w-lg'>
+          <DialogHeader>
+            <DialogTitle className='flex items-center gap-2 text-orange-600'>
+              <AlertCircle className='h-5 w-5' />
+              Xác nhận submit Quality Check
+            </DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn submit kết quả đánh giá chất lượng không?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className='space-y-4'>
+            <div className='bg-orange-50 border border-orange-200 rounded-lg p-4'>
+              <div className='flex items-start gap-3'>
+                <AlertCircle className='h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0' />
+                <div className='space-y-2'>
+                  <p className='text-sm font-medium text-orange-800'>
+                    ⚠️ Trách nhiệm và cam kết
+                  </p>
+                  <ul className='text-xs text-orange-700 space-y-1'>
+                    <li>• Tôi đã kiểm tra kỹ tất cả các tiêu chí chất lượng</li>
+                    <li>• Tôi chịu trách nhiệm về kết quả đánh giá chất lượng</li>
+                    <li>• Tôi cam kết rằng đánh giá được thực hiện chính xác và công bằng</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className='bg-gray-50 rounded-lg p-3'>
+              <p className='text-sm font-medium text-gray-800 mb-2'>Tổng kết đánh giá:</p>
+              <div className='grid grid-cols-2 gap-3 text-xs'>
+                <div className='flex items-center gap-2'>
+                  <CheckCircle2 className='h-3 w-3 text-green-600' />
+                  <span className='text-gray-600'>PASS: {passedTasks} task</span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <XCircle className='h-3 w-3 text-red-600' />
+                  <span className='text-gray-600'>FAIL: {failedTasks} task</span>
+                </div>
+                {severityTasks > 0 && (
+                  <div className='col-span-2 flex items-center gap-2'>
+                    <AlertTriangle className='h-3 w-3 text-red-700' />
+                    <span className='text-red-700 font-medium'>Nghiêm trọng: {severityTasks} task</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {failedTasks > 0 && (
+              <div className='bg-red-50 border border-red-200 rounded-lg p-3'>
+                <p className='text-sm font-medium text-red-800 mb-2'>⚠️ Cảnh báo:</p>
+                <p className='text-xs text-red-700'>
+                  Có {failedTasks} task không đạt chất lượng. 
+                  {severityTasks > 0 && ` Trong đó có ${severityTasks} task nghiêm trọng cần reset Preset Production.`}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className='gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => setShowConfirmDialog(false)}
+              disabled={qualityCheckMutation.isPending}
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={handleConfirmSubmit}
+              disabled={qualityCheckMutation.isPending}
+              className='bg-orange-600 hover:bg-orange-700 text-white'
+            >
+              {qualityCheckMutation.isPending ? (
+                <>
+                  <ShieldCheck className='h-4 w-4 mr-2 animate-spin' />
+                  Đang xử lý...
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className='h-4 w-4 mr-2' />
+                  Xác nhận submit
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }
