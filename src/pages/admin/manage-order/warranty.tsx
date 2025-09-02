@@ -92,7 +92,7 @@ function WarrantyOrderContent() {
   const orderList = useMemo(() => {
     const allOrders = ordersResponse?.data?.items?.map(transformOrderData) || []
     // Filter only WARRANTY type orders
-    return allOrders.filter((order) => order.type === 'WARRANTY')
+    return allOrders.filter((order) => order.type === 'WARRANTY').slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   }, [ordersResponse?.data?.items])
 
   const userList = useMemo(() => usersResponse?.data?.items || [], [usersResponse?.data?.items])

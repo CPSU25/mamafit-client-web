@@ -64,7 +64,6 @@ export function FirebaseVideoUpload({
 
   // Update videos when value prop changes (initialization only)
   useEffect(() => {
-    console.log('📥 Value prop changed:', value)
     const existingVideos = value.map((url, index) => ({
       id: `existing-${index}`,
       url,
@@ -193,7 +192,6 @@ export function FirebaseVideoUpload({
     // Call updateParent after all uploads complete
     setTimeout(() => {
       setVideos((currentVideos) => {
-        console.log('🔄 Calling updateParent after upload complete')
         updateParent(currentVideos)
         return currentVideos
       })

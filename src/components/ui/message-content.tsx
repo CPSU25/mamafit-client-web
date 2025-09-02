@@ -281,14 +281,12 @@ function FileMessage({ message }: { message: string }) {
 // Component hiển thị yêu cầu thiết kế với API data
 function EnhancedDesignRequestMessage({ message }: { message: string }) {
   const designData = JSON.parse(message)
-  console.log('🎨 Parsing design request message:', designData)
 
   // Lấy orderId và designRequestId từ JSON
   const orderId = designData.orderId
   const designRequestId = designData.designRequestId
   const messageContent = designData.messageContent || 'Yêu cầu thiết kế mới'
 
-  console.log('🎯 Extracted orderId:', orderId, 'designRequestId:', designRequestId)
 
   // Fetch order data từ API
   const { data: orderDetails, isLoading: isLoadingOrder, error: orderError } = useOrder(orderId)
@@ -300,8 +298,6 @@ function EnhancedDesignRequestMessage({ message }: { message: string }) {
   } = useDesignRequestById(designRequestId)
 
   try {
-    console.log('🔍 Order details from API:', { orderDetails, isLoadingOrder, orderError })
-    console.log('🔍 Design request details from API:', { designRequestDetails, isLoadingDesign, designError })
 
     const isLoading = isLoadingOrder || isLoadingDesign
     const hasError = orderError || designError
@@ -462,18 +458,14 @@ function EnhancedDesignRequestMessage({ message }: { message: string }) {
 // Component hiển thị preset với API data
 function EnhancedPresetMessage({ message }: { message: string }) {
   const presetData = JSON.parse(message)
-  console.log('📦 Parsing preset message:', presetData)
 
   // Lấy presetId từ JSON
   const presetId = presetData.presetId
-  const orderId = presetData.orderId || 'N/A'
 
-  console.log('🎯 Extracted presetId:', presetId, 'orderId:', orderId)
 
   // Fetch preset data từ API
   const { data: presetDetails, isLoading, error } = usePresetById(presetId)
   try {
-    console.log('🔍 Preset details from API:', { presetDetails, isLoading, error })
     return (
       <Card className='max-w-sm border-0 shadow-sm bg-white'>
         <CardContent className='p-4 space-y-4'>
@@ -732,16 +724,13 @@ export function MessageContent({ message, type, className }: MessageContentProps
         } catch (parseError) {
           console.log('⚠️ Failed to parse design request message, using fallback:', parseError)
         }
-        console.log('📦 Using regular Design Request Message')
         return <DesignRequestMessage message={message} />
 
       case 4: // MessageType.Preset
         // Kiểm tra nếu message có presetId (từ SignalR) thì dùng Enhanced version
         try {
           const parsed = JSON.parse(message)
-          console.log('🔍 Parsed preset message:', parsed)
           if (parsed.presetId) {
-            console.log('🎆 Using Enhanced Preset Message with presetId:', parsed.presetId)
             return <EnhancedPresetMessage message={message} />
           }
         } catch (parseError) {

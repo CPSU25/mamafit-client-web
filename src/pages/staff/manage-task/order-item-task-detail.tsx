@@ -92,7 +92,7 @@ export default function OrderItemDetailPage() {
   const basePrice = preset?.price ?? maternityDressDetail?.price ?? 0
   const totalPrice = basePrice + totalAddOnPrice
 
-  const displayName = preset?.styleName ?? maternityDressDetail?.name ?? '—'
+  const displayName = preset?.name ?? maternityDressDetail?.name ?? '—'
   const displaySku = preset?.sku ?? maternityDressDetail?.sku ?? '—'
   const displayType = preset?.type ?? 'READY_TO_BUY'
   const displayImage = preset?.images?.[0] ?? maternityDressDetail?.image?.[0] ?? ''
@@ -307,11 +307,39 @@ export default function OrderItemDetailPage() {
                             {addon.itemServiceType}
                           </Badge>
                         </div>
+
+                        {/* Hiển thị value theo loại dịch vụ */}
+                        {addon.value && (
+                          <div className='flex flex-col gap-2'>
+                            <span className='text-xs font-medium text-gray-500'>Nội dung:</span>
+                            {addon.itemServiceType === 'TEXT' && (
+                              <div className='bg-gray-50 p-2 rounded border'>
+                                <span className='text-sm font-medium text-gray-800'>{addon.value}</span>
+                              </div>
+                            )}
+                            {addon.itemServiceType === 'IMAGE' && (
+                              <div className='bg-gray-50 p-2 rounded border'>
+                                <img
+                                  src={addon.value}
+                                  alt={addon.name}
+                                  className='w-full max-w-32 h-24 object-cover rounded border'
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none'
+                                  }}
+                                />
+                              </div>
+                            )}
+                            {addon.itemServiceType === 'PATTERN' && (
+                              <div className='bg-gray-50 p-2 rounded border'>
+                                <span className='text-sm text-gray-600 italic'>Pattern có sẵn</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className='mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400'>
                         <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1'>
-                          <span>Tạo bởi: {addon.createdBy}</span>
                           <span>Cập nhật: {dayjs(addon.updatedAt).format('DD/MM/YYYY')}</span>
                         </div>
                       </div>
