@@ -52,7 +52,7 @@ export function CreateWarrantyRequestDialog({
 
   // Check if any item needs fee (warranty round >= warrantyPeriod) - memoized to prevent infinite re-renders
   const needsFee = useMemo(() => {
-    if (!warrantyPeriod) return false
+    if (warrantyPeriod === null || warrantyPeriod === undefined) return false
     return selectedItems.some((item) => {
       const warrantyRound = item.warrantyRound || 0
       return warrantyRound >= warrantyPeriod
@@ -190,7 +190,7 @@ export function CreateWarrantyRequestDialog({
           <div className='space-y-6'>
             {selectedItems.map((item, index) => {
               const warrantyRound = item.warrantyRound || 0
-              const needsFeeForItem = warrantyPeriod ? warrantyRound >= warrantyPeriod : false
+              const needsFeeForItem = warrantyPeriod !== null && warrantyPeriod !== undefined ? warrantyRound >= warrantyPeriod : false
 
               return (
                 <Card key={item.id} className='border border-border/50'>
